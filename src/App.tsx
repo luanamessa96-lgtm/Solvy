@@ -38,12 +38,13 @@ import {
   ArrowUpRight,
   ArrowRight,
   TrendingUp,
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { MOCK_PROFILES, MOCK_DOCUMENTS, MOCK_DEADLINES, MOCK_ACCOUNTANT } from './constants';
-import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, getProfiles, updateProfile, getAccountant, updateAccountant } from './lib/db';
+import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, addDeadline, updateDeadline, deleteDeadline, getProfiles, updateProfile, getAccountant, updateAccountant } from './lib/db';
 import { Profile, Document, Deadline, Accountant } from './types';
 
 // --- Components ---
@@ -381,10 +382,12 @@ const AccountantModal = ({ isOpen, onClose, accountant, darkMode }: { isOpen: bo
   </AnimatePresence>
 );
 
-const Header = ({ title, activeProfile, onProfileClick, showBack, onBack, darkMode }: { 
-  title: string, 
-  activeProfile: Profile, 
+const Header = ({ title, activeProfile, onProfileClick, onBellClick, notificationCount, showBack, onBack, darkMode }: {
+  title: string,
+  activeProfile: Profile,
   onProfileClick: () => void,
+  onBellClick?: () => void,
+  notificationCount?: number,
   showBack?: boolean,
   onBack?: () => void,
   darkMode?: boolean
@@ -392,7 +395,7 @@ const Header = ({ title, activeProfile, onProfileClick, showBack, onBack, darkMo
   <header className={`sticky top-0 z-20 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b transition-colors duration-500 ${darkMode ? 'bg-slate-950/80 border-slate-800' : 'bg-white/80 border-slate-100'}`}>
     <div className="flex items-center gap-3">
       {showBack ? (
-        <button 
+        <button
           onClick={onBack}
           className={`p-2 -ml-2 rounded-xl active:scale-90 transition-all hover:shadow-lg ${darkMode ? 'bg-slate-900 text-slate-300 hover:shadow-primary/10' : 'bg-slate-50 text-slate-600 hover:shadow-slate-200'}`}
         >
@@ -407,12 +410,14 @@ const Header = ({ title, activeProfile, onProfileClick, showBack, onBack, darkMo
     </div>
     <div className="flex items-center gap-4">
       {!showBack && (
-        <button className={`relative p-2 transition-all active:scale-90 hover:shadow-lg rounded-xl ${darkMode ? 'text-slate-500 hover:text-primary hover:shadow-primary/10' : 'text-slate-400 hover:text-primary hover:shadow-slate-200'}`}>
+        <button onClick={onBellClick} className={`relative p-2 transition-all active:scale-90 hover:shadow-lg rounded-xl ${darkMode ? 'text-slate-500 hover:text-primary hover:shadow-primary/10' : 'text-slate-400 hover:text-primary hover:shadow-slate-200'}`}>
           <Bell size={22} />
-          <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 border-2 border-white rounded-full text-[10px] font-bold text-white flex items-center justify-center">2</span>
+          {notificationCount !== undefined && notificationCount > 0 && (
+            <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 border-2 border-white rounded-full text-[10px] font-bold text-white flex items-center justify-center">{notificationCount}</span>
+          )}
         </button>
       )}
-      <button 
+      <button
         onClick={onProfileClick}
         className={`w-9 h-9 rounded-full border-2 overflow-hidden transition-all active:scale-90 hover:shadow-lg ${darkMode ? 'border-slate-800 hover:border-primary hover:shadow-primary/20' : 'border-slate-100 hover:border-primary hover:shadow-slate-200'}`}
       >
@@ -421,6 +426,93 @@ const Header = ({ title, activeProfile, onProfileClick, showBack, onBack, darkMo
     </div>
   </header>
 );
+
+const NotificationsPanel = ({ deadlines, onClose, darkMode }: { deadlines: Deadline[], onClose: () => void, darkMode?: boolean }) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const notifications = deadlines
+    .map(d => {
+      const date = new Date(d.date);
+      date.setHours(0, 0, 0, 0);
+      const diffDays = Math.ceil((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return { ...d, diffDays };
+    })
+    .filter(d => d.diffDays <= 30)
+    .sort((a, b) => a.diffDays - b.diffDays);
+
+  const getLabel = (diffDays: number) => {
+    if (diffDays < 0) return { text: `Scaduta ${Math.abs(diffDays)} giorni fa`, color: 'text-red-500' };
+    if (diffDays === 0) return { text: 'Scade oggi', color: 'text-red-500' };
+    if (diffDays === 1) return { text: 'Scade domani', color: 'text-orange-500' };
+    return { text: `Tra ${diffDays} giorni`, color: diffDays <= 7 ? 'text-orange-500' : 'text-slate-400' };
+  };
+
+  const typeIcon = (type: string) => {
+    if (type === 'tax') return '🏛️';
+    if (type === 'payment') return '💸';
+    return '📌';
+  };
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+        />
+        <motion.div
+          initial={{ y: '100%' }}
+          animate={{ y: 0 }}
+          exit={{ y: '100%' }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          className={`relative w-full max-w-md rounded-t-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}
+        >
+          <div className="p-8 space-y-6">
+            <div className="flex justify-between items-start">
+              <div className="space-y-1">
+                <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Notifiche</h2>
+                <p className="text-sm text-slate-500">Scadenze nei prossimi 30 giorni</p>
+              </div>
+              <button onClick={onClose} className={`p-2 rounded-full transition-all active:scale-90 hover:shadow-lg ${darkMode ? 'bg-slate-800 text-slate-400 hover:text-slate-200 hover:shadow-primary/10' : 'bg-slate-50 text-slate-400 hover:text-slate-600 hover:shadow-slate-200'}`}>
+                <Plus className="rotate-45" size={24} />
+              </button>
+            </div>
+
+            <div className="space-y-3 max-h-[50vh] overflow-y-auto -mx-1 px-1">
+              {notifications.length === 0 ? (
+                <div className="py-10 text-center space-y-2">
+                  <p className="text-4xl">🎉</p>
+                  <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Tutto in ordine!</p>
+                  <p className="text-sm text-slate-400">Nessuna scadenza nei prossimi 30 giorni</p>
+                </div>
+              ) : notifications.map(n => {
+                const label = getLabel(n.diffDays);
+                return (
+                  <div key={n.id} className={`flex items-center gap-4 p-4 rounded-2xl transition-colors ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 ${darkMode ? 'bg-slate-700' : 'bg-white'}`}>
+                      {typeIcon(n.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-bold truncate ${darkMode ? 'text-white' : 'text-slate-900'}`}>{n.title}</p>
+                      <p className={`text-xs font-semibold ${label.color}`}>{label.text}</p>
+                    </div>
+                    {n.amount && (
+                      <p className={`text-sm font-bold shrink-0 ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{n.amount.toLocaleString()}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+};
 
 const BottomNav = ({ activeTab, setActiveTab, darkMode }: { activeTab: string, setActiveTab: (tab: string) => void, darkMode?: boolean }) => {
   const tabs = [
@@ -466,7 +558,7 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode }: { activeTab: string, s
 
 // --- Views ---
 
-const DashboardView = ({ profile, onProfileClick, income, paidPercentage, documents, darkMode }: { profile: Profile, onProfileClick: () => void, income: number, paidPercentage: number, documents: Document[], darkMode?: boolean, key?: string }) => {
+const DashboardView = ({ profile, onProfileClick, income, expenses, paidPercentage, documents, darkMode }: { profile: Profile, onProfileClick: () => void, income: number, expenses: number, paidPercentage: number, documents: Document[], darkMode?: boolean, key?: string }) => {
   const displayYear = new Date().getFullYear();
   const today = new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -527,20 +619,35 @@ const DashboardView = ({ profile, onProfileClick, income, paidPercentage, docume
         </div>
       </motion.div>
 
-      {/* Secondary Stats */}
-      <motion.div variants={item} className="grid grid-cols-2 gap-4">
-        <div className={`rounded-2xl p-4 border transition-all hover:shadow-lg hover:shadow-primary/5 active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/30' : 'bg-white border-slate-100 hover:border-primary/20'} space-y-2`}>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tasse Stimate</p>
-          <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{Math.round(income * 0.15).toLocaleString()}</p>
-          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-primary h-full" style={{ width: '15%' }} />
+      {/* Financial Summary Card */}
+      <motion.div variants={item} className={`rounded-3xl border transition-all ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} overflow-hidden`}>
+        {/* Margine Netto - hero row */}
+        <div className={`px-6 py-5 flex items-center justify-between border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
+          <div className="space-y-0.5">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Margine Netto</p>
+            <p className={`text-2xl font-bold ${income - expenses >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+              €{(income - expenses).toLocaleString()}
+            </p>
+          </div>
+          <div className={`px-3 py-1.5 rounded-full text-xs font-bold ${income - expenses >= 0 ? (darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600') : (darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600')}`}>
+            {income > 0 ? `${Math.round(((income - expenses) / income) * 100)}%` : '0%'}
           </div>
         </div>
-        <div className={`rounded-2xl p-4 border transition-all hover:shadow-lg hover:shadow-emerald-500/5 active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-emerald-500/30' : 'bg-white border-slate-100 hover:border-emerald-500/20'} space-y-2`}>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Netto Previsto</p>
-          <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{Math.round(income * 0.85).toLocaleString()}</p>
-          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-emerald-500 h-full" style={{ width: '85%' }} />
+        {/* Two sub-stats */}
+        <div className="grid grid-cols-2 divide-x divide-slate-100 dark:divide-slate-800">
+          <div className="px-5 py-4 space-y-1">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Totale Spese</p>
+            <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{expenses.toLocaleString()}</p>
+            <div className={`w-full h-1 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+              <div className="bg-red-400 h-full rounded-full" style={{ width: income > 0 ? `${Math.min((expenses / income) * 100, 100)}%` : '0%' }} />
+            </div>
+          </div>
+          <div className="px-5 py-4 space-y-1">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tasse Stimate</p>
+            <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{Math.round(income * 0.15).toLocaleString()}</p>
+            <div className={`w-full h-1 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+              <div className="bg-primary h-full rounded-full" style={{ width: '15%' }} />
+            </div>
           </div>
         </div>
       </motion.div>
@@ -667,6 +774,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isExpenseOpen, setIsExpenseOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [docToDelete, setDocToDelete] = useState<Document | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [docToEdit, setDocToEdit] = useState<Document | null>(null);
@@ -675,8 +783,19 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
     onAddDocument(newDoc);
   };
 
+  const availableYears = useMemo(() => {
+    const years = new Set(documents.map(d => new Date(d.date).getFullYear()));
+    const currentYear = new Date().getFullYear();
+    years.add(currentYear);
+    return Array.from(years).sort((a, b) => b - a);
+  }, [documents]);
+
+  const yearDocuments = useMemo(() => {
+    return documents.filter(d => new Date(d.date).getFullYear() === selectedYear);
+  }, [documents, selectedYear]);
+
   const totals = useMemo(() => {
-    return documents.reduce((acc, doc) => {
+    return yearDocuments.reduce((acc, doc) => {
       if (doc.type === 'invoice' && doc.status === 'paid') {
         acc.income += doc.amount;
       } else if (doc.type === 'expense') {
@@ -684,15 +803,15 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
       }
       return acc;
     }, { income: 0, expenses: 0 });
-  }, [documents]);
+  }, [yearDocuments]);
 
   const balance = totals.income - totals.expenses;
 
   const filteredDocuments = useMemo(() => {
-    if (filter === 'income') return documents.filter(d => d.type === 'invoice');
-    if (filter === 'expense') return documents.filter(d => d.type === 'expense');
-    return documents;
-  }, [documents, filter]);
+    if (filter === 'income') return yearDocuments.filter(d => d.type === 'invoice');
+    if (filter === 'expense') return yearDocuments.filter(d => d.type === 'expense');
+    return yearDocuments;
+  }, [yearDocuments, filter]);
 
   const container = {
     hidden: { opacity: 0 },
@@ -773,6 +892,28 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
               <p className="text-[10px] text-slate-400 font-medium">Da file o email</p>
             </div>
           </button>
+        </div>
+      </motion.div>
+
+      {/* Year Filter */}
+      <motion.div variants={item} className="space-y-3">
+        <div className="flex items-center justify-between px-2">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Anno</span>
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          {availableYears.map(year => (
+            <button
+              key={year}
+              onClick={() => setSelectedYear(year)}
+              className={`shrink-0 px-5 py-2 rounded-full text-sm font-bold transition-all active:scale-95 ${
+                selectedYear === year
+                  ? 'bg-primary text-white shadow-lg shadow-primary/40'
+                  : (darkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+              }`}
+            >
+              {year}
+            </button>
+          ))}
         </div>
       </motion.div>
 
@@ -1071,9 +1212,14 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   );
 };
 
-const CalendarView = ({ deadlines, darkMode, key }: { deadlines: Deadline[], darkMode?: boolean, key?: string }) => {
+const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDeadline, darkMode, key }: { deadlines: Deadline[], onAddDeadline: (d: Deadline) => void, onUpdateDeadline: (d: Deadline) => void, onDeleteDeadline: (id: string) => void, darkMode?: boolean, key?: string }) => {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+  const [selectedDeadline, setSelectedDeadline] = useState<Deadline | null>(null);
+  const [deadlineToEdit, setDeadlineToEdit] = useState<Deadline | null>(null);
+  const [deadlineToDelete, setDeadlineToDelete] = useState<Deadline | null>(null);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [newDeadline, setNewDeadline] = useState({ title: '', date: new Date().toISOString().split('T')[0], type: 'tax' as Deadline['type'], amount: '' });
 
   const months = [
     'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
@@ -1227,10 +1373,11 @@ const CalendarView = ({ deadlines, darkMode, key }: { deadlines: Deadline[], dar
               <div className="space-y-3">
                 {filteredDeadlines.length > 0 ? (
                   filteredDeadlines.map((deadline) => (
-                    <motion.div 
+                    <motion.button
                       variants={item}
                       key={deadline.id}
-                      className={`p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-xl ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}
+                      onClick={() => setSelectedDeadline(deadline)}
+                      className={`w-full p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-xl text-left ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}
                     >
                       <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center shrink-0 ${
                         deadline.type === 'tax' 
@@ -1266,7 +1413,8 @@ const CalendarView = ({ deadlines, darkMode, key }: { deadlines: Deadline[], dar
                           </span>
                         </div>
                       </div>
-                    </motion.div>
+                      <ChevronRight size={16} className="text-slate-300 shrink-0" />
+                    </motion.button>
                   ))
                 ) : (
                   <div className="py-12 text-center space-y-2">
@@ -1280,6 +1428,145 @@ const CalendarView = ({ deadlines, darkMode, key }: { deadlines: Deadline[], dar
             </motion.div>
           </>
         )}
+
+      {/* FAB Aggiungi Scadenza */}
+      <div className="fixed bottom-24 left-0 right-0 px-6 py-4 pointer-events-none">
+        <div className="max-w-md mx-auto flex justify-end">
+          <button onClick={() => setIsAddOpen(true)} className="w-14 h-14 bg-primary rounded-full shadow-xl shadow-primary/30 flex items-center justify-center text-white active:scale-90 transition-all pointer-events-auto">
+            <Plus size={28} strokeWidth={2.5} />
+          </button>
+        </div>
+      </div>
+
+      {/* Modal Nuova Scadenza */}
+      <AnimatePresence>
+        {isAddOpen && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAddOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className={`relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+              <div className="p-8 space-y-5">
+                <div className="flex justify-between items-start">
+                  <div><h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Nuova Scadenza</h2><p className="text-sm text-slate-500">Aggiungi una scadenza fiscale o pagamento</p></div>
+                  <button onClick={() => setIsAddOpen(false)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
+                </div>
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Titolo</label>
+                    <input type="text" value={newDeadline.title} onChange={e => setNewDeadline({ ...newDeadline, title: e.target.value })} placeholder="Es: IVA Trimestrale" className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Data</label>
+                      <input type="date" value={newDeadline.date} onChange={e => setNewDeadline({ ...newDeadline, date: e.target.value })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Importo</label>
+                      <input type="number" value={newDeadline.amount} onChange={e => setNewDeadline({ ...newDeadline, amount: e.target.value })} placeholder="0.00" className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`} />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Tipo</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(['tax', 'payment', 'other'] as const).map(t => (
+                        <button key={t} onClick={() => setNewDeadline({ ...newDeadline, type: t })} className={`py-3 rounded-xl text-xs font-bold border transition-all ${newDeadline.type === t ? 'bg-primary border-primary text-white' : (darkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-600')}`}>
+                          {t === 'tax' ? 'Fiscale' : t === 'payment' ? 'Pagamento' : 'Altro'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <button onClick={() => { if (!newDeadline.title) return; onAddDeadline({ id: Math.random().toString(36).substr(2, 9), title: newDeadline.title, date: newDeadline.date, type: newDeadline.type, amount: newDeadline.amount ? parseFloat(newDeadline.amount) : undefined }); setIsAddOpen(false); setNewDeadline({ title: '', date: new Date().toISOString().split('T')[0], type: 'tax', amount: '' }); }} className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">
+                  Aggiungi Scadenza
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Bottom Sheet Azioni Scadenza */}
+      <AnimatePresence>
+        {selectedDeadline && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedDeadline(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className={`relative w-full max-w-md rounded-t-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+              <div className="p-6 space-y-4">
+                <div className={`p-4 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                  <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedDeadline.title}</p>
+                  {selectedDeadline.amount && <p className="text-sm font-bold text-primary mt-0.5">€{selectedDeadline.amount.toLocaleString()}</p>}
+                </div>
+                <button onClick={() => { setDeadlineToEdit({ ...selectedDeadline }); setSelectedDeadline(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${darkMode ? 'bg-slate-700 text-primary' : 'bg-primary/10 text-primary'}`}><FileEdit size={18} /></div>
+                  <span className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Modifica</span>
+                </button>
+                <button onClick={() => { setDeadlineToDelete(selectedDeadline); setSelectedDeadline(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-red-50 text-red-500"><Trash2 size={18} /></div>
+                  <span className="font-bold text-red-500">Elimina</span>
+                </button>
+                <button onClick={() => setSelectedDeadline(null)} className={`w-full py-4 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>Annulla</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal Modifica Scadenza */}
+      <AnimatePresence>
+        {deadlineToEdit && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDeadlineToEdit(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className={`relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+              <div className="p-8 space-y-5">
+                <div className="flex justify-between items-start">
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Modifica Scadenza</h2>
+                  <button onClick={() => setDeadlineToEdit(null)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
+                </div>
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Titolo</label>
+                    <input type="text" value={deadlineToEdit.title} onChange={e => setDeadlineToEdit({ ...deadlineToEdit, title: e.target.value })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Data</label>
+                      <input type="date" value={deadlineToEdit.date} onChange={e => setDeadlineToEdit({ ...deadlineToEdit, date: e.target.value })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Importo</label>
+                      <input type="number" value={deadlineToEdit.amount || ''} onChange={e => setDeadlineToEdit({ ...deadlineToEdit, amount: parseFloat(e.target.value) || undefined })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
+                    </div>
+                  </div>
+                </div>
+                <button onClick={() => { onUpdateDeadline(deadlineToEdit); setDeadlineToEdit(null); }} className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">Salva</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Conferma Elimina Scadenza */}
+      <AnimatePresence>
+        {deadlineToDelete && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDeadlineToDelete(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className={`relative w-full max-w-md rounded-t-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+              <div className="p-8 space-y-5">
+                <div className="flex flex-col items-center text-center space-y-3">
+                  <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center text-red-500"><Trash2 size={24} /></div>
+                  <div>
+                    <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Elimina scadenza</h2>
+                    <p className="text-sm text-slate-500 mt-1">Vuoi eliminare <span className="font-bold">{deadlineToDelete.title}</span>?</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <button onClick={() => setDeadlineToDelete(null)} className={`py-4 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>Annulla</button>
+                  <button onClick={() => { onDeleteDeadline(deadlineToDelete.id); setDeadlineToDelete(null); }} className="py-4 rounded-2xl font-bold bg-red-500 text-white shadow-xl shadow-red-500/30">Elimina</button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
@@ -1875,6 +2162,7 @@ export default function App() {
   const [isProfilePage, setIsProfilePage] = useState(false);
   const [isSettingsPage, setIsSettingsPage] = useState(false);
   const [isAccountantPage, setIsAccountantPage] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [darkMode, setDarkMode] = useState<boolean>(() => JSON.parse(localStorage.getItem('darkMode') || 'false'));
   const [documents, setDocuments] = useState<Document[]>([]);
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
@@ -1916,6 +2204,21 @@ export default function App() {
     try { await addDocument(doc); } catch {}
   };
 
+  const handleAddDeadline = async (d: Deadline) => {
+    setDeadlines(prev => [...prev, d].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+    try { await addDeadline(d); } catch {}
+  };
+
+  const handleUpdateDeadline = async (d: Deadline) => {
+    setDeadlines(prev => prev.map(x => x.id === d.id ? d : x));
+    try { await updateDeadline(d); } catch {}
+  };
+
+  const handleDeleteDeadline = async (id: string) => {
+    setDeadlines(prev => prev.filter(d => d.id !== id));
+    try { await deleteDeadline(id); } catch {}
+  };
+
   const handleDeleteDocument = async (id: string) => {
     setDocuments(prev => prev.filter(d => d.id !== id));
     try { await deleteDocument(id); } catch {}
@@ -1936,6 +2239,13 @@ export default function App() {
       .reduce((sum, doc) => sum + doc.amount, 0);
   }, [documents]);
 
+  const totalExpenses = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    return documents
+      .filter(doc => doc.type === 'expense' && new Date(doc.date).getFullYear() === currentYear)
+      .reduce((sum, doc) => sum + doc.amount, 0);
+  }, [documents]);
+
   const paidPercentage = useMemo(() => {
     const currentYear = new Date().getFullYear();
     const yearDocs = documents.filter(doc => {
@@ -1946,6 +2256,17 @@ export default function App() {
     const paidDocs = yearDocs.filter(doc => doc.status === 'paid');
     return Math.round((paidDocs.length / yearDocs.length) * 100);
   }, [documents]);
+
+  const notificationCount = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return deadlines.filter(d => {
+      const date = new Date(d.date);
+      date.setHours(0, 0, 0, 0);
+      const diffDays = Math.ceil((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return diffDays <= 30;
+    }).length;
+  }, [deadlines]);
 
   const viewTitle = useMemo(() => {
     if (isProfilePage) return 'Profilo';
@@ -2002,14 +2323,23 @@ export default function App() {
 
   return (
     <div className={`max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative overflow-hidden transition-colors duration-500 ${darkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
-      <Header 
-        title={viewTitle} 
-        activeProfile={activeProfile} 
-        onProfileClick={handleProfileClick} 
+      <Header
+        title={viewTitle}
+        activeProfile={activeProfile}
+        onProfileClick={handleProfileClick}
+        onBellClick={() => setIsNotificationsOpen(true)}
+        notificationCount={notificationCount}
         showBack={isProfilePage || isSettingsPage || isAccountantPage}
         onBack={handleBack}
         darkMode={darkMode}
       />
+      {isNotificationsOpen && (
+        <NotificationsPanel
+          deadlines={deadlines}
+          onClose={() => setIsNotificationsOpen(false)}
+          darkMode={darkMode}
+        />
+      )}
 
       <main className={`flex-1 overflow-y-auto ${darkMode ? 'bg-slate-950' : ''}`}>
         <AnimatePresence mode="wait">
@@ -2044,9 +2374,9 @@ export default function App() {
             />
           ) : (
                 <>
-                  {activeTab === 'home' && <DashboardView key="home" profile={activeProfile} onProfileClick={handleProfileClick} income={totalIncome} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} />}
+                  {activeTab === 'home' && <DashboardView key="home" profile={activeProfile} onProfileClick={handleProfileClick} income={totalIncome} expenses={totalExpenses} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} />}
                   {activeTab === 'docs' && <DocumentsView key="docs" documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} accountant={accountant} darkMode={darkMode} />}
-                  {activeTab === 'calendar' && <CalendarView key="calendar" deadlines={deadlines} darkMode={darkMode} />}
+                  {activeTab === 'calendar' && <CalendarView key="calendar" deadlines={deadlines} onAddDeadline={handleAddDeadline} onUpdateDeadline={handleUpdateDeadline} onDeleteDeadline={handleDeleteDeadline} darkMode={darkMode} />}
                   {activeTab === 'menu' && <MenuView key="menu" activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} darkMode={darkMode} />}
                 </>
           )}

@@ -114,3 +114,34 @@ export async function getDeadlines(): Promise<Deadline[]> {
   if (error) throw error;
   return data || [];
 }
+
+export async function addDeadline(deadline: Deadline): Promise<void> {
+  const { error } = await supabase
+    .from('deadlines')
+    .insert([deadline]);
+
+  if (error) throw error;
+}
+
+export async function updateDeadline(deadline: Deadline): Promise<void> {
+  const { error } = await supabase
+    .from('deadlines')
+    .update({
+      title: deadline.title,
+      date: deadline.date,
+      type: deadline.type,
+      amount: deadline.amount,
+    })
+    .eq('id', deadline.id);
+
+  if (error) throw error;
+}
+
+export async function deleteDeadline(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('deadlines')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+}
