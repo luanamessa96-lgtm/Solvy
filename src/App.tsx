@@ -37,12 +37,13 @@ import {
   Sun,
   ArrowUpRight,
   ArrowRight,
-  TrendingUp
+  TrendingUp,
+  Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { MOCK_PROFILES, MOCK_DOCUMENTS, MOCK_DEADLINES, MOCK_ACCOUNTANT } from './constants';
-import { getDocuments, addDocument, getDeadlines, getProfiles, updateProfile, getAccountant, updateAccountant } from './lib/db';
+import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, getProfiles, updateProfile, getAccountant, updateAccountant } from './lib/db';
 import { Profile, Document, Deadline, Accountant } from './types';
 
 // --- Components ---
@@ -660,12 +661,15 @@ const DashboardView = ({ profile, onProfileClick, income, paidPercentage, docume
   );
 };
 
-const DocumentsView = ({ documents, onAddDocument, accountant, darkMode, key }: { documents: Document[], onAddDocument: (doc: Document) => void, accountant: Accountant, darkMode?: boolean, key?: string }) => {
+const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, accountant, darkMode, key }: { documents: Document[], onAddDocument: (doc: Document) => void, onDeleteDocument: (id: string) => void, onUpdateDocument: (doc: Document) => void, accountant: Accountant, darkMode?: boolean, key?: string }) => {
   const [isAccountantOpen, setIsAccountantOpen] = useState(false);
   const [isChoiceOpen, setIsChoiceOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isExpenseOpen, setIsExpenseOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
+  const [docToDelete, setDocToDelete] = useState<Document | null>(null);
+  const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
+  const [docToEdit, setDocToEdit] = useState<Document | null>(null);
 
   const handleSaveDocument = (newDoc: Document) => {
     onAddDocument(newDoc);
@@ -835,19 +839,19 @@ const DocumentsView = ({ documents, onAddDocument, accountant, darkMode, key }: 
         <div className="space-y-3">
           {filteredDocuments.length > 0 ? (
             filteredDocuments.map((doc) => (
-              <motion.div 
+              <motion.button
                 variants={item}
                 key={doc.id}
-                className={`p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-xl ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}
+                onClick={() => setSelectedDoc(doc)}
+                className={`w-full p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-xl text-left ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}
               >
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 ${
-                  doc.type === 'invoice' 
-                  ? (darkMode ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600') 
+                  doc.type === 'invoice'
+                  ? (darkMode ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600')
                   : (darkMode ? 'bg-red-500/10 text-red-500' : 'bg-red-50 text-red-600')
                 }`}>
                   {doc.type === 'invoice' ? <ArrowUpDown className="rotate-180" size={20} /> : <ArrowUpDown size={20} />}
                 </div>
-                
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-0.5">
                     <h3 className={`text-sm font-bold truncate pr-2 transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>{doc.client || doc.title}</h3>
@@ -855,21 +859,18 @@ const DocumentsView = ({ documents, onAddDocument, accountant, darkMode, key }: 
                       {doc.type === 'expense' ? '-' : '+'}€{doc.amount.toLocaleString()}
                     </p>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-medium text-slate-400">
-                        {new Date(doc.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
-                      </span>
-                      <div className={`w-1 h-1 rounded-full ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
-                      <span className={`text-[10px] font-bold uppercase tracking-wider ${
-                        doc.status === 'paid' ? 'text-emerald-500' : 'text-slate-400'
-                      }`}>
-                        {doc.status === 'paid' ? 'Saldato' : doc.status}
-                      </span>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-medium text-slate-400">
+                      {new Date(doc.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
+                    </span>
+                    <div className={`w-1 h-1 rounded-full ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${doc.status === 'paid' ? 'text-emerald-500' : 'text-slate-400'}`}>
+                      {doc.status === 'paid' ? 'Saldato' : doc.status}
+                    </span>
                   </div>
                 </div>
-              </motion.div>
+                <ChevronRight size={16} className="text-slate-300 shrink-0" />
+              </motion.button>
             ))
           ) : (
             <div className="py-12 text-center space-y-2">
@@ -950,6 +951,122 @@ const DocumentsView = ({ documents, onAddDocument, accountant, darkMode, key }: 
         onSave={handleSaveDocument}
         darkMode={darkMode}
       />
+
+      {/* Bottom Sheet Azioni */}
+      <AnimatePresence>
+        {selectedDoc && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedDoc(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className={`relative w-full max-w-md rounded-t-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+              <div className="p-6 space-y-4">
+                <div className={`p-4 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                  <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedDoc.client || selectedDoc.title}</p>
+                  <p className={`text-sm font-bold mt-0.5 ${selectedDoc.type === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>
+                    {selectedDoc.type === 'expense' ? '-' : '+'}€{selectedDoc.amount.toLocaleString()}
+                  </p>
+                </div>
+                {selectedDoc.type === 'invoice' && selectedDoc.status !== 'paid' && (
+                  <button onClick={() => { onUpdateDocument({ ...selectedDoc, status: 'paid' }); setSelectedDoc(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-500 text-white"><CheckCircle2 size={18} /></div>
+                    <span className="font-bold text-emerald-600">Segna come Pagata</span>
+                  </button>
+                )}
+                <button onClick={() => { setDocToEdit({ ...selectedDoc }); setSelectedDoc(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${darkMode ? 'bg-slate-700 text-primary' : 'bg-primary/10 text-primary'}`}><FileEdit size={18} /></div>
+                  <span className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Modifica</span>
+                </button>
+                <button onClick={() => { setDocToDelete(selectedDoc); setSelectedDoc(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-red-50 text-red-500"><Trash2 size={18} /></div>
+                  <span className="font-bold text-red-500">Elimina</span>
+                </button>
+                <button onClick={() => setSelectedDoc(null)} className={`w-full py-4 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>Annulla</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal Modifica */}
+      <AnimatePresence>
+        {docToEdit && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDocToEdit(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className={`relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+              <div className="p-8 space-y-5">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Modifica</h2>
+                    <p className="text-sm text-slate-500">{docToEdit.type === 'invoice' ? 'Fattura' : 'Spesa'}</p>
+                  </div>
+                  <button onClick={() => setDocToEdit(null)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
+                </div>
+                <div className="space-y-3">
+                  {docToEdit.type === 'invoice' && (
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Cliente</label>
+                      <input type="text" value={docToEdit.client || ''} onChange={e => setDocToEdit({ ...docToEdit, client: e.target.value })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
+                    </div>
+                  )}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Descrizione</label>
+                    <input type="text" value={docToEdit.title} onChange={e => setDocToEdit({ ...docToEdit, title: e.target.value })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Importo</label>
+                      <input type="number" value={docToEdit.amount} onChange={e => setDocToEdit({ ...docToEdit, amount: parseFloat(e.target.value) || 0 })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 font-bold ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Data</label>
+                      <input type="date" value={docToEdit.date} onChange={e => setDocToEdit({ ...docToEdit, date: e.target.value })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
+                    </div>
+                  </div>
+                  {docToEdit.type === 'invoice' && (
+                    <div className={`flex items-center gap-3 p-4 rounded-2xl border transition-colors ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
+                      <CheckCircle2 size={20} className="text-emerald-500" />
+                      <p className={`text-xs font-bold flex-1 ${darkMode ? 'text-emerald-400' : 'text-emerald-900'}`}>Segna come Pagato</p>
+                      <input type="checkbox" checked={docToEdit.status === 'paid'} onChange={e => setDocToEdit({ ...docToEdit, status: e.target.checked ? 'paid' : 'pending' })} className="w-5 h-5 rounded-lg border-emerald-200 text-emerald-500 focus:ring-emerald-500" />
+                    </div>
+                  )}
+                </div>
+                <button onClick={() => { onUpdateDocument(docToEdit); setDocToEdit(null); }} className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">
+                  Salva Modifiche
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Conferma Elimina */}
+      <AnimatePresence>
+        {docToDelete && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDocToDelete(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className={`relative w-full max-w-md rounded-t-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+              <div className="p-8 space-y-5">
+                <div className="flex flex-col items-center text-center space-y-3">
+                  <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center text-red-500">
+                    <Trash2 size={24} />
+                  </div>
+                  <div>
+                    <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Elimina documento</h2>
+                    <p className="text-sm text-slate-500 mt-1">Vuoi eliminare <span className="font-bold">{docToDelete.client || docToDelete.title}</span>? L'operazione non può essere annullata.</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <button onClick={() => setDocToDelete(null)} className={`py-4 rounded-2xl font-bold active:scale-[0.98] transition-all ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>
+                    Annulla
+                  </button>
+                  <button onClick={() => { onDeleteDocument(docToDelete.id); setDocToDelete(null); }} className="py-4 rounded-2xl font-bold bg-red-500 text-white shadow-xl shadow-red-500/30 active:scale-[0.98] transition-all">
+                    Elimina
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
@@ -1796,11 +1913,17 @@ export default function App() {
 
   const handleAddDocument = async (doc: Document) => {
     setDocuments(prev => [doc, ...prev]);
-    try {
-      await addDocument(doc);
-    } catch {
-      // errore silenzioso
-    }
+    try { await addDocument(doc); } catch {}
+  };
+
+  const handleDeleteDocument = async (id: string) => {
+    setDocuments(prev => prev.filter(d => d.id !== id));
+    try { await deleteDocument(id); } catch {}
+  };
+
+  const handleUpdateDocument = async (doc: Document) => {
+    setDocuments(prev => prev.map(d => d.id === doc.id ? doc : d));
+    try { await updateDocument(doc); } catch {}
   };
 
   const totalIncome = useMemo(() => {
@@ -1922,7 +2045,7 @@ export default function App() {
           ) : (
                 <>
                   {activeTab === 'home' && <DashboardView key="home" profile={activeProfile} onProfileClick={handleProfileClick} income={totalIncome} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} />}
-                  {activeTab === 'docs' && <DocumentsView key="docs" documents={documents} onAddDocument={handleAddDocument} accountant={accountant} darkMode={darkMode} />}
+                  {activeTab === 'docs' && <DocumentsView key="docs" documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} accountant={accountant} darkMode={darkMode} />}
                   {activeTab === 'calendar' && <CalendarView key="calendar" deadlines={deadlines} darkMode={darkMode} />}
                   {activeTab === 'menu' && <MenuView key="menu" activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} darkMode={darkMode} />}
                 </>

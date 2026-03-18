@@ -19,6 +19,31 @@ export async function addDocument(doc: Document): Promise<void> {
   if (error) throw error;
 }
 
+export async function updateDocument(doc: Document): Promise<void> {
+  const { error } = await supabase
+    .from('documents')
+    .update({
+      title: doc.title,
+      amount: doc.amount,
+      date: doc.date,
+      status: doc.status,
+      client: doc.client,
+      category: doc.category,
+    })
+    .eq('id', doc.id);
+
+  if (error) throw error;
+}
+
+export async function deleteDocument(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('documents')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+}
+
 export async function getProfiles(): Promise<Profile[]> {
   const { data, error } = await supabase
     .from('profiles')
