@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { Document, Deadline, Profile } from '../types';
+import { Document, Deadline, Profile, Accountant } from '../types';
 
 export async function getDocuments(): Promise<Document[]> {
   const { data, error } = await supabase
@@ -41,6 +41,41 @@ export async function updateProfile(profile: Profile): Promise<void> {
       avatar: profile.avatar,
     })
     .eq('id', profile.id);
+
+  if (error) throw error;
+}
+
+export async function getAccountant(): Promise<Accountant | null> {
+  const { data, error } = await supabase
+    .from('accountant')
+    .select('*')
+    .single();
+
+  if (error) return null;
+  return {
+    firstName: data.first_name,
+    lastName: data.last_name,
+    email: data.email,
+    phone: data.phone,
+    office: data.office,
+    contractDetails: data.contract_details,
+    sendingInstructions: data.sending_instructions,
+  };
+}
+
+export async function updateAccountant(a: Accountant): Promise<void> {
+  const { error } = await supabase
+    .from('accountant')
+    .update({
+      first_name: a.firstName,
+      last_name: a.lastName,
+      email: a.email,
+      phone: a.phone,
+      office: a.office,
+      contract_details: a.contractDetails,
+      sending_instructions: a.sendingInstructions,
+    })
+    .eq('id', '1');
 
   if (error) throw error;
 }

@@ -42,7 +42,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { MOCK_PROFILES, MOCK_DOCUMENTS, MOCK_DEADLINES, MOCK_ACCOUNTANT } from './constants';
-import { getDocuments, addDocument, getDeadlines, getProfiles, updateProfile } from './lib/db';
+import { getDocuments, addDocument, getDeadlines, getProfiles, updateProfile, getAccountant, updateAccountant } from './lib/db';
 import { Profile, Document, Deadline, Accountant } from './types';
 
 // --- Components ---
@@ -660,7 +660,7 @@ const DashboardView = ({ profile, onProfileClick, income, paidPercentage, docume
   );
 };
 
-const DocumentsView = ({ documents, onAddDocument, darkMode, key }: { documents: Document[], onAddDocument: (doc: Document) => void, darkMode?: boolean, key?: string }) => {
+const DocumentsView = ({ documents, onAddDocument, accountant, darkMode, key }: { documents: Document[], onAddDocument: (doc: Document) => void, accountant: Accountant, darkMode?: boolean, key?: string }) => {
   const [isAccountantOpen, setIsAccountantOpen] = useState(false);
   const [isChoiceOpen, setIsChoiceOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -897,7 +897,7 @@ const DocumentsView = ({ documents, onAddDocument, darkMode, key }: { documents:
       <AccountantModal 
         isOpen={isAccountantOpen} 
         onClose={() => setIsAccountantOpen(false)} 
-        accountant={MOCK_ACCOUNTANT} 
+        accountant={accountant}
         darkMode={darkMode}
       />
 
@@ -1560,17 +1560,90 @@ const SecurityModal = ({ isOpen, onClose, darkMode }: { isOpen: boolean, onClose
   );
 };
 
-const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, darkMode }: { 
-  activeProfile: Profile, 
-  onProfileClick: () => void, 
+const AccountantView = ({ accountant, onSave, darkMode }: { accountant: Accountant, onSave: (a: Accountant) => void, darkMode?: boolean, key?: string }) => {
+  const [formData, setFormData] = useState({ ...accountant });
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = () => {
+    onSave(formData);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const fields = [
+    { label: 'Nome', key: 'firstName', placeholder: 'Nome del commercialista' },
+    { label: 'Cognome', key: 'lastName', placeholder: 'Cognome' },
+    { label: 'Email', key: 'email', placeholder: 'email@studio.it' },
+    { label: 'Telefono', key: 'phone', placeholder: '+39 02 1234567' },
+    { label: 'Studio / Sede', key: 'office', placeholder: 'Studio e indirizzo' },
+    { label: 'Contratto', key: 'contractDetails', placeholder: 'Tipo di contratto e scadenza' },
+    { label: 'Istruzioni Invio Fatture', key: 'sendingInstructions', placeholder: 'Come e quando inviare i documenti' },
+  ];
+
+  const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.05 } } };
+  const item = { hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 260, damping: 20 } } };
+
+  return (
+    <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-6 pb-24">
+      <motion.div variants={item} className={`flex items-center gap-4 p-5 rounded-3xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+        <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-primary/20">
+          {formData.firstName[0]}{formData.lastName[0]}
+        </div>
+        <div>
+          <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{formData.firstName} {formData.lastName}</p>
+          <p className="text-sm text-slate-500">Commercialista</p>
+        </div>
+      </motion.div>
+
+      <div className="space-y-4">
+        {fields.map(({ label, key, placeholder }) => (
+          <motion.div key={key} variants={item} className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{label}</label>
+            {key === 'sendingInstructions' ? (
+              <textarea
+                value={formData[key as keyof typeof formData]}
+                onChange={e => setFormData({ ...formData, [key]: e.target.value })}
+                placeholder={placeholder}
+                rows={3}
+                className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none ${darkMode ? 'bg-slate-900 border-slate-800 text-white placeholder:text-slate-600' : 'bg-white border-slate-100 text-slate-900 placeholder:text-slate-400'}`}
+              />
+            ) : (
+              <input
+                type="text"
+                value={formData[key as keyof typeof formData]}
+                onChange={e => setFormData({ ...formData, [key]: e.target.value })}
+                placeholder={placeholder}
+                className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-900 border-slate-800 text-white placeholder:text-slate-600' : 'bg-white border-slate-100 text-slate-900 placeholder:text-slate-400'}`}
+              />
+            )}
+          </motion.div>
+        ))}
+      </div>
+
+      <motion.button
+        variants={item}
+        onClick={handleSave}
+        className={`w-full py-4 rounded-2xl font-bold shadow-xl active:scale-[0.98] transition-all ${saved ? 'bg-emerald-500 shadow-emerald-500/30 text-white' : 'bg-primary shadow-primary/30 text-white'}`}
+      >
+        {saved ? '✓ Salvato!' : 'Salva Modifiche'}
+      </motion.button>
+    </motion.div>
+  );
+};
+
+const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountantClick, darkMode }: {
+  activeProfile: Profile,
+  onProfileClick: () => void,
   onSettingsClick: () => void,
+  onAccountantClick: () => void,
   darkMode?: boolean,
-  key?: string 
+  key?: string
 }) => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
 
   const menuItems: { label: string, icon: any, onClick: () => void, color?: string, badge?: string }[] = [
+    { label: 'Il mio Commercialista', icon: Briefcase, onClick: onAccountantClick },
     { label: 'Impostazioni', icon: Settings, onClick: onSettingsClick },
     { label: 'Abbonamento', icon: CreditCard, onClick: () => {} },
     { label: 'Sicurezza', icon: AlertCircle, onClick: () => setIsSecurityModalOpen(true) },
@@ -1684,10 +1757,12 @@ export default function App() {
   const [activeProfile, setActiveProfile] = useState<Profile>(MOCK_PROFILES[0]);
   const [isProfilePage, setIsProfilePage] = useState(false);
   const [isSettingsPage, setIsSettingsPage] = useState(false);
+  const [isAccountantPage, setIsAccountantPage] = useState(false);
   const [darkMode, setDarkMode] = useState<boolean>(() => JSON.parse(localStorage.getItem('darkMode') || 'false'));
   const [documents, setDocuments] = useState<Document[]>([]);
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [accountant, setAccountant] = useState<Accountant>(MOCK_ACCOUNTANT);
 
   useEffect(() => {
     getDocuments()
@@ -1696,6 +1771,7 @@ export default function App() {
     getDeadlines()
       .then(setDeadlines)
       .catch(() => setDeadlines(MOCK_DEADLINES));
+    getAccountant().then(data => { if (data) setAccountant(data); });
     getProfiles()
       .then((data) => {
         if (data.length > 0) {
@@ -1751,6 +1827,7 @@ export default function App() {
   const viewTitle = useMemo(() => {
     if (isProfilePage) return 'Profilo';
     if (isSettingsPage) return 'Impostazioni';
+    if (isAccountantPage) return 'Commercialista';
     switch (activeTab) {
       case 'home': return 'Dashboard';
       case 'docs': return 'Documenti';
@@ -1769,12 +1846,21 @@ export default function App() {
   const handleSettingsClick = () => {
     setIsSettingsPage(true);
     setIsProfilePage(false);
+    setIsAccountantPage(false);
+    setActiveTab('menu');
+  };
+
+  const handleAccountantClick = () => {
+    setIsAccountantPage(true);
+    setIsProfilePage(false);
+    setIsSettingsPage(false);
     setActiveTab('menu');
   };
 
   const handleTabChange = (tab: string) => {
     setIsProfilePage(false);
     setIsSettingsPage(false);
+    setIsAccountantPage(false);
     setActiveTab(tab);
   };
 
@@ -1788,6 +1874,7 @@ export default function App() {
   const handleBack = () => {
     setIsProfilePage(false);
     setIsSettingsPage(false);
+    setIsAccountantPage(false);
   };
 
   return (
@@ -1796,7 +1883,7 @@ export default function App() {
         title={viewTitle} 
         activeProfile={activeProfile} 
         onProfileClick={handleProfileClick} 
-        showBack={isProfilePage || isSettingsPage}
+        showBack={isProfilePage || isSettingsPage || isAccountantPage}
         onBack={handleBack}
         darkMode={darkMode}
       />
@@ -1817,23 +1904,33 @@ export default function App() {
               darkMode={darkMode}
             />
           ) : isSettingsPage ? (
-            <SettingsView 
-              key="settings" 
-              darkMode={darkMode} 
-              setDarkMode={setDarkMode} 
+            <SettingsView
+              key="settings"
+              darkMode={darkMode}
+              setDarkMode={setDarkMode}
+            />
+          ) : isAccountantPage ? (
+            <AccountantView
+              key="accountant"
+              accountant={accountant}
+              onSave={async (a) => {
+                setAccountant(a);
+                try { await updateAccountant(a); } catch {}
+              }}
+              darkMode={darkMode}
             />
           ) : (
                 <>
                   {activeTab === 'home' && <DashboardView key="home" profile={activeProfile} onProfileClick={handleProfileClick} income={totalIncome} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} />}
-                  {activeTab === 'docs' && <DocumentsView key="docs" documents={documents} onAddDocument={handleAddDocument} darkMode={darkMode} />}
+                  {activeTab === 'docs' && <DocumentsView key="docs" documents={documents} onAddDocument={handleAddDocument} accountant={accountant} darkMode={darkMode} />}
                   {activeTab === 'calendar' && <CalendarView key="calendar" deadlines={deadlines} darkMode={darkMode} />}
-                  {activeTab === 'menu' && <MenuView key="menu" activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} darkMode={darkMode} />}
+                  {activeTab === 'menu' && <MenuView key="menu" activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} darkMode={darkMode} />}
                 </>
           )}
         </AnimatePresence>
       </main>
 
-      <BottomNav activeTab={(isProfilePage || isSettingsPage) ? 'menu' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} />
+      <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage) ? 'menu' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} />
     </div>
   );
 }
