@@ -46,7 +46,6 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { MOCK_PROFILES, MOCK_DOCUMENTS, MOCK_DEADLINES, MOCK_ACCOUNTANT } from './constants';
 import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, addDeadline, updateDeadline, deleteDeadline, getProfiles, updateProfile, getAccountant, updateAccountant } from './lib/db';
 import { Profile, Document, Deadline, Accountant } from './types';
-
 // --- Components ---
 
 const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode }: { isOpen: boolean, onClose: () => void, onSave: (doc: any) => void, darkMode?: boolean }) => {
@@ -768,6 +767,288 @@ const DashboardView = ({ profile, onProfileClick, income, expenses, paidPercenta
   );
 };
 
+const ScanReceiptModal = ({ isOpen, onClose, onSave, darkMode }: { isOpen: boolean, onClose: () => void, onSave: (doc: any) => void, darkMode?: boolean }) => {
+  const [preview, setPreview] = React.useState<string | null>(null);
+  const [form, setForm] = React.useState({ title: '', amount: '', date: new Date().toISOString().split('T')[0], category: 'altro' });
+  const [amountError, setAmountError] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const categories = [
+    { value: 'abbonamento', label: 'Abbonamento', emoji: '📦' },
+    { value: 'materiale', label: 'Materiale', emoji: '🛠️' },
+    { value: 'software', label: 'Software', emoji: '💻' },
+    { value: 'formazione', label: 'Formazione', emoji: '📚' },
+    { value: 'altro', label: 'Altro', emoji: '📎' },
+  ];
+
+  const handleClose = () => {
+    setPreview(null);
+    setForm({ title: '', amount: '', date: new Date().toISOString().split('T')[0], category: 'altro' });
+    setAmountError(false);
+    onClose();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleSave = () => {
+    const parsed = parseFloat(form.amount.replace(',', '.'));
+    if (!form.amount.trim() || isNaN(parsed)) {
+      setAmountError(true);
+      return;
+    }
+    setAmountError(false);
+    const docId = Math.random().toString(36).substr(2, 9);
+    if (preview) localStorage.setItem(`receipt_${docId}`, preview);
+    onSave({
+      id: docId,
+      type: 'expense',
+      status: 'paid',
+      title: form.title || form.category,
+      amount: parsed,
+      date: form.date,
+      category: form.category,
+    });
+    handleClose();
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={handleClose} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
+          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className={`relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+            <div className="overflow-y-auto max-h-[85vh] p-8 space-y-6">
+              {/* Header */}
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Aggiungi Foto</h2>
+                  <p className="text-sm text-slate-500">Salva un'immagine con la spesa</p>
+                </div>
+                <button onClick={handleClose} className={`p-2 rounded-full transition-all active:scale-90 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
+                  <Plus className="rotate-45" size={24} />
+                </button>
+              </div>
+
+              {/* Image picker / preview */}
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+              {preview ? (
+                <div className="relative w-full h-40 rounded-2xl overflow-hidden">
+                  <img src={preview} alt="Scontrino" className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => { setPreview(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-slate-900/60 backdrop-blur-sm flex items-center justify-center text-white"
+                  >
+                    <Plus className="rotate-45" size={16} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`w-full h-40 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-3 transition-all active:scale-[0.98] ${darkMode ? 'border-slate-700 hover:border-primary/50 bg-slate-800/50' : 'border-slate-200 hover:border-primary/40 bg-slate-50'}`}
+                >
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${darkMode ? 'bg-primary/10 text-primary' : 'bg-primary/5 text-primary'}`}>
+                    <Image size={22} />
+                  </div>
+                  <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Scegli dalla libreria</p>
+                  <p className="text-xs text-slate-400">Scontrino, ricevuta o documento</p>
+                </button>
+              )}
+
+              {/* Form */}
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Descrizione</label>
+                  <input
+                    type="text"
+                    placeholder="Es. Cena con cliente"
+                    value={form.title}
+                    onChange={(e) => setForm(p => ({ ...p, title: e.target.value }))}
+                    className={`w-full px-4 py-3 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 border ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className={`text-xs font-bold uppercase tracking-wider ${amountError ? 'text-red-500' : 'text-slate-400'}`}>Importo €{amountError ? ' — obbligatorio' : ''}</label>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0.00"
+                      value={form.amount}
+                      onChange={(e) => { setAmountError(false); setForm(p => ({ ...p, amount: e.target.value })); }}
+                      className={`w-full px-4 py-3 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 border ${amountError ? 'border-red-400 focus:ring-red-400/20' : 'focus:ring-primary/20 ' + (darkMode ? 'border-slate-700' : 'border-slate-100')} ${darkMode ? 'bg-slate-800 text-white placeholder:text-slate-600' : 'bg-slate-50 text-slate-900'}`}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Data</label>
+                    <input
+                      type="date"
+                      value={form.date}
+                      onChange={(e) => setForm(p => ({ ...p, date: e.target.value }))}
+                      className={`w-full px-4 py-3 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 border ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Categoria</label>
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map(c => (
+                      <button
+                        key={c.value}
+                        type="button"
+                        onClick={() => setForm(p => ({ ...p, category: c.value }))}
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 ${form.category === c.value ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500')}`}
+                      >
+                        {c.emoji} {c.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSave}
+                className="w-full py-4 rounded-2xl font-bold bg-primary text-white shadow-xl shadow-primary/30 active:scale-[0.98] transition-all"
+              >
+                Salva Spesa
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+const SearchOverlay = ({ documents, onClose, onSelectDoc, darkMode }: { documents: Document[], onClose: () => void, onSelectDoc: (doc: Document) => void, darkMode?: boolean }) => {
+  const [query, setQuery] = React.useState('');
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    setTimeout(() => inputRef.current?.focus(), 80);
+  }, []);
+
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return documents.filter(d =>
+      (d.title ?? '').toLowerCase().includes(q) ||
+      (d.client ?? '').toLowerCase().includes(q) ||
+      (d.category ?? '').toLowerCase().includes(q) ||
+      String(d.amount).includes(q)
+    );
+  }, [documents, query]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 24 }}
+      transition={{ type: 'spring', stiffness: 320, damping: 30 }}
+      className={`fixed inset-0 z-[60] flex flex-col ${darkMode ? 'bg-slate-950' : 'bg-slate-50'}`}
+    >
+      {/* Header */}
+      <div className={`flex items-center gap-3 px-4 pt-14 pb-3 border-b ${darkMode ? 'border-slate-800' : 'border-slate-100'}`}>
+        <button
+          type="button"
+          onClick={onClose}
+          className={`p-2 rounded-full transition-all active:scale-90 shrink-0 ${darkMode ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-100'}`}
+        >
+          <ArrowLeft size={22} />
+        </button>
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder="Cerca fatture e spese..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            className={`w-full pl-9 pr-9 py-2.5 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 text-white placeholder:text-slate-500' : 'bg-white text-slate-900 placeholder:text-slate-400 border border-slate-200'}`}
+          />
+          {query.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+            >
+              <Plus className="rotate-45" size={17} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Results */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2 pb-24">
+        {query.trim() === '' ? (
+          <div className="py-16 text-center space-y-2">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${darkMode ? 'bg-slate-800 text-slate-600' : 'bg-slate-100 text-slate-300'}`}>
+              <Search size={28} />
+            </div>
+            <p className={`text-sm font-bold ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Inizia a digitare per cercare</p>
+          </div>
+        ) : results.length > 0 ? (
+          <>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 pb-1">
+              {results.length} risultat{results.length === 1 ? 'o' : 'i'}
+            </p>
+            {results.map((doc) => (
+              <button
+                key={doc.id}
+                type="button"
+                onClick={() => onSelectDoc(doc)}
+                className={`w-full p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] text-left ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-md'}`}
+              >
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  doc.type === 'invoice'
+                    ? (darkMode ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600')
+                    : (darkMode ? 'bg-red-500/10 text-red-500' : 'bg-red-50 text-red-600')
+                }`}>
+                  {doc.type === 'invoice' ? <FileText size={18} /> : <FileEdit size={18} />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start mb-0.5">
+                    <h3 className={`text-sm font-bold truncate pr-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>{doc.client || doc.title}</h3>
+                    <p className={`text-sm font-bold shrink-0 ${doc.type === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>
+                      {doc.type === 'expense' ? '-' : '+'}€{doc.amount.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-medium text-slate-400">
+                      {new Date(doc.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                    {doc.category && (
+                      <span className="text-[10px] font-medium text-slate-400">· {doc.category}</span>
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </>
+        ) : (
+          <div className="py-16 text-center space-y-2">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${darkMode ? 'bg-slate-800 text-slate-600' : 'bg-slate-100 text-slate-300'}`}>
+              <Search size={28} />
+            </div>
+            <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-700'}`}>Nessun risultato per "{query}"</p>
+            <p className="text-xs text-slate-400">Prova con un termine diverso</p>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
 const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, accountant, darkMode, key }: { documents: Document[], onAddDocument: (doc: Document) => void, onDeleteDocument: (id: string) => void, onUpdateDocument: (doc: Document) => void, accountant: Accountant, darkMode?: boolean, key?: string }) => {
   const [isAccountantOpen, setIsAccountantOpen] = useState(false);
   const [isChoiceOpen, setIsChoiceOpen] = useState(false);
@@ -775,6 +1056,17 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const [isExpenseOpen, setIsExpenseOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isScanOpen, setIsScanOpen] = useState(false);
+
+  useEffect(() => {
+    if (documents.length > 0) {
+      const years = documents.map(d => new Date(d.date).getFullYear());
+      const maxYear = Math.max(...years);
+      setSelectedYear(maxYear);
+    }
+  }, [documents]);
   const [docToDelete, setDocToDelete] = useState<Document | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [docToEdit, setDocToEdit] = useState<Document | null>(null);
@@ -808,10 +1100,21 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const balance = totals.income - totals.expenses;
 
   const filteredDocuments = useMemo(() => {
-    if (filter === 'income') return yearDocuments.filter(d => d.type === 'invoice');
-    if (filter === 'expense') return yearDocuments.filter(d => d.type === 'expense');
-    return yearDocuments;
-  }, [yearDocuments, filter]);
+    const q = searchQuery.trim().toLowerCase();
+    // When searching, bypass year filter and search all documents
+    let docs = q ? documents : yearDocuments;
+    if (filter === 'income') docs = docs.filter(d => d.type === 'invoice');
+    if (filter === 'expense') docs = docs.filter(d => d.type === 'expense');
+    if (q) {
+      docs = docs.filter(d =>
+        (d.title ?? '').toLowerCase().includes(q) ||
+        (d.client ?? '').toLowerCase().includes(q) ||
+        (d.category ?? '').toLowerCase().includes(q) ||
+        String(d.amount).includes(q)
+      );
+    }
+    return docs;
+  }, [documents, yearDocuments, filter, searchQuery]);
 
   const container = {
     hidden: { opacity: 0 },
@@ -838,15 +1141,15 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
       animate="show"
       className="p-6 space-y-8 pb-24"
     >
-      {/* Search Bar - Moved from internal header */}
-      <motion.div variants={item} className="relative group">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-primary" size={18} />
-        <input 
-          type="text" 
-          placeholder="Cerca tra le fatture..." 
-          className={`w-full pl-10 pr-4 py-3 border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all hover:shadow-lg ${darkMode ? 'bg-slate-900 border-slate-800 text-white placeholder:text-slate-600 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 text-slate-900 placeholder:text-slate-400 hover:border-primary/20 hover:shadow-primary/5'}`}
-        />
-      </motion.div>
+      {/* Search Bar - tap to open overlay */}
+      <button
+        type="button"
+        onClick={() => setIsSearchOpen(true)}
+        className={`w-full flex items-center gap-3 pl-4 pr-4 py-3 border rounded-2xl text-sm text-left transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-600 hover:border-primary/30' : 'bg-white border-slate-100 text-slate-400 hover:border-primary/20'}`}
+      >
+        <Search size={18} className="shrink-0 text-slate-400" />
+        <span className="flex-1">Cerca fatture e spese...</span>
+      </button>
 
       {/* Accountant Card - Refined */}
       <motion.button 
@@ -868,28 +1171,34 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
         </div>
       </motion.button>
 
-      {/* Quick Actions Grid */}
-      <motion.div variants={item} className="space-y-4">
+      {/* Caricamento Rapido */}
+      <motion.div variants={item} className="space-y-3">
         <div className="flex items-center justify-between px-2">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Caricamento Rapido</span>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <button className={`flex flex-col items-start gap-4 p-5 border rounded-3xl transition-all group active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-emerald-500/40 hover:shadow-2xl hover:shadow-emerald-500/10' : 'bg-white border-slate-100 hover:border-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/5'}`}>
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform ${darkMode ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600'}`}>
-              <Camera size={24} />
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => setIsScanOpen(true)}
+            className={`p-5 rounded-3xl border flex flex-col items-center gap-3 transition-all active:scale-[0.96] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-emerald-500/40' : 'bg-white border-slate-100 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5'}`}
+          >
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+              <Camera size={22} />
             </div>
-            <div className="text-left">
-              <p className={`text-sm font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>Scansiona</p>
-              <p className="text-[10px] text-slate-400 font-medium">Foto scontrino</p>
+            <div className="text-center">
+              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Scansiona</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">Foto scontrino</p>
             </div>
           </button>
-          <button className={`flex flex-col items-start gap-4 p-5 border rounded-3xl transition-all group active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-blue-500/40 hover:shadow-2xl hover:shadow-blue-500/10' : 'bg-white border-slate-100 hover:border-blue-500/20 hover:shadow-xl hover:shadow-blue-500/5'}`}>
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform ${darkMode ? 'bg-blue-500/10 text-blue-500' : 'bg-blue-50 text-blue-600'}`}>
-              <Image size={24} />
+          <button
+            onClick={() => {}}
+            className={`p-5 rounded-3xl border flex flex-col items-center gap-3 transition-all active:scale-[0.96] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5'}`}
+          >
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${darkMode ? 'bg-primary/10 text-primary' : 'bg-primary/5 text-primary'}`}>
+              <Image size={22} />
             </div>
-            <div className="text-left">
-              <p className={`text-sm font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>Importa</p>
-              <p className="text-[10px] text-slate-400 font-medium">Da file o email</p>
+            <div className="text-center">
+              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Importa</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">Da file o email</p>
             </div>
           </button>
         </div>
@@ -965,14 +1274,16 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
       <motion.div variants={item} className="space-y-4">
         <div className="flex items-center justify-between px-2">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-            {filter === 'all' ? 'Cronologia Completa' : filter === 'income' ? 'Fatture Clienti' : 'Spese e Uscite'}
+            {searchQuery.trim()
+              ? `${filteredDocuments.length} risultat${filteredDocuments.length === 1 ? 'o' : 'i'} per "${searchQuery}"`
+              : filter === 'all' ? 'Cronologia Completa' : filter === 'income' ? 'Fatture Clienti' : 'Spese e Uscite'}
           </span>
-          {filter !== 'all' && (
-            <button 
-              onClick={() => setFilter('all')}
+          {(filter !== 'all' || searchQuery.trim()) && (
+            <button
+              onClick={() => { setFilter('all'); setSearchQuery(''); }}
               className="text-[11px] font-bold text-primary uppercase tracking-wider active:scale-90 transition-all hover:drop-shadow-[0_0_4px_rgba(59,130,246,0.3)]"
             >
-              Reset Filtro
+              Reset
             </button>
           )}
         </div>
@@ -986,39 +1297,45 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                 onClick={() => setSelectedDoc(doc)}
                 className={`w-full p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-xl text-left ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 ${
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                   doc.type === 'invoice'
                   ? (darkMode ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600')
                   : (darkMode ? 'bg-red-500/10 text-red-500' : 'bg-red-50 text-red-600')
                 }`}>
-                  {doc.type === 'invoice' ? <ArrowUpDown className="rotate-180" size={20} /> : <ArrowUpDown size={20} />}
+                  {doc.type === 'invoice' ? <FileText size={18} /> : <FileEdit size={18} />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-0.5">
                     <h3 className={`text-sm font-bold truncate pr-2 transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>{doc.client || doc.title}</h3>
-                    <p className={`text-sm font-bold shrink-0 transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                    <p className={`text-sm font-bold shrink-0 ${doc.type === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>
                       {doc.type === 'expense' ? '-' : '+'}€{doc.amount.toLocaleString()}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-medium text-slate-400">
-                      {new Date(doc.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
+                      {new Date(doc.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
-                    <div className={`w-1 h-1 rounded-full ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${doc.status === 'paid' ? 'text-emerald-500' : 'text-slate-400'}`}>
-                      {doc.status === 'paid' ? 'Saldato' : doc.status}
-                    </span>
+                    {doc.status === 'paid' && (
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">· Saldato</span>
+                    )}
+                    {doc.category && (
+                      <span className="text-[10px] font-medium text-slate-400">· {doc.category}</span>
+                    )}
                   </div>
                 </div>
-                <ChevronRight size={16} className="text-slate-300 shrink-0" />
               </motion.button>
             ))
           ) : (
             <div className="py-12 text-center space-y-2">
               <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto transition-colors ${darkMode ? 'bg-slate-900 text-slate-700' : 'bg-slate-50 text-slate-300'}`}>
-                <FileText size={32} />
+                {searchQuery.trim() ? <Search size={32} /> : <FileText size={32} />}
               </div>
-              <p className="text-sm font-medium text-slate-500">Nessun documento trovato per questo filtro</p>
+              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-700'}`}>
+                {searchQuery.trim() ? `Nessun risultato per "${searchQuery}"` : 'Nessun documento'}
+              </p>
+              <p className="text-xs text-slate-400">
+                {searchQuery.trim() ? 'Prova con un termine diverso' : 'Aggiungi la tua prima fattura o spesa'}
+              </p>
             </div>
           )}
         </div>
@@ -1208,6 +1525,25 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
           </div>
         )}
       </AnimatePresence>
+
+      {/* Search Overlay */}
+      <AnimatePresence>
+        {isSearchOpen && (
+          <SearchOverlay
+            documents={documents}
+            onClose={() => setIsSearchOpen(false)}
+            onSelectDoc={(doc) => { setIsSearchOpen(false); setSelectedDoc(doc); }}
+            darkMode={darkMode}
+          />
+        )}
+      </AnimatePresence>
+
+      <ScanReceiptModal
+        isOpen={isScanOpen}
+        onClose={() => setIsScanOpen(false)}
+        onSave={handleSaveDocument}
+        darkMode={darkMode}
+      />
     </motion.div>
   );
 };
