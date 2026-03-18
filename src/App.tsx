@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   LayoutDashboard, 
   FileText, 
@@ -42,9 +42,116 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { MOCK_PROFILES, MOCK_DOCUMENTS, MOCK_DEADLINES, MOCK_ACCOUNTANT } from './constants';
+import { getDocuments, addDocument, getDeadlines, getProfiles, updateProfile } from './lib/db';
 import { Profile, Document, Deadline, Accountant } from './types';
 
 // --- Components ---
+
+const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode }: { isOpen: boolean, onClose: () => void, onSave: (doc: any) => void, darkMode?: boolean }) => {
+  const [formData, setFormData] = useState({
+    title: '',
+    amount: '',
+    date: new Date().toISOString().split('T')[0],
+    category: 'abbonamento',
+  });
+
+  const handleSubmit = () => {
+    if (!formData.amount) return;
+    onSave({
+      ...formData,
+      id: Math.random().toString(36).substr(2, 9),
+      amount: parseFloat(formData.amount),
+      type: 'expense',
+      status: 'paid',
+      title: formData.title || formData.category,
+    });
+    onClose();
+    setFormData({ title: '', amount: '', date: new Date().toISOString().split('T')[0], category: 'abbonamento' });
+  };
+
+  const categories = [
+    { value: 'abbonamento', label: 'Abbonamento', emoji: '📦' },
+    { value: 'materiale', label: 'Materiale', emoji: '🛠️' },
+    { value: 'software', label: 'Software', emoji: '💻' },
+    { value: 'formazione', label: 'Formazione', emoji: '📚' },
+    { value: 'altro', label: 'Altro', emoji: '📎' },
+  ];
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
+          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className={`relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+            <div className="p-8 space-y-6">
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Nuova Spesa</h2>
+                  <p className="text-sm text-slate-500">Registra un'uscita deducibile</p>
+                </div>
+                <button onClick={onClose} className={`p-2 rounded-full transition-all active:scale-90 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
+                  <Plus className="rotate-45" size={24} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Categoria</label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {categories.map(cat => (
+                      <button
+                        key={cat.value}
+                        onClick={() => setFormData({ ...formData, category: cat.value })}
+                        className={`flex flex-col items-center gap-1 p-2 rounded-xl border text-center transition-all active:scale-95 ${formData.category === cat.value ? 'bg-indigo-500 border-indigo-500 text-white' : (darkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-600')}`}
+                      >
+                        <span className="text-lg">{cat.emoji}</span>
+                        <span className="text-[9px] font-bold">{cat.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Descrizione (opzionale)</label>
+                  <div className="relative">
+                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="Es: Abbonamento Adobe Creative" className={`w-full pl-10 pr-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Importo</label>
+                    <div className="relative">
+                      <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                      <input type="number" value={formData.amount} onChange={e => setFormData({ ...formData, amount: e.target.value })} placeholder="0.00" className={`w-full pl-10 pr-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-bold ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`} />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Data</label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                      <input type="date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} className={`w-full pl-10 pr-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2 space-y-3">
+                <button onClick={handleSubmit} className="w-full bg-indigo-500 text-white py-4 rounded-2xl font-bold shadow-xl shadow-indigo-500/30 active:scale-[0.98] transition-all hover:bg-indigo-600">
+                  Registra Spesa
+                </button>
+                <button onClick={onClose} className={`w-full py-4 rounded-2xl font-bold active:scale-[0.98] transition-all ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
+                  Annulla
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
 
 const CreateInvoiceModal = ({ isOpen, onClose, onSave, darkMode }: { isOpen: boolean, onClose: () => void, onSave: (doc: any) => void, darkMode?: boolean }) => {
   const [formData, setFormData] = useState({
@@ -358,7 +465,7 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode }: { activeTab: string, s
 
 // --- Views ---
 
-const DashboardView = ({ profile, onProfileClick, income, paidPercentage, darkMode }: { profile: Profile, onProfileClick: () => void, income: number, paidPercentage: number, darkMode?: boolean, key?: string }) => {
+const DashboardView = ({ profile, onProfileClick, income, paidPercentage, documents, darkMode }: { profile: Profile, onProfileClick: () => void, income: number, paidPercentage: number, documents: Document[], darkMode?: boolean, key?: string }) => {
   const displayYear = new Date().getFullYear();
   const today = new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -423,16 +530,16 @@ const DashboardView = ({ profile, onProfileClick, income, paidPercentage, darkMo
       <motion.div variants={item} className="grid grid-cols-2 gap-4">
         <div className={`rounded-2xl p-4 border transition-all hover:shadow-lg hover:shadow-primary/5 active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/30' : 'bg-white border-slate-100 hover:border-primary/20'} space-y-2`}>
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tasse Stimate</p>
-          <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€24,500</p>
+          <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{Math.round(income * 0.15).toLocaleString()}</p>
           <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-primary w-3/4 h-full" />
+            <div className="bg-primary h-full" style={{ width: '15%' }} />
           </div>
         </div>
         <div className={`rounded-2xl p-4 border transition-all hover:shadow-lg hover:shadow-emerald-500/5 active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-emerald-500/30' : 'bg-white border-slate-100 hover:border-emerald-500/20'} space-y-2`}>
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Netto Previsto</p>
-          <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€93,420</p>
+          <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{Math.round(income * 0.85).toLocaleString()}</p>
           <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-emerald-500 w-4/5 h-full" />
+            <div className="bg-emerald-500 h-full" style={{ width: '85%' }} />
           </div>
         </div>
       </motion.div>
@@ -452,23 +559,17 @@ const DashboardView = ({ profile, onProfileClick, income, paidPercentage, darkMo
         <div className="h-48 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
-              data={[
-                { name: '01', income: 4000, expenses: 2400, net: 1600 },
-                { name: '02', income: 3000, expenses: 1398, net: 1602 },
-                { name: '03', income: 2000, expenses: 9800, net: -7800 },
-                { name: '04', income: 2780, expenses: 3908, net: -1128 },
-                { name: '05', income: 1890, expenses: 4800, net: -2910 },
-                { name: '06', income: 2390, expenses: 3800, net: -1410 },
-                { name: '07', income: 3490, expenses: 4300, net: -810 },
-                { name: '08', income: 4000, expenses: 2400, net: 1600 },
-                { name: '09', income: 3000, expenses: 1398, net: 1602 },
-                { name: '10', income: 2000, expenses: 9800, net: -7800 },
-              ].map(d => ({
-                ...d,
-                income: (d.income / 10000) * income,
-                expenses: (d.expenses / 10000) * (income * 0.4),
-                net: (d.net / 10000) * (income * 0.6)
-              }))}
+              data={Array.from({ length: 12 }, (_, i) => {
+                const month = String(i + 1).padStart(2, '0');
+                const currentYear = new Date().getFullYear();
+                const monthDocs = documents.filter(d => {
+                  const date = new Date(d.date);
+                  return date.getFullYear() === currentYear && date.getMonth() === i;
+                });
+                const monthIncome = monthDocs.filter(d => d.type === 'invoice' && d.status === 'paid').reduce((s, d) => s + d.amount, 0);
+                const monthExpenses = monthDocs.filter(d => d.type === 'expense').reduce((s, d) => s + d.amount, 0);
+                return { name: month, income: monthIncome, expenses: monthExpenses, net: monthIncome - monthExpenses };
+              })}
               margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
             >
               <defs>
@@ -559,13 +660,15 @@ const DashboardView = ({ profile, onProfileClick, income, paidPercentage, darkMo
   );
 };
 
-const DocumentsView = ({ documents, setDocuments, darkMode, key }: { documents: Document[], setDocuments: React.Dispatch<React.SetStateAction<Document[]>>, darkMode?: boolean, key?: string }) => {
+const DocumentsView = ({ documents, onAddDocument, darkMode, key }: { documents: Document[], onAddDocument: (doc: Document) => void, darkMode?: boolean, key?: string }) => {
   const [isAccountantOpen, setIsAccountantOpen] = useState(false);
+  const [isChoiceOpen, setIsChoiceOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isExpenseOpen, setIsExpenseOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
 
   const handleSaveDocument = (newDoc: Document) => {
-    setDocuments(prev => [newDoc, ...prev]);
+    onAddDocument(newDoc);
   };
 
   const totals = useMemo(() => {
@@ -782,8 +885,8 @@ const DocumentsView = ({ documents, setDocuments, darkMode, key }: { documents: 
       {/* Floating Action Button - Fixed at bottom of view */}
       <motion.div variants={item} className="fixed bottom-24 left-0 right-0 px-6 py-4 pointer-events-none">
         <div className="max-w-md mx-auto flex justify-end">
-          <button 
-            onClick={() => setIsCreateOpen(true)}
+          <button
+            onClick={() => setIsChoiceOpen(true)}
             className="w-14 h-14 bg-primary rounded-full shadow-xl shadow-primary/30 flex items-center justify-center text-white active:scale-90 transition-all pointer-events-auto"
           >
             <Plus size={28} strokeWidth={2.5} />
@@ -798,9 +901,52 @@ const DocumentsView = ({ documents, setDocuments, darkMode, key }: { documents: 
         darkMode={darkMode}
       />
 
-      <CreateInvoiceModal 
-        isOpen={isCreateOpen} 
-        onClose={() => setIsCreateOpen(false)} 
+      {/* Choice Sheet */}
+      <AnimatePresence>
+        {isChoiceOpen && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsChoiceOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className={`relative w-full max-w-md rounded-t-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+              <div className="p-8 space-y-4">
+                <div className="space-y-1">
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Cosa vuoi aggiungere?</h2>
+                  <p className="text-sm text-slate-500">Scegli il tipo di documento</p>
+                </div>
+                <button onClick={() => { setIsChoiceOpen(false); setIsCreateOpen(true); }} className={`w-full p-5 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-lg ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}>
+                  <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
+                    <FileText size={22} />
+                  </div>
+                  <div className="text-left">
+                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Fattura</p>
+                    <p className="text-sm text-slate-500">Entrata da un cliente</p>
+                  </div>
+                  <ChevronRight size={18} className="ml-auto text-slate-400" />
+                </button>
+                <button onClick={() => { setIsChoiceOpen(false); setIsExpenseOpen(true); }} className={`w-full p-5 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-lg ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-indigo-500/40 hover:shadow-indigo-500/10' : 'bg-white border-slate-100 hover:border-indigo-500/20 hover:shadow-indigo-500/5'}`}>
+                  <div className="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                    <CreditCard size={22} />
+                  </div>
+                  <div className="text-left">
+                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Spesa</p>
+                    <p className="text-sm text-slate-500">Abbonamento, materiale, software…</p>
+                  </div>
+                  <ChevronRight size={18} className="ml-auto text-slate-400" />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <CreateInvoiceModal
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onSave={handleSaveDocument}
+        darkMode={darkMode}
+      />
+      <CreateExpenseModal
+        isOpen={isExpenseOpen}
+        onClose={() => setIsExpenseOpen(false)}
         onSave={handleSaveDocument}
         darkMode={darkMode}
       />
@@ -808,7 +954,7 @@ const DocumentsView = ({ documents, setDocuments, darkMode, key }: { documents: 
   );
 };
 
-const CalendarView = ({ darkMode, key }: { darkMode?: boolean, key?: string }) => {
+const CalendarView = ({ deadlines, darkMode, key }: { deadlines: Deadline[], darkMode?: boolean, key?: string }) => {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
 
@@ -818,9 +964,20 @@ const CalendarView = ({ darkMode, key }: { darkMode?: boolean, key?: string }) =
   ];
 
   const filteredDeadlines = useMemo(() => {
-    if (selectedMonth === null) return MOCK_DEADLINES;
-    return MOCK_DEADLINES.filter(d => new Date(d.date).getMonth() === selectedMonth);
-  }, [selectedMonth]);
+    if (selectedMonth === null) return deadlines;
+    return deadlines.filter(d => new Date(d.date).getMonth() === selectedMonth);
+  }, [selectedMonth, deadlines]);
+
+  const nextDeadline = useMemo(() => {
+    const today = new Date();
+    return deadlines
+      .filter(d => new Date(d.date) >= today)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] || null;
+  }, [deadlines]);
+
+  const daysUntilNext = nextDeadline
+    ? Math.ceil((new Date(nextDeadline.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+    : null;
 
   const container = {
     hidden: { opacity: 0 },
@@ -870,11 +1027,11 @@ const CalendarView = ({ darkMode, key }: { darkMode?: boolean, key?: string }) =
         <motion.div variants={container} className="space-y-6">
           <motion.div variants={item} className="flex items-center justify-between px-2">
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Seleziona Mese</span>
-            <span className={`text-sm font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>2024</span>
+            <span className={`text-sm font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>{new Date().getFullYear()}</span>
           </motion.div>
           <div className="grid grid-cols-3 gap-3">
             {months.map((month, index) => {
-              const hasDeadlines = MOCK_DEADLINES.some(d => new Date(d.date).getMonth() === index);
+              const hasDeadlines = deadlines.some(d => new Date(d.date).getMonth() === index);
               const isSelected = selectedMonth === index;
               
               return (
@@ -906,27 +1063,33 @@ const CalendarView = ({ darkMode, key }: { darkMode?: boolean, key?: string }) =
       ) : (
         <>
           {/* Next Deadline Hero */}
-          <motion.div 
-            variants={item}
-            className="relative p-6 bg-primary rounded-3xl text-white overflow-hidden shadow-xl shadow-primary/20"
-          >
-            <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
-            <div className="relative z-10 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
-                  <AlertCircle size={20} />
+          {nextDeadline && (
+            <motion.div
+              variants={item}
+              className="relative p-6 bg-primary rounded-3xl text-white overflow-hidden shadow-xl shadow-primary/20"
+            >
+              <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
+              <div className="relative z-10 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                    <AlertCircle size={20} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Prossima Scadenza</p>
+                    <p className="text-sm font-bold">
+                      {daysUntilNext === 0 ? 'Oggi!' : daysUntilNext === 1 ? 'Domani' : `Mancano ${daysUntilNext} giorni`}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Prossima Scadenza</p>
-                  <p className="text-sm font-bold">Mancano 2 giorni</p>
-                </div>
+                <h3 className="text-lg font-bold leading-tight">{nextDeadline.title}</h3>
+                {nextDeadline.amount && (
+                  <div className="pt-2">
+                    <p className="text-2xl font-bold">€{nextDeadline.amount.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</p>
+                  </div>
+                )}
               </div>
-              <h3 className="text-lg font-bold leading-tight">Versamento Contributi INPS</h3>
-              <div className="pt-2">
-                <p className="text-2xl font-bold">€1.240,00</p>
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
 
             {/* Deadlines List */}
             <motion.div variants={item} className="space-y-4">
@@ -1004,7 +1167,14 @@ const CalendarView = ({ darkMode, key }: { darkMode?: boolean, key?: string }) =
   );
 };
 
-const ProfileView = ({ activeProfile, onSwitchProfile, darkMode }: { activeProfile: Profile, onSwitchProfile: (p: Profile) => void, darkMode?: boolean, key?: string }) => {
+const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile, darkMode }: { activeProfile: Profile, profiles: Profile[], onSwitchProfile: (p: Profile) => void, onUpdateProfile: (p: Profile) => void, darkMode?: boolean, key?: string }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({ name: activeProfile.name, email: activeProfile.email, jobType: activeProfile.jobType, country: activeProfile.country, currency: activeProfile.currency });
+
+  const handleSaveEdit = () => {
+    onUpdateProfile({ ...activeProfile, ...editData });
+    setIsEditing(false);
+  };
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -1024,7 +1194,59 @@ const ProfileView = ({ activeProfile, onSwitchProfile, darkMode }: { activeProfi
   };
 
   return (
-    <motion.div 
+    <>
+    <AnimatePresence>
+      {isEditing && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsEditing(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
+          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className={`relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+            <div className="p-8 space-y-5">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Modifica Profilo</h2>
+                  <p className="text-sm text-slate-500">Aggiorna i tuoi dati personali</p>
+                </div>
+                <button onClick={() => setIsEditing(false)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
+              </div>
+              <div className="space-y-3">
+                {[
+                  { label: 'Nome', key: 'name', placeholder: 'Il tuo nome' },
+                  { label: 'Email', key: 'email', placeholder: 'La tua email' },
+                  { label: 'Tipo Lavoro', key: 'jobType', placeholder: 'Es. Freelance Designer' },
+                ].map(({ label, key, placeholder }) => (
+                  <div key={key} className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{label}</label>
+                    <input
+                      type="text"
+                      value={editData[key as keyof typeof editData]}
+                      onChange={e => setEditData({ ...editData, [key]: e.target.value })}
+                      placeholder={placeholder}
+                      className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`}
+                    />
+                  </div>
+                ))}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Paese</label>
+                    <select value={editData.country} onChange={e => setEditData({ ...editData, country: e.target.value as any })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`}>
+                      <option>Italy</option><option>USA</option><option>UK</option><option>Germany</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Valuta</label>
+                    <select value={editData.currency} onChange={e => setEditData({ ...editData, currency: e.target.value as any })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`}>
+                      <option>EUR</option><option>USD</option><option>GBP</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <button onClick={handleSaveEdit} className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">Salva Modifiche</button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+    <motion.div
       variants={container}
       initial="hidden"
       animate="show"
@@ -1035,7 +1257,7 @@ const ProfileView = ({ activeProfile, onSwitchProfile, darkMode }: { activeProfi
           <div className={`w-24 h-24 rounded-3xl border-4 shadow-xl overflow-hidden transition-all group-hover:shadow-primary/20 ${darkMode ? 'border-slate-800' : 'border-white'}`}>
             <img src={activeProfile.avatar} alt={activeProfile.name} className="w-full h-full object-cover" />
           </div>
-          <button className={`absolute -bottom-2 -right-2 w-8 h-8 bg-primary text-white rounded-xl flex items-center justify-center border-2 shadow-lg transition-all active:scale-90 hover:shadow-primary/40 ${darkMode ? 'border-slate-900' : 'border-white'}`}>
+          <button onClick={() => setIsEditing(true)} className={`absolute -bottom-2 -right-2 w-8 h-8 bg-primary text-white rounded-xl flex items-center justify-center border-2 shadow-lg transition-all active:scale-90 hover:shadow-primary/40 ${darkMode ? 'border-slate-900' : 'border-white'}`}>
             <FileEdit size={14} />
           </button>
         </div>
@@ -1053,21 +1275,21 @@ const ProfileView = ({ activeProfile, onSwitchProfile, darkMode }: { activeProfi
               <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 transition-colors ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}><Globe size={18} /></div>
               <span className={`text-sm font-semibold transition-colors ${darkMode ? 'text-slate-200' : 'text-slate-900'}`}>Paese</span>
             </div>
-            <span className="text-sm text-slate-400 flex items-center gap-1">{activeProfile.country} <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" /></span>
+            <span className="text-sm text-slate-400 flex items-center gap-1">{activeProfile.country}</span>
           </button>
           <button className={`w-full p-4 flex items-center justify-between border-b transition-all active:bg-slate-800/10 group ${darkMode ? 'border-slate-800 hover:bg-slate-800/50' : 'border-slate-50 hover:bg-slate-50'}`}>
             <div className="flex items-center gap-3">
               <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 transition-colors ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}><CreditCard size={18} /></div>
               <span className={`text-sm font-semibold transition-colors ${darkMode ? 'text-slate-200' : 'text-slate-900'}`}>Valuta</span>
             </div>
-            <span className="text-sm text-slate-400 flex items-center gap-1">{activeProfile.currency} <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" /></span>
+            <span className="text-sm text-slate-400 flex items-center gap-1">{activeProfile.currency}</span>
           </button>
           <button className={`w-full p-4 flex items-center justify-between transition-all active:bg-slate-800/10 group ${darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'}`}>
             <div className="flex items-center gap-3">
               <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 transition-colors ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}><Briefcase size={18} /></div>
               <span className={`text-sm font-semibold transition-colors ${darkMode ? 'text-slate-200' : 'text-slate-900'}`}>Tipo Lavoro</span>
             </div>
-            <span className="text-sm text-slate-400 flex items-center gap-1">{activeProfile.jobType} <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" /></span>
+            <span className="text-sm text-slate-400 flex items-center gap-1">{activeProfile.jobType}</span>
           </button>
         </div>
       </motion.div>
@@ -1075,7 +1297,7 @@ const ProfileView = ({ activeProfile, onSwitchProfile, darkMode }: { activeProfi
       <motion.div variants={item} className="space-y-4">
         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-2">Cambia Profilo</h3>
         <div className="space-y-3">
-          {MOCK_PROFILES.map((p) => (
+          {profiles.map((p) => (
             <button
               key={p.id}
               onClick={() => onSwitchProfile(p)}
@@ -1100,6 +1322,7 @@ const ProfileView = ({ activeProfile, onSwitchProfile, darkMode }: { activeProfi
         </div>
       </motion.div>
     </motion.div>
+    </>
   );
 };
 
@@ -1461,8 +1684,48 @@ export default function App() {
   const [activeProfile, setActiveProfile] = useState<Profile>(MOCK_PROFILES[0]);
   const [isProfilePage, setIsProfilePage] = useState(false);
   const [isSettingsPage, setIsSettingsPage] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [documents, setDocuments] = useState<Document[]>(MOCK_DOCUMENTS);
+  const [darkMode, setDarkMode] = useState<boolean>(() => JSON.parse(localStorage.getItem('darkMode') || 'false'));
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [deadlines, setDeadlines] = useState<Deadline[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+
+  useEffect(() => {
+    getDocuments()
+      .then(setDocuments)
+      .catch(() => setDocuments(MOCK_DOCUMENTS));
+    getDeadlines()
+      .then(setDeadlines)
+      .catch(() => setDeadlines(MOCK_DEADLINES));
+    getProfiles()
+      .then((data) => {
+        if (data.length > 0) {
+          setProfiles(data);
+          const savedId = localStorage.getItem('activeProfileId');
+          const saved = data.find(p => p.id === savedId);
+          setActiveProfile(saved || data[0]);
+        } else {
+          setProfiles(MOCK_PROFILES);
+        }
+      })
+      .catch(() => setProfiles(MOCK_PROFILES));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+  }, [darkMode]);
+
+  useEffect(() => {
+    localStorage.setItem('activeProfileId', activeProfile.id);
+  }, [activeProfile]);
+
+  const handleAddDocument = async (doc: Document) => {
+    setDocuments(prev => [doc, ...prev]);
+    try {
+      await addDocument(doc);
+    } catch {
+      // errore silenzioso
+    }
+  };
 
   const totalIncome = useMemo(() => {
     const currentYear = new Date().getFullYear();
@@ -1541,10 +1804,16 @@ export default function App() {
       <main className={`flex-1 overflow-y-auto ${darkMode ? 'bg-slate-950' : ''}`}>
         <AnimatePresence mode="wait">
           {isProfilePage ? (
-            <ProfileView 
-              key="profile" 
-              activeProfile={activeProfile} 
-              onSwitchProfile={handleSwitchProfile} 
+            <ProfileView
+              key="profile"
+              activeProfile={activeProfile}
+              profiles={profiles}
+              onSwitchProfile={handleSwitchProfile}
+              onUpdateProfile={async (p) => {
+                setActiveProfile(p);
+                setProfiles(prev => prev.map(x => x.id === p.id ? p : x));
+                try { await updateProfile(p); } catch {}
+              }}
               darkMode={darkMode}
             />
           ) : isSettingsPage ? (
@@ -1555,9 +1824,9 @@ export default function App() {
             />
           ) : (
                 <>
-                  {activeTab === 'home' && <DashboardView key="home" profile={activeProfile} onProfileClick={handleProfileClick} income={totalIncome} paidPercentage={paidPercentage} darkMode={darkMode} />}
-                  {activeTab === 'docs' && <DocumentsView key="docs" documents={documents} setDocuments={setDocuments} darkMode={darkMode} />}
-                  {activeTab === 'calendar' && <CalendarView key="calendar" darkMode={darkMode} />}
+                  {activeTab === 'home' && <DashboardView key="home" profile={activeProfile} onProfileClick={handleProfileClick} income={totalIncome} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} />}
+                  {activeTab === 'docs' && <DocumentsView key="docs" documents={documents} onAddDocument={handleAddDocument} darkMode={darkMode} />}
+                  {activeTab === 'calendar' && <CalendarView key="calendar" deadlines={deadlines} darkMode={darkMode} />}
                   {activeTab === 'menu' && <MenuView key="menu" activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} darkMode={darkMode} />}
                 </>
           )}

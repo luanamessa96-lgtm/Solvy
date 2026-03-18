@@ -19,6 +19,7 @@ export interface Document {
   date: string;
   status: 'paid' | 'pending' | 'overdue' | 'draft';
   client?: string;
+  category?: string;
 }
 
 export interface Deadline {
