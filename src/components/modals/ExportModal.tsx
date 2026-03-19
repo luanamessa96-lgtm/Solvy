@@ -161,63 +161,171 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
   const exportPDF = async () => {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
+    const pageW = 210;
+    const margin = 14;
+    const contentW = pageW - margin * 2;
 
+    const invoices = filteredDocs.filter(d => d.type === 'invoice');
+    const expenses = filteredDocs.filter(d => d.type === 'expense');
+
+    // ── Cover / header ──────────────────────────────────────────
+    doc.setFillColor(79, 70, 229);
+    doc.rect(0, 0, pageW, 38, 'F');
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
-    doc.setTextColor(30, 30, 30);
-    doc.text(profile.name, 14, 20);
-
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255);
+    doc.text(profile.name, margin, 16);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor(120, 120, 120);
-    doc.text(profile.email, 14, 27);
-    doc.text(periodLabel, 14, 33);
+    doc.setFontSize(9);
+    doc.setTextColor(200, 200, 255);
+    doc.text(`${profile.email}   |   ${periodLabel}`, margin, 23);
+    if (profile.piva) doc.text(`P.IVA ${profile.piva}`, margin, 29);
 
-    doc.setDrawColor(220, 220, 220);
-    doc.line(14, 37, 196, 37);
+    let y = 48;
 
-    const rows = filteredDocs.map(d => [
-      new Date(d.date).toLocaleDateString('it-IT'),
-      d.type === 'invoice' ? 'Fattura' : 'Spesa',
-      d.client || d.title,
-      d.title,
-      `€${d.amount.toFixed(2)}`,
-      d.status === 'paid' ? 'Saldato' : 'In attesa',
-    ]);
+    // ── Helper ───────────────────────────────────────────────────
+    const checkPage = (needed: number) => {
+      if (y + needed > 280) { doc.addPage(); y = 14; }
+    };
 
-    autoTable(doc, {
-      startY: 41,
-      head: [['Data', 'Tipo', 'Cliente / Descrizione', 'Dettaglio', 'Importo', 'Stato']],
-      body: rows,
-      styles: { fontSize: 9, cellPadding: 3 },
-      headStyles: { fillColor: [79, 70, 229], textColor: 255, fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [248, 248, 255] },
-      columnStyles: {
-        0: { cellWidth: 22 },
-        1: { cellWidth: 18 },
-        4: { cellWidth: 22, halign: 'right' },
-        5: { cellWidth: 22 },
-      },
-    });
+    const sectionTitle = (title: string) => {
+      checkPage(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(79, 70, 229);
+      doc.text(title, margin, y);
+      doc.setDrawColor(79, 70, 229);
+      doc.setLineWidth(0.4);
+      doc.line(margin, y + 2, margin + contentW, y + 2);
+      y += 8;
+    };
 
-    const finalY: number = doc.lastAutoTable?.finalY ?? 41;
-    const summaryY = finalY + 8;
+    const labelValue = (label: string, value: string, x: number, col: number) => {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7.5);
+      doc.setTextColor(150, 150, 150);
+      doc.text(label.toUpperCase(), x, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(30, 30, 30);
+      const maxW = col === 1 ? contentW / 2 - 4 : contentW / 2 - 4;
+      doc.text(value || '—', x, y + 5, { maxWidth: maxW });
+    };
 
+    // ── Fatture ──────────────────────────────────────────────────
+    if (invoices.length > 0) {
+      sectionTitle(`Fatture (${invoices.length})`);
+
+      for (const inv of invoices) {
+        const blockH = 52;
+        checkPage(blockH + 4);
+
+        // Card background
+        doc.setFillColor(250, 250, 255);
+        doc.setDrawColor(220, 220, 240);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(margin, y, contentW, blockH, 2, 2, 'FD');
+
+        // Status badge
+        const isPaid = inv.status === 'paid';
+        doc.setFillColor(isPaid ? 5 : 245, isPaid ? 150 : 158, isPaid ? 105 : 11);
+        doc.roundedRect(margin + contentW - 28, y + 3, 26, 7, 1.5, 1.5, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7);
+        doc.setTextColor(255, 255, 255);
+        doc.text(isPaid ? 'SALDATO' : 'IN ATTESA', margin + contentW - 27, y + 7.8);
+
+        // Invoice number + date
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(30, 30, 30);
+        doc.text(`Fattura ${inv.invoiceNumber || '—'}`, margin + 3, y + 9);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+        doc.setTextColor(120, 120, 120);
+        doc.text(new Date(inv.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' }), margin + 3, y + 15);
+
+        // Divider
+        doc.setDrawColor(220, 220, 240);
+        doc.line(margin + 3, y + 18, margin + contentW - 3, y + 18);
+
+        const row1Y = y + 23;
+        const row2Y = y + 35;
+        const col2X = margin + contentW / 2;
+
+        labelValue('Cliente', inv.client || '', margin + 3, 1);
+        labelValue('Descrizione', inv.title, col2X, 2);
+        y = row1Y;
+
+        y = row2Y;
+        labelValue('Indirizzo', inv.clientAddress || '', margin + 3, 1);
+        labelValue('P.IVA / CF Cliente', [inv.clientPiva, inv.clientCf].filter(Boolean).join(' · ') || '', col2X, 2);
+
+        // Amount
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(13);
+        doc.setTextColor(79, 70, 229);
+        doc.text(formatAmount(inv.amount), margin + contentW - 3, y + 10, { align: 'right' });
+
+        y += blockH - 10 + 6;
+      }
+      y += 4;
+    }
+
+    // ── Spese ────────────────────────────────────────────────────
+    if (expenses.length > 0) {
+      checkPage(20);
+      sectionTitle(`Spese (${expenses.length})`);
+
+      const expRows = expenses.map(d => [
+        new Date(d.date).toLocaleDateString('it-IT'),
+        d.category || '—',
+        d.title,
+        formatAmount(d.amount),
+      ]);
+
+      autoTable(doc, {
+        startY: y,
+        head: [['Data', 'Categoria', 'Descrizione', 'Importo']],
+        body: expRows,
+        styles: { fontSize: 9, cellPadding: 3 },
+        headStyles: { fillColor: [220, 38, 38], textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [255, 250, 250] },
+        columnStyles: {
+          0: { cellWidth: 25 },
+          3: { cellWidth: 28, halign: 'right' },
+        },
+        margin: { left: margin, right: margin },
+      });
+
+      y = (doc.lastAutoTable?.finalY ?? y) + 6;
+    }
+
+    // ── Riepilogo finale ─────────────────────────────────────────
+    checkPage(30);
+    doc.setFillColor(245, 245, 255);
+    doc.setDrawColor(200, 200, 230);
+    doc.roundedRect(margin, y, contentW, docFilter === 'all' ? 26 : 14, 2, 2, 'FD');
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-
+    doc.setFontSize(9);
+    let ry = y + 8;
     if (docFilter !== 'expense') {
       doc.setTextColor(5, 150, 105);
-      doc.text(`Totale Entrate: ${formatAmount(totals.income)}`, 14, summaryY);
+      doc.text('Totale Entrate', margin + 4, ry);
+      doc.text(formatAmount(totals.income), margin + contentW - 4, ry, { align: 'right' });
+      ry += 7;
     }
     if (docFilter !== 'invoice') {
       doc.setTextColor(220, 38, 38);
-      doc.text(`Totale Uscite: ${formatAmount(totals.expenses)}`, 14, summaryY + (docFilter === 'all' ? 7 : 0));
+      doc.text('Totale Uscite', margin + 4, ry);
+      doc.text(formatAmount(totals.expenses), margin + contentW - 4, ry, { align: 'right' });
+      ry += 7;
     }
     if (docFilter === 'all') {
       const net = totals.income - totals.expenses;
       doc.setTextColor(net >= 0 ? 5 : 220, net >= 0 ? 150 : 38, net >= 0 ? 105 : 38);
-      doc.text(`Bilancio Netto: ${formatAmount(net)}`, 14, summaryY + 14);
+      doc.text('Bilancio Netto', margin + 4, ry);
+      doc.text(formatAmount(net), margin + contentW - 4, ry, { align: 'right' });
     }
 
     const blob = doc.output('blob');
