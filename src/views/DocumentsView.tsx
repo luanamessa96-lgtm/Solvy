@@ -28,6 +28,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isExpenseOpen, setIsExpenseOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'pending' | 'overdue'>('all');
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -71,9 +72,10 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
     let docs = q ? documents : yearDocuments;
     if (filter === 'income') docs = docs.filter(d => d.type === 'invoice');
     if (filter === 'expense') docs = docs.filter(d => d.type === 'expense');
+    if (statusFilter !== 'all') docs = docs.filter(d => d.status === statusFilter);
     if (q) docs = docs.filter(d => (d.title ?? '').toLowerCase().includes(q) || (d.client ?? '').toLowerCase().includes(q) || (d.category ?? '').toLowerCase().includes(q) || String(d.amount).includes(q));
     return docs;
-  }, [documents, yearDocuments, filter, searchQuery]);
+  }, [documents, yearDocuments, filter, statusFilter, searchQuery]);
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.05 } } };
   const item = { hidden: { opacity: 0, y: 15, scale: 0.98 }, show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 260, damping: 20 } } };
@@ -140,13 +142,28 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
         </div>
       </motion.div>
 
+      {filter === 'income' && (
+        <motion.div variants={item} className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          {([
+            { value: 'all', label: 'Tutte' },
+            { value: 'paid', label: 'Saldate' },
+            { value: 'pending', label: 'In attesa' },
+            { value: 'overdue', label: 'Scadute' },
+          ] as const).map(s => (
+            <button key={s.value} onClick={() => setStatusFilter(s.value)} className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 ${statusFilter === s.value ? (s.value === 'paid' ? 'bg-emerald-500 text-white' : s.value === 'overdue' ? 'bg-red-500 text-white' : s.value === 'pending' ? 'bg-amber-500 text-white' : 'bg-primary text-white') : (darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500')}`}>
+              {s.label}
+            </button>
+          ))}
+        </motion.div>
+      )}
+
       <motion.div variants={item} className="space-y-4">
         <div className="flex items-center justify-between px-2">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
             {searchQuery.trim() ? `${filteredDocuments.length} risultat${filteredDocuments.length === 1 ? 'o' : 'i'} per "${searchQuery}"` : filter === 'all' ? 'Cronologia Completa' : filter === 'income' ? 'Fatture Clienti' : 'Spese e Uscite'}
           </span>
-          {(filter !== 'all' || searchQuery.trim()) && (
-            <button onClick={() => { setFilter('all'); setSearchQuery(''); }} className="text-[11px] font-bold text-primary uppercase tracking-wider active:scale-90 transition-all hover:drop-shadow-[0_0_4px_rgba(59,130,246,0.3)]">Reset</button>
+          {(filter !== 'all' || statusFilter !== 'all' || searchQuery.trim()) && (
+            <button onClick={() => { setFilter('all'); setStatusFilter('all'); setSearchQuery(''); }} className="text-[11px] font-bold text-primary uppercase tracking-wider active:scale-90 transition-all hover:drop-shadow-[0_0_4px_rgba(59,130,246,0.3)]">Reset</button>
           )}
         </div>
         <div className="space-y-3">
@@ -162,7 +179,9 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-medium text-slate-400">{new Date(doc.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                  {doc.status === 'paid' && <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">· Saldato</span>}
+                  {doc.type === 'invoice' && doc.status === 'paid' && <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">· Saldato</span>}
+                  {doc.type === 'invoice' && doc.status === 'pending' && <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500">· In attesa</span>}
+                  {doc.type === 'invoice' && doc.status === 'overdue' && <span className="text-[10px] font-bold uppercase tracking-wider text-red-500">· Scaduta</span>}
                   {doc.category && <span className="text-[10px] font-medium text-slate-400">· {doc.category}</span>}
                 </div>
               </div>
