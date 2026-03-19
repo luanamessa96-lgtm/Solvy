@@ -1,12 +1,13 @@
 import { useMemo } from 'react';
 import { motion } from 'motion/react';
-import { TrendingUp, AlertTriangle, AlertCircle, Info } from 'lucide-react';
+import { TrendingUp, AlertTriangle, AlertCircle, Info, FileText } from 'lucide-react';
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Profile, Document } from '../types';
 
 interface DashboardViewProps {
   profile: Profile;
   onProfileClick: () => void;
+  onAddDocumentClick?: () => void;
   income: number;
   expenses: number;
   paidPercentage: number;
@@ -55,7 +56,7 @@ function fmt(n: number) {
   return `€ ${Math.round(n).toLocaleString('it-IT')}`;
 }
 
-const DashboardView = ({ profile, income, expenses, paidPercentage, documents, darkMode, onProfileClick }: DashboardViewProps) => {
+const DashboardView = ({ profile, income, expenses, paidPercentage, documents, darkMode, onProfileClick, onAddDocumentClick }: DashboardViewProps) => {
   const displayYear = new Date().getFullYear();
 
   const container = {
@@ -134,6 +135,23 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
         <h2 className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>Ciao, {profile.name.split(' ')[0]}!</h2>
         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{profile.country}</p>
       </motion.div>
+
+      {documents.length === 0 && (
+        <motion.div variants={item} className={`rounded-3xl p-6 border text-center space-y-4 ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto ${darkMode ? 'bg-slate-800 text-slate-600' : 'bg-slate-50 text-slate-300'}`}>
+            <FileText size={32} />
+          </div>
+          <div className="space-y-1">
+            <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>Nessun documento ancora</p>
+            <p className="text-xs text-slate-400">Aggiungi la tua prima fattura per vedere le statistiche</p>
+          </div>
+          {onAddDocumentClick && (
+            <button onClick={onAddDocumentClick} className="mx-auto flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/30 active:scale-95 transition-all">
+              <span>+ Aggiungi fattura</span>
+            </button>
+          )}
+        </motion.div>
+      )}
 
       <motion.div variants={item} className={`rounded-3xl p-6 shadow-sm border transition-all ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} space-y-4`}>
         <div className="flex justify-between items-center">

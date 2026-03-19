@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Mail, Camera, ChevronRight, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus, Download } from 'lucide-react';
+import { Search, Mail, Camera, ChevronRight, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus, Download, Copy } from 'lucide-react';
 
 import { Document, Accountant, Profile } from '../types';
 import CreateInvoiceModal from '../components/modals/CreateInvoiceModal';
@@ -168,12 +168,32 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
               </div>
             </motion.button>
           )) : (
-            <div className="py-12 text-center space-y-2">
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto transition-colors ${darkMode ? 'bg-slate-900 text-slate-700' : 'bg-slate-50 text-slate-300'}`}>
-                {searchQuery.trim() ? <Search size={32} /> : <FileText size={32} />}
-              </div>
-              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-700'}`}>{searchQuery.trim() ? `Nessun risultato per "${searchQuery}"` : 'Nessun documento'}</p>
-              <p className="text-xs text-slate-400">{searchQuery.trim() ? 'Prova con un termine diverso' : 'Aggiungi la tua prima fattura o spesa'}</p>
+            <div className="py-16 text-center space-y-4">
+              {searchQuery.trim() ? (
+                <>
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${darkMode ? 'bg-slate-900 text-slate-700' : 'bg-slate-50 text-slate-300'}`}>
+                    <Search size={32} />
+                  </div>
+                  <div className="space-y-1">
+                    <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-700'}`}>Nessun risultato per "{searchQuery}"</p>
+                    <p className="text-xs text-slate-400">Prova con un termine diverso</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto ${darkMode ? 'bg-slate-900 text-slate-700' : 'bg-slate-50 text-slate-300'}`}>
+                    <FileText size={36} />
+                  </div>
+                  <div className="space-y-1">
+                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>Nessun documento</p>
+                    <p className="text-xs text-slate-400">Aggiungi la tua prima fattura o spesa</p>
+                  </div>
+                  <button onClick={() => setIsChoiceOpen(true)} className="mx-auto flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/30 active:scale-95 transition-all">
+                    <Plus size={16} />
+                    Aggiungi documento
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -242,6 +262,24 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   <button onClick={() => { generateInvoicePDF(selectedDoc, profile); setSelectedDoc(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-primary/10 border-primary/20' : 'bg-primary/5 border-primary/10'}`}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary text-white"><Download size={18} /></div>
                     <span className="font-bold text-primary">Scarica PDF Fattura</span>
+                  </button>
+                )}
+                {selectedDoc.type === 'invoice' && (
+                  <button onClick={() => {
+                    const year = new Date().getFullYear();
+                    const count = documents.filter(d => d.type === 'invoice' && new Date(d.date).getFullYear() === year).length + 1;
+                    const newDoc: Document = {
+                      ...selectedDoc,
+                      id: Math.random().toString(36).substr(2, 9),
+                      date: new Date().toISOString().split('T')[0],
+                      status: 'pending',
+                      invoiceNumber: `${String(count).padStart(3, '0')}/${year}`,
+                    };
+                    onAddDocument(newDoc);
+                    setSelectedDoc(null);
+                  }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${darkMode ? 'bg-slate-700 text-amber-400' : 'bg-amber-50 text-amber-500'}`}><Copy size={18} /></div>
+                    <span className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Duplica Fattura</span>
                   </button>
                 )}
                 <button onClick={() => { setDocToEdit({ ...selectedDoc }); setSelectedDoc(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>

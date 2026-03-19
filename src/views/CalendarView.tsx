@@ -153,9 +153,16 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   <ChevronRight size={16} className="text-slate-300 shrink-0" />
                 </motion.button>
               )) : (
-                <div className="py-12 text-center space-y-2">
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto transition-colors ${darkMode ? 'bg-slate-900 text-slate-700' : 'bg-slate-50 text-slate-300'}`}><Calendar size={32} /></div>
-                  <p className="text-sm font-medium text-slate-500">Nessuna scadenza per questo mese</p>
+                <div className="py-16 text-center space-y-4">
+                  <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto ${darkMode ? 'bg-slate-900 text-slate-700' : 'bg-slate-50 text-slate-300'}`}><Calendar size={36} /></div>
+                  <div className="space-y-1">
+                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{selectedMonth !== null ? 'Nessuna scadenza questo mese' : 'Nessuna scadenza'}</p>
+                    <p className="text-xs text-slate-400">Aggiungi una scadenza fiscale o un pagamento</p>
+                  </div>
+                  <button onClick={() => setIsAddOpen(true)} className="mx-auto flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/30 active:scale-95 transition-all">
+                    <Plus size={16} />
+                    Aggiungi scadenza
+                  </button>
                 </div>
               )}
             </div>

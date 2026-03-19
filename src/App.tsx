@@ -45,11 +45,11 @@ export default function App() {
           const savedId = localStorage.getItem('activeProfileId');
           const profile = data.find(p => p.id === savedId) || data[0];
           setActiveProfile(profile);
-          getDocuments(profile.id).then(setDocuments).catch(() => setDocuments(MOCK_DOCUMENTS));
+          getDocuments(profile.id).then(docs => setDocuments(markOverdue(docs))).catch(() => setDocuments(MOCK_DOCUMENTS));
           getDeadlines(profile.id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
         } else {
           setProfiles(MOCK_PROFILES);
-          getDocuments(MOCK_PROFILES[0].id).then(setDocuments).catch(() => setDocuments(MOCK_DOCUMENTS));
+          getDocuments(MOCK_PROFILES[0].id).then(docs => setDocuments(markOverdue(docs))).catch(() => setDocuments(MOCK_DOCUMENTS));
           getDeadlines(MOCK_PROFILES[0].id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
         }
       })
@@ -62,6 +62,19 @@ export default function App() {
 
   useEffect(() => { localStorage.setItem('darkMode', JSON.stringify(darkMode)); }, [darkMode]);
   useEffect(() => { localStorage.setItem('activeProfileId', activeProfile.id); }, [activeProfile]);
+
+  const markOverdue = (docs: Document[]) => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return docs.map(d => {
+      if (d.type === 'invoice' && d.status === 'pending' && new Date(d.date) < thirtyDaysAgo) {
+        const updated = { ...d, status: 'overdue' as const };
+        updateDocument(updated).catch(() => {});
+        return updated;
+      }
+      return d;
+    });
+  };
 
   const handleAddDocument = async (doc: Document) => {
     setDocuments(prev => [doc, ...prev]);
@@ -146,7 +159,7 @@ export default function App() {
     setActiveProfile(p);
     resetSubPages();
     setActiveTab('home');
-    getDocuments(p.id).then(setDocuments).catch(() => setDocuments(MOCK_DOCUMENTS));
+    getDocuments(p.id).then(docs => setDocuments(markOverdue(docs))).catch(() => setDocuments(MOCK_DOCUMENTS));
     getDeadlines(p.id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
   };
   const handleBack = () => { resetSubPages(); };
@@ -192,7 +205,7 @@ export default function App() {
             <MediaLibraryView documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} darkMode={darkMode} />
           ) : (
             <>
-              {activeTab === 'home' && <DashboardView key="home" profile={activeProfile} onProfileClick={handleProfileClick} income={totalIncome} expenses={totalExpenses} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} />}
+              {activeTab === 'home' && <DashboardView key="home" profile={activeProfile} onProfileClick={handleProfileClick} onAddDocumentClick={() => handleTabChange('docs')} income={totalIncome} expenses={totalExpenses} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} />}
               {activeTab === 'docs' && <DocumentsView key="docs" documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} onUpdateProfile={async p => { setActiveProfile(p); setProfiles(prev => prev.map(x => x.id === p.id ? p : x)); try { await updateProfile(p); } catch {} }} accountant={accountant} profile={activeProfile} darkMode={darkMode} onMediaLibraryClick={handleMediaLibraryClick} />}
               {activeTab === 'calendar' && <CalendarView key="calendar" deadlines={deadlines} onAddDeadline={handleAddDeadline} onUpdateDeadline={handleUpdateDeadline} onDeleteDeadline={handleDeleteDeadline} darkMode={darkMode} />}
               {activeTab === 'menu' && <MenuView key="menu" activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} darkMode={darkMode} />}
