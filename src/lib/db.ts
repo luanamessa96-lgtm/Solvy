@@ -1,20 +1,21 @@
 import { supabase } from './supabase';
 import { Document, Deadline, Profile, Accountant } from '../types';
 
-export async function getDocuments(): Promise<Document[]> {
+export async function getDocuments(profileId: string): Promise<Document[]> {
   const { data, error } = await supabase
     .from('documents')
     .select('*')
+    .eq('profile_id', profileId)
     .order('date', { ascending: false });
 
   if (error) throw error;
   return data || [];
 }
 
-export async function addDocument(doc: Document): Promise<void> {
+export async function addDocument(doc: Document, profileId: string): Promise<void> {
   const { error } = await supabase
     .from('documents')
-    .insert([doc]);
+    .insert([{ ...doc, profile_id: profileId }]);
 
   if (error) throw error;
 }
@@ -105,20 +106,21 @@ export async function updateAccountant(a: Accountant): Promise<void> {
   if (error) throw error;
 }
 
-export async function getDeadlines(): Promise<Deadline[]> {
+export async function getDeadlines(profileId: string): Promise<Deadline[]> {
   const { data, error } = await supabase
     .from('deadlines')
     .select('*')
+    .eq('profile_id', profileId)
     .order('date', { ascending: true });
 
   if (error) throw error;
   return data || [];
 }
 
-export async function addDeadline(deadline: Deadline): Promise<void> {
+export async function addDeadline(deadline: Deadline, profileId: string): Promise<void> {
   const { error } = await supabase
     .from('deadlines')
-    .insert([deadline]);
+    .insert([{ ...deadline, profile_id: profileId }]);
 
   if (error) throw error;
 }

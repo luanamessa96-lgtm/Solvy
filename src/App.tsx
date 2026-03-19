@@ -35,8 +35,8 @@ export default function App() {
   const [accountant, setAccountant] = useState<Accountant>(MOCK_ACCOUNTANT);
 
   useEffect(() => {
-    getDocuments().then(setDocuments).catch(() => setDocuments(MOCK_DOCUMENTS));
-    getDeadlines().then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
+    getDocuments(activeProfile.id).then(setDocuments).catch(() => setDocuments(MOCK_DOCUMENTS));
+    getDeadlines(activeProfile.id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
     getAccountant().then(data => { if (data) setAccountant(data); });
     getProfiles()
       .then(data => {
@@ -57,7 +57,7 @@ export default function App() {
 
   const handleAddDocument = async (doc: Document) => {
     setDocuments(prev => [doc, ...prev]);
-    try { await addDocument(doc); } catch {}
+    try { await addDocument(doc, activeProfile.id); } catch {}
   };
 
   const handleDeleteDocument = async (id: string) => {
@@ -72,7 +72,7 @@ export default function App() {
 
   const handleAddDeadline = async (d: Deadline) => {
     setDeadlines(prev => [...prev, d].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
-    try { await addDeadline(d); } catch {}
+    try { await addDeadline(d, activeProfile.id); } catch {}
   };
 
   const handleUpdateDeadline = async (d: Deadline) => {
@@ -129,7 +129,14 @@ export default function App() {
   const handleSettingsClick = () => { setIsSettingsPage(true); setIsProfilePage(false); setIsAccountantPage(false); setActiveTab('menu'); };
   const handleAccountantClick = () => { setIsAccountantPage(true); setIsProfilePage(false); setIsSettingsPage(false); setActiveTab('menu'); };
   const handleTabChange = (tab: string) => { setIsProfilePage(false); setIsSettingsPage(false); setIsAccountantPage(false); setActiveTab(tab); };
-  const handleSwitchProfile = (p: Profile) => { setActiveProfile(p); setIsProfilePage(false); setIsSettingsPage(false); setActiveTab('home'); };
+  const handleSwitchProfile = (p: Profile) => {
+    setActiveProfile(p);
+    setIsProfilePage(false);
+    setIsSettingsPage(false);
+    setActiveTab('home');
+    getDocuments(p.id).then(setDocuments).catch(() => setDocuments(MOCK_DOCUMENTS));
+    getDeadlines(p.id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
+  };
   const handleBack = () => { setIsProfilePage(false); setIsSettingsPage(false); setIsAccountantPage(false); };
 
   return (
