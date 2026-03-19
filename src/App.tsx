@@ -21,6 +21,7 @@ import SettingsView from './views/SettingsView';
 import AccountantView from './views/AccountantView';
 import MenuView from './views/MenuView';
 import MediaLibraryView from './views/MediaLibraryView';
+import OnboardingView from './views/OnboardingView';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -31,6 +32,7 @@ export default function App() {
   const [isMediaLibraryPage, setIsMediaLibraryPage] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [darkMode, setDarkMode] = useState<boolean>(() => JSON.parse(localStorage.getItem('darkMode') || 'false'));
+  const [showOnboarding, setShowOnboarding] = useState<boolean>(() => !localStorage.getItem('onboardingComplete'));
   const [documents, setDocuments] = useState<Document[]>([]);
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -163,6 +165,17 @@ export default function App() {
     getDeadlines(p.id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
   };
   const handleBack = () => { resetSubPages(); };
+
+  const handleOnboardingComplete = async (p: Profile) => {
+    setActiveProfile(p);
+    setProfiles(prev => prev.map(x => x.id === p.id ? p : x));
+    try { await updateProfile(p); } catch {}
+    setShowOnboarding(false);
+  };
+
+  if (showOnboarding) {
+    return <OnboardingView profile={activeProfile} onComplete={handleOnboardingComplete} />;
+  }
 
   return (
     <div className={`max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative overflow-hidden transition-colors duration-500 ${darkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
