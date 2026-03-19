@@ -20,6 +20,8 @@ export interface Document {
   status: 'paid' | 'pending' | 'overdue' | 'draft';
   client?: string;
   category?: string;
+  imageData?: string;
+  fileName?: string;
 }
 
 export interface Deadline {

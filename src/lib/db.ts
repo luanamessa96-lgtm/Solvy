@@ -1,6 +1,22 @@
 import { supabase } from './supabase';
 import { Document, Deadline, Profile, Accountant } from '../types';
 
+export async function uploadFile(dataUrl: string, fileName: string): Promise<string> {
+  const [meta, base64] = dataUrl.split(',');
+  const mimeType = meta.match(/:(.*?);/)?.[1] || 'application/octet-stream';
+  const byteArray = new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0)));
+  const blob = new Blob([byteArray], { type: mimeType });
+  const path = `${Date.now()}_${fileName.replace(/\s+/g, '_')}`;
+  const { data, error } = await supabase.storage.from('uploads').upload(path, blob, { contentType: mimeType });
+  if (error) throw error;
+  return supabase.storage.from('uploads').getPublicUrl(data.path).data.publicUrl;
+}
+
+export async function deleteFile(url: string): Promise<void> {
+  const path = url.split('/uploads/')[1];
+  if (path) await supabase.storage.from('uploads').remove([path]);
+}
+
 export async function getDocuments(profileId: string): Promise<Document[]> {
   const { data, error } = await supabase
     .from('documents')
@@ -9,13 +25,25 @@ export async function getDocuments(profileId: string): Promise<Document[]> {
     .order('date', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+  return (data || []).map(d => ({ ...d, imageData: d.image_data, fileName: d.file_name }));
 }
 
 export async function addDocument(doc: Document, profileId: string): Promise<void> {
   const { error } = await supabase
     .from('documents')
-    .insert([{ ...doc, profile_id: profileId }]);
+    .insert([{
+      id: doc.id,
+      type: doc.type,
+      title: doc.title,
+      amount: doc.amount,
+      date: doc.date,
+      status: doc.status,
+      client: doc.client,
+      category: doc.category,
+      image_data: doc.imageData,
+      file_name: doc.fileName,
+      profile_id: profileId,
+    }]);
 
   if (error) throw error;
 }

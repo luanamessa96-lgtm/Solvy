@@ -20,8 +20,7 @@ import ProfileView from './views/ProfileView';
 import SettingsView from './views/SettingsView';
 import AccountantView from './views/AccountantView';
 import MenuView from './views/MenuView';
-import ImageLibraryView from './views/ImageLibraryView';
-import DocumentLibraryView from './views/DocumentLibraryView';
+import MediaLibraryView from './views/MediaLibraryView';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -29,8 +28,7 @@ export default function App() {
   const [isProfilePage, setIsProfilePage] = useState(false);
   const [isSettingsPage, setIsSettingsPage] = useState(false);
   const [isAccountantPage, setIsAccountantPage] = useState(false);
-  const [isImageLibraryPage, setIsImageLibraryPage] = useState(false);
-  const [isDocumentLibraryPage, setIsDocumentLibraryPage] = useState(false);
+  const [isMediaLibraryPage, setIsMediaLibraryPage] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [darkMode, setDarkMode] = useState<boolean>(() => JSON.parse(localStorage.getItem('darkMode') || 'false'));
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -126,8 +124,7 @@ export default function App() {
     if (isProfilePage) return 'Profilo';
     if (isSettingsPage) return 'Impostazioni';
     if (isAccountantPage) return 'Commercialista';
-    if (isImageLibraryPage) return 'Libreria Immagini';
-    if (isDocumentLibraryPage) return 'Libreria Documenti';
+    if (isMediaLibraryPage) return 'Libreria';
     switch (activeTab) {
       case 'home': return 'Dashboard';
       case 'docs': return 'Documenti';
@@ -135,14 +132,13 @@ export default function App() {
       case 'menu': return 'Menu';
       default: return 'Dashboard';
     }
-  }, [activeTab, isProfilePage, isSettingsPage, isAccountantPage, isImageLibraryPage, isDocumentLibraryPage]);
+  }, [activeTab, isProfilePage, isSettingsPage, isAccountantPage, isMediaLibraryPage]);
 
-  const resetSubPages = () => { setIsProfilePage(false); setIsSettingsPage(false); setIsAccountantPage(false); setIsImageLibraryPage(false); setIsDocumentLibraryPage(false); };
+  const resetSubPages = () => { setIsProfilePage(false); setIsSettingsPage(false); setIsAccountantPage(false); setIsMediaLibraryPage(false); };
   const handleProfileClick = () => { resetSubPages(); setIsProfilePage(true); setActiveTab('menu'); };
   const handleSettingsClick = () => { resetSubPages(); setIsSettingsPage(true); setActiveTab('menu'); };
   const handleAccountantClick = () => { resetSubPages(); setIsAccountantPage(true); setActiveTab('menu'); };
-  const handleImageLibraryClick = () => { resetSubPages(); setIsImageLibraryPage(true); setActiveTab('docs'); };
-  const handleDocumentLibraryClick = () => { resetSubPages(); setIsDocumentLibraryPage(true); setActiveTab('docs'); };
+  const handleMediaLibraryClick = () => { resetSubPages(); setIsMediaLibraryPage(true); setActiveTab('docs'); };
   const handleTabChange = (tab: string) => { resetSubPages(); setActiveTab(tab); };
   const handleSwitchProfile = (p: Profile) => {
     setActiveProfile(p);
@@ -161,7 +157,7 @@ export default function App() {
         onProfileClick={handleProfileClick}
         onBellClick={() => setIsNotificationsOpen(true)}
         notificationCount={notificationCount}
-        showBack={isProfilePage || isSettingsPage || isAccountantPage || isImageLibraryPage || isDocumentLibraryPage}
+        showBack={isProfilePage || isSettingsPage || isAccountantPage || isMediaLibraryPage}
         onBack={handleBack}
         darkMode={darkMode}
       />
@@ -190,14 +186,12 @@ export default function App() {
               onSave={async a => { setAccountant(a); try { await updateAccountant(a); } catch {} }}
               darkMode={darkMode}
             />
-          ) : isImageLibraryPage ? (
-            <ImageLibraryView key="image-library" onAddDocument={handleAddDocument} darkMode={darkMode} />
-          ) : isDocumentLibraryPage ? (
-            <DocumentLibraryView key="doc-library" onAddDocument={handleAddDocument} darkMode={darkMode} />
+          ) : isMediaLibraryPage ? (
+            <MediaLibraryView documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} darkMode={darkMode} />
           ) : (
             <>
               {activeTab === 'home' && <DashboardView key="home" profile={activeProfile} onProfileClick={handleProfileClick} income={totalIncome} expenses={totalExpenses} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} />}
-              {activeTab === 'docs' && <DocumentsView key="docs" documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} accountant={accountant} darkMode={darkMode} onImageLibraryClick={handleImageLibraryClick} onDocumentLibraryClick={handleDocumentLibraryClick} />}
+              {activeTab === 'docs' && <DocumentsView key="docs" documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} accountant={accountant} profile={activeProfile} darkMode={darkMode} onMediaLibraryClick={handleMediaLibraryClick} />}
               {activeTab === 'calendar' && <CalendarView key="calendar" deadlines={deadlines} onAddDeadline={handleAddDeadline} onUpdateDeadline={handleUpdateDeadline} onDeleteDeadline={handleDeleteDeadline} darkMode={darkMode} />}
               {activeTab === 'menu' && <MenuView key="menu" activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} darkMode={darkMode} />}
             </>
@@ -205,7 +199,7 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage) ? 'menu' : (isImageLibraryPage || isDocumentLibraryPage) ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} />
+      <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} />
     </div>
   );
 }

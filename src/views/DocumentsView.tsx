@@ -1,12 +1,12 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, Mail, Camera, ChevronRight, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus } from 'lucide-react';
 
-import { Document, Accountant } from '../types';
-import AccountantModal from '../components/modals/AccountantModal';
+import { Document, Accountant, Profile } from '../types';
 import CreateInvoiceModal from '../components/modals/CreateInvoiceModal';
 import CreateExpenseModal from '../components/modals/CreateExpenseModal';
 import SearchOverlay from '../components/modals/SearchOverlay';
+import ExportModal from '../components/modals/ExportModal';
 
 interface DocumentsViewProps {
   documents: Document[];
@@ -14,14 +14,14 @@ interface DocumentsViewProps {
   onDeleteDocument: (id: string) => void;
   onUpdateDocument: (doc: Document) => void;
   accountant: Accountant;
+  profile: Profile;
   darkMode?: boolean;
   key?: string;
-  onImageLibraryClick?: () => void;
-  onDocumentLibraryClick?: () => void;
+  onMediaLibraryClick?: () => void;
 }
 
-const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, accountant, darkMode, onImageLibraryClick, onDocumentLibraryClick }: DocumentsViewProps) => {
-  const [isAccountantOpen, setIsAccountantOpen] = useState(false);
+const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, accountant, profile, darkMode, onMediaLibraryClick }: DocumentsViewProps) => {
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [isChoiceOpen, setIsChoiceOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isExpenseOpen, setIsExpenseOpen] = useState(false);
@@ -33,11 +33,19 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [docToEdit, setDocToEdit] = useState<Document | null>(null);
 
+  const initializedRef = useRef(false);
+  const prevLengthRef = useRef(0);
   useEffect(() => {
-    if (documents.length > 0) {
+    if (documents.length > 0 && !initializedRef.current) {
       const years = documents.map(d => new Date(d.date).getFullYear());
       setSelectedYear(Math.max(...years));
+      initializedRef.current = true;
+    } else if (documents.length > prevLengthRef.current && initializedRef.current) {
+      // Nuovo documento aggiunto: switcha all'anno del documento appena salvato
+      const newDoc = documents[0];
+      if (newDoc) setSelectedYear(new Date(newDoc.date).getFullYear());
     }
+    prevLengthRef.current = documents.length;
   }, [documents]);
 
   const availableYears = useMemo(() => {
@@ -75,7 +83,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
         <span className="flex-1">Cerca fatture e spese...</span>
       </button>
 
-      <motion.button variants={item} onClick={() => setIsAccountantOpen(true)} className={`w-full p-6 border rounded-3xl flex items-center justify-between transition-all group active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5'}`}>
+      <motion.button variants={item} onClick={() => setIsExportOpen(true)} className={`w-full p-6 border rounded-3xl flex items-center justify-between transition-all group active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5'}`}>
         <div className="flex items-center gap-4">
           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${darkMode ? 'bg-slate-800 text-primary group-hover:bg-primary group-hover:text-white' : 'bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white'}`}><Mail size={28} strokeWidth={1.5} /></div>
           <div className="text-left">
@@ -90,22 +98,13 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
         <div className="flex items-center justify-between px-2">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Caricamento Rapido</span>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <button onClick={onImageLibraryClick} className={`p-5 rounded-3xl border flex flex-col items-center gap-3 transition-all active:scale-[0.96] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-emerald-500/40' : 'bg-white border-slate-100 hover:border-emerald-500/20 hover:shadow-lg'}`}>
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}><Camera size={22} /></div>
-            <div className="text-center">
-              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Immagini</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">Foto e scontrini</p>
-            </div>
-          </button>
-          <button onClick={onDocumentLibraryClick} className={`p-5 rounded-3xl border flex flex-col items-center gap-3 transition-all active:scale-[0.96] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-lg'}`}>
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${darkMode ? 'bg-primary/10 text-primary' : 'bg-primary/5 text-primary'}`}><FileText size={22} /></div>
-            <div className="text-center">
-              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Documenti</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">PDF e file</p>
-            </div>
-          </button>
-        </div>
+        <button onClick={onMediaLibraryClick} className={`w-full p-5 rounded-3xl border flex items-center gap-4 transition-all active:scale-[0.96] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-lg'}`}>
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${darkMode ? 'bg-primary/10 text-primary' : 'bg-primary/5 text-primary'}`}><Camera size={22} /></div>
+          <div className="text-left">
+            <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Libreria</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Foto, scontrini e documenti</p>
+          </div>
+        </button>
       </motion.div>
 
       <motion.div variants={item} className="space-y-3">
@@ -185,8 +184,6 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
           </button>
         </div>
       </motion.div>
-
-      <AccountantModal isOpen={isAccountantOpen} onClose={() => setIsAccountantOpen(false)} accountant={accountant} darkMode={darkMode} />
 
       <AnimatePresence>
         {isChoiceOpen && (
@@ -329,6 +326,8 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
       <AnimatePresence>
         {isSearchOpen && <SearchOverlay documents={documents} onClose={() => setIsSearchOpen(false)} onSelectDoc={doc => { setIsSearchOpen(false); setSelectedDoc(doc); }} darkMode={darkMode} />}
       </AnimatePresence>
+
+      <ExportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} documents={documents} selectedYear={selectedYear} profile={profile} accountant={accountant} darkMode={darkMode} />
 
     </motion.div>
   );
