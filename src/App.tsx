@@ -9,6 +9,7 @@ import { MOCK_PROFILES, MOCK_DOCUMENTS, MOCK_DEADLINES, MOCK_ACCOUNTANT } from '
 import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, addDeadline, updateDeadline, deleteDeadline, getProfiles, updateProfile, getAccountant, updateAccountant } from './lib/db';
 import { Profile, Document, Deadline, Accountant } from './types';
 
+import { ToastProvider, useToast } from './components/ui/Toast';
 import Header from './components/layout/Header';
 import BottomNav from './components/layout/BottomNav';
 import NotificationsPanel from './components/layout/NotificationsPanel';
@@ -23,7 +24,7 @@ import MenuView from './views/MenuView';
 import MediaLibraryView from './views/MediaLibraryView';
 import OnboardingView from './views/OnboardingView';
 
-export default function App() {
+function AppInner() {
   const [activeTab, setActiveTab] = useState('home');
   const [activeProfile, setActiveProfile] = useState<Profile>(MOCK_PROFILES[0]);
   const [isProfilePage, setIsProfilePage] = useState(false);
@@ -37,6 +38,7 @@ export default function App() {
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [accountant, setAccountant] = useState<Accountant>(MOCK_ACCOUNTANT);
+  const { showToast } = useToast();
 
   useEffect(() => {
     getAccountant().then(data => { if (data) setAccountant(data); });
@@ -80,31 +82,37 @@ export default function App() {
 
   const handleAddDocument = async (doc: Document) => {
     setDocuments(prev => [doc, ...prev]);
-    try { await addDocument(doc, activeProfile.id); } catch {}
+    showToast(doc.type === 'invoice' ? 'Fattura aggiunta' : 'Spesa aggiunta');
+    try { await addDocument(doc, activeProfile.id); } catch { showToast('Errore nel salvataggio', 'error'); }
   };
 
   const handleDeleteDocument = async (id: string) => {
     setDocuments(prev => prev.filter(d => d.id !== id));
+    showToast('Documento eliminato', 'error');
     try { await deleteDocument(id); } catch {}
   };
 
   const handleUpdateDocument = async (doc: Document) => {
     setDocuments(prev => prev.map(d => d.id === doc.id ? doc : d));
-    try { await updateDocument(doc); } catch {}
+    showToast('Documento aggiornato');
+    try { await updateDocument(doc); } catch { showToast('Errore nel salvataggio', 'error'); }
   };
 
   const handleAddDeadline = async (d: Deadline) => {
     setDeadlines(prev => [...prev, d].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
-    try { await addDeadline(d, activeProfile.id); } catch {}
+    showToast('Scadenza aggiunta');
+    try { await addDeadline(d, activeProfile.id); } catch { showToast('Errore nel salvataggio', 'error'); }
   };
 
   const handleUpdateDeadline = async (d: Deadline) => {
     setDeadlines(prev => prev.map(x => x.id === d.id ? d : x));
-    try { await updateDeadline(d); } catch {}
+    showToast(d.completed ? 'Scadenza completata' : 'Scadenza aggiornata');
+    try { await updateDeadline(d); } catch { showToast('Errore nel salvataggio', 'error'); }
   };
 
   const handleDeleteDeadline = async (id: string) => {
     setDeadlines(prev => prev.filter(d => d.id !== id));
+    showToast('Scadenza eliminata', 'error');
     try { await deleteDeadline(id); } catch {}
   };
 
@@ -229,5 +237,13 @@ export default function App() {
 
       <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ToastProvider>
+      <AppInner />
+    </ToastProvider>
   );
 }
