@@ -20,6 +20,8 @@ import ProfileView from './views/ProfileView';
 import SettingsView from './views/SettingsView';
 import AccountantView from './views/AccountantView';
 import MenuView from './views/MenuView';
+import ImageLibraryView from './views/ImageLibraryView';
+import DocumentLibraryView from './views/DocumentLibraryView';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -27,6 +29,8 @@ export default function App() {
   const [isProfilePage, setIsProfilePage] = useState(false);
   const [isSettingsPage, setIsSettingsPage] = useState(false);
   const [isAccountantPage, setIsAccountantPage] = useState(false);
+  const [isImageLibraryPage, setIsImageLibraryPage] = useState(false);
+  const [isDocumentLibraryPage, setIsDocumentLibraryPage] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [darkMode, setDarkMode] = useState<boolean>(() => JSON.parse(localStorage.getItem('darkMode') || 'false'));
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -35,21 +39,27 @@ export default function App() {
   const [accountant, setAccountant] = useState<Accountant>(MOCK_ACCOUNTANT);
 
   useEffect(() => {
-    getDocuments(activeProfile.id).then(setDocuments).catch(() => setDocuments(MOCK_DOCUMENTS));
-    getDeadlines(activeProfile.id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
     getAccountant().then(data => { if (data) setAccountant(data); });
     getProfiles()
       .then(data => {
         if (data.length > 0) {
           setProfiles(data);
           const savedId = localStorage.getItem('activeProfileId');
-          const saved = data.find(p => p.id === savedId);
-          setActiveProfile(saved || data[0]);
+          const profile = data.find(p => p.id === savedId) || data[0];
+          setActiveProfile(profile);
+          getDocuments(profile.id).then(setDocuments).catch(() => setDocuments(MOCK_DOCUMENTS));
+          getDeadlines(profile.id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
         } else {
           setProfiles(MOCK_PROFILES);
+          getDocuments(MOCK_PROFILES[0].id).then(setDocuments).catch(() => setDocuments(MOCK_DOCUMENTS));
+          getDeadlines(MOCK_PROFILES[0].id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
         }
       })
-      .catch(() => setProfiles(MOCK_PROFILES));
+      .catch(() => {
+        setProfiles(MOCK_PROFILES);
+        setDocuments(MOCK_DOCUMENTS);
+        setDeadlines(MOCK_DEADLINES);
+      });
   }, []);
 
   useEffect(() => { localStorage.setItem('darkMode', JSON.stringify(darkMode)); }, [darkMode]);
@@ -116,6 +126,8 @@ export default function App() {
     if (isProfilePage) return 'Profilo';
     if (isSettingsPage) return 'Impostazioni';
     if (isAccountantPage) return 'Commercialista';
+    if (isImageLibraryPage) return 'Libreria Immagini';
+    if (isDocumentLibraryPage) return 'Libreria Documenti';
     switch (activeTab) {
       case 'home': return 'Dashboard';
       case 'docs': return 'Documenti';
@@ -123,21 +135,23 @@ export default function App() {
       case 'menu': return 'Menu';
       default: return 'Dashboard';
     }
-  }, [activeTab, isProfilePage, isSettingsPage, isAccountantPage]);
+  }, [activeTab, isProfilePage, isSettingsPage, isAccountantPage, isImageLibraryPage, isDocumentLibraryPage]);
 
-  const handleProfileClick = () => { setIsProfilePage(true); setIsSettingsPage(false); setIsAccountantPage(false); setActiveTab('menu'); };
-  const handleSettingsClick = () => { setIsSettingsPage(true); setIsProfilePage(false); setIsAccountantPage(false); setActiveTab('menu'); };
-  const handleAccountantClick = () => { setIsAccountantPage(true); setIsProfilePage(false); setIsSettingsPage(false); setActiveTab('menu'); };
-  const handleTabChange = (tab: string) => { setIsProfilePage(false); setIsSettingsPage(false); setIsAccountantPage(false); setActiveTab(tab); };
+  const resetSubPages = () => { setIsProfilePage(false); setIsSettingsPage(false); setIsAccountantPage(false); setIsImageLibraryPage(false); setIsDocumentLibraryPage(false); };
+  const handleProfileClick = () => { resetSubPages(); setIsProfilePage(true); setActiveTab('menu'); };
+  const handleSettingsClick = () => { resetSubPages(); setIsSettingsPage(true); setActiveTab('menu'); };
+  const handleAccountantClick = () => { resetSubPages(); setIsAccountantPage(true); setActiveTab('menu'); };
+  const handleImageLibraryClick = () => { resetSubPages(); setIsImageLibraryPage(true); setActiveTab('docs'); };
+  const handleDocumentLibraryClick = () => { resetSubPages(); setIsDocumentLibraryPage(true); setActiveTab('docs'); };
+  const handleTabChange = (tab: string) => { resetSubPages(); setActiveTab(tab); };
   const handleSwitchProfile = (p: Profile) => {
     setActiveProfile(p);
-    setIsProfilePage(false);
-    setIsSettingsPage(false);
+    resetSubPages();
     setActiveTab('home');
     getDocuments(p.id).then(setDocuments).catch(() => setDocuments(MOCK_DOCUMENTS));
     getDeadlines(p.id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
   };
-  const handleBack = () => { setIsProfilePage(false); setIsSettingsPage(false); setIsAccountantPage(false); };
+  const handleBack = () => { resetSubPages(); };
 
   return (
     <div className={`max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative overflow-hidden transition-colors duration-500 ${darkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
@@ -147,7 +161,7 @@ export default function App() {
         onProfileClick={handleProfileClick}
         onBellClick={() => setIsNotificationsOpen(true)}
         notificationCount={notificationCount}
-        showBack={isProfilePage || isSettingsPage || isAccountantPage}
+        showBack={isProfilePage || isSettingsPage || isAccountantPage || isImageLibraryPage || isDocumentLibraryPage}
         onBack={handleBack}
         darkMode={darkMode}
       />
@@ -176,10 +190,14 @@ export default function App() {
               onSave={async a => { setAccountant(a); try { await updateAccountant(a); } catch {} }}
               darkMode={darkMode}
             />
+          ) : isImageLibraryPage ? (
+            <ImageLibraryView key="image-library" onAddDocument={handleAddDocument} darkMode={darkMode} />
+          ) : isDocumentLibraryPage ? (
+            <DocumentLibraryView key="doc-library" onAddDocument={handleAddDocument} darkMode={darkMode} />
           ) : (
             <>
               {activeTab === 'home' && <DashboardView key="home" profile={activeProfile} onProfileClick={handleProfileClick} income={totalIncome} expenses={totalExpenses} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} />}
-              {activeTab === 'docs' && <DocumentsView key="docs" documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} accountant={accountant} darkMode={darkMode} />}
+              {activeTab === 'docs' && <DocumentsView key="docs" documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} accountant={accountant} darkMode={darkMode} onImageLibraryClick={handleImageLibraryClick} onDocumentLibraryClick={handleDocumentLibraryClick} />}
               {activeTab === 'calendar' && <CalendarView key="calendar" deadlines={deadlines} onAddDeadline={handleAddDeadline} onUpdateDeadline={handleUpdateDeadline} onDeleteDeadline={handleDeleteDeadline} darkMode={darkMode} />}
               {activeTab === 'menu' && <MenuView key="menu" activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} darkMode={darkMode} />}
             </>
@@ -187,7 +205,7 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage) ? 'menu' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} />
+      <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage) ? 'menu' : (isImageLibraryPage || isDocumentLibraryPage) ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} />
     </div>
   );
 }

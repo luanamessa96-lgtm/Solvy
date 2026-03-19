@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Mail, Camera, Image, ChevronRight, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus } from 'lucide-react';
+import { Search, Mail, Camera, ChevronRight, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus } from 'lucide-react';
+
 import { Document, Accountant } from '../types';
 import AccountantModal from '../components/modals/AccountantModal';
 import CreateInvoiceModal from '../components/modals/CreateInvoiceModal';
 import CreateExpenseModal from '../components/modals/CreateExpenseModal';
-import ScanReceiptModal from '../components/modals/ScanReceiptModal';
 import SearchOverlay from '../components/modals/SearchOverlay';
 
 interface DocumentsViewProps {
@@ -16,9 +16,11 @@ interface DocumentsViewProps {
   accountant: Accountant;
   darkMode?: boolean;
   key?: string;
+  onImageLibraryClick?: () => void;
+  onDocumentLibraryClick?: () => void;
 }
 
-const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, accountant, darkMode }: DocumentsViewProps) => {
+const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, accountant, darkMode, onImageLibraryClick, onDocumentLibraryClick }: DocumentsViewProps) => {
   const [isAccountantOpen, setIsAccountantOpen] = useState(false);
   const [isChoiceOpen, setIsChoiceOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -27,7 +29,6 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isScanOpen, setIsScanOpen] = useState(false);
   const [docToDelete, setDocToDelete] = useState<Document | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [docToEdit, setDocToEdit] = useState<Document | null>(null);
@@ -90,18 +91,18 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Caricamento Rapido</span>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <button onClick={() => setIsScanOpen(true)} className={`p-5 rounded-3xl border flex flex-col items-center gap-3 transition-all active:scale-[0.96] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-emerald-500/40' : 'bg-white border-slate-100 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5'}`}>
+          <button onClick={onImageLibraryClick} className={`p-5 rounded-3xl border flex flex-col items-center gap-3 transition-all active:scale-[0.96] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-emerald-500/40' : 'bg-white border-slate-100 hover:border-emerald-500/20 hover:shadow-lg'}`}>
             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}><Camera size={22} /></div>
             <div className="text-center">
-              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Scansiona</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">Foto scontrino</p>
+              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Immagini</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">Foto e scontrini</p>
             </div>
           </button>
-          <button onClick={() => {}} className={`p-5 rounded-3xl border flex flex-col items-center gap-3 transition-all active:scale-[0.96] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5'}`}>
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${darkMode ? 'bg-primary/10 text-primary' : 'bg-primary/5 text-primary'}`}><Image size={22} /></div>
+          <button onClick={onDocumentLibraryClick} className={`p-5 rounded-3xl border flex flex-col items-center gap-3 transition-all active:scale-[0.96] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-lg'}`}>
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${darkMode ? 'bg-primary/10 text-primary' : 'bg-primary/5 text-primary'}`}><FileText size={22} /></div>
             <div className="text-center">
-              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Importa</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">Da file o email</p>
+              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Documenti</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">PDF e file</p>
             </div>
           </button>
         </div>
@@ -329,7 +330,6 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
         {isSearchOpen && <SearchOverlay documents={documents} onClose={() => setIsSearchOpen(false)} onSelectDoc={doc => { setIsSearchOpen(false); setSelectedDoc(doc); }} darkMode={darkMode} />}
       </AnimatePresence>
 
-      <ScanReceiptModal isOpen={isScanOpen} onClose={() => setIsScanOpen(false)} onSave={onAddDocument} darkMode={darkMode} />
     </motion.div>
   );
 };
