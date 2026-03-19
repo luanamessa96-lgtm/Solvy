@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft } from 'lucide-react';
+import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft, Search, X } from 'lucide-react';
 import { Deadline } from '../types';
 
 function getScadenzeFiscali(year: number): Omit<Deadline, 'id'>[] {
@@ -35,6 +35,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const scadenzeFiscali = getScadenzeFiscali(selectedYear);
   const addedCount = scadenzeFiscali.filter(s => deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === selectedYear)).length;
@@ -46,7 +47,11 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
 
   const yearDeadlines = useMemo(() => deadlines.filter(d => new Date(d.date).getFullYear() === selectedYear), [deadlines, selectedYear]);
 
-  const filteredDeadlines = useMemo(() => selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => new Date(d.date).getMonth() === selectedMonth), [selectedMonth, yearDeadlines]);
+  const filteredDeadlines = useMemo(() => {
+    let result = selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => new Date(d.date).getMonth() === selectedMonth);
+    if (searchQuery.trim()) result = result.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    return result;
+  }, [selectedMonth, yearDeadlines, searchQuery]);
 
   const nextDeadline = useMemo(() => {
     const today = new Date();
@@ -72,6 +77,22 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
         </div>
       </motion.div>
 
+      <motion.div variants={item} className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all ${searchQuery ? (darkMode ? 'border-primary/40 bg-slate-900' : 'border-primary/30 bg-white') : (darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100')}`}>
+        <Search size={16} className={searchQuery ? 'text-primary' : 'text-slate-400'} />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={e => { setSearchQuery(e.target.value); if (e.target.value) { setViewMode('list'); setSelectedMonth(null); } }}
+          placeholder="Cerca scadenza..."
+          className={`flex-1 text-sm bg-transparent focus:outline-none ${darkMode ? 'text-white placeholder:text-slate-600' : 'text-slate-900 placeholder:text-slate-400'}`}
+        />
+        {searchQuery && (
+          <button onClick={() => setSearchQuery('')} className="text-slate-400 active:scale-90 transition-all">
+            <X size={16} />
+          </button>
+        )}
+      </motion.div>
+
       {viewMode === 'grid' ? (
         <motion.div variants={container} className="space-y-6">
           <motion.div variants={item} className="flex items-center justify-between px-2">
@@ -93,7 +114,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
         </motion.div>
       ) : (
         <>
-          {nextDeadline && (
+          {nextDeadline && !searchQuery && (
             <motion.div variants={item} className="relative p-6 bg-primary rounded-3xl text-white overflow-hidden shadow-xl shadow-primary/20">
               <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
               <div className="relative z-10 space-y-4">
@@ -110,7 +131,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
             </motion.div>
           )}
 
-          {!hasFiscalDeadlines && (
+          {!hasFiscalDeadlines && !searchQuery && (
             <motion.div variants={item} onClick={() => setIsPreloadOpen(true)} className={`p-5 rounded-3xl border cursor-pointer active:scale-[0.98] transition-all ${partialFiscalDeadlines ? (darkMode ? 'bg-amber-500/5 border-amber-500/30' : 'bg-amber-50 border-amber-200') : (darkMode ? 'bg-slate-900 border-slate-700 hover:border-primary/40' : 'bg-slate-50 border-slate-200 hover:border-primary/30')}`}>
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
@@ -161,15 +182,23 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                 </motion.button>
               )) : (
                 <div className="py-16 text-center space-y-4">
-                  <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto ${darkMode ? 'bg-slate-900 text-slate-700' : 'bg-slate-50 text-slate-300'}`}><Calendar size={36} /></div>
-                  <div className="space-y-1">
-                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{selectedMonth !== null ? 'Nessuna scadenza questo mese' : 'Nessuna scadenza'}</p>
-                    <p className="text-xs text-slate-400">Aggiungi una scadenza fiscale o un pagamento</p>
+                  <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto ${darkMode ? 'bg-slate-900 text-slate-700' : 'bg-slate-50 text-slate-300'}`}>
+                    {searchQuery ? <Search size={36} /> : <Calendar size={36} />}
                   </div>
-                  <button onClick={() => setIsAddOpen(true)} className="mx-auto flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/30 active:scale-95 transition-all">
-                    <Plus size={16} />
-                    Aggiungi scadenza
-                  </button>
+                  <div className="space-y-1">
+                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>
+                      {searchQuery ? `Nessun risultato per "${searchQuery}"` : selectedMonth !== null ? 'Nessuna scadenza questo mese' : 'Nessuna scadenza'}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      {searchQuery ? 'Prova con un termine diverso' : 'Aggiungi una scadenza fiscale o un pagamento'}
+                    </p>
+                  </div>
+                  {!searchQuery && (
+                    <button onClick={() => setIsAddOpen(true)} className="mx-auto flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/30 active:scale-95 transition-all">
+                      <Plus size={16} />
+                      Aggiungi scadenza
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -304,7 +333,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   <button onClick={() => setIsPreloadOpen(false)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
                 </div>
                 <div className="space-y-2">
-                  {scadenzeFiscali.filter(s => !deadlines.some(d => d.title === s.title)).map((s, i) => (
+                  {scadenzeFiscali.filter(s => !deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === selectedYear)).map((s, i) => (
                     <div key={i} className={`flex items-center gap-3 p-3 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
                       <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 text-red-500 ${darkMode ? 'bg-red-500/10' : 'bg-red-50'}`}>
                         <span className="text-[9px] font-bold uppercase">{new Date(s.date).toLocaleDateString('it-IT', { month: 'short' })}</span>
@@ -317,7 +346,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                 <button
                   onClick={() => {
                     scadenzeFiscali
-                      .filter(s => !deadlines.some(d => d.title === s.title))
+                      .filter(s => !deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === selectedYear))
                       .forEach(s => onAddDeadline({ ...s, id: Math.random().toString(36).substr(2, 9) }));
                     setIsPreloadOpen(false);
                   }}
