@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft } from 'lucide-react';
 import { Deadline } from '../types';
 
 function getScadenzeFiscali(year: number): Omit<Deadline, 'id'>[] {
@@ -34,19 +34,23 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   const [newDeadline, setNewDeadline] = useState({ title: '', date: new Date().toISOString().split('T')[0], type: 'tax' as Deadline['type'], amount: '' });
 
   const currentYear = new Date().getFullYear();
-  const scadenzeFiscali = getScadenzeFiscali(currentYear);
-  const addedCount = scadenzeFiscali.filter(s => deadlines.some(d => d.title === s.title)).length;
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+
+  const scadenzeFiscali = getScadenzeFiscali(selectedYear);
+  const addedCount = scadenzeFiscali.filter(s => deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === selectedYear)).length;
   const hasFiscalDeadlines = addedCount === scadenzeFiscali.length;
   const partialFiscalDeadlines = addedCount > 0 && addedCount < scadenzeFiscali.length;
   const missingCount = scadenzeFiscali.length - addedCount;
 
   const months = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
 
-  const filteredDeadlines = useMemo(() => selectedMonth === null ? deadlines : deadlines.filter(d => new Date(d.date).getMonth() === selectedMonth), [selectedMonth, deadlines]);
+  const yearDeadlines = useMemo(() => deadlines.filter(d => new Date(d.date).getFullYear() === selectedYear), [deadlines, selectedYear]);
+
+  const filteredDeadlines = useMemo(() => selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => new Date(d.date).getMonth() === selectedMonth), [selectedMonth, yearDeadlines]);
 
   const nextDeadline = useMemo(() => {
     const today = new Date();
-    return deadlines.filter(d => new Date(d.date) >= today).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] || null;
+    return deadlines.filter(d => new Date(d.date) >= today && !d.completed).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] || null;
   }, [deadlines]);
 
   const daysUntilNext = nextDeadline ? Math.ceil((new Date(nextDeadline.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
@@ -57,7 +61,11 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-8 pb-24">
       <motion.div variants={item} className="flex items-center justify-between">
-        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Visualizzazione</span>
+        <div className="flex items-center gap-2">
+          <button onClick={() => { setSelectedYear(y => y - 1); setSelectedMonth(null); }} className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-90 ${darkMode ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-500'}`}><ChevronLeft size={16} /></button>
+          <span className={`text-base font-bold min-w-[48px] text-center ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedYear}</span>
+          <button onClick={() => { setSelectedYear(y => y + 1); setSelectedMonth(null); }} disabled={selectedYear >= currentYear + 1} className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 ${darkMode ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-500'}`}><ChevronRight size={16} /></button>
+        </div>
         <div className={`flex p-1 rounded-xl transition-colors ${darkMode ? 'bg-slate-900' : 'bg-slate-100'}`}>
           <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? (darkMode ? 'bg-slate-800 shadow-sm text-primary' : 'bg-white shadow-sm text-primary') : 'text-slate-400'}`}><LayoutList size={18} /></button>
           <button onClick={() => setViewMode('grid')} className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? (darkMode ? 'bg-slate-800 shadow-sm text-primary' : 'bg-white shadow-sm text-primary') : 'text-slate-400'}`}><Grid size={18} /></button>
@@ -68,11 +76,10 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
         <motion.div variants={container} className="space-y-6">
           <motion.div variants={item} className="flex items-center justify-between px-2">
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Seleziona Mese</span>
-            <span className={`text-sm font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>{new Date().getFullYear()}</span>
           </motion.div>
           <div className="grid grid-cols-3 gap-3">
             {months.map((month, index) => {
-              const hasDeadlines = deadlines.some(d => new Date(d.date).getMonth() === index);
+              const hasDeadlines = yearDeadlines.some(d => new Date(d.date).getMonth() === index);
               const isSelected = selectedMonth === index;
               return (
                 <motion.button variants={item} key={month} onClick={() => { setSelectedMonth(isSelected ? null : index); setViewMode('list'); }} className={`relative p-4 rounded-3xl border transition-all text-center space-y-1 active:scale-[0.95] ${isSelected ? 'bg-primary border-primary text-white shadow-xl shadow-primary/40' : (darkMode ? 'bg-slate-900 border-slate-800 text-slate-400 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10' : 'bg-white border-slate-100 text-slate-600 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5')}`}>
