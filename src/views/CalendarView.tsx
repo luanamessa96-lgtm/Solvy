@@ -115,7 +115,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className={`text-sm font-bold ${partialFiscalDeadlines ? 'text-amber-600' : (darkMode ? 'text-white' : 'text-slate-900')}`}>
-                    {partialFiscalDeadlines ? `Hai rimosso ${missingCount} scadenz${missingCount === 1 ? 'a' : 'e'} fiscale` : `Scadenze fiscali ${currentYear}`}
+                    {partialFiscalDeadlines ? `Hai rimosso ${missingCount} scadenz${missingCount === 1 ? 'a' : 'e'} fiscale` : `Scadenze fiscali ${selectedYear}`}
                   </p>
                   <p className="text-xs text-slate-400">
                     {partialFiscalDeadlines ? 'Vuoi ripristinarle?' : 'Aggiungi le principali scadenze italiane in un tap'}
@@ -298,7 +298,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
               <div className="p-8 space-y-5">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{partialFiscalDeadlines ? 'Ripristina Scadenze' : `Scadenze Fiscali ${currentYear}`}</h2>
+                    <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{partialFiscalDeadlines ? 'Ripristina Scadenze' : `Scadenze Fiscali ${selectedYear}`}</h2>
                     <p className="text-sm text-slate-500 mt-1">Verifica le date sul sito dell'Agenzia delle Entrate — possono variare per proroghe o festività.</p>
                   </div>
                   <button onClick={() => setIsPreloadOpen(false)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
