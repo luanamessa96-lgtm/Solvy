@@ -106,6 +106,8 @@ export async function getProfiles(): Promise<Profile[]> {
     ...p,
     jobType: p.job_type,
     codiceFiscale: p.codice_fiscale,
+    coefficiente: p.coefficiente,
+    annoInizioAttivita: p.anno_inizio_attivita,
   }));
 }
 
@@ -123,6 +125,8 @@ export async function updateProfile(profile: Profile): Promise<void> {
       piva: profile.piva,
       codice_fiscale: profile.codiceFiscale,
       regime: profile.regime,
+      coefficiente: profile.coefficiente,
+      anno_inizio_attivita: profile.annoInizioAttivita,
     })
     .eq('id', profile.id);
 

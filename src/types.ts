@@ -13,6 +13,8 @@ export interface Profile {
   piva?: string;
   codiceFiscale?: string;
   regime?: 'forfettario' | 'ordinario';
+  coefficiente?: number;
+  annoInizioAttivita?: number;
 }
 
 export interface Document {

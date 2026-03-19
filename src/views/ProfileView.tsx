@@ -24,10 +24,17 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     piva: activeProfile.piva || '',
     codiceFiscale: activeProfile.codiceFiscale || '',
     regime: activeProfile.regime || 'forfettario' as 'forfettario' | 'ordinario',
+    coefficiente: activeProfile.coefficiente?.toString() || '',
+    annoInizioAttivita: activeProfile.annoInizioAttivita?.toString() || '',
   });
 
   const handleSaveEdit = () => {
-    onUpdateProfile({ ...activeProfile, ...editData });
+    onUpdateProfile({
+      ...activeProfile,
+      ...editData,
+      coefficiente: editData.coefficiente ? parseFloat(editData.coefficiente) : undefined,
+      annoInizioAttivita: editData.annoInizioAttivita ? parseInt(editData.annoInizioAttivita) : undefined,
+    });
     setIsEditing(false);
   };
 
@@ -37,6 +44,14 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
   const item = { hidden: { opacity: 0, y: 20, scale: 0.98 }, show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 260, damping: 20 } } };
 
   const hasFiscalData = activeProfile.piva || activeProfile.codiceFiscale || activeProfile.address;
+
+  const CATEGORIE_COEFFICIENTE: Record<number, string> = {
+    86: 'Costruzioni / Immobiliare',
+    78: 'Professionisti',
+    67: 'Artigiani / Servizi',
+    62: 'Intermediari commercio',
+    40: 'Commercio / Ristorazione',
+  };
 
   return (
     <>
@@ -115,6 +130,25 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                       ))}
                     </div>
                   </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Categoria Attività</label>
+                    <select
+                      value={editData.coefficiente}
+                      onChange={e => setEditData({ ...editData, coefficiente: e.target.value })}
+                      className={inputClass}
+                    >
+                      <option value="">Seleziona categoria...</option>
+                      <option value="86">Costruzioni e attività immobiliari — 86%</option>
+                      <option value="78">Professionisti (consulenti, designer, sviluppatori…) — 78%</option>
+                      <option value="67">Artigiani e altri servizi — 67%</option>
+                      <option value="62">Intermediari del commercio — 62%</option>
+                      <option value="40">Commercio e ristorazione — 40%</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Anno Inizio Attività</label>
+                    <input type="number" min="2000" max={new Date().getFullYear()} value={editData.annoInizioAttivita} onChange={e => setEditData({ ...editData, annoInizioAttivita: e.target.value })} placeholder="Es. 2022" className={inputClass} />
+                  </div>
                 </div>
 
                 <button onClick={handleSaveEdit} className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">Salva Modifiche</button>
@@ -173,6 +207,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
               { icon: User, label: 'Codice Fiscale', value: activeProfile.codiceFiscale || '—' },
               { icon: MapPin, label: 'Indirizzo', value: activeProfile.address || '—' },
               { icon: Briefcase, label: 'Regime', value: activeProfile.regime ? activeProfile.regime.charAt(0).toUpperCase() + activeProfile.regime.slice(1) : 'Forfettario' },
+              ...(activeProfile.coefficiente ? [{ icon: Receipt, label: 'Categoria', value: `${CATEGORIE_COEFFICIENTE[activeProfile.coefficiente] || activeProfile.coefficiente + '%'} (${activeProfile.coefficiente}%)` }] : []),
             ].map(({ icon: Icon, label, value }, i, arr) => (
               <div key={label} className={`w-full p-4 flex items-center justify-between ${i < arr.length - 1 ? (darkMode ? 'border-b border-slate-800' : 'border-b border-slate-50') : ''}`}>
                 <div className="flex items-center gap-3">

@@ -1,5 +1,6 @@
+import { useMemo } from 'react';
 import { motion } from 'motion/react';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, AlertTriangle, AlertCircle, Info } from 'lucide-react';
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Profile, Document } from '../types';
 
@@ -14,7 +15,23 @@ interface DashboardViewProps {
   key?: string;
 }
 
-const DashboardView = ({ profile, income, expenses, paidPercentage, documents, darkMode }: DashboardViewProps) => {
+const INPS_GESTIONE_SEPARATA = 0.2607;
+const INPS_ORDINARIO = 0.24;
+const SOGLIA_FORFETTARIO = 85000;
+const ALERT_SOGLIA = 80000;
+
+function calcIRPEF(imponibile: number): number {
+  if (imponibile <= 0) return 0;
+  if (imponibile <= 28000) return imponibile * 0.23;
+  if (imponibile <= 50000) return 28000 * 0.23 + (imponibile - 28000) * 0.35;
+  return 28000 * 0.23 + 22000 * 0.35 + (imponibile - 50000) * 0.43;
+}
+
+function fmt(n: number) {
+  return `€ ${Math.round(n).toLocaleString('it-IT')}`;
+}
+
+const DashboardView = ({ profile, income, expenses, paidPercentage, documents, darkMode, onProfileClick }: DashboardViewProps) => {
   const displayYear = new Date().getFullYear();
 
   const container = {
@@ -38,6 +55,54 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
     const monthExpenses = monthDocs.filter(d => d.type === 'expense').reduce((s, d) => s + d.amount, 0);
     return { name: month, income: monthIncome, expenses: monthExpenses, net: monthIncome - monthExpenses };
   });
+
+  // Proiezione annuale basata sui mesi con fatturato
+  const proiezione = useMemo(() => {
+    const monthsWithIncome = chartData.filter(m => m.income > 0);
+    if (monthsWithIncome.length === 0) return income;
+    const avgMonthly = monthsWithIncome.reduce((s, m) => s + m.income, 0) / monthsWithIncome.length;
+    return avgMonthly * 12;
+  }, [chartData, income]);
+
+  // Calcoli fiscali
+  const tasse = useMemo(() => {
+    const regime = profile.regime || 'forfettario';
+    const base = income; // fatturato incassato
+
+    if (regime === 'forfettario') {
+      const coeffRaw = profile.coefficiente;
+      const coeff = (coeffRaw != null && coeffRaw > 0) ? coeffRaw / 100 : 0.78;
+      const redditoImponibile = base * coeff;
+
+      const annoInizio = profile.annoInizioAttivita;
+      const isFivePercent = annoInizio != null && (displayYear - annoInizio) < 5;
+      const aliquota = isFivePercent ? 0.05 : 0.15;
+
+      const imposta = redditoImponibile * aliquota;
+      const inps = redditoImponibile * INPS_GESTIONE_SEPARATA;
+      const netto = base - imposta - inps;
+
+      return { regime: 'forfettario', imposta, inps, netto, redditoImponibile, aliquota, isFivePercent, coeff };
+    } else {
+      // Regime ordinario
+      const redditoImponibile = Math.max(0, base - expenses); // reddito netto approssimato
+      const irpef = calcIRPEF(redditoImponibile);
+      const addizionali = redditoImponibile * 0.023;
+      const inps = base * INPS_ORDINARIO;
+      const totaleImposta = irpef + addizionali;
+      const netto = base - totaleImposta - inps - expenses;
+
+      return { regime: 'ordinario', imposta: totaleImposta, irpef, addizionali, inps, netto, redditoImponibile, aliquota: redditoImponibile > 0 ? totaleImposta / redditoImponibile : 0 };
+    }
+  }, [income, expenses, profile, displayYear]);
+
+  const sogliAlert = income >= SOGLIA_FORFETTARIO ? 'exceeded' : income >= ALERT_SOGLIA ? 'warning' : null;
+
+  const isForfettario = tasse.regime === 'forfettario';
+  const totaleTasse = tasse.imposta + tasse.inps;
+  const barImposta = income > 0 ? (tasse.imposta / income) * 100 : 0;
+  const barInps = income > 0 ? (tasse.inps / income) * 100 : 0;
+  const barNetto = income > 0 ? (Math.max(0, tasse.netto) / income) * 100 : 0;
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-6 pb-24">
@@ -64,6 +129,130 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
         </div>
       </motion.div>
 
+      {/* Tax Widget */}
+      <motion.div variants={item} className={`rounded-3xl border overflow-hidden transition-all ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+        {/* Header */}
+        <div className={`px-6 pt-5 pb-4 border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Stima Fiscale {displayYear}</p>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isForfettario ? (darkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600') : (darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600')}`}>
+              {isForfettario ? (tasse.isFivePercent ? 'Forfettario 5%' : 'Forfettario 15%') : 'Ordinario'}
+            </span>
+          </div>
+          <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fmt(totaleTasse)}</p>
+          <p className="text-xs text-slate-400 mt-0.5">imposta + contributi stimati</p>
+        </div>
+
+        {/* Alert soglia forfettario */}
+        {isForfettario && sogliAlert && (
+          <div className={`mx-4 mt-4 px-4 py-3 rounded-2xl flex items-start gap-3 ${sogliAlert === 'exceeded' ? (darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600') : (darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600')}`}>
+            {sogliAlert === 'exceeded' ? <AlertCircle size={16} className="mt-0.5 shrink-0" /> : <AlertTriangle size={16} className="mt-0.5 shrink-0" />}
+            <p className="text-xs font-bold leading-relaxed">
+              {sogliAlert === 'exceeded'
+                ? `Hai superato la soglia di €85.000. Potresti dover uscire dal regime forfettario.`
+                : `Stai avvicinandoti alla soglia di €85.000 (${fmt(SOGLIA_FORFETTARIO - income)} mancanti).`}
+            </p>
+          </div>
+        )}
+
+        {/* Breakdown rows */}
+        <div className="px-6 py-4 space-y-3">
+          {isForfettario ? (
+            <>
+              <div className="space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-xs font-bold text-slate-400">Reddito imponibile <span className="font-normal">({Math.round((tasse as any).coeff * 100)}% del fatturato)</span></span>
+                  <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt((tasse as any).redditoImponibile)}</span>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-xs font-bold text-slate-400">Imposta sostitutiva ({Math.round(tasse.aliquota * 100)}%)</span>
+                  <span className="text-xs font-bold text-rose-500">{fmt(tasse.imposta)}</span>
+                </div>
+                <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                  <div className="bg-rose-400 h-full rounded-full" style={{ width: `${Math.min(barImposta, 100)}%` }} />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-xs font-bold text-slate-400">INPS gest. separata (26.07%)</span>
+                  <span className="text-xs font-bold text-amber-500">{fmt(tasse.inps)}</span>
+                </div>
+                <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                  <div className="bg-amber-400 h-full rounded-full" style={{ width: `${Math.min(barInps, 100)}%` }} />
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-xs font-bold text-slate-400">Reddito imponibile</span>
+                  <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt((tasse as any).redditoImponibile)}</span>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-xs font-bold text-slate-400">IRPEF (scaglioni)</span>
+                  <span className="text-xs font-bold text-rose-500">{fmt((tasse as any).irpef)}</span>
+                </div>
+                <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                  <div className="bg-rose-400 h-full rounded-full" style={{ width: `${Math.min(income > 0 ? ((tasse as any).irpef / income) * 100 : 0, 100)}%` }} />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-xs font-bold text-slate-400">Addizionali (~2.3%)</span>
+                  <span className="text-xs font-bold text-orange-500">{fmt((tasse as any).addizionali)}</span>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-xs font-bold text-slate-400">INPS artigiani/comm. (~24%)</span>
+                  <span className="text-xs font-bold text-amber-500">{fmt(tasse.inps)}</span>
+                </div>
+                <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                  <div className="bg-amber-400 h-full rounded-full" style={{ width: `${Math.min(barInps, 100)}%` }} />
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Netto */}
+          <div className={`pt-3 mt-1 border-t space-y-1.5 ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
+            <div className="flex justify-between">
+              <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Netto stimato</span>
+              <span className={`text-sm font-bold ${tasse.netto >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{fmt(tasse.netto)}</span>
+            </div>
+            <div className={`w-full h-2 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+              <div className="bg-emerald-400 h-full rounded-full" style={{ width: `${Math.min(barNetto, 100)}%` }} />
+            </div>
+          </div>
+
+          {/* Proiezione */}
+          {income > 0 && proiezione !== income && (
+            <div className={`pt-3 mt-1 border-t flex items-start gap-2 ${darkMode ? 'border-slate-800 text-slate-400' : 'border-slate-50 text-slate-400'}`}>
+              <Info size={13} className="mt-0.5 shrink-0" />
+              <p className="text-[11px] leading-relaxed">
+                Proiezione annuale basata sui mesi fatturati: <span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(proiezione)}</span>
+              </p>
+            </div>
+          )}
+
+          {/* Nota coefficiente mancante */}
+          {isForfettario && !profile.coefficiente && (
+            <div className={`pt-2 flex items-start gap-2 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+              <Info size={13} className="mt-0.5 shrink-0" />
+              <p className="text-[11px] leading-relaxed">
+                Coefficiente non impostato, usando 78% (professionisti). <button onClick={onProfileClick} className="text-primary font-bold">Imposta nel profilo →</button>
+              </p>
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Margine netto */}
       <motion.div variants={item} className={`rounded-3xl border transition-all ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} overflow-hidden`}>
         <div className={`px-6 py-5 flex items-center justify-between border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
           <div className="space-y-0.5">
@@ -84,14 +273,15 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
           </div>
           <div className="px-5 py-4 space-y-1">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tasse Stimate</p>
-            <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{Math.round(income * 0.15).toLocaleString()}</p>
+            <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fmt(totaleTasse)}</p>
             <div className={`w-full h-1 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-              <div className="bg-primary h-full rounded-full" style={{ width: '15%' }} />
+              <div className="bg-primary h-full rounded-full" style={{ width: income > 0 ? `${Math.min((totaleTasse / income) * 100, 100)}%` : '0%' }} />
             </div>
           </div>
         </div>
       </motion.div>
 
+      {/* Grafico */}
       <motion.div variants={item} className={`rounded-3xl p-6 shadow-sm border transition-all hover:shadow-2xl active:scale-[0.99] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/30 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'} space-y-6`}>
         <div className="flex justify-between items-center">
           <div className="space-y-1">
