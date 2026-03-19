@@ -1,31 +1,13 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, X, Image as ImageIcon } from 'lucide-react';
-
-interface LibraryImage {
-  id: string;
-  data: string;
-  title: string;
-  amount: number;
-  date: string;
-  docType: 'invoice' | 'expense';
-  category: string;
-  client?: string;
-}
+import { Document } from '../types';
 
 interface ImageLibraryViewProps {
-  onAddDocument: (doc: any) => void;
+  documents: Document[];
+  onAddDocument: (doc: Document) => void;
+  onDeleteDocument: (id: string) => void;
   darkMode?: boolean;
-  key?: string;
-}
-
-const STORAGE_KEY = 'imageLibrary';
-
-function loadImages(): LibraryImage[] {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
-}
-function saveImages(items: LibraryImage[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
 }
 
 const categories = [
@@ -36,10 +18,10 @@ const categories = [
   { value: 'altro', label: 'Altro', emoji: '📎' },
 ];
 
-export default function ImageLibraryView({ onAddDocument, darkMode }: ImageLibraryViewProps) {
-  const [images, setImages] = React.useState<LibraryImage[]>(loadImages);
+export default function ImageLibraryView({ documents, onAddDocument, onDeleteDocument, darkMode }: ImageLibraryViewProps) {
+  const images = documents.filter(d => d.imageData);
   const [isAdding, setIsAdding] = React.useState(false);
-  const [selectedImage, setSelectedImage] = React.useState<LibraryImage | null>(null);
+  const [selectedImage, setSelectedImage] = React.useState<Document | null>(null);
   const [preview, setPreview] = React.useState<string | null>(null);
   const [docType, setDocType] = React.useState<'invoice' | 'expense'>('expense');
   const [form, setForm] = React.useState({ title: '', client: '', amount: '', date: new Date().toISOString().split('T')[0], category: 'altro' });
@@ -59,30 +41,27 @@ export default function ImageLibraryView({ onAddDocument, darkMode }: ImageLibra
     const parsed = parseFloat(form.amount.replace(',', '.'));
     if (!form.amount.trim() || isNaN(parsed)) { setAmountError(true); return; }
     const id = Math.random().toString(36).substr(2, 9);
-    const newItem: LibraryImage = {
-      id, data: preview, title: form.title || form.category,
-      amount: parsed, date: form.date, docType,
-      category: form.category, client: docType === 'invoice' ? form.client : undefined,
-    };
-    const updated = [newItem, ...images];
-    setImages(updated);
-    try { saveImages(updated); } catch {}
     onAddDocument({
-      id, type: docType, status: 'paid',
-      title: newItem.title, client: newItem.client, amount: parsed,
-      date: form.date, category: form.category,
+      id,
+      type: docType,
+      status: 'paid',
+      title: form.title || form.category,
+      client: docType === 'invoice' ? form.client : undefined,
+      amount: parsed,
+      date: form.date,
+      category: form.category,
+      imageData: preview,
     });
     setPreview(null);
     setForm({ title: '', client: '', amount: '', date: new Date().toISOString().split('T')[0], category: 'altro' });
     setDocType('expense');
     setAmountError(false);
     setIsAdding(false);
+    if (fileRef.current) fileRef.current.value = '';
   };
 
   const handleDelete = (id: string) => {
-    const updated = images.filter(i => i.id !== id);
-    setImages(updated);
-    saveImages(updated);
+    onDeleteDocument(id);
     setSelectedImage(null);
   };
 
@@ -114,12 +93,12 @@ export default function ImageLibraryView({ onAddDocument, darkMode }: ImageLibra
           <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 gap-3">
             {images.map(img => (
               <motion.button key={img.id} variants={item} onClick={() => setSelectedImage(img)} className="relative rounded-2xl overflow-hidden aspect-square active:scale-[0.97] transition-all">
-                <img src={img.data} alt={img.title} className="w-full h-full object-cover" />
+                <img src={img.imageData} alt={img.title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
                   <p className="text-white text-xs font-bold truncate">{img.title}</p>
-                  <p className={`text-xs font-bold ${img.docType === 'expense' ? 'text-red-300' : 'text-emerald-300'}`}>
-                    {img.docType === 'expense' ? '-' : '+'}€{img.amount.toLocaleString()}
+                  <p className={`text-xs font-bold ${img.type === 'expense' ? 'text-red-300' : 'text-emerald-300'}`}>
+                    {img.type === 'expense' ? '-' : '+'}€{img.amount.toLocaleString()}
                   </p>
                 </div>
               </motion.button>
@@ -220,15 +199,15 @@ export default function ImageLibraryView({ onAddDocument, darkMode }: ImageLibra
           <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedImage(null)} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className={`relative w-full max-w-md rounded-t-[32px] overflow-hidden shadow-2xl ${darkMode ? 'bg-slate-900' : 'bg-white'}`}>
-              <img src={selectedImage.data} alt={selectedImage.title} className="w-full h-56 object-cover" />
+              <img src={selectedImage.imageData} alt={selectedImage.title} className="w-full h-56 object-cover" />
               <div className="p-6 space-y-4">
                 <div className="flex justify-between items-start">
                   <div>
                     <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedImage.title}</p>
                     <p className="text-xs text-slate-400 mt-0.5">{new Date(selectedImage.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                   </div>
-                  <p className={`text-xl font-bold ${selectedImage.docType === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>
-                    {selectedImage.docType === 'expense' ? '-' : '+'}€{selectedImage.amount.toLocaleString()}
+                  <p className={`text-xl font-bold ${selectedImage.type === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>
+                    {selectedImage.type === 'expense' ? '-' : '+'}€{selectedImage.amount.toLocaleString()}
                   </p>
                 </div>
                 <div className="flex gap-3">

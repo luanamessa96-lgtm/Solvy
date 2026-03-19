@@ -9,6 +9,10 @@ export interface Profile {
   currency: Currency;
   jobType: string;
   avatar: string;
+  address?: string;
+  piva?: string;
+  codiceFiscale?: string;
+  regime?: 'forfettario' | 'ordinario';
 }
 
 export interface Document {
@@ -22,6 +26,15 @@ export interface Document {
   category?: string;
   imageData?: string;
   fileName?: string;
+  invoiceNumber?: string;
+  clientAddress?: string;
+  clientPiva?: string;
+  clientCf?: string;
+  ritenuta?: boolean;
+  marcaBollo?: boolean;
+  ivaRate?: number;
+  rivalsaInps?: boolean;
+  docRegime?: 'forfettario' | 'ordinario';
 }
 
 export interface Deadline {

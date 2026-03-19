@@ -1,18 +1,20 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Mail, Camera, ChevronRight, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus } from 'lucide-react';
+import { Search, Mail, Camera, ChevronRight, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus, Download } from 'lucide-react';
 
 import { Document, Accountant, Profile } from '../types';
 import CreateInvoiceModal from '../components/modals/CreateInvoiceModal';
 import CreateExpenseModal from '../components/modals/CreateExpenseModal';
 import SearchOverlay from '../components/modals/SearchOverlay';
 import ExportModal from '../components/modals/ExportModal';
+import { generateInvoicePDF } from '../lib/generateInvoicePDF';
 
 interface DocumentsViewProps {
   documents: Document[];
   onAddDocument: (doc: Document) => void;
   onDeleteDocument: (id: string) => void;
   onUpdateDocument: (doc: Document) => void;
+  onUpdateProfile: (p: Profile) => void;
   accountant: Accountant;
   profile: Profile;
   darkMode?: boolean;
@@ -20,7 +22,7 @@ interface DocumentsViewProps {
   onMediaLibraryClick?: () => void;
 }
 
-const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, accountant, profile, darkMode, onMediaLibraryClick }: DocumentsViewProps) => {
+const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, onUpdateProfile, accountant, profile, darkMode, onMediaLibraryClick }: DocumentsViewProps) => {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isChoiceOpen, setIsChoiceOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -217,7 +219,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
         )}
       </AnimatePresence>
 
-      <CreateInvoiceModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} onSave={onAddDocument} darkMode={darkMode} />
+      <CreateInvoiceModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} onSave={onAddDocument} onUpdateProfile={onUpdateProfile} profile={profile} documents={documents} darkMode={darkMode} />
       <CreateExpenseModal isOpen={isExpenseOpen} onClose={() => setIsExpenseOpen(false)} onSave={onAddDocument} darkMode={darkMode} />
 
       <AnimatePresence>
@@ -234,6 +236,12 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   <button onClick={() => { onUpdateDocument({ ...selectedDoc, status: 'paid' }); setSelectedDoc(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-500 text-white"><CheckCircle2 size={18} /></div>
                     <span className="font-bold text-emerald-600">Segna come Pagata</span>
+                  </button>
+                )}
+                {selectedDoc.type === 'invoice' && (
+                  <button onClick={() => { generateInvoicePDF(selectedDoc, profile); setSelectedDoc(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-primary/10 border-primary/20' : 'bg-primary/5 border-primary/10'}`}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary text-white"><Download size={18} /></div>
+                    <span className="font-bold text-primary">Scarica PDF Fattura</span>
                   </button>
                 )}
                 <button onClick={() => { setDocToEdit({ ...selectedDoc }); setSelectedDoc(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
@@ -256,43 +264,77 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
           <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDocToEdit(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className={`relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
-              <div className="p-8 space-y-5">
+              <div className="overflow-y-auto max-h-[90vh] p-8 space-y-5">
                 <div className="flex justify-between items-start">
                   <div>
                     <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Modifica</h2>
-                    <p className="text-sm text-slate-500">{docToEdit.type === 'invoice' ? 'Fattura' : 'Spesa'}</p>
+                    <p className="text-sm text-slate-500">{docToEdit.type === 'invoice' ? `Fattura ${docToEdit.invoiceNumber || ''}` : 'Spesa'}</p>
                   </div>
                   <button onClick={() => setDocToEdit(null)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
                 </div>
-                <div className="space-y-3">
-                  {docToEdit.type === 'invoice' && (
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Cliente</label>
-                      <input type="text" value={docToEdit.client || ''} onChange={e => setDocToEdit({ ...docToEdit, client: e.target.value })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
+                {(() => {
+                  const ic = `w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`;
+                  const lc = 'text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1';
+                  return (
+                    <div className="space-y-3">
+                      {docToEdit.type === 'invoice' && (
+                        <>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                              <label className={lc}>N° Fattura</label>
+                              <input type="text" value={docToEdit.invoiceNumber || ''} onChange={e => setDocToEdit({ ...docToEdit, invoiceNumber: e.target.value })} className={ic} />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className={lc}>Data</label>
+                              <input type="date" value={docToEdit.date} onChange={e => setDocToEdit({ ...docToEdit, date: e.target.value })} className={ic} />
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className={lc}>Ragione Sociale / Nome</label>
+                            <input type="text" value={docToEdit.client || ''} onChange={e => setDocToEdit({ ...docToEdit, client: e.target.value })} className={ic} />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className={lc}>Indirizzo Cliente</label>
+                            <input type="text" value={docToEdit.clientAddress || ''} onChange={e => setDocToEdit({ ...docToEdit, clientAddress: e.target.value })} className={ic} />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                              <label className={lc}>P.IVA Cliente</label>
+                              <input type="text" value={docToEdit.clientPiva || ''} onChange={e => setDocToEdit({ ...docToEdit, clientPiva: e.target.value })} className={ic} />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className={lc}>C.F. Cliente</label>
+                              <input type="text" value={docToEdit.clientCf || ''} onChange={e => setDocToEdit({ ...docToEdit, clientCf: e.target.value.toUpperCase() })} className={ic} />
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      <div className="space-y-1.5">
+                        <label className={lc}>Descrizione</label>
+                        <input type="text" value={docToEdit.title} onChange={e => setDocToEdit({ ...docToEdit, title: e.target.value })} className={ic} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <label className={lc}>Importo €</label>
+                          <input type="number" value={docToEdit.amount} onChange={e => setDocToEdit({ ...docToEdit, amount: parseFloat(e.target.value) || 0 })} className={ic} />
+                        </div>
+                        {docToEdit.type === 'expense' && (
+                          <div className="space-y-1.5">
+                            <label className={lc}>Data</label>
+                            <input type="date" value={docToEdit.date} onChange={e => setDocToEdit({ ...docToEdit, date: e.target.value })} className={ic} />
+                          </div>
+                        )}
+                      </div>
+                      {docToEdit.type === 'invoice' && (
+                        <div className={`flex items-center gap-3 p-4 rounded-2xl border transition-colors ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
+                          <CheckCircle2 size={20} className="text-emerald-500" />
+                          <p className={`text-xs font-bold flex-1 ${darkMode ? 'text-emerald-400' : 'text-emerald-900'}`}>Segna come Pagata</p>
+                          <input type="checkbox" checked={docToEdit.status === 'paid'} onChange={e => setDocToEdit({ ...docToEdit, status: e.target.checked ? 'paid' : 'pending' })} className="w-5 h-5 rounded-lg border-emerald-200 text-emerald-500 focus:ring-emerald-500" />
+                        </div>
+                      )}
                     </div>
-                  )}
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Descrizione</label>
-                    <input type="text" value={docToEdit.title} onChange={e => setDocToEdit({ ...docToEdit, title: e.target.value })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Importo</label>
-                      <input type="number" value={docToEdit.amount} onChange={e => setDocToEdit({ ...docToEdit, amount: parseFloat(e.target.value) || 0 })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 font-bold ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Data</label>
-                      <input type="date" value={docToEdit.date} onChange={e => setDocToEdit({ ...docToEdit, date: e.target.value })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
-                    </div>
-                  </div>
-                  {docToEdit.type === 'invoice' && (
-                    <div className={`flex items-center gap-3 p-4 rounded-2xl border transition-colors ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
-                      <CheckCircle2 size={20} className="text-emerald-500" />
-                      <p className={`text-xs font-bold flex-1 ${darkMode ? 'text-emerald-400' : 'text-emerald-900'}`}>Segna come Pagato</p>
-                      <input type="checkbox" checked={docToEdit.status === 'paid'} onChange={e => setDocToEdit({ ...docToEdit, status: e.target.checked ? 'paid' : 'pending' })} className="w-5 h-5 rounded-lg border-emerald-200 text-emerald-500 focus:ring-emerald-500" />
-                    </div>
-                  )}
-                </div>
+                  );
+                })()}
                 <button onClick={() => { onUpdateDocument(docToEdit); setDocToEdit(null); }} className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">Salva Modifiche</button>
               </div>
             </motion.div>

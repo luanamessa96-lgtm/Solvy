@@ -1,32 +1,13 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, X, FileText, File } from 'lucide-react';
-
-interface LibraryDoc {
-  id: string;
-  fileName: string;
-  data: string;
-  title: string;
-  amount: number;
-  date: string;
-  docType: 'invoice' | 'expense';
-  category: string;
-  client?: string;
-}
+import { Plus, X, FileText } from 'lucide-react';
+import { Document } from '../types';
 
 interface DocumentLibraryViewProps {
-  onAddDocument: (doc: any) => void;
+  documents: Document[];
+  onAddDocument: (doc: Document) => void;
+  onDeleteDocument: (id: string) => void;
   darkMode?: boolean;
-  key?: string;
-}
-
-const STORAGE_KEY = 'docLibrary';
-
-function loadDocs(): LibraryDoc[] {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
-}
-function saveDocs(items: LibraryDoc[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
 }
 
 const categories = [
@@ -38,13 +19,37 @@ const categories = [
 ];
 
 function fileExtension(name: string) {
-  return name.split('.').pop()?.toUpperCase() || 'FILE';
+  return name.split('.').pop()?.toLowerCase() || 'file';
 }
 
-export default function DocumentLibraryView({ onAddDocument, darkMode }: DocumentLibraryViewProps) {
-  const [docs, setDocs] = React.useState<LibraryDoc[]>(loadDocs);
+function FileIcon({ ext, darkMode }: { ext: string; darkMode?: boolean }) {
+  const configs: Record<string, { bg: string; color: string; label: string }> = {
+    pdf:  { bg: 'bg-red-50',    color: 'text-red-500',    label: 'PDF' },
+    doc:  { bg: 'bg-blue-50',   color: 'text-blue-600',   label: 'DOC' },
+    docx: { bg: 'bg-blue-50',   color: 'text-blue-600',   label: 'DOCX' },
+    xls:  { bg: 'bg-emerald-50',color: 'text-emerald-600',label: 'XLS' },
+    xlsx: { bg: 'bg-emerald-50',color: 'text-emerald-600',label: 'XLSX' },
+    csv:  { bg: 'bg-emerald-50',color: 'text-emerald-600',label: 'CSV' },
+    png:  { bg: 'bg-purple-50', color: 'text-purple-600', label: 'PNG' },
+    jpg:  { bg: 'bg-purple-50', color: 'text-purple-600', label: 'JPG' },
+    jpeg: { bg: 'bg-purple-50', color: 'text-purple-600', label: 'JPG' },
+    txt:  { bg: 'bg-slate-100', color: 'text-slate-500',  label: 'TXT' },
+    zip:  { bg: 'bg-amber-50',  color: 'text-amber-600',  label: 'ZIP' },
+  };
+  const cfg = configs[ext] ?? { bg: 'bg-indigo-50', color: 'text-indigo-500', label: ext.toUpperCase().slice(0, 4) };
+
+  return (
+    <div className={`w-full aspect-square rounded-2xl flex flex-col items-center justify-center gap-1.5 ${darkMode ? 'bg-slate-800' : cfg.bg}`}>
+      <FileText size={32} className={cfg.color} strokeWidth={1.5} />
+      <span className={`text-[11px] font-black tracking-wider ${cfg.color}`}>{cfg.label}</span>
+    </div>
+  );
+}
+
+export default function DocumentLibraryView({ documents, onAddDocument, onDeleteDocument, darkMode }: DocumentLibraryViewProps) {
+  const docs = documents.filter(d => d.fileName);
   const [isAdding, setIsAdding] = React.useState(false);
-  const [selectedDoc, setSelectedDoc] = React.useState<LibraryDoc | null>(null);
+  const [selectedDoc, setSelectedDoc] = React.useState<Document | null>(null);
   const [fileName, setFileName] = React.useState('');
   const [fileData, setFileData] = React.useState<string | null>(null);
   const [docType, setDocType] = React.useState<'invoice' | 'expense'>('expense');
@@ -66,18 +71,17 @@ export default function DocumentLibraryView({ onAddDocument, darkMode }: Documen
     const parsed = parseFloat(form.amount.replace(',', '.'));
     if (!form.amount.trim() || isNaN(parsed)) { setAmountError(true); return; }
     const id = Math.random().toString(36).substr(2, 9);
-    const newItem: LibraryDoc = {
-      id, fileName, data: fileData, title: form.title || form.category,
-      amount: parsed, date: form.date, docType,
-      category: form.category, client: docType === 'invoice' ? form.client : undefined,
-    };
-    const updated = [newItem, ...docs];
-    setDocs(updated);
-    try { saveDocs(updated); } catch {}
     onAddDocument({
-      id, type: docType, status: 'paid',
-      title: newItem.title, client: newItem.client, amount: parsed,
-      date: form.date, category: form.category,
+      id,
+      type: docType,
+      status: 'paid',
+      title: form.title || form.category,
+      client: docType === 'invoice' ? form.client : undefined,
+      amount: parsed,
+      date: form.date,
+      category: form.category,
+      imageData: fileData,
+      fileName,
     });
     setFileData(null);
     setFileName('');
@@ -85,24 +89,23 @@ export default function DocumentLibraryView({ onAddDocument, darkMode }: Documen
     setDocType('expense');
     setAmountError(false);
     setIsAdding(false);
+    if (fileRef.current) fileRef.current.value = '';
   };
 
   const handleDelete = (id: string) => {
-    const updated = docs.filter(d => d.id !== id);
-    setDocs(updated);
-    saveDocs(updated);
+    onDeleteDocument(id);
     setSelectedDoc(null);
   };
 
   const inputClass = (error = false) =>
     `w-full px-4 py-3 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 border ${error ? 'border-red-400 focus:ring-red-400/20' : `focus:ring-primary/20 ${darkMode ? 'border-slate-700' : 'border-slate-100'}`} ${darkMode ? 'bg-slate-800 text-white placeholder:text-slate-600' : 'bg-slate-50 text-slate-900 placeholder:text-slate-400'}`;
 
-  const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
-  const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } };
+  const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
+  const item = { hidden: { opacity: 0, scale: 0.92 }, show: { opacity: 1, scale: 1 } };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 space-y-4 pb-24">
-      <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.xlsx,.csv" className="hidden" onChange={handleFileChange} />
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 space-y-6 pb-24">
+      <input ref={fileRef} type="file" accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain,.pdf,.doc,.docx,.xlsx,.csv,.txt" className="hidden" onChange={handleFileChange} />
 
       {docs.length === 0 ? (
         <div className="py-20 flex flex-col items-center gap-4 text-center">
@@ -119,22 +122,16 @@ export default function DocumentLibraryView({ onAddDocument, darkMode }: Documen
         </div>
       ) : (
         <>
-          <motion.div variants={container} initial="hidden" animate="show" className="space-y-3">
+          <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-3 gap-4">
             {docs.map(doc => (
-              <motion.button key={doc.id} variants={item} onClick={() => setSelectedDoc(doc)} className={`w-full p-4 rounded-2xl border flex items-center gap-4 text-left transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-lg'}`}>
-                <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center shrink-0 ${doc.docType === 'invoice' ? (darkMode ? 'bg-emerald-500/10' : 'bg-emerald-50') : (darkMode ? 'bg-indigo-500/10' : 'bg-indigo-50')}`}>
-                  <File size={16} className={doc.docType === 'invoice' ? 'text-emerald-500' : 'text-indigo-500'} />
-                  <span className={`text-[9px] font-bold mt-0.5 ${doc.docType === 'invoice' ? 'text-emerald-500' : 'text-indigo-500'}`}>{fileExtension(doc.fileName)}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-bold truncate ${darkMode ? 'text-white' : 'text-slate-900'}`}>{doc.title}</p>
-                  <p className="text-xs text-slate-400 truncate mt-0.5">{doc.fileName}</p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className={`text-sm font-bold ${doc.docType === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>
-                    {doc.docType === 'expense' ? '-' : '+'}€{doc.amount.toLocaleString()}
+              <motion.button key={doc.id} variants={item} onClick={() => setSelectedDoc(doc)} className="flex flex-col items-center gap-2 active:scale-[0.94] transition-all">
+                <FileIcon ext={fileExtension(doc.fileName!)} darkMode={darkMode} />
+                <div className="w-full text-center space-y-0.5 px-1">
+                  <p className={`text-xs font-bold truncate ${darkMode ? 'text-white' : 'text-slate-800'}`}>{doc.title}</p>
+                  <p className={`text-[10px] font-bold ${doc.type === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>
+                    {doc.type === 'expense' ? '-' : '+'}€{doc.amount.toLocaleString()}
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">{new Date(doc.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}</p>
+                  <p className="text-[10px] text-slate-400">{new Date(doc.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}</p>
                 </div>
               </motion.button>
             ))}
@@ -174,8 +171,8 @@ export default function DocumentLibraryView({ onAddDocument, darkMode }: Documen
                 ) : (
                   <div className="space-y-5">
                     <div className={`flex items-center gap-3 p-4 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${darkMode ? 'bg-indigo-500/10' : 'bg-indigo-50'}`}>
-                        <FileText size={20} className="text-indigo-500" />
+                      <div className="w-12 h-12 shrink-0">
+                        <FileIcon ext={fileExtension(fileName)} darkMode={darkMode} />
                       </div>
                       <p className={`text-sm font-bold truncate flex-1 ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fileName}</p>
                       <button onClick={() => { setFileData(null); setFileName(''); }} className="text-slate-400"><X size={18} /></button>
@@ -239,16 +236,16 @@ export default function DocumentLibraryView({ onAddDocument, darkMode }: Documen
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className={`relative w-full max-w-md rounded-t-[32px] shadow-2xl ${darkMode ? 'bg-slate-900' : 'bg-white'}`}>
               <div className="p-6 space-y-4">
                 <div className={`p-5 rounded-2xl flex items-center gap-4 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
-                  <div className={`w-14 h-14 rounded-xl flex flex-col items-center justify-center ${darkMode ? 'bg-indigo-500/10' : 'bg-indigo-50'}`}>
-                    <FileText size={22} className="text-indigo-500" />
-                    <span className="text-[9px] font-bold text-indigo-500 mt-0.5">{fileExtension(selectedDoc.fileName)}</span>
+                  <div className="w-16 h-16 shrink-0">
+                    <FileIcon ext={fileExtension(selectedDoc.fileName!)} darkMode={darkMode} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className={`text-base font-bold truncate ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedDoc.title}</p>
                     <p className="text-xs text-slate-400 truncate mt-0.5">{selectedDoc.fileName}</p>
-                    <p className={`text-sm font-bold mt-1 ${selectedDoc.docType === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>
-                      {selectedDoc.docType === 'expense' ? '-' : '+'}€{selectedDoc.amount.toLocaleString()}
+                    <p className={`text-sm font-bold mt-1 ${selectedDoc.type === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>
+                      {selectedDoc.type === 'expense' ? '-' : '+'}€{selectedDoc.amount.toLocaleString()}
                     </p>
+                    <p className="text-xs text-slate-400 mt-0.5">{new Date(selectedDoc.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">

@@ -25,7 +25,20 @@ export async function getDocuments(profileId: string): Promise<Document[]> {
     .order('date', { ascending: false });
 
   if (error) throw error;
-  return (data || []).map(d => ({ ...d, imageData: d.image_data, fileName: d.file_name }));
+  return (data || []).map(d => ({
+    ...d,
+    imageData: d.image_data,
+    fileName: d.file_name,
+    invoiceNumber: d.invoice_number,
+    clientAddress: d.client_address,
+    clientPiva: d.client_piva,
+    clientCf: d.client_cf,
+    ritenuta: d.ritenuta,
+    marcaBollo: d.marca_bollo,
+    ivaRate: d.iva_rate,
+    rivalsaInps: d.rivalsa_inps,
+    docRegime: d.doc_regime,
+  }));
 }
 
 export async function addDocument(doc: Document, profileId: string): Promise<void> {
@@ -42,6 +55,15 @@ export async function addDocument(doc: Document, profileId: string): Promise<voi
       category: doc.category,
       image_data: doc.imageData,
       file_name: doc.fileName,
+      invoice_number: doc.invoiceNumber,
+      client_address: doc.clientAddress,
+      client_piva: doc.clientPiva,
+      client_cf: doc.clientCf,
+      ritenuta: doc.ritenuta,
+      marca_bollo: doc.marcaBollo,
+      iva_rate: doc.ivaRate,
+      rivalsa_inps: doc.rivalsaInps,
+      doc_regime: doc.docRegime,
       profile_id: profileId,
     }]);
 
@@ -80,7 +102,11 @@ export async function getProfiles(): Promise<Profile[]> {
     .order('name', { ascending: true });
 
   if (error) throw error;
-  return (data || []).map(p => ({ ...p, jobType: p.job_type }));
+  return (data || []).map(p => ({
+    ...p,
+    jobType: p.job_type,
+    codiceFiscale: p.codice_fiscale,
+  }));
 }
 
 export async function updateProfile(profile: Profile): Promise<void> {
@@ -93,6 +119,10 @@ export async function updateProfile(profile: Profile): Promise<void> {
       currency: profile.currency,
       job_type: profile.jobType,
       avatar: profile.avatar,
+      address: profile.address,
+      piva: profile.piva,
+      codice_fiscale: profile.codiceFiscale,
+      regime: profile.regime,
     })
     .eq('id', profile.id);
 
