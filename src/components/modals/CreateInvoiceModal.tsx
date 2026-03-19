@@ -52,7 +52,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
     ivaRate: 22,
   });
 
-  const set = (key: keyof typeof form, value: any) => setForm(f => ({ ...f, [key]: value }));
+  const set = <K extends keyof typeof form>(key: K, value: typeof form[K]) => setForm(f => ({ ...f, [key]: value }));
 
   const reset = () => {
     setForm({

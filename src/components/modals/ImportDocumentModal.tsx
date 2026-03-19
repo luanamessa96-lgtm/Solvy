@@ -5,7 +5,7 @@ import { Plus, Camera, FileText as FileIcon } from 'lucide-react';
 interface ImportDocumentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (doc: any) => void;
+  onSave: (doc: import('../../types').Document) => void;
   darkMode?: boolean;
 }
 

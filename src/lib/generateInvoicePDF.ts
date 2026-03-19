@@ -2,6 +2,10 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Document, Profile } from '../types';
 
+interface jsPDFWithAutoTable extends jsPDF {
+  lastAutoTable: { finalY: number };
+}
+
 const FORFETTARIO_NOTE =
   "Operazione effettuata in regime forfettario ai sensi dell'art. 1, commi 54-89, L. n. 190/2014. " +
   "Non soggetta ad IVA ai sensi dell'art. 1, co. 58, L. 190/2014. " +
@@ -17,7 +21,7 @@ function fmt(n: number) {
 }
 
 export async function generateInvoicePDF(doc: Document, profile: Profile): Promise<void> {
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
   const W = 210;
   const margin = 14;
   const rightCol = W - margin;
@@ -114,7 +118,7 @@ export async function generateInvoicePDF(doc: Document, profile: Profile): Promi
     margin: { left: margin, right: margin },
   });
 
-  y = (pdf as any).lastAutoTable?.finalY ?? y + 20;
+  y = pdf.lastAutoTable?.finalY ?? y + 20;
   y += 4;
 
   // ─── Riepilogo importi ────────────────────────────────────────────────────

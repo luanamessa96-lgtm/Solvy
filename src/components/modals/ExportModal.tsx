@@ -5,6 +5,10 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Document as AppDoc, Profile, Accountant } from '../../types';
 
+interface jsPDFWithAutoTable extends jsPDF {
+  lastAutoTable: { finalY: number };
+}
+
 interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -156,7 +160,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   };
 
   const exportPDF = async () => {
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
@@ -196,7 +200,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       },
     });
 
-    const finalY: number = (doc as any).lastAutoTable?.finalY ?? 41;
+    const finalY: number = doc.lastAutoTable?.finalY ?? 41;
     const summaryY = finalY + 8;
 
     doc.setFont('helvetica', 'bold');

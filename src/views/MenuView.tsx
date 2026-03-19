@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Briefcase, Settings, CreditCard, AlertCircle, LogOut, ChevronRight } from 'lucide-react';
+import { Briefcase, Settings, CreditCard, AlertCircle, LogOut, ChevronRight, type LucideIcon } from 'lucide-react';
 import { Profile } from '../types';
 import LogoutModal from '../components/modals/LogoutModal';
 import SecurityModal from '../components/modals/SecurityModal';
@@ -18,7 +18,7 @@ const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountant
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
 
-  const menuItems: { label: string; icon: any; onClick: () => void; color?: string }[] = [
+  const menuItems: { label: string; icon: LucideIcon; onClick: () => void; color?: string }[] = [
     { label: 'Il mio Commercialista', icon: Briefcase, onClick: onAccountantClick },
     { label: 'Impostazioni', icon: Settings, onClick: onSettingsClick },
     { label: 'Abbonamento', icon: CreditCard, onClick: () => {} },

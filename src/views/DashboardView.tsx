@@ -15,6 +15,30 @@ interface DashboardViewProps {
   key?: string;
 }
 
+interface TasseForfettario {
+  regime: 'forfettario';
+  imposta: number;
+  inps: number;
+  netto: number;
+  redditoImponibile: number;
+  aliquota: number;
+  isFivePercent: boolean;
+  coeff: number;
+}
+
+interface TasseOrdinario {
+  regime: 'ordinario';
+  imposta: number;
+  irpef: number;
+  addizionali: number;
+  inps: number;
+  netto: number;
+  redditoImponibile: number;
+  aliquota: number;
+}
+
+type Tasse = TasseForfettario | TasseOrdinario;
+
 const INPS_GESTIONE_SEPARATA = 0.2607;
 const INPS_ORDINARIO = 0.24;
 const SOGLIA_FORFETTARIO = 85000;
@@ -65,7 +89,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
   }, [chartData, income]);
 
   // Calcoli fiscali
-  const tasse = useMemo(() => {
+  const tasse = useMemo((): Tasse => {
     const regime = profile.regime || 'forfettario';
     const base = income; // fatturato incassato
 
@@ -161,8 +185,8 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
             <>
               <div className="space-y-1.5">
                 <div className="flex justify-between">
-                  <span className="text-xs font-bold text-slate-400">Reddito imponibile <span className="font-normal">({Math.round((tasse as any).coeff * 100)}% del fatturato)</span></span>
-                  <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt((tasse as any).redditoImponibile)}</span>
+                  <span className="text-xs font-bold text-slate-400">Reddito imponibile <span className="font-normal">({tasse.regime === 'forfettario' ? Math.round(tasse.coeff * 100) : 100}% del fatturato)</span></span>
+                  <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(tasse.redditoImponibile)}</span>
                 </div>
               </div>
               <div className="space-y-1.5">
@@ -189,24 +213,26 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
               <div className="space-y-1.5">
                 <div className="flex justify-between">
                   <span className="text-xs font-bold text-slate-400">Reddito imponibile</span>
-                  <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt((tasse as any).redditoImponibile)}</span>
+                  <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(tasse.redditoImponibile)}</span>
                 </div>
               </div>
+              {tasse.regime === 'ordinario' && (<>
               <div className="space-y-1.5">
                 <div className="flex justify-between">
                   <span className="text-xs font-bold text-slate-400">IRPEF (scaglioni)</span>
-                  <span className="text-xs font-bold text-rose-500">{fmt((tasse as any).irpef)}</span>
+                  <span className="text-xs font-bold text-rose-500">{fmt(tasse.irpef)}</span>
                 </div>
                 <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                  <div className="bg-rose-400 h-full rounded-full" style={{ width: `${Math.min(income > 0 ? ((tasse as any).irpef / income) * 100 : 0, 100)}%` }} />
+                  <div className="bg-rose-400 h-full rounded-full" style={{ width: `${Math.min(income > 0 ? (tasse.irpef / income) * 100 : 0, 100)}%` }} />
                 </div>
               </div>
               <div className="space-y-1.5">
                 <div className="flex justify-between">
                   <span className="text-xs font-bold text-slate-400">Addizionali (~2.3%)</span>
-                  <span className="text-xs font-bold text-orange-500">{fmt((tasse as any).addizionali)}</span>
+                  <span className="text-xs font-bold text-orange-500">{fmt(tasse.addizionali)}</span>
                 </div>
               </div>
+              </>)}
               <div className="space-y-1.5">
                 <div className="flex justify-between">
                   <span className="text-xs font-bold text-slate-400">INPS artigiani/comm. (~24%)</span>
@@ -310,7 +336,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                     <div className={`p-2 rounded-xl border shadow-xl backdrop-blur-md ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white/90 border-slate-100'}`}>
                       <p className={`text-[10px] font-bold mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mese {payload[0].payload.name}</p>
                       <div className="space-y-0.5">
-                        {payload.map((entry: any, index: number) => (
+                        {payload.map((entry: { name: string; value: number }, index: number) => (
                           <div key={index} className="flex items-center justify-between gap-4">
                             <span className="text-[10px] font-bold text-slate-400 uppercase">{entry.name === 'income' ? 'Entrate' : entry.name === 'expenses' ? 'Uscite' : 'Netto'}</span>
                             <span className={`text-[10px] font-black ${entry.name === 'income' ? 'text-emerald-500' : entry.name === 'expenses' ? 'text-indigo-500' : 'text-blue-500'}`}>€{Math.round(entry.value).toLocaleString()}</span>

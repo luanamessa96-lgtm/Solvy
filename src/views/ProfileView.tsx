@@ -94,13 +94,13 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Paese</label>
-                      <select value={editData.country} onChange={e => setEditData({ ...editData, country: e.target.value as any })} className={inputClass}>
+                      <select value={editData.country} onChange={e => setEditData({ ...editData, country: e.target.value as import('../types').Country })} className={inputClass}>
                         <option>Italy</option><option>USA</option><option>UK</option><option>Germany</option>
                       </select>
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Valuta</label>
-                      <select value={editData.currency} onChange={e => setEditData({ ...editData, currency: e.target.value as any })} className={inputClass}>
+                      <select value={editData.currency} onChange={e => setEditData({ ...editData, currency: e.target.value as import('../types').Currency })} className={inputClass}>
                         <option>EUR</option><option>USD</option><option>GBP</option>
                       </select>
                     </div>

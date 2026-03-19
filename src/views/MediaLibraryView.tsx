@@ -119,9 +119,9 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
         fileName: addType === 'file' ? fileName : undefined,
       });
       reset();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setUploading(false);
-      setUploadError(err?.message || 'Errore durante il salvataggio.');
+      setUploadError(err instanceof Error ? err.message : 'Errore durante il salvataggio.');
     }
   };
 

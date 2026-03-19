@@ -5,7 +5,7 @@ import { Plus, FileText, CreditCard, Calendar } from 'lucide-react';
 interface CreateExpenseModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (doc: any) => void;
+  onSave: (doc: import('../../types').Document) => void;
   darkMode?: boolean;
 }
 
