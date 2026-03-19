@@ -72,7 +72,17 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
     let docs = q ? documents : yearDocuments;
     if (filter === 'income') docs = docs.filter(d => d.type === 'invoice');
     if (filter === 'expense') docs = docs.filter(d => d.type === 'expense');
-    if (statusFilter !== 'all') docs = docs.filter(d => d.status === statusFilter);
+    if (statusFilter !== 'all') {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      if (statusFilter === 'overdue') {
+        docs = docs.filter(d => d.status === 'overdue' || (d.type === 'invoice' && d.status === 'pending' && new Date(d.date) < thirtyDaysAgo));
+      } else if (statusFilter === 'pending') {
+        docs = docs.filter(d => d.status === 'pending' && new Date(d.date) >= thirtyDaysAgo);
+      } else {
+        docs = docs.filter(d => d.status === statusFilter);
+      }
+    }
     if (q) docs = docs.filter(d => (d.title ?? '').toLowerCase().includes(q) || (d.client ?? '').toLowerCase().includes(q) || (d.category ?? '').toLowerCase().includes(q) || String(d.amount).includes(q));
     return docs;
   }, [documents, yearDocuments, filter, statusFilter, searchQuery]);

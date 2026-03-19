@@ -81,7 +81,7 @@ function AppInner() {
   };
 
   const handleAddDocument = async (doc: Document) => {
-    setDocuments(prev => [doc, ...prev]);
+    setDocuments(prev => markOverdue([doc, ...prev]));
     showToast(doc.type === 'invoice' ? 'Fattura aggiunta' : 'Spesa aggiunta');
     try { await addDocument(doc, activeProfile.id); } catch { showToast('Errore nel salvataggio', 'error'); }
   };

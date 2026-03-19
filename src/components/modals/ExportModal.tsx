@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Download, Check, Mail, Share2 } from 'lucide-react';
+import { X, Download, Check, Mail, Share2, Eye } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Document as AppDoc, Profile, Accountant } from '../../types';
@@ -372,13 +372,23 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
               {/* Bottone / Step 2 */}
               {readyBlob ? (
                 <div className="space-y-3">
-                  <div className={`rounded-2xl p-4 flex items-center gap-3 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                  <button
+                    onClick={() => {
+                      const url = URL.createObjectURL(readyBlob.blob);
+                      window.open(url, '_blank');
+                    }}
+                    className={`w-full rounded-2xl p-4 flex items-center gap-3 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 hover:border-primary/40' : 'bg-slate-50 hover:bg-slate-100'}`}
+                  >
                     <Check size={18} className="text-emerald-500 shrink-0" />
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1 text-left">
                       <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>File pronto</p>
                       <p className="text-xs text-slate-400 truncate">{readyBlob.fileName}</p>
                     </div>
-                  </div>
+                    <div className="flex items-center gap-1.5 text-primary shrink-0">
+                      <Eye size={16} />
+                      <span className="text-xs font-bold">Anteprima</span>
+                    </div>
+                  </button>
                   <button onClick={handleShareFile} className="w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
                     <Share2 size={18} />
                     Condividi / Allega File
