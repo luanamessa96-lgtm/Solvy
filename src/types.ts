@@ -45,6 +45,7 @@ export interface Deadline {
   date: string;
   type: 'tax' | 'payment' | 'other';
   amount?: number;
+  completed?: boolean;
 }
 
 export interface Accountant {

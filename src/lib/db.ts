@@ -176,7 +176,7 @@ export async function getDeadlines(profileId: string): Promise<Deadline[]> {
     .order('date', { ascending: true });
 
   if (error) throw error;
-  return data || [];
+  return (data || []).map(d => ({ ...d, completed: d.completed ?? false }));
 }
 
 export async function addDeadline(deadline: Deadline, profileId: string): Promise<void> {
@@ -195,6 +195,7 @@ export async function updateDeadline(deadline: Deadline): Promise<void> {
       date: deadline.date,
       type: deadline.type,
       amount: deadline.amount,
+      completed: deadline.completed ?? false,
     })
     .eq('id', deadline.id);
 

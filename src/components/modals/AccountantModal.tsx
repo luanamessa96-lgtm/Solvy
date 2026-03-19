@@ -12,9 +12,9 @@ interface AccountantModalProps {
 const AccountantModal = ({ isOpen, onClose, accountant, darkMode }: AccountantModalProps) => (
   <AnimatePresence>
     {isOpen && (
-      <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
-        <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className={`relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl transition-all backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className={`relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl transition-all backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
           <div className="p-8 space-y-6">
             <div className="flex justify-between items-start">
               <div className="space-y-1">

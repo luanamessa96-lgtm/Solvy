@@ -11,9 +11,9 @@ interface LogoutModalProps {
 const LogoutModal = ({ isOpen, onClose, onConfirm, darkMode }: LogoutModalProps) => (
   <AnimatePresence>
     {isOpen && (
-      <div className="fixed inset-0 z-[100] flex items-end justify-center p-4 sm:items-center">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-        <motion.div initial={{ opacity: 0, y: 100, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 100, scale: 0.95 }} className={`relative w-full max-w-sm rounded-[32px] p-8 shadow-2xl space-y-6 overflow-hidden transition-colors ${darkMode ? 'bg-slate-900' : 'bg-white'}`}>
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className={`relative w-full max-w-sm rounded-[32px] p-8 shadow-2xl space-y-6 overflow-hidden transition-colors ${darkMode ? 'bg-slate-900' : 'bg-white'}`}>
           <div className={`absolute top-0 right-0 w-32 h-32 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl ${darkMode ? 'bg-red-500/10' : 'bg-red-500/5'}`} />
           <div className="flex flex-col items-center text-center space-y-4">
             <div className={`w-20 h-20 rounded-3xl flex items-center justify-center transition-colors ${darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-500'}`}>

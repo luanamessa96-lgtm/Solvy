@@ -114,9 +114,11 @@ export default function App() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return deadlines.filter(d => {
+      if (d.completed) return false;
       const date = new Date(d.date);
       date.setHours(0, 0, 0, 0);
-      return Math.ceil((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) <= 30;
+      const diff = Math.ceil((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return diff >= 0 && diff <= 30;
     }).length;
   }, [deadlines]);
 
@@ -163,7 +165,7 @@ export default function App() {
       />
 
       {isNotificationsOpen && (
-        <NotificationsPanel deadlines={deadlines} onClose={() => setIsNotificationsOpen(false)} darkMode={darkMode} />
+        <NotificationsPanel deadlines={deadlines} onClose={() => setIsNotificationsOpen(false)} onUpdateDeadline={handleUpdateDeadline} darkMode={darkMode} />
       )}
 
       <main className={`flex-1 overflow-y-auto ${darkMode ? 'bg-slate-950' : ''}`}>
