@@ -81,14 +81,17 @@ function PdfPreview({ imageData, fileName }: { imageData: string; fileName?: str
       </div>
       {/* Open button */}
       {url ? (
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block w-full py-4 bg-red-500 text-white font-bold text-sm tracking-wide text-center active:scale-[0.98] transition-all"
-        >
-          Apri PDF
-        </a>
+        isUrl ? (
+          <a href={url} target="_blank" rel="noopener noreferrer"
+            className="block w-full py-4 bg-red-500 text-white font-bold text-sm tracking-wide text-center active:scale-[0.98] transition-all">
+            Apri PDF
+          </a>
+        ) : (
+          <button onClick={() => { window.location.href = url; }}
+            className="w-full py-4 bg-red-500 text-white font-bold text-sm tracking-wide active:scale-[0.98] transition-all">
+            Apri PDF
+          </button>
+        )
       ) : (
         <div className="w-full py-4 bg-red-200 text-white font-bold text-sm tracking-wide text-center opacity-40">
           Apri PDF

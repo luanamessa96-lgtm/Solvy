@@ -1,15 +1,17 @@
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Plus, CheckCircle2, Circle, Bell, Lock } from 'lucide-react';
 import { Deadline } from '../../types';
 
 interface NotificationsPanelProps {
+  isOpen: boolean;
   deadlines: Deadline[];
   onClose: () => void;
   onUpdateDeadline: (d: Deadline) => void;
   darkMode?: boolean;
 }
 
-const NotificationsPanel = ({ deadlines, onClose, onUpdateDeadline, darkMode }: NotificationsPanelProps) => {
+const NotificationsPanel = ({ isOpen, deadlines, onClose, onUpdateDeadline, darkMode }: NotificationsPanelProps) => {
+  const dragControls = useDragControls();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -39,74 +41,85 @@ const NotificationsPanel = ({ deadlines, onClose, onUpdateDeadline, darkMode }: 
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
-        <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className={`relative w-full max-w-md rounded-t-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
-          <div className="p-8 space-y-6">
-            <div className="flex justify-between items-start">
-              <div className="space-y-1">
-                <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Notifiche</h2>
-                <p className="text-sm text-slate-500">
-                  {activeCount > 0 ? `${activeCount} scadenz${activeCount === 1 ? 'a' : 'e'} nei prossimi 30 giorni` : 'Tutto in ordine'}
-                </p>
-              </div>
-              <button onClick={onClose} className={`p-2 rounded-full transition-all active:scale-90 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
-                <Plus className="rotate-45" size={24} />
-              </button>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
+          <motion.div
+            initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            drag="y" dragControls={dragControls} dragListener={false}
+            dragConstraints={{ top: 0 }} dragElastic={0.1}
+            onDragEnd={(_, info) => { if (info.offset.y > 80) onClose(); }}
+            className={`relative w-full max-w-md rounded-t-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}
+          >
+            <div onPointerDown={e => dragControls.start(e)} className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing touch-none">
+              <div className={`w-10 h-1 rounded-full ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
             </div>
-
-            <div className="space-y-5 max-h-[60vh] overflow-y-auto -mx-1 px-1">
-              {groups.length === 0 ? (
-                <div className="py-10 text-center space-y-2">
-                  <p className="text-4xl">🎉</p>
-                  <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Tutto in ordine!</p>
-                  <p className="text-sm text-slate-400">Nessuna scadenza nei prossimi 30 giorni</p>
+            <div className="p-8 pt-4 space-y-6">
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Notifiche</h2>
+                  <p className="text-sm text-slate-500">
+                    {activeCount > 0 ? `${activeCount} scadenz${activeCount === 1 ? 'a' : 'e'} nei prossimi 30 giorni` : 'Tutto in ordine'}
+                  </p>
                 </div>
-              ) : groups.map(group => (
-                <div key={group.label} className="space-y-2">
-                  <div className="flex items-center gap-2 px-1">
-                    <div className={`w-1.5 h-1.5 rounded-full ${group.dot}`} />
-                    <p className={`text-[10px] font-bold uppercase tracking-widest ${group.accent}`}>{group.label}</p>
+                <button onClick={onClose} className={`p-2 rounded-full transition-all active:scale-90 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
+                  <Plus className="rotate-45" size={24} />
+                </button>
+              </div>
+
+              <div className="space-y-5 max-h-[60vh] overflow-y-auto -mx-1 px-1">
+                {groups.length === 0 ? (
+                  <div className="py-10 text-center space-y-2">
+                    <p className="text-4xl">🎉</p>
+                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Tutto in ordine!</p>
+                    <p className="text-sm text-slate-400">Nessuna scadenza nei prossimi 30 giorni</p>
                   </div>
-                  {group.items.map(n => (
-                    <div key={n.id} className={`flex items-center gap-3 p-4 rounded-2xl transition-all ${n.completed ? 'opacity-50' : ''} ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
-                      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-lg shrink-0 ${darkMode ? 'bg-slate-700' : 'bg-white'}`}>{typeIcon(n.type)}</div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-bold truncate ${n.completed ? 'line-through text-slate-400' : (darkMode ? 'text-white' : 'text-slate-900')}`}>{n.title}</p>
-                        <p className="text-xs text-slate-400">
-                          {n.diffDays === 0 ? 'Scade oggi' : n.diffDays === 1 ? 'Scade domani' : `Tra ${n.diffDays} giorni`}
-                          {n.amount ? ` · €${n.amount.toLocaleString()}` : ''}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => onUpdateDeadline({ ...n, completed: !n.completed })}
-                        className={`shrink-0 transition-all active:scale-90 ${n.completed ? 'text-emerald-500' : (darkMode ? 'text-slate-600 hover:text-emerald-400' : 'text-slate-300 hover:text-emerald-500')}`}
-                      >
-                        {n.completed ? <CheckCircle2 size={22} /> : <Circle size={22} />}
-                      </button>
+                ) : groups.map(group => (
+                  <div key={group.label} className="space-y-2">
+                    <div className="flex items-center gap-2 px-1">
+                      <div className={`w-1.5 h-1.5 rounded-full ${group.dot}`} />
+                      <p className={`text-[10px] font-bold uppercase tracking-widest ${group.accent}`}>{group.label}</p>
                     </div>
-                  ))}
-                </div>
-              ))}
-            </div>
+                    {group.items.map(n => (
+                      <div key={n.id} className={`flex items-center gap-3 p-4 rounded-2xl transition-all ${n.completed ? 'opacity-50' : ''} ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-lg shrink-0 ${darkMode ? 'bg-slate-700' : 'bg-white'}`}>{typeIcon(n.type)}</div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-bold truncate ${n.completed ? 'line-through text-slate-400' : (darkMode ? 'text-white' : 'text-slate-900')}`}>{n.title}</p>
+                          <p className="text-xs text-slate-400">
+                            {n.diffDays === 0 ? 'Scade oggi' : n.diffDays === 1 ? 'Scade domani' : `Tra ${n.diffDays} giorni`}
+                            {n.amount ? ` · €${n.amount.toLocaleString()}` : ''}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => onUpdateDeadline({ ...n, completed: !n.completed })}
+                          className={`shrink-0 transition-all active:scale-90 ${n.completed ? 'text-emerald-500' : (darkMode ? 'text-slate-600 hover:text-emerald-400' : 'text-slate-300 hover:text-emerald-500')}`}
+                        >
+                          {n.completed ? <CheckCircle2 size={22} /> : <Circle size={22} />}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
 
-            {/* Teaser notifiche push */}
-            <div className={`flex items-center gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-primary/5 border-primary/20' : 'bg-primary/5 border-primary/10'}`}>
-              <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
-                <Bell size={16} className="text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Notifiche push</p>
-                <p className="text-xs text-slate-400">Ricevi avvisi sul telefono prima delle scadenze</p>
-              </div>
-              <div className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-full shrink-0">
-                <Lock size={10} />
-                <span className="text-[10px] font-bold uppercase tracking-wide">Pro</span>
+              <div className={`flex items-center gap-3 p-4 rounded-2xl border [padding-bottom:max(1rem,calc(env(safe-area-inset-bottom)+0.5rem))] ${darkMode ? 'bg-primary/5 border-primary/20' : 'bg-primary/5 border-primary/10'}`}>
+                <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                  <Bell size={16} className="text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Notifiche push</p>
+                  <p className="text-xs text-slate-400">Ricevi avvisi sul telefono prima delle scadenze</p>
+                </div>
+                <div className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-full shrink-0">
+                  <Lock size={10} />
+                  <span className="text-[10px] font-bold uppercase tracking-wide">Pro</span>
+                </div>
               </div>
             </div>
-          </div>
-        </motion.div>
-      </div>
+          </motion.div>
+        </div>
+      )}
     </AnimatePresence>
   );
 };
