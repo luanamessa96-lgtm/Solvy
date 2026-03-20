@@ -48,41 +48,80 @@ function groupByMonth(items: Document[]) {
   return groups;
 }
 
-function PdfPreview({ imageData }: { imageData: string }) {
-  const url = React.useMemo(() => {
+function PdfPreview({ imageData, fileName }: { imageData: string; fileName?: string }) {
+  const isUrl = imageData.startsWith('http');
+
+  const blobUrl = React.useMemo(() => {
+    if (isUrl) return null;
     try {
       const b64 = imageData.split(',')[1] || '';
       const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
       const blob = new Blob([bytes], { type: 'application/pdf' });
       return URL.createObjectURL(blob);
     } catch { return null; }
-  }, [imageData]);
+  }, [imageData, isUrl]);
 
   React.useEffect(() => {
-    return () => { if (url) URL.revokeObjectURL(url); };
-  }, [url]);
+    return () => { if (blobUrl) URL.revokeObjectURL(blobUrl); };
+  }, [blobUrl]);
 
-  if (!url) return null;
-  const scale = 0.45;
-  const displayW = 320;
-  const displayH = 240;
-  const iframeW = Math.round(displayW / scale);
-  const iframeH = Math.round(displayH / scale);
+  const url = isUrl ? imageData : blobUrl;
 
   return (
-    <div className="rounded-2xl shadow-2xl overflow-hidden bg-white" style={{ width: displayW, height: displayH }}>
-      <iframe
-        src={`${url}#toolbar=0&navpanes=0&scrollbar=0`}
-        title="Anteprima PDF"
-        style={{
-          width: iframeW,
-          height: iframeH,
-          border: 'none',
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left',
-          pointerEvents: 'none',
-        }}
-      />
+    <div className="w-64 rounded-3xl overflow-hidden shadow-2xl bg-white flex flex-col">
+      {/* PDF icon area */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-3 py-10 bg-red-50">
+        <div className="w-20 h-24 rounded-2xl bg-white shadow-lg flex flex-col items-center justify-center gap-1 border border-red-100">
+          <FileText size={36} className="text-red-500" strokeWidth={1.5} />
+          <span className="text-xs font-black tracking-widest text-red-500">PDF</span>
+        </div>
+        {fileName && (
+          <p className="text-xs font-semibold text-red-400 text-center px-4 truncate max-w-[220px]">{fileName}</p>
+        )}
+      </div>
+      {/* Open button */}
+      {url ? (
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full py-4 bg-red-500 text-white font-bold text-sm tracking-wide text-center active:scale-[0.98] transition-all"
+        >
+          Apri PDF
+        </a>
+      ) : (
+        <div className="w-full py-4 bg-red-200 text-white font-bold text-sm tracking-wide text-center opacity-40">
+          Apri PDF
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TextPreview({ imageData, fileName }: { imageData: string; fileName?: string }) {
+  const [content, setContent] = React.useState('');
+
+  React.useEffect(() => {
+    if (imageData.startsWith('http')) {
+      fetch(imageData).then(r => r.text()).then(setContent).catch(() => setContent('(Contenuto non leggibile)'));
+    } else {
+      try {
+        const b64 = imageData.split(',')[1] || '';
+        const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+        setContent(new TextDecoder('utf-8').decode(bytes));
+      } catch { setContent('(Contenuto non leggibile)'); }
+    }
+  }, [imageData]);
+
+  return (
+    <div className="w-full max-h-72 bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-100 bg-slate-50/80">
+        <FileText size={14} className="text-slate-400" />
+        <span className="text-xs font-semibold text-slate-500 truncate">{fileName}</span>
+      </div>
+      <div className="overflow-y-auto flex-1 px-5 py-4">
+        <p className="text-sm text-slate-800 whitespace-pre-wrap break-words leading-relaxed">{content || '…'}</p>
+      </div>
     </div>
   );
 }
@@ -353,25 +392,9 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
                 {selectedItem.imageData && !selectedItem.fileName ? (
                   <img src={selectedItem.imageData} alt={selectedItem.title} className="max-w-full max-h-full rounded-2xl object-contain shadow-2xl" />
                 ) : selectedItem.imageData && ext(selectedItem.fileName || '') === 'pdf' ? (
-                  <PdfPreview imageData={selectedItem.imageData} />
+                  <PdfPreview imageData={selectedItem.imageData} fileName={selectedItem.fileName} />
                 ) : selectedItem.imageData && ['txt', 'csv'].includes(ext(selectedItem.fileName || '')) ? (
-                  <div className="w-full max-h-72 bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
-                    <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-100 bg-slate-50/80">
-                      <FileText size={14} className="text-slate-400" />
-                      <span className="text-xs font-semibold text-slate-500 truncate">{selectedItem.fileName}</span>
-                    </div>
-                    <div className="overflow-y-auto flex-1 px-5 py-4">
-                      <p className="text-sm text-slate-800 whitespace-pre-wrap break-words leading-relaxed">
-                        {(() => {
-                          try {
-                            const b64 = selectedItem.imageData!.split(',')[1] || '';
-                            const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-                            return new TextDecoder('utf-8').decode(bytes);
-                          } catch { return '(Contenuto non leggibile)'; }
-                        })()}
-                      </p>
-                    </div>
-                  </div>
+                  <TextPreview imageData={selectedItem.imageData} fileName={selectedItem.fileName} />
                 ) : (
                   <div className="w-48 h-56 rounded-3xl flex flex-col items-center justify-center gap-3" style={{ backgroundColor: fileColors[ext(selectedItem.fileName || '')]?.bg ?? '#EDE9FE' }}>
                     <FileText size={56} strokeWidth={1.5} style={{ color: fileColors[ext(selectedItem.fileName || '')]?.text ?? '#7C3AED' }} />

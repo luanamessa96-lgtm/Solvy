@@ -6,7 +6,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { MOCK_PROFILES, MOCK_DOCUMENTS, MOCK_DEADLINES, MOCK_ACCOUNTANT } from './constants';
-import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, addDeadline, updateDeadline, deleteDeadline, getProfiles, updateProfile, getAccountant, updateAccountant } from './lib/db';
+import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, addDeadline, updateDeadline, deleteDeadline, getProfiles, updateProfile, getAccountant, updateAccountant, uploadFile } from './lib/db';
 import { supabase } from './lib/supabase';
 import { Profile, Document, Deadline, Accountant } from './types';
 import AuthView from './views/AuthView';
@@ -211,7 +211,16 @@ function AppInner() {
   const handleAddDocument = async (doc: Document) => {
     setDocuments(prev => markOverdue([doc, ...prev]));
     showToast(doc.type === 'invoice' ? 'Fattura aggiunta' : 'Spesa aggiunta');
-    try { await addDocument(doc, activeProfile.id); } catch { showToast('Errore nel salvataggio', 'error'); }
+    try {
+      let docToSave = doc;
+      if (doc.imageData && doc.imageData.startsWith('data:')) {
+        const name = doc.fileName || `image_${doc.id}.jpg`;
+        const url = await uploadFile(doc.imageData, name);
+        docToSave = { ...doc, imageData: url };
+        setDocuments(prev => prev.map(d => d.id === doc.id ? docToSave : d));
+      }
+      await addDocument(docToSave, activeProfile.id);
+    } catch { showToast('Errore nel salvataggio', 'error'); }
   };
 
   const handleDeleteDocument = async (id: string) => {
