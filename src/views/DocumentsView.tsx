@@ -377,6 +377,48 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                               <input type="text" value={docToEdit.clientCf || ''} onChange={e => setDocToEdit({ ...docToEdit, clientCf: e.target.value.toUpperCase() })} className={ic} />
                             </div>
                           </div>
+                          {/* Regime fiscale */}
+                          <div className="space-y-1.5 pt-1">
+                            <label className={lc}>Regime Fiscale</label>
+                            <div className={`p-1 rounded-2xl flex gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                              {(['forfettario', 'ordinario'] as const).map(r => (
+                                <button key={r} type="button" onClick={() => setDocToEdit({ ...docToEdit, docRegime: r })} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all capitalize ${(docToEdit.docRegime ?? 'forfettario') === r ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
+                                  {r.charAt(0).toUpperCase() + r.slice(1)}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          {/* IVA (solo ordinario) */}
+                          {(docToEdit.docRegime ?? 'forfettario') === 'ordinario' && (
+                            <div className="space-y-1.5">
+                              <label className={lc}>Aliquota IVA</label>
+                              <select value={docToEdit.ivaRate ?? 22} onChange={e => setDocToEdit({ ...docToEdit, ivaRate: parseInt(e.target.value) })} className={ic}>
+                                <option value={4}>4%</option>
+                                <option value={5}>5%</option>
+                                <option value={10}>10%</option>
+                                <option value={22}>22%</option>
+                              </select>
+                            </div>
+                          )}
+                          {/* Opzioni fiscali */}
+                          <div className="space-y-2 pt-1">
+                            {(docToEdit.docRegime ?? 'forfettario') === 'ordinario' && (
+                              <label className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                                <span className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>Rivalsa INPS (4%)</span>
+                                <input type="checkbox" checked={docToEdit.rivalsaInps ?? false} onChange={e => setDocToEdit({ ...docToEdit, rivalsaInps: e.target.checked })} className="w-5 h-5 rounded text-primary focus:ring-primary" />
+                              </label>
+                            )}
+                            <label className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                              <span className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>Ritenuta d'acconto (20%)</span>
+                              <input type="checkbox" checked={docToEdit.ritenuta ?? false} onChange={e => setDocToEdit({ ...docToEdit, ritenuta: e.target.checked })} className="w-5 h-5 rounded text-primary focus:ring-primary" />
+                            </label>
+                            {(docToEdit.docRegime ?? 'forfettario') === 'forfettario' && (
+                              <label className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                                <span className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>Marca da bollo (€2)</span>
+                                <input type="checkbox" checked={docToEdit.marcaBollo ?? false} onChange={e => setDocToEdit({ ...docToEdit, marcaBollo: e.target.checked })} className="w-5 h-5 rounded text-primary focus:ring-primary" />
+                              </label>
+                            )}
+                          </div>
                         </>
                       )}
                       <div className="space-y-1.5">
