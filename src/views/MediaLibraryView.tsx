@@ -310,9 +310,15 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedItem(null)} className="absolute inset-0 bg-black/85" />
             <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="relative flex flex-col h-full">
               {/* Preview */}
-              <div className="flex-1 flex items-center justify-center p-6">
+              <div className="flex-1 flex items-center justify-center p-6 overflow-hidden">
                 {selectedItem.imageData && !selectedItem.fileName ? (
                   <img src={selectedItem.imageData} alt={selectedItem.title} className="max-w-full max-h-full rounded-2xl object-contain shadow-2xl" />
+                ) : selectedItem.imageData && ['txt', 'csv'].includes(ext(selectedItem.fileName || '')) ? (
+                  <div className="w-full max-h-64 overflow-y-auto rounded-2xl p-4 bg-black/30 backdrop-blur-sm border border-white/10">
+                    <pre className="text-xs text-white/90 font-mono whitespace-pre-wrap break-words leading-relaxed">
+                      {(() => { try { return atob(selectedItem.imageData.split(',')[1] || ''); } catch { return '(Contenuto non leggibile)'; } })()}
+                    </pre>
+                  </div>
                 ) : (
                   <div className="w-48 h-56 rounded-3xl flex flex-col items-center justify-center gap-3" style={{ backgroundColor: fileColors[ext(selectedItem.fileName || '')]?.bg ?? '#EDE9FE' }}>
                     <FileText size={56} strokeWidth={1.5} style={{ color: fileColors[ext(selectedItem.fileName || '')]?.text ?? '#7C3AED' }} />
