@@ -349,12 +349,26 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
             <div className={`p-2 rounded-xl ${darkMode ? 'bg-slate-800 text-red-400' : 'bg-red-50 text-red-500'}`}><Receipt size={18} /></div>
           </div>
           <div className="px-6 py-4 space-y-3">
-            {spesePerCategoria.map(({ name, amount }) => {
+            {spesePerCategoria.map(({ name, amount }, index) => {
               const pct = expenses > 0 ? (amount / expenses) * 100 : 0;
+              const colors = [
+                { bar: '#6366f1', bg: 'bg-indigo-500' },
+                { bar: '#f59e0b', bg: 'bg-amber-400' },
+                { bar: '#10b981', bg: 'bg-emerald-500' },
+                { bar: '#3b82f6', bg: 'bg-blue-500' },
+                { bar: '#ec4899', bg: 'bg-pink-500' },
+                { bar: '#f97316', bg: 'bg-orange-500' },
+                { bar: '#8b5cf6', bg: 'bg-violet-500' },
+                { bar: '#14b8a6', bg: 'bg-teal-500' },
+              ];
+              const color = colors[index % colors.length];
               return (
                 <div key={name} className="space-y-1.5">
                   <div className="flex justify-between items-center">
-                    <span className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{name}</span>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full shrink-0 ${color.bg}`} />
+                      <span className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{name}</span>
+                    </div>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] font-bold text-slate-400">{Math.round(pct)}%</span>
                       <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{amount.toLocaleString()}</span>
@@ -364,8 +378,9 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${pct}%` }}
-                      transition={{ duration: 0.6, ease: 'easeOut' }}
-                      className="h-full rounded-full bg-red-400"
+                      transition={{ duration: 0.6, ease: 'easeOut', delay: index * 0.08 }}
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: color.bar }}
                     />
                   </div>
                 </div>
