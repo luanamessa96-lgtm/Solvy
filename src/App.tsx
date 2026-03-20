@@ -388,6 +388,7 @@ function AppInner() {
   }
 
   return (
+    <>
     <div className={`max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative overflow-hidden transition-colors duration-500 ${darkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
       {isOffline && (
         <div className="bg-amber-500 text-white text-xs font-bold text-center py-2 px-4 flex items-center justify-center gap-2 z-50">
@@ -442,6 +443,7 @@ function AppInner() {
 
     </div>
     <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} />
+    </>
   );
 }
 
