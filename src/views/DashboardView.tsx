@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { motion } from 'motion/react';
+import { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { TrendingUp, AlertTriangle, AlertCircle, Info, FileText, Receipt } from 'lucide-react';
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Profile, Document } from '../types';
@@ -56,8 +56,11 @@ function fmt(n: number) {
   return `€ ${Math.round(n).toLocaleString('it-IT')}`;
 }
 
+type DashTab = 'overview' | 'taxes' | 'expenses';
+
 const DashboardView = ({ profile, income, expenses, paidPercentage, documents, darkMode, onProfileClick, onAddDocumentClick }: DashboardViewProps) => {
   const displayYear = new Date().getFullYear();
+  const [activeTab, setActiveTab] = useState<DashTab>('overview');
 
   const container = {
     hidden: { opacity: 0 },
@@ -142,311 +145,331 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
   const barInps = income > 0 ? (tasse.inps / income) * 100 : 0;
   const barNetto = income > 0 ? (Math.max(0, tasse.netto) / income) * 100 : 0;
 
+  const tabs: { id: DashTab; label: string }[] = [
+    { id: 'overview', label: 'Panoramica' },
+    { id: 'taxes', label: 'Tasse' },
+    { id: 'expenses', label: 'Spese' },
+  ];
+
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-6 pb-24">
-      <motion.div variants={item} className="space-y-1">
-        <h2 className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>Ciao, {profile.name.split(' ')[0]}!</h2>
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{profile.country}</p>
-      </motion.div>
+    <motion.div variants={container} initial="hidden" animate="show" className="pb-24">
+      {/* Header */}
+      <div className="px-6 pt-6 pb-4 space-y-4">
+        <motion.div variants={item} className="space-y-1">
+          <h2 className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>Ciao, {profile.name.split(' ')[0]}!</h2>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{profile.country}</p>
+        </motion.div>
+
+        {/* Tab bar */}
+        <motion.div variants={item} className={`flex p-1 rounded-2xl ${darkMode ? 'bg-slate-900' : 'bg-slate-100'}`}>
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === tab.id ? (darkMode ? 'bg-slate-800 text-white shadow-sm' : 'bg-white text-slate-900 shadow-sm') : 'text-slate-400'}`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </motion.div>
+      </div>
 
       {documents.length === 0 && (
-        <motion.div variants={item} className={`rounded-3xl p-6 border text-center space-y-4 ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
-          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto ${darkMode ? 'bg-slate-800 text-slate-600' : 'bg-slate-50 text-slate-300'}`}>
-            <FileText size={32} />
-          </div>
-          <div className="space-y-1">
-            <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>Nessun documento ancora</p>
-            <p className="text-xs text-slate-400">Aggiungi la tua prima fattura per vedere le statistiche</p>
-          </div>
-          {onAddDocumentClick && (
-            <button onClick={onAddDocumentClick} className="mx-auto flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/30 active:scale-95 transition-all">
-              <span>+ Aggiungi fattura</span>
-            </button>
-          )}
-        </motion.div>
+        <div className="px-6">
+          <motion.div variants={item} className={`rounded-3xl p-6 border text-center space-y-4 ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto ${darkMode ? 'bg-slate-800 text-slate-600' : 'bg-slate-50 text-slate-300'}`}>
+              <FileText size={32} />
+            </div>
+            <div className="space-y-1">
+              <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>Nessun documento ancora</p>
+              <p className="text-xs text-slate-400">Aggiungi la tua prima fattura per vedere le statistiche</p>
+            </div>
+            {onAddDocumentClick && (
+              <button onClick={onAddDocumentClick} className="mx-auto flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/30 active:scale-95 transition-all">
+                <span>+ Aggiungi fattura</span>
+              </button>
+            )}
+          </motion.div>
+        </div>
       )}
 
-      <motion.div variants={item} className={`rounded-3xl p-6 shadow-sm border transition-all ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} space-y-4`}>
-        <div className="flex justify-between items-center">
-          <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Entrate Annuali</span>
-          <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sincronizzato</span>
-          </div>
-        </div>
-        <div className="space-y-1">
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Gen, {displayYear} - Dic, {displayYear}</p>
-          <h2 className={`text-3xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{income.toLocaleString()}</h2>
-        </div>
-        <div className={`pt-4 border-t flex justify-between items-center ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Fatture Saldate</span>
-          <span className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-900'}`}>{paidPercentage}%</span>
-        </div>
-      </motion.div>
+      <AnimatePresence mode="wait">
+        {/* ── PANORAMICA ── */}
+        {activeTab === 'overview' && (
+          <motion.div key="overview" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }} className="px-6 space-y-4">
+            {/* Entrate */}
+            <div className={`rounded-3xl p-6 border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} space-y-4`}>
+              <div className="flex justify-between items-center">
+                <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Entrate Annuali</span>
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sincronizzato</span>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Gen, {displayYear} - Dic, {displayYear}</p>
+                <h2 className={`text-3xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{income.toLocaleString()}</h2>
+              </div>
+              <div className={`pt-4 border-t flex justify-between items-center ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Fatture Saldate</span>
+                <span className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-900'}`}>{paidPercentage}%</span>
+              </div>
+            </div>
 
-      {/* Tax Widget */}
-      <motion.div variants={item} className={`rounded-3xl border overflow-hidden transition-all ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
-        {/* Header */}
-        <div className={`px-6 pt-5 pb-4 border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Stima Fiscale {displayYear}</p>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isForfettario ? (darkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600') : (darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600')}`}>
-              {isForfettario ? (tasse.isFivePercent ? 'Forfettario 5%' : 'Forfettario 15%') : 'Ordinario'}
-            </span>
-          </div>
-          <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fmt(totaleTasse)}</p>
-          <p className="text-xs text-slate-400 mt-0.5">imposta + contributi stimati</p>
-        </div>
+            {/* Margine netto */}
+            <div className={`rounded-3xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} overflow-hidden`}>
+              <div className={`px-6 py-5 flex items-center justify-between border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
+                <div className="space-y-0.5">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Margine Netto</p>
+                  <p className={`text-2xl font-bold ${income - expenses >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>€{(income - expenses).toLocaleString()}</p>
+                </div>
+                <div className={`px-3 py-1.5 rounded-full text-xs font-bold ${income - expenses >= 0 ? (darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600') : (darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600')}`}>
+                  {income > 0 ? `${Math.round(((income - expenses) / income) * 100)}%` : '0%'}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 divide-x divide-slate-100 dark:divide-slate-800">
+                <div className="px-5 py-4 space-y-1">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Totale Spese</p>
+                  <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{expenses.toLocaleString()}</p>
+                  <div className={`w-full h-1 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                    <div className="bg-red-400 h-full rounded-full" style={{ width: income > 0 ? `${Math.min((expenses / income) * 100, 100)}%` : '0%' }} />
+                  </div>
+                </div>
+                <div className="px-5 py-4 space-y-1">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tasse Stimate</p>
+                  <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fmt(totaleTasse)}</p>
+                  <div className={`w-full h-1 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                    <div className="bg-primary h-full rounded-full" style={{ width: income > 0 ? `${Math.min((totaleTasse / income) * 100, 100)}%` : '0%' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        {/* Alert soglia forfettario */}
-        {isForfettario && sogliAlert && (
-          <div className={`mx-4 mt-4 px-4 py-3 rounded-2xl flex items-start gap-3 ${sogliAlert === 'exceeded' ? (darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600') : (darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600')}`}>
-            {sogliAlert === 'exceeded' ? <AlertCircle size={16} className="mt-0.5 shrink-0" /> : <AlertTriangle size={16} className="mt-0.5 shrink-0" />}
-            <p className="text-xs font-bold leading-relaxed">
-              {sogliAlert === 'exceeded'
-                ? `Hai superato la soglia di €85.000. Potresti dover uscire dal regime forfettario.`
-                : `Stai avvicinandoti alla soglia di €85.000 (${fmt(SOGLIA_FORFETTARIO - income)} mancanti).`}
-            </p>
-          </div>
+            {/* Grafico */}
+            <div className={`rounded-3xl p-6 border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} space-y-6`}>
+              <div className="flex justify-between items-center">
+                <div className="space-y-1">
+                  <h3 className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Andamento Mensile</h3>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{displayYear}</p>
+                </div>
+                <div className={`p-2 rounded-xl ${darkMode ? 'bg-slate-800 text-primary' : 'bg-slate-50 text-primary'}`}><TrendingUp size={18} /></div>
+              </div>
+              <div className="h-48 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} /><stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} /><stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <Tooltip content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className={`p-2 rounded-xl border shadow-xl backdrop-blur-md ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white/90 border-slate-100'}`}>
+                            <p className={`text-[10px] font-bold mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mese {payload[0].payload.name}</p>
+                            <div className="space-y-0.5">
+                              {payload.map((entry: { name: string; value: number }, i: number) => (
+                                <div key={i} className="flex items-center justify-between gap-4">
+                                  <span className="text-[10px] font-bold text-slate-400 uppercase">{entry.name === 'income' ? 'Entrate' : 'Uscite'}</span>
+                                  <span className={`text-[10px] font-black ${entry.name === 'income' ? 'text-emerald-500' : 'text-indigo-500'}`}>€{Math.round(entry.value).toLocaleString()}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }} />
+                    <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
+                    <Area type="monotone" dataKey="expenses" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorExpenses)" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#94a3b8' }} dy={10} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex gap-4 pt-2">
+                {[{ label: 'Entrate', color: 'bg-emerald-500' }, { label: 'Uscite', color: 'bg-indigo-500' }].map(l => (
+                  <div key={l.label} className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${l.color}`} />
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{l.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         )}
 
-        {/* Breakdown rows */}
-        <div className="px-6 py-4 space-y-3">
-          {isForfettario ? (
-            <>
-              <div className="space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-xs font-bold text-slate-400">Reddito imponibile <span className="font-normal">({tasse.regime === 'forfettario' ? Math.round(tasse.coeff * 100) : 100}% del fatturato)</span></span>
-                  <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(tasse.redditoImponibile)}</span>
+        {/* ── TASSE ── */}
+        {activeTab === 'taxes' && (
+          <motion.div key="taxes" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }} className="px-6">
+            <div className={`rounded-3xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+              <div className={`px-6 pt-5 pb-4 border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Stima Fiscale {displayYear}</p>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isForfettario ? (darkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600') : (darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600')}`}>
+                    {isForfettario ? (tasse.isFivePercent ? 'Forfettario 5%' : 'Forfettario 15%') : 'Ordinario'}
+                  </span>
                 </div>
+                <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fmt(totaleTasse)}</p>
+                <p className="text-xs text-slate-400 mt-0.5">imposta + contributi stimati</p>
               </div>
-              <div className="space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-xs font-bold text-slate-400">Imposta sostitutiva ({Math.round(tasse.aliquota * 100)}%)</span>
-                  <span className="text-xs font-bold text-rose-500">{fmt(tasse.imposta)}</span>
-                </div>
-                <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                  <div className="bg-rose-400 h-full rounded-full" style={{ width: `${Math.min(barImposta, 100)}%` }} />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-xs font-bold text-slate-400">INPS gest. separata (26.07%)</span>
-                  <span className="text-xs font-bold text-amber-500">{fmt(tasse.inps)}</span>
-                </div>
-                <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                  <div className="bg-amber-400 h-full rounded-full" style={{ width: `${Math.min(barInps, 100)}%` }} />
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-xs font-bold text-slate-400">Reddito imponibile</span>
-                  <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(tasse.redditoImponibile)}</span>
-                </div>
-              </div>
-              {tasse.regime === 'ordinario' && (<>
-              <div className="space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-xs font-bold text-slate-400">IRPEF (scaglioni)</span>
-                  <span className="text-xs font-bold text-rose-500">{fmt(tasse.irpef)}</span>
-                </div>
-                <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                  <div className="bg-rose-400 h-full rounded-full" style={{ width: `${Math.min(income > 0 ? (tasse.irpef / income) * 100 : 0, 100)}%` }} />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-xs font-bold text-slate-400">Addizionali (~2.3%)</span>
-                  <span className="text-xs font-bold text-orange-500">{fmt(tasse.addizionali)}</span>
-                </div>
-              </div>
-              </>)}
-              <div className="space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-xs font-bold text-slate-400">INPS artigiani/comm. (~24%)</span>
-                  <span className="text-xs font-bold text-amber-500">{fmt(tasse.inps)}</span>
-                </div>
-                <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                  <div className="bg-amber-400 h-full rounded-full" style={{ width: `${Math.min(barInps, 100)}%` }} />
-                </div>
-              </div>
-            </>
-          )}
 
-          {/* Netto */}
-          <div className={`pt-3 mt-1 border-t space-y-1.5 ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
-            <div className="flex justify-between">
-              <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Netto stimato</span>
-              <span className={`text-sm font-bold ${tasse.netto >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{fmt(tasse.netto)}</span>
-            </div>
-            <div className={`w-full h-2 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-              <div className="bg-emerald-400 h-full rounded-full" style={{ width: `${Math.min(barNetto, 100)}%` }} />
-            </div>
-          </div>
+              {isForfettario && sogliAlert && (
+                <div className={`mx-4 mt-4 px-4 py-3 rounded-2xl flex items-start gap-3 ${sogliAlert === 'exceeded' ? (darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600') : (darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600')}`}>
+                  {sogliAlert === 'exceeded' ? <AlertCircle size={16} className="mt-0.5 shrink-0" /> : <AlertTriangle size={16} className="mt-0.5 shrink-0" />}
+                  <p className="text-xs font-bold leading-relaxed">
+                    {sogliAlert === 'exceeded' ? `Hai superato la soglia di €85.000. Potresti dover uscire dal regime forfettario.` : `Stai avvicinandoti alla soglia di €85.000 (${fmt(SOGLIA_FORFETTARIO - income)} mancanti).`}
+                  </p>
+                </div>
+              )}
 
-          {/* Proiezione */}
-          {income > 0 && proiezione !== income && (
-            <div className={`pt-3 mt-1 border-t flex items-start gap-2 ${darkMode ? 'border-slate-800 text-slate-400' : 'border-slate-50 text-slate-400'}`}>
-              <Info size={13} className="mt-0.5 shrink-0" />
-              <p className="text-[11px] leading-relaxed">
-                Proiezione annuale basata sui mesi fatturati: <span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(proiezione)}</span>
-              </p>
-            </div>
-          )}
-
-          {/* Nota coefficiente mancante */}
-          {isForfettario && !profile.coefficiente && (
-            <div className={`pt-2 flex items-start gap-2 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-              <Info size={13} className="mt-0.5 shrink-0" />
-              <p className="text-[11px] leading-relaxed">
-                Coefficiente non impostato, usando 78% (professionisti). <button onClick={onProfileClick} className="text-primary font-bold">Imposta nel profilo →</button>
-              </p>
-            </div>
-          )}
-        </div>
-      </motion.div>
-
-      {/* Margine netto */}
-      <motion.div variants={item} className={`rounded-3xl border transition-all ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} overflow-hidden`}>
-        <div className={`px-6 py-5 flex items-center justify-between border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
-          <div className="space-y-0.5">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Margine Netto</p>
-            <p className={`text-2xl font-bold ${income - expenses >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>€{(income - expenses).toLocaleString()}</p>
-          </div>
-          <div className={`px-3 py-1.5 rounded-full text-xs font-bold ${income - expenses >= 0 ? (darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600') : (darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600')}`}>
-            {income > 0 ? `${Math.round(((income - expenses) / income) * 100)}%` : '0%'}
-          </div>
-        </div>
-        <div className="grid grid-cols-2 divide-x divide-slate-100 dark:divide-slate-800">
-          <div className="px-5 py-4 space-y-1">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Totale Spese</p>
-            <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{expenses.toLocaleString()}</p>
-            <div className={`w-full h-1 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-              <div className="bg-red-400 h-full rounded-full" style={{ width: income > 0 ? `${Math.min((expenses / income) * 100, 100)}%` : '0%' }} />
-            </div>
-          </div>
-          <div className="px-5 py-4 space-y-1">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tasse Stimate</p>
-            <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fmt(totaleTasse)}</p>
-            <div className={`w-full h-1 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-              <div className="bg-primary h-full rounded-full" style={{ width: income > 0 ? `${Math.min((totaleTasse / income) * 100, 100)}%` : '0%' }} />
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Spese per categoria */}
-      {spesePerCategoria.length > 0 && (
-        <motion.div variants={item} className={`rounded-3xl border transition-all ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} overflow-hidden`}>
-          <div className={`px-6 py-5 flex items-center justify-between border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
-            <div className="space-y-0.5">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Spese per Categoria</p>
-              <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{expenses.toLocaleString()}</p>
-            </div>
-            <div className={`p-2 rounded-xl ${darkMode ? 'bg-slate-800 text-red-400' : 'bg-red-50 text-red-500'}`}><Receipt size={18} /></div>
-          </div>
-          <div className="px-6 py-4 space-y-3">
-            {spesePerCategoria.map(({ name, amount }, index) => {
-              const pct = expenses > 0 ? (amount / expenses) * 100 : 0;
-              const colors = [
-                { bar: '#6366f1', bg: 'bg-indigo-500' },
-                { bar: '#f59e0b', bg: 'bg-amber-400' },
-                { bar: '#10b981', bg: 'bg-emerald-500' },
-                { bar: '#3b82f6', bg: 'bg-blue-500' },
-                { bar: '#ec4899', bg: 'bg-pink-500' },
-                { bar: '#f97316', bg: 'bg-orange-500' },
-                { bar: '#8b5cf6', bg: 'bg-violet-500' },
-                { bar: '#14b8a6', bg: 'bg-teal-500' },
-              ];
-              const color = colors[index % colors.length];
-              return (
-                <div key={name} className="space-y-1.5">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full shrink-0 ${color.bg}`} />
-                      <span className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{name}</span>
+              <div className="px-6 py-4 space-y-3">
+                {isForfettario ? (<>
+                  <div className="flex justify-between">
+                    <span className="text-xs font-bold text-slate-400">Reddito imponibile ({tasse.regime === 'forfettario' ? Math.round(tasse.coeff * 100) : 100}%)</span>
+                    <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(tasse.redditoImponibile)}</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between">
+                      <span className="text-xs font-bold text-slate-400">Imposta sostitutiva ({Math.round(tasse.aliquota * 100)}%)</span>
+                      <span className="text-xs font-bold text-rose-500">{fmt(tasse.imposta)}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-slate-400">{Math.round(pct)}%</span>
-                      <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{amount.toLocaleString()}</span>
+                    <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                      <div className="bg-rose-400 h-full rounded-full" style={{ width: `${Math.min(barImposta, 100)}%` }} />
                     </div>
                   </div>
-                  <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${pct}%` }}
-                      transition={{ duration: 0.6, ease: 'easeOut', delay: index * 0.08 }}
-                      className="h-full rounded-full"
-                      style={{ backgroundColor: color.bar }}
-                    />
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between">
+                      <span className="text-xs font-bold text-slate-400">INPS gest. separata (26.07%)</span>
+                      <span className="text-xs font-bold text-amber-500">{fmt(tasse.inps)}</span>
+                    </div>
+                    <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                      <div className="bg-amber-400 h-full rounded-full" style={{ width: `${Math.min(barInps, 100)}%` }} />
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Grafico */}
-      <motion.div variants={item} className={`rounded-3xl p-6 shadow-sm border transition-all hover:shadow-2xl active:scale-[0.99] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/30 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'} space-y-6`}>
-        <div className="flex justify-between items-center">
-          <div className="space-y-1">
-            <h3 className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Andamento Entrate</h3>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Statistiche Mensili</p>
-          </div>
-          <div className={`p-2 rounded-xl ${darkMode ? 'bg-slate-800 text-primary' : 'bg-slate-50 text-primary'}`}><TrendingUp size={18} /></div>
-        </div>
-        <div className="h-48 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} /><stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} /><stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="colorNet" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} /><stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <Tooltip content={({ active, payload }) => {
-                if (active && payload && payload.length) {
-                  return (
-                    <div className={`p-2 rounded-xl border shadow-xl backdrop-blur-md ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white/90 border-slate-100'}`}>
-                      <p className={`text-[10px] font-bold mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mese {payload[0].payload.name}</p>
-                      <div className="space-y-0.5">
-                        {payload.map((entry: { name: string; value: number }, index: number) => (
-                          <div key={index} className="flex items-center justify-between gap-4">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase">{entry.name === 'income' ? 'Entrate' : entry.name === 'expenses' ? 'Uscite' : 'Netto'}</span>
-                            <span className={`text-[10px] font-black ${entry.name === 'income' ? 'text-emerald-500' : entry.name === 'expenses' ? 'text-indigo-500' : 'text-blue-500'}`}>€{Math.round(entry.value).toLocaleString()}</span>
-                          </div>
-                        ))}
+                </>) : (<>
+                  <div className="flex justify-between">
+                    <span className="text-xs font-bold text-slate-400">Reddito imponibile</span>
+                    <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(tasse.redditoImponibile)}</span>
+                  </div>
+                  {tasse.regime === 'ordinario' && (<>
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between">
+                        <span className="text-xs font-bold text-slate-400">IRPEF (scaglioni)</span>
+                        <span className="text-xs font-bold text-rose-500">{fmt(tasse.irpef)}</span>
+                      </div>
+                      <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                        <div className="bg-rose-400 h-full rounded-full" style={{ width: `${Math.min(income > 0 ? (tasse.irpef / income) * 100 : 0, 100)}%` }} />
                       </div>
                     </div>
-                  );
-                }
-                return null;
-              }} />
-              <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
-              <Area type="monotone" dataKey="expenses" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorExpenses)" />
-              <Area type="monotone" dataKey="net" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorNet)" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#94a3b8' }} dy={10} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="flex justify-between items-center pt-2">
-          {[{ label: 'Entrate', color: 'bg-emerald-500' }, { label: 'Uscite', color: 'bg-indigo-500' }, { label: 'Netto', color: 'bg-blue-500' }].map(item => (
-            <div key={item.label} className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${item.color}`} />
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{item.label}</span>
+                    <div className="flex justify-between">
+                      <span className="text-xs font-bold text-slate-400">Addizionali (~2.3%)</span>
+                      <span className="text-xs font-bold text-orange-500">{fmt(tasse.addizionali)}</span>
+                    </div>
+                  </>)}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between">
+                      <span className="text-xs font-bold text-slate-400">INPS artigiani/comm. (~24%)</span>
+                      <span className="text-xs font-bold text-amber-500">{fmt(tasse.inps)}</span>
+                    </div>
+                    <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                      <div className="bg-amber-400 h-full rounded-full" style={{ width: `${Math.min(barInps, 100)}%` }} />
+                    </div>
+                  </div>
+                </>)}
+
+                <div className={`pt-3 border-t space-y-1.5 ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
+                  <div className="flex justify-between">
+                    <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Netto stimato</span>
+                    <span className={`text-sm font-bold ${tasse.netto >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{fmt(tasse.netto)}</span>
+                  </div>
+                  <div className={`w-full h-2 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                    <div className="bg-emerald-400 h-full rounded-full" style={{ width: `${Math.min(barNetto, 100)}%` }} />
+                  </div>
+                </div>
+
+                {income > 0 && proiezione !== income && (
+                  <div className={`pt-3 border-t flex items-start gap-2 ${darkMode ? 'border-slate-800 text-slate-400' : 'border-slate-50 text-slate-400'}`}>
+                    <Info size={13} className="mt-0.5 shrink-0" />
+                    <p className="text-[11px] leading-relaxed">Proiezione annuale: <span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(proiezione)}</span></p>
+                  </div>
+                )}
+
+                {isForfettario && !profile.coefficiente && (
+                  <div className={`pt-2 flex items-start gap-2 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                    <Info size={13} className="mt-0.5 shrink-0" />
+                    <p className="text-[11px] leading-relaxed">Coefficiente non impostato, usando 78%. <button onClick={onProfileClick} className="text-primary font-bold">Imposta nel profilo →</button></p>
+                  </div>
+                )}
+              </div>
             </div>
-          ))}
-        </div>
-      </motion.div>
+          </motion.div>
+        )}
+
+        {/* ── SPESE ── */}
+        {activeTab === 'expenses' && (
+          <motion.div key="expenses" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }} className="px-6">
+            {spesePerCategoria.length === 0 ? (
+              <div className={`rounded-3xl p-10 border text-center space-y-3 ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto ${darkMode ? 'bg-slate-800 text-slate-600' : 'bg-slate-50 text-slate-300'}`}><Receipt size={32} /></div>
+                <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>Nessuna spesa registrata</p>
+                <p className="text-xs text-slate-400">Aggiungi le tue spese dai Documenti</p>
+              </div>
+            ) : (
+              <div className={`rounded-3xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                <div className={`px-6 py-5 flex items-center justify-between border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Spese per Categoria</p>
+                    <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{expenses.toLocaleString()}</p>
+                  </div>
+                  <div className={`p-2 rounded-xl ${darkMode ? 'bg-slate-800 text-red-400' : 'bg-red-50 text-red-500'}`}><Receipt size={18} /></div>
+                </div>
+                <div className="px-6 py-4 space-y-3">
+                  {spesePerCategoria.map(({ name, amount }, index) => {
+                    const pct = expenses > 0 ? (amount / expenses) * 100 : 0;
+                    const colors = [
+                      { bar: '#6366f1', bg: 'bg-indigo-500' },
+                      { bar: '#f59e0b', bg: 'bg-amber-400' },
+                      { bar: '#10b981', bg: 'bg-emerald-500' },
+                      { bar: '#3b82f6', bg: 'bg-blue-500' },
+                      { bar: '#ec4899', bg: 'bg-pink-500' },
+                      { bar: '#f97316', bg: 'bg-orange-500' },
+                      { bar: '#8b5cf6', bg: 'bg-violet-500' },
+                      { bar: '#14b8a6', bg: 'bg-teal-500' },
+                    ];
+                    const color = colors[index % colors.length];
+                    return (
+                      <div key={name} className="space-y-1.5">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full shrink-0 ${color.bg}`} />
+                            <span className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{name}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-slate-400">{Math.round(pct)}%</span>
+                            <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{amount.toLocaleString()}</span>
+                          </div>
+                        </div>
+                        <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${pct}%` }}
+                            transition={{ duration: 0.6, ease: 'easeOut', delay: index * 0.08 }}
+                            className="h-full rounded-full"
+                            style={{ backgroundColor: color.bar }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
