@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Download, Check, Mail, Share2, Eye } from 'lucide-react';
+import { X, Download, Check, Mail, Share2, Eye, AlertTriangle } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Document as AppDoc, Profile, Accountant } from '../../types';
@@ -90,6 +90,11 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       return true;
     }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [yearDocs, syncedMonths, docFilter]);
+
+  const incompleteInvoices = useMemo(() =>
+    filteredDocs.filter(d => d.type === 'invoice' && (!d.title || !d.invoiceNumber || !d.clientAddress || !d.clientPiva)),
+    [filteredDocs]
+  );
 
   const totals = useMemo(() => filteredDocs.reduce((acc, d) => {
     if (d.type === 'invoice') acc.income += d.amount;
@@ -231,7 +236,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(9);
       pdf.setTextColor(...dark);
-      pdf.text(inv.client || '—', cx + 4, y + 13, { maxWidth: W - cx - margin - 8 });
+      pdf.text(inv.client || 'Cliente non specificato', cx + 4, y + 13, { maxWidth: W - cx - margin - 8 });
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(8);
       pdf.setTextColor(...muted);
@@ -245,7 +250,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       autoTable(pdf, {
         startY: y,
         head: [['Descrizione', 'Imponibile']],
-        body: [[inv.title || '—', `€ ${inv.amount.toFixed(2)}`]],
+        body: [[inv.title || 'Servizio non specificato', `€ ${inv.amount.toFixed(2)}`]],
         styles: { fontSize: 9, cellPadding: 4 },
         headStyles: { fillColor: primary, textColor: 255, fontStyle: 'bold' },
         columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 35, halign: 'right', fontStyle: 'bold' } },
@@ -518,6 +523,21 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                   </div>
                 )}
               </div>
+
+              {/* Warning fatture incomplete */}
+              {incompleteInvoices.length > 0 && !readyBlob && (
+                <div className={`flex items-start gap-3 p-4 rounded-2xl ${darkMode ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-amber-50 border border-amber-100'}`}>
+                  <AlertTriangle size={16} className="text-amber-500 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs font-bold text-amber-600">
+                      {incompleteInvoices.length === 1 ? '1 fattura ha dati incompleti' : `${incompleteInvoices.length} fatture hanno dati incompleti`}
+                    </p>
+                    <p className="text-[11px] text-amber-500/80 mt-0.5">
+                      {incompleteInvoices.map(d => d.client || d.invoiceNumber || 'Senza nome').join(', ')} — mancano descrizione, indirizzo o P.IVA cliente
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Bottone / Step 2 */}
               {readyBlob ? (

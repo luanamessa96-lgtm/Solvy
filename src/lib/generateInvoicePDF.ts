@@ -91,7 +91,7 @@ export async function generateInvoicePDF(doc: Document, profile: Profile): Promi
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(9);
   pdf.setTextColor(...dark);
-  pdf.text(doc.client || '—', cx + 4, y + 13, { maxWidth: W - cx - margin - 8 });
+  pdf.text(doc.client || 'Cliente non specificato', cx + 4, y + 13, { maxWidth: W - cx - margin - 8 });
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(8);
   pdf.setTextColor(...muted);
@@ -108,7 +108,7 @@ export async function generateInvoicePDF(doc: Document, profile: Profile): Promi
   autoTable(pdf, {
     startY: y,
     head: [['Descrizione', 'Imponibile']],
-    body: [[doc.title || '—', fmt(doc.amount)]],
+    body: [[doc.title || 'Servizio non specificato', fmt(doc.amount)]],
     styles: { fontSize: 9, cellPadding: 4 },
     headStyles: { fillColor: primary, textColor: 255, fontStyle: 'bold', halign: 'left' },
     columnStyles: {
