@@ -44,7 +44,7 @@ export async function getDocuments(profileId: string): Promise<Document[]> {
 export async function addDocument(doc: Document, profileId: string): Promise<void> {
   const { error } = await supabase
     .from('documents')
-    .insert([{
+    .upsert([{
       id: doc.id,
       type: doc.type,
       title: doc.title,
@@ -65,7 +65,8 @@ export async function addDocument(doc: Document, profileId: string): Promise<voi
       rivalsa_inps: doc.rivalsaInps,
       doc_regime: doc.docRegime,
       profile_id: profileId,
-    }]);
+      updated_at: new Date().toISOString(),
+    }], { onConflict: 'id' });
 
   if (error) throw error;
 }
@@ -89,6 +90,7 @@ export async function updateDocument(doc: Document): Promise<void> {
       iva_rate: doc.ivaRate,
       rivalsa_inps: doc.rivalsaInps,
       doc_regime: doc.docRegime,
+      updated_at: new Date().toISOString(),
     })
     .eq('id', doc.id);
 
@@ -193,7 +195,7 @@ export async function getDeadlines(profileId: string): Promise<Deadline[]> {
 export async function addDeadline(deadline: Deadline, profileId: string): Promise<void> {
   const { error } = await supabase
     .from('deadlines')
-    .insert([{ ...deadline, profile_id: profileId }]);
+    .upsert([{ ...deadline, profile_id: profileId, updated_at: new Date().toISOString() }], { onConflict: 'id' });
 
   if (error) throw error;
 }
@@ -207,6 +209,7 @@ export async function updateDeadline(deadline: Deadline): Promise<void> {
       type: deadline.type,
       amount: deadline.amount,
       completed: deadline.completed ?? false,
+      updated_at: new Date().toISOString(),
     })
     .eq('id', deadline.id);
 

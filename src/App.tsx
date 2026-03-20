@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { MOCK_PROFILES, MOCK_DOCUMENTS, MOCK_DEADLINES, MOCK_ACCOUNTANT } from './constants';
 import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, addDeadline, updateDeadline, deleteDeadline, getProfiles, updateProfile, getAccountant, updateAccountant } from './lib/db';
@@ -54,6 +54,7 @@ function AppInner() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const activeProfileRef = useRef(activeProfile);
   const { showToast } = useToast();
 
   // Auth: controlla sessione e ascolta eventi
@@ -77,9 +78,20 @@ function AppInner() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Stato connessione
+  // Stato connessione — al rientro online, risincronizza i dati
   useEffect(() => {
-    const onOnline = () => { setIsOffline(false); showToast('Connessione ripristinata', 'success'); };
+    const onOnline = () => {
+      setIsOffline(false);
+      showToast('Connessione ripristinata — sincronizzazione in corso…', 'success');
+      const profileId = activeProfileRef.current.id;
+      Promise.all([
+        getDocuments(profileId).catch(() => null),
+        getDeadlines(profileId).catch(() => null),
+      ]).then(([docs, deadlines]) => {
+        if (docs) setDocuments(markOverdue(docs));
+        if (deadlines) setDeadlines(deadlines);
+      });
+    };
     const onOffline = () => setIsOffline(true);
     window.addEventListener('online', onOnline);
     window.addEventListener('offline', onOffline);
@@ -125,7 +137,10 @@ function AppInner() {
   }, [isAuthenticated]);
 
   useEffect(() => { localStorage.setItem('darkMode', JSON.stringify(darkMode)); }, [darkMode]);
-  useEffect(() => { localStorage.setItem('activeProfileId', activeProfile.id); }, [activeProfile]);
+  useEffect(() => {
+    localStorage.setItem('activeProfileId', activeProfile.id);
+    activeProfileRef.current = activeProfile;
+  }, [activeProfile]);
 
   const markOverdue = (docs: Document[]) => {
     const thirtyDaysAgo = new Date();
