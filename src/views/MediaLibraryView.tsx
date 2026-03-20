@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, X, FileText, Image as ImageIcon, Pencil } from 'lucide-react';
 import { Document } from '../types';
+import { uploadFile } from '../lib/db';
 
 interface MediaLibraryViewProps {
   documents: Document[];
@@ -48,9 +49,7 @@ function groupByMonth(items: Document[]) {
   return groups;
 }
 
-function PdfPreview({ imageData, fileName }: { imageData: string; fileName?: string }) {
-  const isUrl = imageData.startsWith('http');
-  const url = isUrl ? imageData : null;
+function PdfPreview({ url, fileName, loading }: { url: string | null; fileName?: string; loading?: boolean }) {
 
   return (
     <div className="w-64 rounded-3xl overflow-hidden shadow-2xl bg-white flex flex-col">
@@ -65,14 +64,18 @@ function PdfPreview({ imageData, fileName }: { imageData: string; fileName?: str
         )}
       </div>
       {/* Open button */}
-      {url ? (
+      {loading ? (
+        <div className="w-full py-4 bg-red-400 text-white font-bold text-sm tracking-wide text-center opacity-80">
+          Preparazione...
+        </div>
+      ) : url ? (
         <a href={url} target="_blank" rel="noopener noreferrer"
           className="block w-full py-4 bg-red-500 text-white font-bold text-sm tracking-wide text-center active:scale-[0.98] transition-all">
           Apri PDF
         </a>
       ) : (
-        <div className="w-full py-3 bg-slate-100 text-slate-400 text-xs font-semibold text-center px-4 leading-snug">
-          Elimina e ricarica il file per aprirlo
+        <div className="w-full py-4 bg-red-400 text-white font-bold text-sm tracking-wide text-center opacity-80">
+          Preparazione...
         </div>
       )}
     </div>
@@ -145,8 +148,33 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
   const [amountError, setAmountError] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
   const [uploadError, setUploadError] = React.useState('');
+  const [pdfUrl, setPdfUrl] = React.useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = React.useState(false);
   const imageRef = React.useRef<HTMLInputElement>(null);
   const fileRef = React.useRef<HTMLInputElement>(null);
+
+  // Auto-upload base64 PDF to Storage when detail modal opens
+  React.useEffect(() => {
+    if (!selectedItem) { setPdfUrl(null); return; }
+    const isPdf = ext(selectedItem.fileName || '') === 'pdf';
+    if (!isPdf || !selectedItem.imageData) { setPdfUrl(null); return; }
+    if (selectedItem.imageData.startsWith('http')) {
+      setPdfUrl(selectedItem.imageData);
+      return;
+    }
+    // base64 → upload automatically
+    setPdfLoading(true);
+    setPdfUrl(null);
+    uploadFile(selectedItem.imageData, selectedItem.fileName || `pdf_${selectedItem.id}.pdf`)
+      .then(url => {
+        const updated = { ...selectedItem, imageData: url };
+        setPdfUrl(url);
+        setSelectedItem(updated);
+        onUpdateDocument(updated);
+      })
+      .catch(() => setPdfUrl(null))
+      .finally(() => setPdfLoading(false));
+  }, [selectedItem?.id]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -373,7 +401,7 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
                 {selectedItem.imageData && !selectedItem.fileName ? (
                   <img src={selectedItem.imageData} alt={selectedItem.title} className="max-w-full max-h-full rounded-2xl object-contain shadow-2xl" />
                 ) : selectedItem.imageData && ext(selectedItem.fileName || '') === 'pdf' ? (
-                  <PdfPreview imageData={selectedItem.imageData} fileName={selectedItem.fileName} />
+                  <PdfPreview url={pdfUrl} fileName={selectedItem.fileName} loading={pdfLoading} />
                 ) : selectedItem.imageData && ['txt', 'csv'].includes(ext(selectedItem.fileName || '')) ? (
                   <TextPreview imageData={selectedItem.imageData} fileName={selectedItem.fileName} />
                 ) : (
