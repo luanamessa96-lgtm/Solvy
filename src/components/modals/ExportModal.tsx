@@ -92,7 +92,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   }, [yearDocs, syncedMonths, docFilter]);
 
   const incompleteInvoices = useMemo(() =>
-    filteredDocs.filter(d => d.type === 'invoice' && (!d.title || !d.invoiceNumber || !d.clientAddress || !d.clientPiva)),
+    filteredDocs.filter(d => d.type === 'invoice' && (!d.title || !d.invoiceNumber || !d.clientAddress || (!d.clientPiva && d.clientPiva !== 'Privato'))),
     [filteredDocs]
   );
 
@@ -207,9 +207,11 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
       let y = 48;
 
+      const boxH = 44;
+
       // Fornitore box
       pdf.setFillColor(...light);
-      pdf.roundedRect(margin, y, 85, 38, 3, 3, 'F');
+      pdf.roundedRect(margin, y, 85, boxH, 3, 3, 'F');
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(7);
       pdf.setTextColor(...muted);
@@ -219,16 +221,16 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       pdf.setTextColor(...dark);
       pdf.text(profile.name, margin + 4, y + 13);
       pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(8);
+      pdf.setFontSize(7.5);
       pdf.setTextColor(...muted);
-      if (profile.address) pdf.text(profile.address, margin + 4, y + 20, { maxWidth: 77 });
+      if (profile.address) pdf.text(profile.address, margin + 4, y + 21, { maxWidth: 77 });
       const fiscalLine = [profile.piva ? `P.IVA: ${profile.piva}` : '', profile.codiceFiscale ? `C.F.: ${profile.codiceFiscale}` : ''].filter(Boolean).join('   ');
-      if (fiscalLine) pdf.text(fiscalLine, margin + 4, y + 30, { maxWidth: 77 });
+      if (fiscalLine) pdf.text(fiscalLine, margin + 4, y + 33, { maxWidth: 77 });
 
       // Cliente box
       const cx = W / 2 + 2;
       pdf.setFillColor(...light);
-      pdf.roundedRect(cx, y, W - cx - margin, 38, 3, 3, 'F');
+      pdf.roundedRect(cx, y, W - cx - margin, boxH, 3, 3, 'F');
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(7);
       pdf.setTextColor(...muted);
@@ -238,13 +240,14 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       pdf.setTextColor(...dark);
       pdf.text(inv.client || 'Cliente non specificato', cx + 4, y + 13, { maxWidth: W - cx - margin - 8 });
       pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(8);
+      pdf.setFontSize(7.5);
       pdf.setTextColor(...muted);
-      if (inv.clientAddress) pdf.text(inv.clientAddress, cx + 4, y + 20, { maxWidth: W - cx - margin - 8 });
-      const clientFiscal = [inv.clientPiva ? `P.IVA: ${inv.clientPiva}` : '', inv.clientCf ? `C.F.: ${inv.clientCf}` : ''].filter(Boolean).join('   ');
-      if (clientFiscal) pdf.text(clientFiscal, cx + 4, y + 30, { maxWidth: W - cx - margin - 8 });
+      if (inv.clientAddress) pdf.text(inv.clientAddress, cx + 4, y + 21, { maxWidth: W - cx - margin - 8 });
+      const clientPivaDisplay = inv.clientPiva && inv.clientPiva !== 'Privato' ? `P.IVA: ${inv.clientPiva}` : (inv.clientPiva === 'Privato' ? 'Cliente privato' : '');
+      const clientFiscal = [clientPivaDisplay, inv.clientCf ? `C.F.: ${inv.clientCf}` : ''].filter(Boolean).join('   ');
+      if (clientFiscal) pdf.text(clientFiscal, cx + 4, y + 33, { maxWidth: W - cx - margin - 8 });
 
-      y += 46;
+      y += boxH + 6;
 
       // Tabella voci
       autoTable(pdf, {
@@ -279,7 +282,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
         ...(rivalsaInps ? [[`Rivalsa INPS (4%)`, `+ € ${rivalsaAmount.toFixed(2)}`, false] as [string, string, boolean]] : []),
         ...(isOrdinario ? [[`IVA ${ivaRate}%`, `+ € ${ivaAmount.toFixed(2)}`, false] as [string, string, boolean]] : []),
         ...(marcaBollo ? [['Marca da bollo', `+ € ${MARCA_BOLLO_AMOUNT.toFixed(2)}`, false] as [string, string, boolean]] : []),
-        ...(ritenuta ? [["Ritenuta d'acconto (20%)", `− € ${ritenutaAmount.toFixed(2)}`, false] as [string, string, boolean]] : []),
+        ...(ritenuta ? [["Ritenuta d'acconto (20%)", `- € ${ritenutaAmount.toFixed(2)}`, false] as [string, string, boolean]] : []),
         ['TOTALE DA RICEVERE', `€ ${totale.toFixed(2)}`, true],
       ];
 

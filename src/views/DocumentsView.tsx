@@ -193,7 +193,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   {doc.type === 'invoice' && doc.status === 'pending' && <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500">· In attesa</span>}
                   {doc.type === 'invoice' && doc.status === 'overdue' && <span className="text-[10px] font-bold uppercase tracking-wider text-red-500">· Scaduta</span>}
                   {doc.category && <span className="text-[10px] font-medium text-slate-400">· {doc.category}</span>}
-                  {doc.type === 'invoice' && (!doc.title || !doc.clientAddress || !doc.clientPiva) && (
+                  {doc.type === 'invoice' && (!doc.title || !doc.clientAddress || (!doc.clientPiva && doc.clientPiva !== 'Privato')) && (
                     <AlertTriangle size={11} className="text-amber-400 shrink-0" />
                   )}
                 </div>

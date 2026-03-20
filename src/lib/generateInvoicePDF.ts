@@ -59,9 +59,11 @@ export async function generateInvoicePDF(doc: Document, profile: Profile): Promi
   // ─── Dati freelance + cliente ──────────────────────────────────────────────
   let y = 48;
 
+  const boxH = 44;
+
   // Box Fornitore
   pdf.setFillColor(...light);
-  pdf.roundedRect(margin, y, 85, 38, 3, 3, 'F');
+  pdf.roundedRect(margin, y, 85, boxH, 3, 3, 'F');
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(7);
   pdf.setTextColor(...muted);
@@ -71,19 +73,19 @@ export async function generateInvoicePDF(doc: Document, profile: Profile): Promi
   pdf.setTextColor(...dark);
   pdf.text(profile.name, margin + 4, y + 13);
   pdf.setFont('helvetica', 'normal');
-  pdf.setFontSize(8);
+  pdf.setFontSize(7.5);
   pdf.setTextColor(...muted);
-  if (profile.address) pdf.text(profile.address, margin + 4, y + 20, { maxWidth: 77 });
+  if (profile.address) pdf.text(profile.address, margin + 4, y + 21, { maxWidth: 77 });
   const fiscalLine = [
     profile.piva ? `P.IVA: ${profile.piva}` : '',
     profile.codiceFiscale ? `C.F.: ${profile.codiceFiscale}` : '',
   ].filter(Boolean).join('   ');
-  if (fiscalLine) pdf.text(fiscalLine, margin + 4, y + 30, { maxWidth: 77 });
+  if (fiscalLine) pdf.text(fiscalLine, margin + 4, y + 33, { maxWidth: 77 });
 
   // Box Cliente
   const cx = W / 2 + 2;
   pdf.setFillColor(...light);
-  pdf.roundedRect(cx, y, W - cx - margin, 38, 3, 3, 'F');
+  pdf.roundedRect(cx, y, W - cx - margin, boxH, 3, 3, 'F');
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(7);
   pdf.setTextColor(...muted);
@@ -93,16 +95,17 @@ export async function generateInvoicePDF(doc: Document, profile: Profile): Promi
   pdf.setTextColor(...dark);
   pdf.text(doc.client || 'Cliente non specificato', cx + 4, y + 13, { maxWidth: W - cx - margin - 8 });
   pdf.setFont('helvetica', 'normal');
-  pdf.setFontSize(8);
+  pdf.setFontSize(7.5);
   pdf.setTextColor(...muted);
-  if (doc.clientAddress) pdf.text(doc.clientAddress, cx + 4, y + 20, { maxWidth: W - cx - margin - 8 });
+  if (doc.clientAddress) pdf.text(doc.clientAddress, cx + 4, y + 21, { maxWidth: W - cx - margin - 8 });
+  const clientPivaDisplay = doc.clientPiva && doc.clientPiva !== 'Privato' ? `P.IVA: ${doc.clientPiva}` : (doc.clientPiva === 'Privato' ? 'Cliente privato' : '');
   const clientFiscal = [
-    doc.clientPiva ? `P.IVA: ${doc.clientPiva}` : '',
+    clientPivaDisplay,
     doc.clientCf ? `C.F.: ${doc.clientCf}` : '',
   ].filter(Boolean).join('   ');
-  if (clientFiscal) pdf.text(clientFiscal, cx + 4, y + 30, { maxWidth: W - cx - margin - 8 });
+  if (clientFiscal) pdf.text(clientFiscal, cx + 4, y + 33, { maxWidth: W - cx - margin - 8 });
 
-  y += 46;
+  y += boxH + 6;
 
   // ─── Tabella voci ─────────────────────────────────────────────────────────
   autoTable(pdf, {
@@ -143,7 +146,7 @@ export async function generateInvoicePDF(doc: Document, profile: Profile): Promi
     ...(rivalsaInps ? [[`Rivalsa INPS (4%)`, `+ ${fmt(rivalsaAmount)}`, false] as [string, string, boolean]] : []),
     ...(isOrdinario ? [[`IVA ${ivaRate}%`, `+ ${fmt(ivaAmount)}`, false] as [string, string, boolean]] : []),
     ...(marcaBollo ? [['Marca da bollo', `+ ${fmt(MARCA_BOLLO_AMOUNT)}`, false] as [string, string, boolean]] : []),
-    ...(ritenuta ? [["Ritenuta d'acconto (20%)", `− ${fmt(ritenutaAmount)}`, false] as [string, string, boolean]] : []),
+    ...(ritenuta ? [["Ritenuta d'acconto (20%)", `- ${fmt(ritenutaAmount)}`, false] as [string, string, boolean]] : []),
     ['TOTALE DA RICEVERE', fmt(totale), true],
   ];
 
