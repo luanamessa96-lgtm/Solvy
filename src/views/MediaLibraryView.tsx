@@ -50,22 +50,7 @@ function groupByMonth(items: Document[]) {
 
 function PdfPreview({ imageData, fileName }: { imageData: string; fileName?: string }) {
   const isUrl = imageData.startsWith('http');
-
-  const blobUrl = React.useMemo(() => {
-    if (isUrl) return null;
-    try {
-      const b64 = imageData.split(',')[1] || '';
-      const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-      const blob = new Blob([bytes], { type: 'application/pdf' });
-      return URL.createObjectURL(blob);
-    } catch { return null; }
-  }, [imageData, isUrl]);
-
-  React.useEffect(() => {
-    return () => { if (blobUrl) URL.revokeObjectURL(blobUrl); };
-  }, [blobUrl]);
-
-  const url = isUrl ? imageData : blobUrl;
+  const url = isUrl ? imageData : null;
 
   return (
     <div className="w-64 rounded-3xl overflow-hidden shadow-2xl bg-white flex flex-col">
@@ -81,20 +66,13 @@ function PdfPreview({ imageData, fileName }: { imageData: string; fileName?: str
       </div>
       {/* Open button */}
       {url ? (
-        isUrl ? (
-          <a href={url} target="_blank" rel="noopener noreferrer"
-            className="block w-full py-4 bg-red-500 text-white font-bold text-sm tracking-wide text-center active:scale-[0.98] transition-all">
-            Apri PDF
-          </a>
-        ) : (
-          <button onClick={() => { window.location.href = url; }}
-            className="w-full py-4 bg-red-500 text-white font-bold text-sm tracking-wide active:scale-[0.98] transition-all">
-            Apri PDF
-          </button>
-        )
-      ) : (
-        <div className="w-full py-4 bg-red-200 text-white font-bold text-sm tracking-wide text-center opacity-40">
+        <a href={url} target="_blank" rel="noopener noreferrer"
+          className="block w-full py-4 bg-red-500 text-white font-bold text-sm tracking-wide text-center active:scale-[0.98] transition-all">
           Apri PDF
+        </a>
+      ) : (
+        <div className="w-full py-3 bg-slate-100 text-slate-400 text-xs font-semibold text-center px-4 leading-snug">
+          Elimina e ricarica il file per aprirlo
         </div>
       )}
     </div>
