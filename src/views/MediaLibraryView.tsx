@@ -63,13 +63,26 @@ function PdfPreview({ imageData }: { imageData: string }) {
   }, [url]);
 
   if (!url) return null;
+  const scale = 0.42;
+  const displayH = 260;
+  const iframeH = Math.round(displayH / scale);
+  const iframeW = Math.round(100 / scale);
+
   return (
-    <iframe
-      src={url}
-      className="w-full rounded-2xl shadow-2xl bg-white"
-      style={{ height: '60vh', border: 'none' }}
-      title="Anteprima PDF"
-    />
+    <div className="rounded-2xl shadow-2xl overflow-hidden bg-white" style={{ width: '100%', height: displayH }}>
+      <iframe
+        src={`${url}#toolbar=0&navpanes=0&scrollbar=0`}
+        title="Anteprima PDF"
+        style={{
+          width: `${iframeW}%`,
+          height: iframeH,
+          border: 'none',
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+          pointerEvents: 'none',
+        }}
+      />
+    </div>
   );
 }
 
