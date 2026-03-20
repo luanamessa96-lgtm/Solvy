@@ -164,24 +164,31 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
               {/* Dati Cliente */}
               <div className="space-y-3">
                 <label className={lc}>Dati Cliente</label>
+                {/* Toggle Azienda / Privato */}
+                <div className={`p-1 rounded-2xl flex gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                  {(['Azienda', 'Privato'] as const).map(t => (
+                    <button key={t} type="button"
+                      onClick={() => set('clientPiva', t === 'Privato' ? 'Privato' : '')}
+                      className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${(t === 'Privato' ? form.clientPiva === 'Privato' : form.clientPiva !== 'Privato') ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
+                      {t}
+                    </button>
+                  ))}
+                </div>
                 <div className="space-y-1.5">
                   <label className={lc}>Ragione Sociale / Nome</label>
-                  <input type="text" value={form.client} onChange={e => set('client', e.target.value)} placeholder="Es. Acme Srl" className={ic} />
+                  <input type="text" value={form.client} onChange={e => set('client', e.target.value)} placeholder={form.clientPiva === 'Privato' ? 'Es. Mario Rossi' : 'Es. Acme Srl'} className={ic} />
                 </div>
                 <div className="space-y-1.5">
                   <label className={lc}>Indirizzo</label>
                   <input type="text" value={form.clientAddress} onChange={e => set('clientAddress', e.target.value)} placeholder="Via Roma 1, 20100 Milano" className={ic} />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between ml-1">
+                <div className={`grid gap-3 ${form.clientPiva === 'Privato' ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                  {form.clientPiva !== 'Privato' && (
+                    <div className="space-y-1.5">
                       <label className={lc}>P.IVA Cliente</label>
-                      <button type="button" onClick={() => set('clientPiva', form.clientPiva === 'Privato' ? '' : 'Privato')} className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${form.clientPiva === 'Privato' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>
-                        Privato
-                      </button>
+                      <input type="text" value={form.clientPiva} onChange={e => set('clientPiva', e.target.value)} placeholder="IT12345678901" className={ic} />
                     </div>
-                    <input type="text" value={form.clientPiva} onChange={e => set('clientPiva', e.target.value)} disabled={form.clientPiva === 'Privato'} placeholder={form.clientPiva === 'Privato' ? 'Cliente privato' : 'IT12345678901'} className={`${ic} ${form.clientPiva === 'Privato' ? 'opacity-40' : ''}`} />
-                  </div>
+                  )}
                   <div className="space-y-1.5">
                     <label className={lc}>C.F. Cliente</label>
                     <input type="text" value={form.clientCf} onChange={e => set('clientCf', e.target.value.toUpperCase())} placeholder="RSSMRA80..." className={ic} />

@@ -367,16 +367,23 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                             <label className={lc}>Indirizzo Cliente</label>
                             <input type="text" value={docToEdit.clientAddress || ''} onChange={e => setDocToEdit({ ...docToEdit, clientAddress: e.target.value })} className={ic} />
                           </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1.5">
-                              <div className="flex items-center justify-between ml-1">
+                          {/* Toggle Azienda / Privato */}
+                          <div className={`p-1 rounded-2xl flex gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                            {(['Azienda', 'Privato'] as const).map(t => (
+                              <button key={t} type="button"
+                                onClick={() => setDocToEdit({ ...docToEdit, clientPiva: t === 'Privato' ? 'Privato' : '' })}
+                                className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${(t === 'Privato' ? docToEdit.clientPiva === 'Privato' : docToEdit.clientPiva !== 'Privato') ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
+                                {t}
+                              </button>
+                            ))}
+                          </div>
+                          <div className={`grid gap-3 ${docToEdit.clientPiva === 'Privato' ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                            {docToEdit.clientPiva !== 'Privato' && (
+                              <div className="space-y-1.5">
                                 <label className={lc}>P.IVA Cliente</label>
-                                <button type="button" onClick={() => setDocToEdit({ ...docToEdit, clientPiva: docToEdit.clientPiva === 'Privato' ? '' : 'Privato' })} className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${docToEdit.clientPiva === 'Privato' ? 'bg-primary text-white' : (darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400')}`}>
-                                  Privato
-                                </button>
+                                <input type="text" value={docToEdit.clientPiva || ''} onChange={e => setDocToEdit({ ...docToEdit, clientPiva: e.target.value })} className={ic} />
                               </div>
-                              <input type="text" value={docToEdit.clientPiva || ''} onChange={e => setDocToEdit({ ...docToEdit, clientPiva: e.target.value })} disabled={docToEdit.clientPiva === 'Privato'} placeholder={docToEdit.clientPiva === 'Privato' ? 'Cliente privato' : ''} className={`${ic} ${docToEdit.clientPiva === 'Privato' ? 'opacity-40' : ''}`} />
-                            </div>
+                            )}
                             <div className="space-y-1.5">
                               <label className={lc}>C.F. Cliente</label>
                               <input type="text" value={docToEdit.clientCf || ''} onChange={e => setDocToEdit({ ...docToEdit, clientCf: e.target.value.toUpperCase() })} className={ic} />
