@@ -334,7 +334,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
           <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDocToEdit(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className={`relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
-              <div className="overflow-y-auto max-h-[90vh] p-8 space-y-5">
+              <div className="overflow-y-auto max-h-[90vh] p-8 space-y-5 [padding-bottom:max(2rem,calc(env(safe-area-inset-bottom)+1rem))]">
                 <div className="flex justify-between items-start">
                   <div>
                     <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Modifica</h2>
@@ -372,7 +372,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                             {(['Azienda', 'Privato'] as const).map(t => (
                               <button key={t} type="button"
                                 onClick={() => setDocToEdit({ ...docToEdit, clientPiva: t === 'Privato' ? 'Privato' : '' })}
-                                className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${(t === 'Privato' ? docToEdit.clientPiva === 'Privato' : docToEdit.clientPiva !== 'Privato') ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
+                                className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${(t === 'Privato' ? docToEdit.clientPiva === 'Privato' : docToEdit.clientPiva !== 'Privato') ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
                                 {t}
                               </button>
                             ))}

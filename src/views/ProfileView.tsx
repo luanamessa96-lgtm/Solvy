@@ -7,7 +7,7 @@ interface ProfileViewProps {
   activeProfile: Profile;
   profiles: Profile[];
   onSwitchProfile: (p: Profile) => void;
-  onUpdateProfile: (p: Profile) => void;
+  onUpdateProfile: (p: Profile) => Promise<void> | void;
   darkMode?: boolean;
   key?: string;
 }
@@ -39,6 +39,8 @@ function validateCF(v: string): string | null {
 
 const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile, darkMode }: ProfileViewProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [editData, setEditData] = useState({
     name: activeProfile.name,
     email: activeProfile.email,
@@ -61,16 +63,22 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
   };
   const hasErrors = Object.values(errors).some(Boolean);
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (hasErrors) return;
-    onUpdateProfile({
-      ...activeProfile,
-      ...editData,
-      coefficiente: editData.coefficiente ? parseFloat(editData.coefficiente) : undefined,
-      annoInizioAttivita: editData.annoInizioAttivita ? parseInt(editData.annoInizioAttivita) : undefined,
-      iban: editData.iban || undefined,
-    });
-    setIsEditing(false);
+    setIsSaving(true);
+    try {
+      await onUpdateProfile({
+        ...activeProfile,
+        ...editData,
+        coefficiente: editData.coefficiente ? parseFloat(editData.coefficiente) : undefined,
+        annoInizioAttivita: editData.annoInizioAttivita ? parseInt(editData.annoInizioAttivita) : undefined,
+        iban: editData.iban || undefined,
+      });
+      setSaveSuccess(true);
+      setTimeout(() => { setSaveSuccess(false); setIsEditing(false); }, 1000);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const inputClass = (error?: string | null) =>
@@ -200,8 +208,9 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                   </div>
                 </div>
 
-                <button onClick={handleSaveEdit} disabled={hasErrors} className={`w-full py-4 rounded-2xl font-bold shadow-xl transition-all active:scale-[0.98] ${hasErrors ? 'bg-slate-200 text-slate-400 shadow-none cursor-not-allowed' : 'bg-primary text-white shadow-primary/30'}`}>
-                  {hasErrors ? 'Correggi gli errori per salvare' : 'Salva Modifiche'}
+                <button onClick={handleSaveEdit} disabled={hasErrors || isSaving} className={`w-full py-4 rounded-2xl font-bold shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${hasErrors ? 'bg-slate-200 text-slate-400 shadow-none cursor-not-allowed' : saveSuccess ? 'bg-emerald-500 text-white shadow-emerald-500/30' : 'bg-primary text-white shadow-primary/30'}`}>
+                  {isSaving ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
+                  {hasErrors ? 'Correggi gli errori per salvare' : saveSuccess ? '✓ Salvato!' : isSaving ? 'Salvataggio…' : 'Salva Modifiche'}
                 </button>
               </div>
             </motion.div>

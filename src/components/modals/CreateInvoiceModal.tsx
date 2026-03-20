@@ -65,6 +65,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
       rivalsaInps: false,
       ivaRate: 22,
     });
+    setTouched({});
   };
 
   const amount = parseFloat(form.amount.replace(',', '.')) || 0;
@@ -79,7 +80,8 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
   const totaleDaRicevere = totaleFattura - ritenutaAmount;
 
   const handleSubmit = () => {
-    if (!form.client || !form.amount || !form.title) return;
+    setTouched({ client: true, title: true, amount: true });
+    if (!form.client.trim() || !form.title.trim() || amount <= 0) return;
     onSave({
       id: Math.random().toString(36).substr(2, 9),
       type: 'invoice',
@@ -102,8 +104,26 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
     onClose();
   };
 
-  const ic = `w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`;
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const touch = (key: string) => setTouched(t => ({ ...t, [key]: true }));
+
+  const errors = {
+    client: touched.client && !form.client.trim() ? 'Campo obbligatorio' : '',
+    title: touched.title && !form.title.trim() ? 'Campo obbligatorio' : '',
+    amount: touched.amount && (amount <= 0 || isNaN(amount)) ? 'Inserisci un importo valido' : '',
+  };
+
+  const hasErrors = Object.values(errors).some(Boolean);
+
+  const ic = (err?: string) => `w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all ${
+    err
+      ? 'border-red-400 bg-red-50 text-red-900 focus:ring-red-200 placeholder:text-red-300'
+      : darkMode
+        ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600 focus:ring-primary/20'
+        : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400 focus:ring-primary/20'
+  }`;
   const lc = 'text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1';
+  const errMsg = (msg: string) => msg ? <p className="text-[10px] text-red-500 font-semibold ml-1 mt-0.5">{msg}</p> : null;
 
   return (
     <AnimatePresence>
@@ -111,7 +131,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
           <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className={`relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
-            <div className="overflow-y-auto max-h-[92vh] p-8 space-y-6">
+            <div className="overflow-y-auto max-h-[92vh] p-8 space-y-6 [padding-bottom:max(2rem,calc(env(safe-area-inset-bottom)+1rem))]">
 
               {/* Header */}
               <div className="flex justify-between items-start">
@@ -130,11 +150,11 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className={lc}>N° Fattura</label>
-                    <input type="text" value={form.invoiceNumber || nextInvoiceNumber} onChange={e => set('invoiceNumber', e.target.value)} className={ic} />
+                    <input type="text" value={form.invoiceNumber || nextInvoiceNumber} onChange={e => set('invoiceNumber', e.target.value)} className={ic()} />
                   </div>
                   <div className="space-y-1.5">
                     <label className={lc}>Data</label>
-                    <input type="date" value={form.date} onChange={e => set('date', e.target.value)} className={ic} />
+                    <input type="date" value={form.date} onChange={e => set('date', e.target.value)} className={ic()} />
                   </div>
                 </div>
               </div>
@@ -147,29 +167,30 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   {(['Azienda', 'Privato'] as const).map(t => (
                     <button key={t} type="button"
                       onClick={() => set('clientPiva', t === 'Privato' ? 'Privato' : '')}
-                      className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${(t === 'Privato' ? form.clientPiva === 'Privato' : form.clientPiva !== 'Privato') ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
+                      className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${(t === 'Privato' ? form.clientPiva === 'Privato' : form.clientPiva !== 'Privato') ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
                       {t}
                     </button>
                   ))}
                 </div>
                 <div className="space-y-1.5">
                   <label className={lc}>Ragione Sociale / Nome</label>
-                  <input type="text" value={form.client} onChange={e => set('client', e.target.value)} placeholder={form.clientPiva === 'Privato' ? 'Es. Mario Rossi' : 'Es. Acme Srl'} className={ic} />
+                  <input type="text" value={form.client} onChange={e => set('client', e.target.value)} onBlur={() => touch('client')} placeholder={form.clientPiva === 'Privato' ? 'Es. Mario Rossi' : 'Es. Acme Srl'} className={ic(errors.client)} />
+                  {errMsg(errors.client)}
                 </div>
                 <div className="space-y-1.5">
                   <label className={lc}>Indirizzo</label>
-                  <input type="text" value={form.clientAddress} onChange={e => set('clientAddress', e.target.value)} placeholder="Via Roma 1, 20100 Milano" className={ic} />
+                  <input type="text" value={form.clientAddress} onChange={e => set('clientAddress', e.target.value)} placeholder="Via Roma 1, 20100 Milano" className={ic()} />
                 </div>
                 <div className={`grid gap-3 ${form.clientPiva === 'Privato' ? 'grid-cols-1' : 'grid-cols-2'}`}>
                   {form.clientPiva !== 'Privato' && (
                     <div className="space-y-1.5">
                       <label className={lc}>P.IVA Cliente</label>
-                      <input type="text" value={form.clientPiva} onChange={e => set('clientPiva', e.target.value)} placeholder="IT12345678901" className={ic} />
+                      <input type="text" value={form.clientPiva} onChange={e => set('clientPiva', e.target.value)} placeholder="IT12345678901" className={ic()} />
                     </div>
                   )}
                   <div className="space-y-1.5">
                     <label className={lc}>C.F. Cliente</label>
-                    <input type="text" value={form.clientCf} onChange={e => set('clientCf', e.target.value.toUpperCase())} placeholder="RSSMRA80..." className={ic} />
+                    <input type="text" value={form.clientCf} onChange={e => set('clientCf', e.target.value.toUpperCase())} placeholder="RSSMRA80..." className={ic()} />
                   </div>
                 </div>
               </div>
@@ -179,11 +200,13 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 <label className={lc}>Servizio</label>
                 <div className="space-y-1.5">
                   <label className={lc}>Descrizione</label>
-                  <input type="text" value={form.title} onChange={e => set('title', e.target.value)} placeholder="Es. Consulenza web — Maggio 2026" className={ic} />
+                  <input type="text" value={form.title} onChange={e => set('title', e.target.value)} onBlur={() => touch('title')} placeholder="Es. Consulenza web — Maggio 2026" className={ic(errors.title)} />
+                  {errMsg(errors.title)}
                 </div>
                 <div className="space-y-1.5">
                   <label className={lc}>Importo €</label>
-                  <input type="text" inputMode="decimal" value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="0.00" className={ic} />
+                  <input type="text" inputMode="decimal" value={form.amount} onChange={e => set('amount', e.target.value)} onBlur={() => touch('amount')} placeholder="0.00" className={ic(errors.amount)} />
+                  {errMsg(errors.amount)}
                 </div>
               </div>
 
@@ -305,7 +328,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
 
               {/* Azioni */}
               <div className="space-y-3 pb-2">
-                <button onClick={handleSubmit} disabled={!form.client || !form.amount || !form.title}
+                <button onClick={handleSubmit} disabled={hasErrors && Object.keys(touched).length > 0}
                   className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-40 flex items-center justify-center gap-2">
                   <FileText size={18} />
                   Crea Fattura

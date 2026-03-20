@@ -20,114 +20,107 @@ function fmt(n: number) {
   return `€ ${n.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-export async function generateInvoicePDF(doc: Document, profile: Profile): Promise<void> {
+export function buildInvoicePDF(doc: Document, profile: Profile): jsPDF {
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
   const W = 210;
-  const margin = 14;
-  const rightCol = W - margin;
+  const M = 16; // margin
+  const R = W - M; // right edge
 
-  // ─── Colori ───────────────────────────────────────────────────────────────
-  const primary: [number, number, number] = [79, 70, 229];   // indigo
-  const dark: [number, number, number] = [15, 23, 42];
-  const muted: [number, number, number] = [100, 116, 139];
-  const light: [number, number, number] = [241, 245, 249];
+  const black: [number, number, number] = [15, 23, 42];
+  const grey: [number, number, number] = [100, 116, 139];
+  const lightGrey: [number, number, number] = [226, 232, 240];
+  const primary: [number, number, number] = [79, 70, 229];
 
-  // ─── Header band ──────────────────────────────────────────────────────────
-  pdf.setFillColor(...primary);
-  pdf.rect(0, 0, W, 38, 'F');
-
-  // Nome freelance
+  // ─── Header ───────────────────────────────────────────────────────────────
+  // "FATTURA" top left
   pdf.setFont('helvetica', 'bold');
-  pdf.setFontSize(18);
-  pdf.setTextColor(255, 255, 255);
-  pdf.text(profile.name, margin, 15);
+  pdf.setFontSize(22);
+  pdf.setTextColor(...black);
+  pdf.text('FATTURA', M, 18);
 
-  // Regime pill
-  const regime = profile.regime === 'ordinario' ? 'Regime Ordinario' : 'Regime Forfettario';
-  pdf.setFontSize(8);
+  // Numero fattura top right
   pdf.setFont('helvetica', 'normal');
-  pdf.text(regime.toUpperCase(), margin, 22);
-
-  // Numero fattura (destra)
   pdf.setFontSize(11);
-  pdf.setFont('helvetica', 'bold');
-  pdf.text(`FATTURA N° ${doc.invoiceNumber || '—'}`, rightCol, 15, { align: 'right' });
-  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor(...grey);
+  pdf.text(`N° ${doc.invoiceNumber || '—'}`, R, 14, { align: 'right' });
+
+  // Data
   pdf.setFontSize(9);
-  pdf.text(`Data: ${new Date(doc.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' })}`, rightCol, 22, { align: 'right' });
+  pdf.text(
+    new Date(doc.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' }),
+    R, 20, { align: 'right' }
+  );
 
-  // ─── Dati freelance + cliente ──────────────────────────────────────────────
-  let y = 48;
+  // Regime
+  pdf.setFontSize(8);
+  pdf.setTextColor(...grey);
+  pdf.text((profile.regime === 'ordinario' ? 'Regime Ordinario' : 'Regime Forfettario').toUpperCase(), M, 24);
 
-  const boxH = 44;
+  // Divider
+  pdf.setDrawColor(...lightGrey);
+  pdf.setLineWidth(0.4);
+  pdf.line(M, 28, R, 28);
 
-  // Box Fornitore
-  pdf.setFillColor(...light);
-  pdf.roundedRect(margin, y, 85, boxH, 3, 3, 'F');
+  // ─── Fornitore + Cliente ───────────────────────────────────────────────────
+  let y = 35;
+  const colW = (R - M - 8) / 2;
+  const col2 = M + colW + 8;
+
+  // Label FORNITORE
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(7);
-  pdf.setTextColor(...muted);
-  pdf.text('FORNITORE', margin + 4, y + 6);
+  pdf.setTextColor(...grey);
+  pdf.text('FORNITORE', M, y);
+  pdf.text('CLIENTE', col2, y);
+
+  y += 6;
+
+  // Nome fornitore
   pdf.setFont('helvetica', 'bold');
-  pdf.setFontSize(9);
-  pdf.setTextColor(...dark);
-  pdf.text(profile.name, margin + 4, y + 13);
+  pdf.setFontSize(10);
+  pdf.setTextColor(...black);
+  pdf.text(profile.name, M, y);
+
+  // Nome cliente
+  pdf.text(doc.client || 'Cliente non specificato', col2, y, { maxWidth: colW });
+
+  y += 5;
   pdf.setFont('helvetica', 'normal');
-  pdf.setFontSize(7.5);
-  pdf.setTextColor(...muted);
-  if (profile.address) pdf.text(profile.address, margin + 4, y + 21, { maxWidth: 77 });
-  const fiscalLine = [
-    profile.piva ? `P.IVA: ${profile.piva}` : '',
-    profile.codiceFiscale ? `C.F.: ${profile.codiceFiscale}` : '',
-  ].filter(Boolean).join('   ');
-  if (fiscalLine) pdf.text(fiscalLine, margin + 4, y + 33, { maxWidth: 77 });
+  pdf.setFontSize(8.5);
+  pdf.setTextColor(...grey);
 
-  // Box Cliente
-  const cx = W / 2 + 2;
-  pdf.setFillColor(...light);
-  pdf.roundedRect(cx, y, W - cx - margin, boxH, 3, 3, 'F');
-  pdf.setFont('helvetica', 'bold');
-  pdf.setFontSize(7);
-  pdf.setTextColor(...muted);
-  pdf.text('CLIENTE', cx + 4, y + 6);
-  pdf.setFont('helvetica', 'bold');
-  pdf.setFontSize(9);
-  pdf.setTextColor(...dark);
-  pdf.text(doc.client || 'Cliente non specificato', cx + 4, y + 13, { maxWidth: W - cx - margin - 8 });
-  pdf.setFont('helvetica', 'normal');
-  pdf.setFontSize(7.5);
-  pdf.setTextColor(...muted);
-  if (doc.clientAddress) pdf.text(doc.clientAddress, cx + 4, y + 21, { maxWidth: W - cx - margin - 8 });
-  const clientPivaDisplay = doc.clientPiva && doc.clientPiva !== 'Privato' ? `P.IVA: ${doc.clientPiva}` : (doc.clientPiva === 'Privato' ? 'Cliente privato' : '');
-  const clientFiscal = [
-    clientPivaDisplay,
-    doc.clientCf ? `C.F.: ${doc.clientCf}` : '',
-  ].filter(Boolean).join('   ');
-  if (clientFiscal) pdf.text(clientFiscal, cx + 4, y + 33, { maxWidth: W - cx - margin - 8 });
+  // Righe fornitore
+  const fornitoreLines: string[] = [];
+  if (profile.address) fornitoreLines.push(profile.address);
+  if (profile.piva) fornitoreLines.push(`P.IVA: ${profile.piva}`);
+  if (profile.codiceFiscale) fornitoreLines.push(`C.F.: ${profile.codiceFiscale}`);
+  if (profile.email) fornitoreLines.push(profile.email);
+  if (profile.iban) fornitoreLines.push(`IBAN: ${profile.iban}`);
 
-  y += boxH + 6;
+  // Righe cliente
+  const clientePivaText = doc.clientPiva === 'Privato'
+    ? 'Cliente privato'
+    : (doc.clientPiva && doc.clientPiva.toLowerCase() !== 'nessuna') ? `P.IVA: ${doc.clientPiva}` : '';
+  const clienteLines: string[] = [];
+  if (doc.clientAddress) clienteLines.push(doc.clientAddress);
+  if (clientePivaText) clienteLines.push(clientePivaText);
+  if (doc.clientCf) clienteLines.push(`C.F.: ${doc.clientCf}`);
 
-  // ─── Tabella voci ─────────────────────────────────────────────────────────
-  autoTable(pdf, {
-    startY: y,
-    head: [['Descrizione', 'Imponibile']],
-    body: [[doc.title || 'Servizio non specificato', fmt(doc.amount)]],
-    styles: { fontSize: 9, cellPadding: 4 },
-    headStyles: { fillColor: primary, textColor: 255, fontStyle: 'bold', halign: 'left' },
-    columnStyles: {
-      0: { cellWidth: 'auto' },
-      1: { cellWidth: 35, halign: 'right', fontStyle: 'bold' },
-    },
-    margin: { left: margin, right: margin },
-  });
+  const maxLines = Math.max(fornitoreLines.length, clienteLines.length);
+  for (let i = 0; i < maxLines; i++) {
+    if (fornitoreLines[i]) pdf.text(fornitoreLines[i], M, y, { maxWidth: colW });
+    if (clienteLines[i]) pdf.text(clienteLines[i], col2, y, { maxWidth: colW });
+    y += 5;
+  }
 
-  y = pdf.lastAutoTable?.finalY ?? y + 20;
   y += 4;
 
-  // ─── Riepilogo importi ────────────────────────────────────────────────────
-  const summaryX = W - margin - 80;
-  const summaryW = 80;
+  // Divider
+  pdf.setDrawColor(...lightGrey);
+  pdf.line(M, y, R, y);
+  y += 8;
 
+  // ─── Tabella voci ─────────────────────────────────────────────────────────
   const docRegime = doc.docRegime ?? (profile.regime ?? 'forfettario');
   const isOrdinario = docRegime === 'ordinario';
   const ivaRate = doc.ivaRate ?? 0;
@@ -141,57 +134,102 @@ export async function generateInvoicePDF(doc: Document, profile: Profile): Promi
   const ritenutaAmount = ritenuta ? doc.amount * RITENUTA_RATE : 0;
   const totale = totaleImponibile + ivaAmount + (marcaBollo ? MARCA_BOLLO_AMOUNT : 0) - ritenutaAmount;
 
+  autoTable(pdf, {
+    startY: y,
+    head: [['Descrizione', 'Importo']],
+    body: [[doc.title || 'Servizio non specificato', fmt(doc.amount)]],
+    styles: { fontSize: 9, cellPadding: { top: 5, bottom: 5, left: 3, right: 3 }, textColor: black },
+    headStyles: {
+      fillColor: [248, 250, 252],
+      textColor: grey,
+      fontStyle: 'bold',
+      fontSize: 8,
+      lineColor: lightGrey,
+      lineWidth: 0.3,
+    },
+    bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+    columnStyles: {
+      0: { cellWidth: 'auto' },
+      1: { cellWidth: 38, halign: 'right', fontStyle: 'bold', textColor: black },
+    },
+    margin: { left: M, right: M },
+    tableLineColor: lightGrey,
+    tableLineWidth: 0.3,
+  });
+
+  y = (pdf as jsPDFWithAutoTable).lastAutoTable?.finalY ?? y + 20;
+  y += 6;
+
+  // ─── Riepilogo ────────────────────────────────────────────────────────────
+  const summaryX = W - M - 72;
+  const summaryW = 72;
+
   const summaryRows: [string, string, boolean][] = [
     ['Imponibile', fmt(doc.amount), false],
     ...(rivalsaInps ? [[`Rivalsa INPS (4%)`, `+ ${fmt(rivalsaAmount)}`, false] as [string, string, boolean]] : []),
     ...(isOrdinario ? [[`IVA ${ivaRate}%`, `+ ${fmt(ivaAmount)}`, false] as [string, string, boolean]] : []),
     ...(marcaBollo ? [['Marca da bollo', `+ ${fmt(MARCA_BOLLO_AMOUNT)}`, false] as [string, string, boolean]] : []),
     ...(ritenuta ? [["Ritenuta d'acconto (20%)", `- ${fmt(ritenutaAmount)}`, false] as [string, string, boolean]] : []),
-    ['TOTALE DA RICEVERE', fmt(totale), true],
   ];
 
-  pdf.setDrawColor(...light);
-  summaryRows.forEach(([label, value, isBold]) => {
-    const bgColor: [number, number, number] = isBold ? primary : light;
-    const textColor: [number, number, number] = isBold ? [255, 255, 255] : muted;
-    pdf.setFillColor(...bgColor);
-    pdf.rect(summaryX, y, summaryW, 8, 'F');
-    pdf.setFont('helvetica', isBold ? 'bold' : 'normal');
-    pdf.setFontSize(isBold ? 9 : 8);
-    pdf.setTextColor(...textColor);
-    pdf.text(label, summaryX + 3, y + 5.5);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(value, summaryX + summaryW - 3, y + 5.5, { align: 'right' });
+  summaryRows.forEach(([label, value]) => {
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8.5);
+    pdf.setTextColor(...grey);
+    pdf.text(label, summaryX, y + 4);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(...black);
+    pdf.text(value, summaryX + summaryW, y + 4, { align: 'right' });
+    pdf.setDrawColor(...lightGrey);
+    pdf.line(summaryX, y + 7, summaryX + summaryW, y + 7);
     y += 9;
   });
 
-  y += 8;
+  // Riga totale
+  y += 2;
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(10);
+  pdf.setTextColor(...black);
+  pdf.text('TOTALE DA RICEVERE', summaryX, y + 5);
+  pdf.setFontSize(11);
+  pdf.setTextColor(...primary);
+  pdf.text(fmt(totale), summaryX + summaryW, y + 5, { align: 'right' });
 
-  // ─── Nota legale ──────────────────────────────────────────────────────────
+  y += 14;
+
+  // ─── Nota legale forfettario ───────────────────────────────────────────────
   if (!isOrdinario) {
-    pdf.setDrawColor(...primary);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, y, margin + 120, y);
-    y += 4;
+    pdf.setDrawColor(...lightGrey);
+    pdf.line(M, y, R, y);
+    y += 5;
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(7);
-    pdf.setTextColor(...muted);
-    const lines = pdf.splitTextToSize(FORFETTARIO_NOTE, W - margin * 2);
-    pdf.text(lines, margin, y);
+    pdf.setTextColor(...grey);
+    const lines = pdf.splitTextToSize(FORFETTARIO_NOTE, W - M * 2);
+    pdf.text(lines, M, y);
     y += lines.length * 3.5 + 4;
   }
 
   // ─── Footer ───────────────────────────────────────────────────────────────
-  pdf.setFillColor(...primary);
-  pdf.rect(0, 287, W, 10, 'F');
-  pdf.setFont('helvetica', 'normal');
-  pdf.setFontSize(7);
-  pdf.setTextColor(255, 255, 255);
-  const footerLeft = [profile.email, profile.iban ? `IBAN: ${profile.iban}` : ''].filter(Boolean).join('   |   ');
-  pdf.text(footerLeft, margin, 293);
-  pdf.text(`Generato il ${new Date().toLocaleDateString('it-IT')}`, rightCol, 293, { align: 'right' });
+  pdf.setDrawColor(...lightGrey);
+  pdf.setLineWidth(0.4);
+  pdf.line(M, 280, R, 280);
 
-  // ─── Condividi / Scarica ──────────────────────────────────────────────────
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(7.5);
+  pdf.setTextColor(...grey);
+
+  const footerParts: string[] = [];
+  if (profile.email) footerParts.push(profile.email);
+  if (profile.iban) footerParts.push(`IBAN: ${profile.iban}`);
+  pdf.text(footerParts.join('   |   '), M, 285);
+  pdf.text(`Pag. 1 di 1`, R, 285, { align: 'right' });
+
+  return pdf;
+}
+
+export async function generateInvoicePDF(doc: Document, profile: Profile): Promise<void> {
+  const pdf = buildInvoicePDF(doc, profile);
   const fileName = `fattura_${doc.invoiceNumber?.replace('/', '-') || doc.id}_${profile.name.replace(/\s+/g, '_')}.pdf`;
   const blob = pdf.output('blob');
   const file = new File([blob], fileName, { type: 'application/pdf' });

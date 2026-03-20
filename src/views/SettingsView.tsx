@@ -17,11 +17,11 @@ const SettingsView = ({ darkMode, setDarkMode }: SettingsViewProps) => {
       <motion.div variants={item} className="space-y-4">
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Aspetto</p>
         <div className={`rounded-3xl p-2 border flex gap-2 transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
-          <button onClick={() => setDarkMode(false)} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl transition-all active:scale-95 ${!darkMode ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/20' : 'text-slate-400 hover:bg-slate-800'}`}>
+          <button onClick={() => setDarkMode(false)} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl transition-all active:scale-95 ${!darkMode ? 'bg-white text-slate-900 shadow-lg shadow-slate-200' : 'text-slate-500 hover:text-slate-300'}`}>
             <Sun size={18} />
             <span className="text-sm font-bold">Light</span>
           </button>
-          <button onClick={() => setDarkMode(true)} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl transition-all active:scale-95 ${darkMode ? 'bg-white text-slate-900 shadow-xl shadow-white/20' : 'text-slate-400 hover:bg-slate-50'}`}>
+          <button onClick={() => setDarkMode(true)} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl transition-all active:scale-95 ${darkMode ? 'bg-slate-700 text-white shadow-lg shadow-slate-900/40' : 'text-slate-400 hover:text-slate-600'}`}>
             <Moon size={18} />
             <span className="text-sm font-bold">Dark</span>
           </button>
