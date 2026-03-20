@@ -25,11 +25,7 @@ const FORFETTARIO_NOTE =
 const IVA_OPTIONS = [4, 5, 10, 22];
 
 const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile, documents, darkMode }: CreateInvoiceModalProps) => {
-  const [regime, setRegime] = useState<'forfettario' | 'ordinario'>(profile.regime ?? 'forfettario');
-
-  useEffect(() => {
-    if (isOpen) setRegime(profile.regime ?? 'forfettario');
-  }, [isOpen, profile.regime]);
+  const regime = profile.regime ?? 'forfettario';
 
   const nextInvoiceNumber = useMemo(() => {
     const year = new Date().getFullYear();
@@ -82,11 +78,6 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
   const totaleFattura = totaleImponibile + ivaAmount + (marcaBollo ? MARCA_BOLLO_AMOUNT : 0);
   const totaleDaRicevere = totaleFattura - ritenutaAmount;
 
-  const handleRegimeChange = (r: 'forfettario' | 'ordinario') => {
-    setRegime(r);
-    onUpdateProfile({ ...profile, regime: r });
-  };
-
   const handleSubmit = () => {
     if (!form.client || !form.amount || !form.title) return;
     onSave({
@@ -131,19 +122,6 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 <button onClick={onClose} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
                   <Plus className="rotate-45" size={24} />
                 </button>
-              </div>
-
-              {/* Regime toggle */}
-              <div className="space-y-2">
-                <label className={lc}>Regime Fiscale</label>
-                <div className={`p-1 rounded-2xl flex gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                  {(['forfettario', 'ordinario'] as const).map(r => (
-                    <button key={r} type="button" onClick={() => handleRegimeChange(r)}
-                      className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all capitalize ${regime === r ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
-                      {r.charAt(0).toUpperCase() + r.slice(1)}
-                    </button>
-                  ))}
-                </div>
               </div>
 
               {/* Dati Fattura */}

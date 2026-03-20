@@ -314,7 +314,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                     <span className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Duplica Fattura</span>
                   </button>
                 )}
-                <button onClick={() => { setDocToEdit({ ...selectedDoc }); setSelectedDoc(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                <button onClick={() => { setDocToEdit({ ...selectedDoc, docRegime: selectedDoc.docRegime ?? profile.regime ?? 'forfettario' }); setSelectedDoc(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${darkMode ? 'bg-slate-700 text-primary' : 'bg-primary/10 text-primary'}`}><FileEdit size={18} /></div>
                   <span className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Modifica</span>
                 </button>
@@ -387,17 +387,6 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                             <div className="space-y-1.5">
                               <label className={lc}>C.F. Cliente</label>
                               <input type="text" value={docToEdit.clientCf || ''} onChange={e => setDocToEdit({ ...docToEdit, clientCf: e.target.value.toUpperCase() })} className={ic} />
-                            </div>
-                          </div>
-                          {/* Regime fiscale */}
-                          <div className="space-y-1.5 pt-1">
-                            <label className={lc}>Regime Fiscale</label>
-                            <div className={`p-1 rounded-2xl flex gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                              {(['forfettario', 'ordinario'] as const).map(r => (
-                                <button key={r} type="button" onClick={() => setDocToEdit({ ...docToEdit, docRegime: r })} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all capitalize ${(docToEdit.docRegime ?? 'forfettario') === r ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
-                                  {r.charAt(0).toUpperCase() + r.slice(1)}
-                                </button>
-                              ))}
                             </div>
                           </div>
                           {/* IVA (solo ordinario) */}
