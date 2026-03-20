@@ -48,6 +48,31 @@ function groupByMonth(items: Document[]) {
   return groups;
 }
 
+function PdfPreview({ imageData }: { imageData: string }) {
+  const url = React.useMemo(() => {
+    try {
+      const b64 = imageData.split(',')[1] || '';
+      const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      return URL.createObjectURL(blob);
+    } catch { return null; }
+  }, [imageData]);
+
+  React.useEffect(() => {
+    return () => { if (url) URL.revokeObjectURL(url); };
+  }, [url]);
+
+  if (!url) return null;
+  return (
+    <iframe
+      src={url}
+      className="w-full rounded-2xl shadow-2xl bg-white"
+      style={{ height: '60vh', border: 'none' }}
+      title="Anteprima PDF"
+    />
+  );
+}
+
 function FileThumbnail({ doc, darkMode }: { doc: Document; darkMode?: boolean }) {
   if (doc.imageData && !doc.fileName) {
     return (
@@ -313,6 +338,8 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
               <div className="flex-1 flex items-center justify-center p-6 overflow-hidden">
                 {selectedItem.imageData && !selectedItem.fileName ? (
                   <img src={selectedItem.imageData} alt={selectedItem.title} className="max-w-full max-h-full rounded-2xl object-contain shadow-2xl" />
+                ) : selectedItem.imageData && ext(selectedItem.fileName || '') === 'pdf' ? (
+                  <PdfPreview imageData={selectedItem.imageData} />
                 ) : selectedItem.imageData && ['txt', 'csv'].includes(ext(selectedItem.fileName || '')) ? (
                   <div className="w-full max-h-72 bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
                     <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-100 bg-slate-50/80">
