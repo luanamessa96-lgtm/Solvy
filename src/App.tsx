@@ -211,14 +211,23 @@ function AppInner() {
   const handleAddDocument = async (doc: Document) => {
     setDocuments(prev => markOverdue([doc, ...prev]));
     showToast(doc.type === 'invoice' ? 'Fattura aggiunta' : 'Spesa aggiunta');
-    try {
-      let docToSave = doc;
-      if (doc.imageData && doc.imageData.startsWith('data:')) {
+
+    let docToSave = doc;
+
+    if (doc.imageData?.startsWith('data:')) {
+      try {
         const name = doc.fileName || `image_${doc.id}.jpg`;
         const url = await uploadFile(doc.imageData, name);
         docToSave = { ...doc, imageData: url };
         setDocuments(prev => prev.map(d => d.id === doc.id ? docToSave : d));
+      } catch {
+        // Upload allegato fallito: salva il documento senza file
+        docToSave = { ...doc, imageData: undefined };
+        showToast('Allegato non caricato — documento salvato senza file', 'error');
       }
+    }
+
+    try {
       await addDocument(docToSave, activeProfile.id);
     } catch { showToast('Errore nel salvataggio', 'error'); }
   };

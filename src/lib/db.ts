@@ -81,6 +81,8 @@ export async function updateDocument(doc: Document): Promise<void> {
       status: doc.status,
       client: doc.client,
       category: doc.category,
+      image_data: doc.imageData,
+      file_name: doc.fileName,
       invoice_number: doc.invoiceNumber,
       client_address: doc.clientAddress,
       client_piva: doc.clientPiva,
