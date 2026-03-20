@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'motion/react';
-import { TrendingUp, AlertTriangle, AlertCircle, Info, FileText } from 'lucide-react';
+import { TrendingUp, AlertTriangle, AlertCircle, Info, FileText, Receipt } from 'lucide-react';
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Profile, Document } from '../types';
 
@@ -122,6 +122,19 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
   }, [income, expenses, profile, displayYear]);
 
   const sogliAlert = income >= SOGLIA_FORFETTARIO ? 'exceeded' : income >= ALERT_SOGLIA ? 'warning' : null;
+
+  const spesePerCategoria = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const yearExpenses = documents.filter(d => d.type === 'expense' && new Date(d.date).getFullYear() === currentYear);
+    const map: Record<string, number> = {};
+    yearExpenses.forEach(d => {
+      const cat = d.category || 'Altro';
+      map[cat] = (map[cat] || 0) + d.amount;
+    });
+    return Object.entries(map)
+      .map(([name, amount]) => ({ name, amount }))
+      .sort((a, b) => b.amount - a.amount);
+  }, [documents]);
 
   const isForfettario = tasse.regime === 'forfettario';
   const totaleTasse = tasse.imposta + tasse.inps;
@@ -324,6 +337,43 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
           </div>
         </div>
       </motion.div>
+
+      {/* Spese per categoria */}
+      {spesePerCategoria.length > 0 && (
+        <motion.div variants={item} className={`rounded-3xl border transition-all ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} overflow-hidden`}>
+          <div className={`px-6 py-5 flex items-center justify-between border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
+            <div className="space-y-0.5">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Spese per Categoria</p>
+              <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{expenses.toLocaleString()}</p>
+            </div>
+            <div className={`p-2 rounded-xl ${darkMode ? 'bg-slate-800 text-red-400' : 'bg-red-50 text-red-500'}`}><Receipt size={18} /></div>
+          </div>
+          <div className="px-6 py-4 space-y-3">
+            {spesePerCategoria.map(({ name, amount }) => {
+              const pct = expenses > 0 ? (amount / expenses) * 100 : 0;
+              return (
+                <div key={name} className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <span className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{name}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-slate-400">{Math.round(pct)}%</span>
+                      <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{amount.toLocaleString()}</span>
+                    </div>
+                  </div>
+                  <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 0.6, ease: 'easeOut' }}
+                      className="h-full rounded-full bg-red-400"
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
 
       {/* Grafico */}
       <motion.div variants={item} className={`rounded-3xl p-6 shadow-sm border transition-all hover:shadow-2xl active:scale-[0.99] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/30 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'} space-y-6`}>
