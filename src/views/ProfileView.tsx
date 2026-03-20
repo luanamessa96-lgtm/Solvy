@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, Globe, CreditCard, Briefcase, FileEdit, CheckCircle2, MapPin, Receipt, User } from 'lucide-react';
+import { Plus, Globe, CreditCard, Briefcase, FileEdit, CheckCircle2, MapPin, Receipt, User, Lock } from 'lucide-react';
 import { Profile } from '../types';
 
 interface ProfileViewProps {
@@ -285,10 +285,16 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                 {activeProfile.id === p.id && <CheckCircle2 size={20} className="text-primary" />}
               </button>
             ))}
-            <button className={`w-full p-4 rounded-2xl border border-dashed text-slate-400 flex items-center justify-center gap-2 text-sm font-bold transition-all active:scale-[0.98] hover:shadow-lg ${darkMode ? 'border-slate-800 hover:bg-slate-900 hover:border-primary/40 hover:shadow-primary/10' : 'border-slate-200 hover:bg-slate-50 hover:border-primary/20 hover:shadow-primary/5'}`}>
-              <Plus size={18} />
-              Aggiungi Profilo
-            </button>
+            <div className={`w-full p-4 rounded-2xl border border-dashed flex items-center justify-between gap-2 text-sm font-bold ${darkMode ? 'border-slate-800 text-slate-600' : 'border-slate-200 text-slate-300'}`}>
+              <div className="flex items-center gap-2">
+                <Plus size={18} />
+                Aggiungi Profilo
+              </div>
+              <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-1 rounded-full">
+                <Lock size={11} />
+                <span className="text-[10px] font-bold uppercase tracking-wide">Pro</span>
+              </div>
+            </div>
           </div>
         </motion.div>
       </motion.div>

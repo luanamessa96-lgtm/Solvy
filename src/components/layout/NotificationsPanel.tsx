@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, CheckCircle2, Circle } from 'lucide-react';
+import { Plus, CheckCircle2, Circle, Bell, Lock } from 'lucide-react';
 import { Deadline } from '../../types';
 
 interface NotificationsPanelProps {
@@ -88,6 +88,21 @@ const NotificationsPanel = ({ deadlines, onClose, onUpdateDeadline, darkMode }: 
                   ))}
                 </div>
               ))}
+            </div>
+
+            {/* Teaser notifiche push */}
+            <div className={`flex items-center gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-primary/5 border-primary/20' : 'bg-primary/5 border-primary/10'}`}>
+              <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                <Bell size={16} className="text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Notifiche push</p>
+                <p className="text-xs text-slate-400">Ricevi avvisi sul telefono prima delle scadenze</p>
+              </div>
+              <div className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-full shrink-0">
+                <Lock size={10} />
+                <span className="text-[10px] font-bold uppercase tracking-wide">Pro</span>
+              </div>
             </div>
           </div>
         </motion.div>

@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Briefcase, Settings, CreditCard, AlertCircle, LogOut, ChevronRight, type LucideIcon } from 'lucide-react';
+import { Briefcase, Settings, CreditCard, LogOut, ChevronRight, type LucideIcon } from 'lucide-react';
 import { Profile } from '../types';
 import LogoutModal from '../components/modals/LogoutModal';
-import SecurityModal from '../components/modals/SecurityModal';
 
 interface MenuViewProps {
   activeProfile: Profile;
@@ -17,13 +16,11 @@ interface MenuViewProps {
 
 const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountantClick, onLogout, darkMode }: MenuViewProps) => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
 
   const menuItems: { label: string; icon: LucideIcon; onClick: () => void; color?: string }[] = [
     { label: 'Il mio Commercialista', icon: Briefcase, onClick: onAccountantClick },
     { label: 'Impostazioni', icon: Settings, onClick: onSettingsClick },
     { label: 'Abbonamento', icon: CreditCard, onClick: () => {} },
-    { label: 'Sicurezza', icon: AlertCircle, onClick: () => setIsSecurityModalOpen(true) },
     { label: 'Logout', icon: LogOut, onClick: () => setIsLogoutModalOpen(true), color: 'text-red-500' },
   ];
 
@@ -69,7 +66,6 @@ const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountant
       </div>
 
       <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={() => { setIsLogoutModalOpen(false); onLogout(); }} darkMode={darkMode} />
-      <SecurityModal isOpen={isSecurityModalOpen} onClose={() => setIsSecurityModalOpen(false)} darkMode={darkMode} />
     </motion.div>
   );
 };
