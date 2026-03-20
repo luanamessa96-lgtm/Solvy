@@ -53,7 +53,7 @@ function AppInner() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [isOffline, setIsOffline] = useState(false);
   const activeProfileRef = useRef(activeProfile);
   const { showToast } = useToast();
 
