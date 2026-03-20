@@ -369,8 +369,13 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-1.5">
-                              <label className={lc}>P.IVA Cliente</label>
-                              <input type="text" value={docToEdit.clientPiva || ''} onChange={e => setDocToEdit({ ...docToEdit, clientPiva: e.target.value })} className={ic} />
+                              <div className="flex items-center justify-between ml-1">
+                                <label className={lc}>P.IVA Cliente</label>
+                                <button type="button" onClick={() => setDocToEdit({ ...docToEdit, clientPiva: docToEdit.clientPiva === 'Privato' ? '' : 'Privato' })} className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${docToEdit.clientPiva === 'Privato' ? 'bg-primary text-white' : (darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400')}`}>
+                                  Privato
+                                </button>
+                              </div>
+                              <input type="text" value={docToEdit.clientPiva || ''} onChange={e => setDocToEdit({ ...docToEdit, clientPiva: e.target.value })} disabled={docToEdit.clientPiva === 'Privato'} placeholder={docToEdit.clientPiva === 'Privato' ? 'Cliente privato' : ''} className={`${ic} ${docToEdit.clientPiva === 'Privato' ? 'opacity-40' : ''}`} />
                             </div>
                             <div className="space-y-1.5">
                               <label className={lc}>C.F. Cliente</label>

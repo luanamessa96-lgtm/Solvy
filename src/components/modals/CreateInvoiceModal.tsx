@@ -174,8 +174,13 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className={lc}>P.IVA Cliente</label>
-                    <input type="text" value={form.clientPiva} onChange={e => set('clientPiva', e.target.value)} placeholder="IT12345678901" className={ic} />
+                    <div className="flex items-center justify-between ml-1">
+                      <label className={lc}>P.IVA Cliente</label>
+                      <button type="button" onClick={() => set('clientPiva', form.clientPiva === 'Privato' ? '' : 'Privato')} className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${form.clientPiva === 'Privato' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>
+                        Privato
+                      </button>
+                    </div>
+                    <input type="text" value={form.clientPiva} onChange={e => set('clientPiva', e.target.value)} disabled={form.clientPiva === 'Privato'} placeholder={form.clientPiva === 'Privato' ? 'Cliente privato' : 'IT12345678901'} className={`${ic} ${form.clientPiva === 'Privato' ? 'opacity-40' : ''}`} />
                   </div>
                   <div className="space-y-1.5">
                     <label className={lc}>C.F. Cliente</label>
