@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { X, Download, Check, Mail, Share2, Eye, AlertTriangle } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -447,6 +447,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   };
 
   const inputBase = `px-4 py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-95`;
+  const dragControls = useDragControls();
 
   return (
     <AnimatePresence>
@@ -456,8 +457,14 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            drag="y" dragControls={dragControls} dragListener={false}
+            dragConstraints={{ top: 0 }} dragElastic={0.1}
+            onDragEnd={(_, info) => { if (info.offset.y > 80) onClose(); }}
             className={`relative w-full max-w-md rounded-t-[32px] shadow-2xl ${darkMode ? 'bg-slate-900' : 'bg-white'}`}
           >
+            <div onPointerDown={e => dragControls.start(e)} className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing touch-none">
+              <div className={`w-10 h-1 rounded-full ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+            </div>
             <div className="overflow-y-auto max-h-[88vh] p-8 space-y-6 [padding-bottom:max(2rem,calc(env(safe-area-inset-bottom)+1rem))]">
               {/* Header */}
               <div className="flex justify-between items-center">

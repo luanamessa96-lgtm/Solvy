@@ -136,6 +136,59 @@ function AppInner() {
       });
   }, [isAuthenticated]);
 
+  // Real-time sync: ascolta cambiamenti da Supabase
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const pid = activeProfileRef.current.id;
+
+    const mapDoc = (d: Record<string, unknown>): Document => ({
+      id: d.id as string, type: d.type as Document['type'], title: d.title as string,
+      amount: d.amount as number, date: d.date as string, status: d.status as Document['status'],
+      client: d.client as string | undefined, category: d.category as string | undefined,
+      imageData: d.image_data as string | undefined, fileName: d.file_name as string | undefined,
+      invoiceNumber: d.invoice_number as string | undefined, clientAddress: d.client_address as string | undefined,
+      clientPiva: d.client_piva as string | undefined, clientCf: d.client_cf as string | undefined,
+      ritenuta: d.ritenuta as boolean | undefined, marcaBollo: d.marca_bollo as boolean | undefined,
+      ivaRate: d.iva_rate as number | undefined, rivalsaInps: d.rivalsa_inps as boolean | undefined,
+      docRegime: d.doc_regime as 'forfettario' | 'ordinario' | undefined,
+    });
+
+    const docsChannel = supabase
+      .channel(`docs-${pid}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'documents', filter: `profile_id=eq.${pid}` }, payload => {
+        if (payload.eventType === 'INSERT') {
+          const doc = mapDoc(payload.new as Record<string, unknown>);
+          setDocuments(prev => prev.find(d => d.id === doc.id) ? prev : markOverdue([doc, ...prev]));
+        } else if (payload.eventType === 'UPDATE') {
+          const doc = mapDoc(payload.new as Record<string, unknown>);
+          setDocuments(prev => prev.map(d => d.id === doc.id ? doc : d));
+        } else if (payload.eventType === 'DELETE') {
+          setDocuments(prev => prev.filter(d => d.id !== (payload.old as { id: string }).id));
+        }
+      })
+      .subscribe();
+
+    const deadlinesChannel = supabase
+      .channel(`deadlines-${pid}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'deadlines', filter: `profile_id=eq.${pid}` }, payload => {
+        if (payload.eventType === 'INSERT') {
+          const d = { ...payload.new, completed: payload.new.completed ?? false } as Deadline;
+          setDeadlines(prev => prev.find(x => x.id === d.id) ? prev : [...prev, d].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+        } else if (payload.eventType === 'UPDATE') {
+          const d = { ...payload.new, completed: payload.new.completed ?? false } as Deadline;
+          setDeadlines(prev => prev.map(x => x.id === d.id ? d : x));
+        } else if (payload.eventType === 'DELETE') {
+          setDeadlines(prev => prev.filter(x => x.id !== (payload.old as { id: string }).id));
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(docsChannel);
+      supabase.removeChannel(deadlinesChannel);
+    };
+  }, [isAuthenticated, activeProfile.id]);
+
   useEffect(() => { localStorage.setItem('darkMode', JSON.stringify(darkMode)); }, [darkMode]);
   useEffect(() => {
     localStorage.setItem('activeProfileId', activeProfile.id);

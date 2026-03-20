@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Plus, FileText, CreditCard, Calendar } from 'lucide-react';
 
 interface CreateExpenseModalProps {
@@ -17,6 +17,7 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode }: CreateExpense
     category: 'abbonamento',
   });
 
+  const dragControls = useDragControls();
   const [amountTouched, setAmountTouched] = useState(false);
   const amountNum = parseFloat(formData.amount) || 0;
   const amountError = amountTouched && amountNum <= 0 ? 'Inserisci un importo valido' : '';
@@ -50,7 +51,14 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode }: CreateExpense
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
-          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className={`relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+            drag="y" dragControls={dragControls} dragListener={false}
+            dragConstraints={{ top: 0 }} dragElastic={0.1}
+            onDragEnd={(_, info) => { if (info.offset.y > 80) onClose(); }}
+            className={`relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+            <div onPointerDown={e => dragControls.start(e)} className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing touch-none">
+              <div className={`w-10 h-1 rounded-full ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+            </div>
             <div className="p-8 pb-10 space-y-6 [padding-bottom:max(2.5rem,calc(env(safe-area-inset-bottom)+1rem))]">
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
