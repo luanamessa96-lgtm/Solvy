@@ -63,18 +63,19 @@ function PdfPreview({ imageData }: { imageData: string }) {
   }, [url]);
 
   if (!url) return null;
-  const scale = 0.42;
-  const displayH = 260;
+  const scale = 0.45;
+  const displayW = 320;
+  const displayH = 240;
+  const iframeW = Math.round(displayW / scale);
   const iframeH = Math.round(displayH / scale);
-  const iframeW = Math.round(100 / scale);
 
   return (
-    <div className="rounded-2xl shadow-2xl overflow-hidden bg-white" style={{ width: '100%', height: displayH }}>
+    <div className="rounded-2xl shadow-2xl overflow-hidden bg-white" style={{ width: displayW, height: displayH }}>
       <iframe
         src={`${url}#toolbar=0&navpanes=0&scrollbar=0`}
         title="Anteprima PDF"
         style={{
-          width: `${iframeW}%`,
+          width: iframeW,
           height: iframeH,
           border: 'none',
           transform: `scale(${scale})`,
