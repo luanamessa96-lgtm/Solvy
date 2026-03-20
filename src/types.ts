@@ -15,6 +15,7 @@ export interface Profile {
   regime?: 'forfettario' | 'ordinario';
   coefficiente?: number;
   annoInizioAttivita?: number;
+  iban?: string;
 }
 
 export interface Document {

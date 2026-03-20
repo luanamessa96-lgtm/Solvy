@@ -80,6 +80,15 @@ export async function updateDocument(doc: Document): Promise<void> {
       status: doc.status,
       client: doc.client,
       category: doc.category,
+      invoice_number: doc.invoiceNumber,
+      client_address: doc.clientAddress,
+      client_piva: doc.clientPiva,
+      client_cf: doc.clientCf,
+      ritenuta: doc.ritenuta,
+      marca_bollo: doc.marcaBollo,
+      iva_rate: doc.ivaRate,
+      rivalsa_inps: doc.rivalsaInps,
+      doc_regime: doc.docRegime,
     })
     .eq('id', doc.id);
 
@@ -108,13 +117,15 @@ export async function getProfiles(): Promise<Profile[]> {
     codiceFiscale: p.codice_fiscale,
     coefficiente: p.coefficiente,
     annoInizioAttivita: p.anno_inizio_attivita,
+    iban: p.iban,
   }));
 }
 
 export async function updateProfile(profile: Profile): Promise<void> {
   const { error } = await supabase
     .from('profiles')
-    .update({
+    .upsert({
+      id: profile.id,
       name: profile.name,
       email: profile.email,
       country: profile.country,
@@ -127,8 +138,8 @@ export async function updateProfile(profile: Profile): Promise<void> {
       regime: profile.regime,
       coefficiente: profile.coefficiente,
       anno_inizio_attivita: profile.annoInizioAttivita,
-    })
-    .eq('id', profile.id);
+      iban: profile.iban,
+    });
 
   if (error) throw error;
 }

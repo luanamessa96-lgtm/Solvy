@@ -10,11 +10,12 @@ interface MenuViewProps {
   onProfileClick: () => void;
   onSettingsClick: () => void;
   onAccountantClick: () => void;
+  onLogout: () => void;
   darkMode?: boolean;
   key?: string;
 }
 
-const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountantClick, darkMode }: MenuViewProps) => {
+const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountantClick, onLogout, darkMode }: MenuViewProps) => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
 
@@ -67,7 +68,7 @@ const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountant
         <button className="w-full bg-primary py-3 rounded-xl text-sm font-bold relative z-10 text-white shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all">Scopri i Piani</button>
       </div>
 
-      <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={() => { setIsLogoutModalOpen(false); console.log('Logging out...'); }} darkMode={darkMode} />
+      <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={() => { setIsLogoutModalOpen(false); onLogout(); }} darkMode={darkMode} />
       <SecurityModal isOpen={isSecurityModalOpen} onClose={() => setIsSecurityModalOpen(false)} darkMode={darkMode} />
     </motion.div>
   );

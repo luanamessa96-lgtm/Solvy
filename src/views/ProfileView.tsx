@@ -12,6 +12,31 @@ interface ProfileViewProps {
   key?: string;
 }
 
+// ─── Validatori ───────────────────────────────────────────────────────────────
+function validateIBAN(v: string): string | null {
+  if (!v) return null;
+  const clean = v.replace(/\s+/g, '').toUpperCase();
+  if (!/^[A-Z]{2}[0-9]{2}[A-Z0-9]+$/.test(clean)) return 'Formato non valido (es. IT60X054281...)';
+  const lengths: Record<string, number> = { IT: 27, DE: 22, FR: 27, GB: 22, ES: 24 };
+  const expected = lengths[clean.slice(0, 2)];
+  if (expected && clean.length !== expected) return `Lunghezza errata: attesi ${expected} caratteri`;
+  return null;
+}
+
+function validatePiva(v: string): string | null {
+  if (!v) return null;
+  const clean = v.replace(/\s+/g, '');
+  if (!/^\d{11}$/.test(clean)) return 'Deve contenere esattamente 11 cifre';
+  return null;
+}
+
+function validateCF(v: string): string | null {
+  if (!v) return null;
+  const clean = v.replace(/\s+/g, '').toUpperCase();
+  if (!/^[A-Z]{6}[0-9]{2}[A-Z][0-9]{2}[A-Z][0-9]{3}[A-Z]$/.test(clean)) return 'Formato non valido (16 caratteri alfanumerici)';
+  return null;
+}
+
 const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile, darkMode }: ProfileViewProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
@@ -23,22 +48,39 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     address: activeProfile.address || '',
     piva: activeProfile.piva || '',
     codiceFiscale: activeProfile.codiceFiscale || '',
+    iban: activeProfile.iban || '',
     regime: activeProfile.regime || 'forfettario' as 'forfettario' | 'ordinario',
     coefficiente: activeProfile.coefficiente?.toString() || '',
     annoInizioAttivita: activeProfile.annoInizioAttivita?.toString() || '',
   });
 
+  const errors = {
+    iban: validateIBAN(editData.iban),
+    piva: validatePiva(editData.piva),
+    codiceFiscale: validateCF(editData.codiceFiscale),
+  };
+  const hasErrors = Object.values(errors).some(Boolean);
+
   const handleSaveEdit = () => {
+    if (hasErrors) return;
     onUpdateProfile({
       ...activeProfile,
       ...editData,
       coefficiente: editData.coefficiente ? parseFloat(editData.coefficiente) : undefined,
       annoInizioAttivita: editData.annoInizioAttivita ? parseInt(editData.annoInizioAttivita) : undefined,
+      iban: editData.iban || undefined,
     });
     setIsEditing(false);
   };
 
-  const inputClass = `w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`;
+  const inputClass = (error?: string | null) =>
+    `w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-colors ${
+      error
+        ? 'border-red-400 bg-red-50 text-red-900 focus:ring-red-200 placeholder:text-red-300'
+        : darkMode
+        ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600 focus:ring-primary/20'
+        : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400 focus:ring-primary/20'
+    }`;
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.05 } } };
   const item = { hidden: { opacity: 0, y: 20, scale: 0.98 }, show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 260, damping: 20 } } };
@@ -87,20 +129,20 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                         value={editData[key as keyof typeof editData] as string}
                         onChange={e => setEditData({ ...editData, [key]: e.target.value })}
                         placeholder={placeholder}
-                        className={inputClass}
+                        className={inputClass()}
                       />
                     </div>
                   ))}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Paese</label>
-                      <select value={editData.country} onChange={e => setEditData({ ...editData, country: e.target.value as import('../types').Country })} className={inputClass}>
+                      <select value={editData.country} onChange={e => setEditData({ ...editData, country: e.target.value as import('../types').Country })} className={inputClass()}>
                         <option>Italy</option><option>USA</option><option>UK</option><option>Germany</option>
                       </select>
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Valuta</label>
-                      <select value={editData.currency} onChange={e => setEditData({ ...editData, currency: e.target.value as import('../types').Currency })} className={inputClass}>
+                      <select value={editData.currency} onChange={e => setEditData({ ...editData, currency: e.target.value as import('../types').Currency })} className={inputClass()}>
                         <option>EUR</option><option>USD</option><option>GBP</option>
                       </select>
                     </div>
@@ -114,11 +156,18 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                 <div className="space-y-3">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Partita IVA</label>
-                    <input type="text" value={editData.piva} onChange={e => setEditData({ ...editData, piva: e.target.value })} placeholder="Es. IT12345678901" className={inputClass} />
+                    <input type="text" value={editData.piva} onChange={e => setEditData({ ...editData, piva: e.target.value })} placeholder="Es. 12345678901" className={inputClass(errors.piva)} />
+                    {errors.piva && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.piva}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Codice Fiscale</label>
-                    <input type="text" value={editData.codiceFiscale} onChange={e => setEditData({ ...editData, codiceFiscale: e.target.value.toUpperCase() })} placeholder="Es. RSSMRA80A01H501Z" className={inputClass} />
+                    <input type="text" value={editData.codiceFiscale} onChange={e => setEditData({ ...editData, codiceFiscale: e.target.value.toUpperCase() })} placeholder="Es. RSSMRA80A01H501Z" className={inputClass(errors.codiceFiscale)} />
+                    {errors.codiceFiscale && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.codiceFiscale}</p>}
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">IBAN</label>
+                    <input type="text" value={editData.iban} onChange={e => setEditData({ ...editData, iban: e.target.value.replace(/\s+/g, '').toUpperCase() })} placeholder="Es. IT60X0542811101000000123456" className={inputClass(errors.iban)} />
+                    {errors.iban && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.iban}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Regime Fiscale</label>
@@ -135,7 +184,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                     <select
                       value={editData.coefficiente}
                       onChange={e => setEditData({ ...editData, coefficiente: e.target.value })}
-                      className={inputClass}
+                      className={inputClass()}
                     >
                       <option value="">Seleziona categoria...</option>
                       <option value="86">Costruzioni e attività immobiliari — 86%</option>
@@ -147,11 +196,13 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Anno Inizio Attività</label>
-                    <input type="number" min="2000" max={new Date().getFullYear()} value={editData.annoInizioAttivita} onChange={e => setEditData({ ...editData, annoInizioAttivita: e.target.value })} placeholder="Es. 2022" className={inputClass} />
+                    <input type="number" min="2000" max={new Date().getFullYear()} value={editData.annoInizioAttivita} onChange={e => setEditData({ ...editData, annoInizioAttivita: e.target.value })} placeholder="Es. 2022" className={inputClass()} />
                   </div>
                 </div>
 
-                <button onClick={handleSaveEdit} className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">Salva Modifiche</button>
+                <button onClick={handleSaveEdit} disabled={hasErrors} className={`w-full py-4 rounded-2xl font-bold shadow-xl transition-all active:scale-[0.98] ${hasErrors ? 'bg-slate-200 text-slate-400 shadow-none cursor-not-allowed' : 'bg-primary text-white shadow-primary/30'}`}>
+                  {hasErrors ? 'Correggi gli errori per salvare' : 'Salva Modifiche'}
+                </button>
               </div>
             </motion.div>
           </div>
@@ -206,6 +257,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
               { icon: Receipt, label: 'Partita IVA', value: activeProfile.piva || '—' },
               { icon: User, label: 'Codice Fiscale', value: activeProfile.codiceFiscale || '—' },
               { icon: MapPin, label: 'Indirizzo', value: activeProfile.address || '—' },
+              { icon: CreditCard, label: 'IBAN', value: activeProfile.iban || '—' },
               { icon: Briefcase, label: 'Regime', value: activeProfile.regime ? activeProfile.regime.charAt(0).toUpperCase() + activeProfile.regime.slice(1) : 'Forfettario' },
               ...(activeProfile.coefficiente ? [{ icon: Receipt, label: 'Categoria', value: `${CATEGORIE_COEFFICIENTE[activeProfile.coefficiente] || activeProfile.coefficiente + '%'} (${activeProfile.coefficiente}%)` }] : []),
             ].map(({ icon: Icon, label, value }, i, arr) => (

@@ -318,7 +318,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(7);
       pdf.setTextColor(255, 255, 255);
-      pdf.text(profile.email || '', margin, 293);
+      const footerLeft = [profile.email, profile.iban ? `IBAN: ${profile.iban}` : ''].filter(Boolean).join('   |   ');
+      pdf.text(footerLeft, margin, 293);
       pdf.text(`Generato il ${new Date().toLocaleDateString('it-IT')}`, rightCol, 293, { align: 'right' });
     };
 

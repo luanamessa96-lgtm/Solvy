@@ -7,6 +7,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { MOCK_PROFILES, MOCK_DOCUMENTS, MOCK_DEADLINES, MOCK_ACCOUNTANT } from './constants';
 import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, addDeadline, updateDeadline, deleteDeadline, getProfiles, updateProfile, getAccountant, updateAccountant } from './lib/db';
+import { supabase } from './lib/supabase';
 import { Profile, Document, Deadline, Accountant } from './types';
 
 import { ToastProvider, useToast } from './components/ui/Toast';
@@ -38,6 +39,7 @@ function AppInner() {
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [accountant, setAccountant] = useState<Accountant>(MOCK_ACCOUNTANT);
+  const [isLoading, setIsLoading] = useState(true);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -49,18 +51,31 @@ function AppInner() {
           const savedId = localStorage.getItem('activeProfileId');
           const profile = data.find(p => p.id === savedId) || data[0];
           setActiveProfile(profile);
-          getDocuments(profile.id).then(docs => setDocuments(markOverdue(docs))).catch(() => setDocuments(MOCK_DOCUMENTS));
-          getDeadlines(profile.id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
+          Promise.all([
+            getDocuments(profile.id).catch(() => MOCK_DOCUMENTS),
+            getDeadlines(profile.id).catch(() => MOCK_DEADLINES),
+          ]).then(([docs, deadlines]) => {
+            setDocuments(markOverdue(docs));
+            setDeadlines(deadlines);
+            setIsLoading(false);
+          });
         } else {
           setProfiles(MOCK_PROFILES);
-          getDocuments(MOCK_PROFILES[0].id).then(docs => setDocuments(markOverdue(docs))).catch(() => setDocuments(MOCK_DOCUMENTS));
-          getDeadlines(MOCK_PROFILES[0].id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
+          Promise.all([
+            getDocuments(MOCK_PROFILES[0].id).catch(() => MOCK_DOCUMENTS),
+            getDeadlines(MOCK_PROFILES[0].id).catch(() => MOCK_DEADLINES),
+          ]).then(([docs, deadlines]) => {
+            setDocuments(markOverdue(docs));
+            setDeadlines(deadlines);
+            setIsLoading(false);
+          });
         }
       })
       .catch(() => {
         setProfiles(MOCK_PROFILES);
         setDocuments(MOCK_DOCUMENTS);
         setDeadlines(MOCK_DEADLINES);
+        setIsLoading(false);
       });
   }, []);
 
@@ -174,6 +189,13 @@ function AppInner() {
   };
   const handleBack = () => { resetSubPages(); };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut().catch(() => {});
+    localStorage.removeItem('onboardingComplete');
+    localStorage.removeItem('activeProfileId');
+    window.location.reload();
+  };
+
   const handleOnboardingComplete = async (p: Profile) => {
     setActiveProfile(p);
     setProfiles(prev => prev.map(x => x.id === p.id ? p : x));
@@ -183,6 +205,20 @@ function AppInner() {
 
   if (showOnboarding) {
     return <OnboardingView profile={activeProfile} onComplete={handleOnboardingComplete} />;
+  }
+
+  if (isLoading) {
+    return (
+      <div className={`max-w-md mx-auto min-h-screen flex flex-col items-center justify-center gap-4 ${darkMode ? 'bg-slate-950' : 'bg-slate-50'}`}>
+        <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-xl shadow-primary/30">
+          <svg className="animate-spin w-6 h-6 text-white" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+          </svg>
+        </div>
+        <p className={`text-sm font-semibold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Caricamento in corso…</p>
+      </div>
+    );
   }
 
   return (
@@ -229,7 +265,7 @@ function AppInner() {
               {activeTab === 'home' && <DashboardView key="home" profile={activeProfile} onProfileClick={handleProfileClick} onAddDocumentClick={() => handleTabChange('docs')} income={totalIncome} expenses={totalExpenses} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} />}
               {activeTab === 'docs' && <DocumentsView key="docs" documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} onUpdateProfile={async p => { setActiveProfile(p); setProfiles(prev => prev.map(x => x.id === p.id ? p : x)); try { await updateProfile(p); } catch {} }} accountant={accountant} profile={activeProfile} darkMode={darkMode} onMediaLibraryClick={handleMediaLibraryClick} />}
               {activeTab === 'calendar' && <CalendarView key="calendar" deadlines={deadlines} onAddDeadline={handleAddDeadline} onUpdateDeadline={handleUpdateDeadline} onDeleteDeadline={handleDeleteDeadline} darkMode={darkMode} />}
-              {activeTab === 'menu' && <MenuView key="menu" activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} darkMode={darkMode} />}
+              {activeTab === 'menu' && <MenuView key="menu" activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} onLogout={handleLogout} darkMode={darkMode} />}
             </>
           )}
         </AnimatePresence>
