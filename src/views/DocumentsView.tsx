@@ -52,8 +52,10 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   }, [documents]);
 
   const availableYears = useMemo(() => {
+    const currentYear = new Date().getFullYear();
     const years = new Set(documents.map(d => new Date(d.date).getFullYear()));
-    years.add(new Date().getFullYear());
+    years.add(currentYear);
+    years.add(currentYear + 1);
     return Array.from(years).sort((a, b) => b - a);
   }, [documents]);
 
