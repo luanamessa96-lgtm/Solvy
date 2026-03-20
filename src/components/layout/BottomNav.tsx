@@ -24,7 +24,7 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode }: BottomNavProps) => {
           return (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative flex-1 flex flex-col items-center gap-1 py-2 transition-all active:scale-95 ${isActive ? 'text-primary' : (darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600')}`}>
               <Icon size={22} strokeWidth={isActive ? 2.5 : 2} className="transition-transform duration-300" />
-              <span className={`text-[9px] font-bold uppercase tracking-wide transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-40'}`}>{tab.label}</span>
+              {isActive && <span className="text-[9px] font-bold uppercase tracking-wide">{tab.label}</span>}
               {isActive && (
                 <motion.div layoutId="nav-dot" className="absolute -bottom-2 w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_10px_rgba(59,130,246,0.8)]" transition={{ type: 'spring', stiffness: 400, damping: 30 }} />
               )}
