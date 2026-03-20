@@ -314,10 +314,22 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
                 {selectedItem.imageData && !selectedItem.fileName ? (
                   <img src={selectedItem.imageData} alt={selectedItem.title} className="max-w-full max-h-full rounded-2xl object-contain shadow-2xl" />
                 ) : selectedItem.imageData && ['txt', 'csv'].includes(ext(selectedItem.fileName || '')) ? (
-                  <div className="w-full max-h-64 overflow-y-auto rounded-2xl p-4 bg-black/30 backdrop-blur-sm border border-white/10">
-                    <pre className="text-xs text-white/90 font-mono whitespace-pre-wrap break-words leading-relaxed">
-                      {(() => { try { return atob(selectedItem.imageData.split(',')[1] || ''); } catch { return '(Contenuto non leggibile)'; } })()}
-                    </pre>
+                  <div className="w-full max-h-72 bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+                    <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-100 bg-slate-50/80">
+                      <FileText size={14} className="text-slate-400" />
+                      <span className="text-xs font-semibold text-slate-500 truncate">{selectedItem.fileName}</span>
+                    </div>
+                    <div className="overflow-y-auto flex-1 px-5 py-4">
+                      <p className="text-sm text-slate-800 whitespace-pre-wrap break-words leading-relaxed">
+                        {(() => {
+                          try {
+                            const b64 = selectedItem.imageData!.split(',')[1] || '';
+                            const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+                            return new TextDecoder('utf-8').decode(bytes);
+                          } catch { return '(Contenuto non leggibile)'; }
+                        })()}
+                      </p>
+                    </div>
                   </div>
                 ) : (
                   <div className="w-48 h-56 rounded-3xl flex flex-col items-center justify-center gap-3" style={{ backgroundColor: fileColors[ext(selectedItem.fileName || '')]?.bg ?? '#EDE9FE' }}>
