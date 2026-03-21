@@ -4,7 +4,7 @@ import { Accountant } from '../types';
 
 interface AccountantViewProps {
   accountant: Accountant;
-  onSave: (a: Accountant) => void;
+  onSave: (a: Accountant) => Promise<void> | void;
   darkMode?: boolean;
   key?: string;
 }
@@ -12,11 +12,17 @@ interface AccountantViewProps {
 const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) => {
   const [formData, setFormData] = useState({ ...accountant });
   const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
-    onSave(formData);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await onSave(formData);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const fields = [
@@ -40,7 +46,7 @@ const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) =
         </div>
         <div>
           <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{formData.firstName} {formData.lastName}</p>
-          <p className="text-sm text-slate-500">Commercialista</p>
+          <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Commercialista</p>
         </div>
       </motion.div>
 
@@ -57,8 +63,9 @@ const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) =
         ))}
       </div>
 
-      <motion.button variants={item} onClick={handleSave} className={`w-full py-4 rounded-2xl font-bold shadow-xl active:scale-[0.98] transition-all ${saved ? 'bg-emerald-500 shadow-emerald-500/30 text-white' : 'bg-primary shadow-primary/30 text-white'}`}>
-        {saved ? '✓ Salvato!' : 'Salva Modifiche'}
+      <motion.button variants={item} onClick={handleSave} disabled={isSaving} className={`w-full py-4 rounded-2xl font-bold shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70 ${saved ? 'bg-emerald-500 shadow-emerald-500/30 text-white' : 'bg-primary shadow-primary/30 text-white'}`}>
+        {isSaving && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+        {saved ? '✓ Salvato!' : isSaving ? 'Salvataggio…' : 'Salva Modifiche'}
       </motion.button>
     </motion.div>
   );

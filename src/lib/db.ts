@@ -1,6 +1,22 @@
 import { supabase } from './supabase';
 import { Document, Deadline, Profile, Accountant } from '../types';
 
+export async function uploadFile(dataUrl: string, fileName: string): Promise<string> {
+  const [meta, base64] = dataUrl.split(',');
+  const mimeType = meta.match(/:(.*?);/)?.[1] || 'application/octet-stream';
+  const byteArray = new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0)));
+  const blob = new Blob([byteArray], { type: mimeType });
+  const path = `${Date.now()}_${fileName.replace(/\s+/g, '_')}`;
+  const { data, error } = await supabase.storage.from('uploads').upload(path, blob, { contentType: mimeType });
+  if (error) throw error;
+  return supabase.storage.from('uploads').getPublicUrl(data.path).data.publicUrl;
+}
+
+export async function deleteFile(url: string): Promise<void> {
+  const path = url.split('/uploads/')[1];
+  if (path) await supabase.storage.from('uploads').remove([path]);
+}
+
 export async function getDocuments(profileId: string): Promise<Document[]> {
   const { data, error } = await supabase
     .from('documents')
@@ -9,13 +25,48 @@ export async function getDocuments(profileId: string): Promise<Document[]> {
     .order('date', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+  return (data || []).map(d => ({
+    ...d,
+    imageData: d.image_data,
+    fileName: d.file_name,
+    invoiceNumber: d.invoice_number,
+    clientAddress: d.client_address,
+    clientPiva: d.client_piva,
+    clientCf: d.client_cf,
+    ritenuta: d.ritenuta,
+    marcaBollo: d.marca_bollo,
+    ivaRate: d.iva_rate,
+    rivalsaInps: d.rivalsa_inps,
+    docRegime: d.doc_regime,
+  }));
 }
 
 export async function addDocument(doc: Document, profileId: string): Promise<void> {
   const { error } = await supabase
     .from('documents')
-    .insert([{ ...doc, profile_id: profileId }]);
+    .upsert([{
+      id: doc.id,
+      type: doc.type,
+      title: doc.title,
+      amount: doc.amount,
+      date: doc.date,
+      status: doc.status,
+      client: doc.client,
+      category: doc.category,
+      image_data: doc.imageData,
+      file_name: doc.fileName,
+      invoice_number: doc.invoiceNumber,
+      client_address: doc.clientAddress,
+      client_piva: doc.clientPiva,
+      client_cf: doc.clientCf,
+      ritenuta: doc.ritenuta,
+      marca_bollo: doc.marcaBollo,
+      iva_rate: doc.ivaRate,
+      rivalsa_inps: doc.rivalsaInps,
+      doc_regime: doc.docRegime,
+      profile_id: profileId,
+      updated_at: new Date().toISOString(),
+    }], { onConflict: 'id' });
 
   if (error) throw error;
 }
@@ -30,6 +81,18 @@ export async function updateDocument(doc: Document): Promise<void> {
       status: doc.status,
       client: doc.client,
       category: doc.category,
+      image_data: doc.imageData,
+      file_name: doc.fileName,
+      invoice_number: doc.invoiceNumber,
+      client_address: doc.clientAddress,
+      client_piva: doc.clientPiva,
+      client_cf: doc.clientCf,
+      ritenuta: doc.ritenuta,
+      marca_bollo: doc.marcaBollo,
+      iva_rate: doc.ivaRate,
+      rivalsa_inps: doc.rivalsaInps,
+      doc_regime: doc.docRegime,
+      updated_at: new Date().toISOString(),
     })
     .eq('id', doc.id);
 
@@ -52,21 +115,35 @@ export async function getProfiles(): Promise<Profile[]> {
     .order('name', { ascending: true });
 
   if (error) throw error;
-  return (data || []).map(p => ({ ...p, jobType: p.job_type }));
+  return (data || []).map(p => ({
+    ...p,
+    jobType: p.job_type,
+    codiceFiscale: p.codice_fiscale,
+    coefficiente: p.coefficiente,
+    annoInizioAttivita: p.anno_inizio_attivita,
+    iban: p.iban,
+  }));
 }
 
 export async function updateProfile(profile: Profile): Promise<void> {
   const { error } = await supabase
     .from('profiles')
-    .update({
+    .upsert({
+      id: profile.id,
       name: profile.name,
       email: profile.email,
       country: profile.country,
       currency: profile.currency,
       job_type: profile.jobType,
       avatar: profile.avatar,
-    })
-    .eq('id', profile.id);
+      address: profile.address,
+      piva: profile.piva,
+      codice_fiscale: profile.codiceFiscale,
+      regime: profile.regime,
+      coefficiente: profile.coefficiente,
+      anno_inizio_attivita: profile.annoInizioAttivita,
+      iban: profile.iban,
+    });
 
   if (error) throw error;
 }
@@ -114,13 +191,13 @@ export async function getDeadlines(profileId: string): Promise<Deadline[]> {
     .order('date', { ascending: true });
 
   if (error) throw error;
-  return data || [];
+  return (data || []).map(d => ({ ...d, completed: d.completed ?? false }));
 }
 
 export async function addDeadline(deadline: Deadline, profileId: string): Promise<void> {
   const { error } = await supabase
     .from('deadlines')
-    .insert([{ ...deadline, profile_id: profileId }]);
+    .upsert([{ ...deadline, profile_id: profileId, updated_at: new Date().toISOString() }], { onConflict: 'id' });
 
   if (error) throw error;
 }
@@ -133,6 +210,8 @@ export async function updateDeadline(deadline: Deadline): Promise<void> {
       date: deadline.date,
       type: deadline.type,
       amount: deadline.amount,
+      completed: deadline.completed ?? false,
+      updated_at: new Date().toISOString(),
     })
     .eq('id', deadline.id);
 

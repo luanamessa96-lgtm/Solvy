@@ -1,28 +1,26 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Briefcase, Settings, CreditCard, AlertCircle, LogOut, ChevronRight } from 'lucide-react';
+import { Briefcase, Settings, CreditCard, LogOut, ChevronRight, type LucideIcon } from 'lucide-react';
 import { Profile } from '../types';
 import LogoutModal from '../components/modals/LogoutModal';
-import SecurityModal from '../components/modals/SecurityModal';
 
 interface MenuViewProps {
   activeProfile: Profile;
   onProfileClick: () => void;
   onSettingsClick: () => void;
   onAccountantClick: () => void;
+  onLogout: () => void;
   darkMode?: boolean;
   key?: string;
 }
 
-const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountantClick, darkMode }: MenuViewProps) => {
+const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountantClick, onLogout, darkMode }: MenuViewProps) => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
 
-  const menuItems: { label: string; icon: any; onClick: () => void; color?: string }[] = [
+  const menuItems: { label: string; icon: LucideIcon; onClick: () => void; color?: string }[] = [
     { label: 'Il mio Commercialista', icon: Briefcase, onClick: onAccountantClick },
     { label: 'Impostazioni', icon: Settings, onClick: onSettingsClick },
     { label: 'Abbonamento', icon: CreditCard, onClick: () => {} },
-    { label: 'Sicurezza', icon: AlertCircle, onClick: () => setIsSecurityModalOpen(true) },
     { label: 'Logout', icon: LogOut, onClick: () => setIsLogoutModalOpen(true), color: 'text-red-500' },
   ];
 
@@ -67,8 +65,7 @@ const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountant
         <button className="w-full bg-primary py-3 rounded-xl text-sm font-bold relative z-10 text-white shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all">Scopri i Piani</button>
       </div>
 
-      <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={() => { setIsLogoutModalOpen(false); console.log('Logging out...'); }} darkMode={darkMode} />
-      <SecurityModal isOpen={isSecurityModalOpen} onClose={() => setIsSecurityModalOpen(false)} darkMode={darkMode} />
+      <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={() => { setIsLogoutModalOpen(false); onLogout(); }} darkMode={darkMode} />
     </motion.div>
   );
 };

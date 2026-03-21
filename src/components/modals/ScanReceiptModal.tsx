@@ -5,7 +5,7 @@ import { Plus, Image } from 'lucide-react';
 interface ScanReceiptModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (doc: any) => void;
+  onSave: (doc: import('../../types').Document) => void;
   darkMode?: boolean;
 }
 

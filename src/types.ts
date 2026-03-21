@@ -9,6 +9,13 @@ export interface Profile {
   currency: Currency;
   jobType: string;
   avatar: string;
+  address?: string;
+  piva?: string;
+  codiceFiscale?: string;
+  regime?: 'forfettario' | 'ordinario';
+  coefficiente?: number;
+  annoInizioAttivita?: number;
+  iban?: string;
 }
 
 export interface Document {
@@ -20,6 +27,17 @@ export interface Document {
   status: 'paid' | 'pending' | 'overdue' | 'draft';
   client?: string;
   category?: string;
+  imageData?: string;
+  fileName?: string;
+  invoiceNumber?: string;
+  clientAddress?: string;
+  clientPiva?: string;
+  clientCf?: string;
+  ritenuta?: boolean;
+  marcaBollo?: boolean;
+  ivaRate?: number;
+  rivalsaInps?: boolean;
+  docRegime?: 'forfettario' | 'ordinario';
 }
 
 export interface Deadline {
@@ -28,6 +46,7 @@ export interface Deadline {
   date: string;
   type: 'tax' | 'payment' | 'other';
   amount?: number;
+  completed?: boolean;
 }
 
 export interface Accountant {
