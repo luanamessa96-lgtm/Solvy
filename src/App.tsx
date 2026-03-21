@@ -121,7 +121,7 @@ function AppInner() {
         localStorage.setItem('onboardingComplete', 'true');
         setShowOnboarding(false);
         setProfiles(data);
-        const savedId = localStorage.getItem('activeProfileId');
+        const savedId = localStorage.getItem('activeProfileId') || document.cookie.match(/activeProfileId=([^;]+)/)?.[1];
         const profile = data.find(p => p.id === savedId) || data[0];
         setActiveProfile(profile);
             const profileTheme = localStorage.getItem(`theme_${profile.id}`) || localStorage.getItem('theme') || 'light';
@@ -137,6 +137,16 @@ function AppInner() {
           if (acc) setAccountant(acc);
           profileCache.current[profile.id] = { documents: freshDocs, deadlines, accountant: acc };
           setIsLoading(false);
+          // Pre-fetch degli altri profili in background per cache istantanea al switch
+          data.filter(p => p.id !== profile.id).forEach(p => {
+            Promise.all([
+              getDocuments(p.id).catch(() => []),
+              getDeadlines(p.id).catch(() => []),
+              getAccountant(p.id).catch(() => null),
+            ]).then(([d, dl, a]) => {
+              profileCache.current[p.id] = { documents: markOverdue(d), deadlines: dl, accountant: a };
+            });
+          });
         });
       } else if (data && data.length === 0) {
         // Nuovo utente: crea profilo reale dall'account Supabase
@@ -225,6 +235,7 @@ function AppInner() {
   useEffect(() => { localStorage.setItem('theme', theme); }, [theme]);
   useEffect(() => {
     localStorage.setItem('activeProfileId', activeProfile.id);
+    document.cookie = `activeProfileId=${activeProfile.id}; path=/; max-age=31536000; SameSite=Lax`;
     activeProfileRef.current = activeProfile;
   }, [activeProfile]);
 
