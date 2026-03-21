@@ -483,7 +483,7 @@ function AppInner() {
       <NotificationsPanel isOpen={isNotificationsOpen} deadlines={deadlines} onClose={() => setIsNotificationsOpen(false)} onUpdateDeadline={handleUpdateDeadline} darkMode={darkMode} />
 
       <main className={`flex-1 overflow-y-auto ${darkMode ? 'bg-slate-950' : ''}`}>
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {isProfilePage ? (
             <ProfileView
               key="profile"
