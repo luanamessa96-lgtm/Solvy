@@ -49,7 +49,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     setLoading(false);
     if (error) {
       if (error.message.includes('already registered')) setError('Questa email è già registrata. Accedi.');
-      else setError('Errore nella registrazione. Riprova.');
+      else setError(`Errore: ${error.message}`);
     } else {
       setScreen('register-sent');
     }
