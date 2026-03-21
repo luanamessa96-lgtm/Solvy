@@ -154,7 +154,12 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
                 </div>
               </div>
 
-              {error && <p className="text-sm text-red-500 font-medium px-1">{error}</p>}
+              {error && (
+                <div className="space-y-1">
+                  <p className="text-sm text-red-500 font-medium px-1">{error}</p>
+                  <p className="text-sm text-slate-400 px-1">Non hai un account? <button type="button" onClick={() => { clearError(); setScreen('register'); }} className="text-primary font-semibold">Registrati</button></p>
+                </div>
+              )}
 
               <button type="button" onClick={() => { clearError(); setScreen('forgot'); }} className="text-sm text-primary font-semibold px-1">
                 Hai dimenticato la password?
