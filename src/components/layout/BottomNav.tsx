@@ -28,7 +28,7 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
           ? 'bg-slate-800/70 border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
           : 'bg-white/80 border-white/60 shadow-[0_8px_32px_rgba(0,100,255,0.12)]'
       }`
-    : `pointer-events-auto border px-1 py-3 flex items-center justify-around overflow-hidden backdrop-blur-xl transition-all duration-500 ${
+    : `pointer-events-auto border px-0 py-3 flex items-center justify-evenly backdrop-blur-xl transition-all duration-500 ${
         darkMode
           ? 'bg-slate-900/90 border-slate-800 shadow-[0_20px_50px_rgba(59,130,246,0.15)]'
           : 'bg-white/90 border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)]'
@@ -44,7 +44,6 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              style={{ maxWidth: '25%' }}
               className={`relative flex-1 flex flex-col items-center gap-0.5 py-1.5 transition-all active:scale-95 ${
                 isActive ? 'text-primary' : (darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600')
               }`}
