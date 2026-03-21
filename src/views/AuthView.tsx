@@ -20,18 +20,24 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [ricordami, setRicordami] = useState(true);
 
   const clearError = () => setError('');
 
   const handleLogin = async () => {
     setLoading(true);
     clearError();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
     setLoading(false);
     if (error) {
-      if (error.message.includes('Invalid login')) setError('Email o password non corretti.');
+      if (error.message.includes('Invalid login') || error.message.includes('invalid_grant')) setError('Email o password non corretti. Controlla i dati e riprova.');
       else if (error.message.includes('Email not confirmed')) setError('Conferma prima la tua email — controlla la casella di posta.');
       else setError('Errore di accesso. Riprova.');
+    } else if (!ricordami) {
+      document.cookie.split(';').forEach(c => {
+        const key = c.trim().split('=')[0];
+        if (key.startsWith('sb-')) document.cookie = `${key}=;max-age=0;path=/;SameSite=Lax`;
+      });
     }
   };
 
@@ -161,9 +167,15 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
                 </div>
               )}
 
-              <button type="button" onClick={() => { clearError(); setScreen('forgot'); }} className="text-sm text-primary font-semibold px-1">
-                Hai dimenticato la password?
-              </button>
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input type="checkbox" checked={ricordami} onChange={e => setRicordami(e.target.checked)} className="w-4 h-4 rounded accent-primary cursor-pointer" />
+                  <span className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Ricordami</span>
+                </label>
+                <button type="button" onClick={() => { clearError(); setScreen('forgot'); }} className="text-sm text-primary font-semibold">
+                  Password dimenticata?
+                </button>
+              </div>
 
               <button type="button" onClick={handleLogin} disabled={loading} className={btnPrimary}>
                 {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : 'Accedi'}
