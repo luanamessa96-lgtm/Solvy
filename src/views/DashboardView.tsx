@@ -156,7 +156,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
       {/* Header */}
       <div className="px-6 pt-6 pb-4 space-y-4">
         <motion.div variants={item} className="space-y-1">
-          <h2 className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>Ciao, {profile.name.split(' ')[0]}!</h2>
+          <h2 className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>Ciao, {(profile.name || '').split(' ')[0] || 'utente'}!</h2>
           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{profile.country}</p>
         </motion.div>
 
