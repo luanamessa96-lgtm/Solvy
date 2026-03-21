@@ -108,10 +108,11 @@ export async function deleteDocument(id: string): Promise<void> {
   if (error) throw error;
 }
 
-export async function getProfiles(): Promise<Profile[]> {
+export async function getProfiles(userId: string): Promise<Profile[]> {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
+    .eq('id', userId)
     .order('name', { ascending: true });
 
   if (error) throw error;
