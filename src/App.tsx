@@ -49,6 +49,13 @@ function AppInner() {
     if (saved) return saved;
     return JSON.parse(localStorage.getItem('darkMode') || 'false') ? 'dark' : 'light';
   });
+
+  const setProfileTheme = (newTheme: string, profileId?: string) => {
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    const id = profileId ?? activeProfile.id;
+    if (id) localStorage.setItem(`theme_${id}`, newTheme);
+  };
   const darkMode = theme === 'dark' || theme === 'pro-dark';
   const [showOnboarding, setShowOnboarding] = useState<boolean>(() => !localStorage.getItem('onboardingComplete'));
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -116,8 +123,8 @@ function AppInner() {
         const savedId = localStorage.getItem('activeProfileId');
         const profile = data.find(p => p.id === savedId) || data[0];
         setActiveProfile(profile);
-        const profileTheme = localStorage.getItem(`theme_${profile.id}`) || localStorage.getItem('theme') || 'light';
-        setTheme(profileTheme);
+            const profileTheme = localStorage.getItem(`theme_${profile.id}`) || localStorage.getItem('theme') || 'light';
+        setProfileTheme(profileTheme, profile.id);
         Promise.all([
           getDocuments(profile.id).catch(() => MOCK_DOCUMENTS),
           getDeadlines(profile.id).catch(() => MOCK_DEADLINES),
@@ -212,10 +219,7 @@ function AppInner() {
     };
   }, [isAuthenticated, activeProfile.id]);
 
-  useEffect(() => {
-    localStorage.setItem('theme', theme);
-    if (activeProfile.id) localStorage.setItem(`theme_${activeProfile.id}`, theme);
-  }, [theme, activeProfile.id]);
+  useEffect(() => { localStorage.setItem('theme', theme); }, [theme]);
   useEffect(() => {
     localStorage.setItem('activeProfileId', activeProfile.id);
     activeProfileRef.current = activeProfile;
@@ -345,7 +349,7 @@ function AppInner() {
     resetSubPages();
     setActiveTab('home');
     const profileTheme = localStorage.getItem(`theme_${p.id}`) || 'light';
-    setTheme(profileTheme);
+    setProfileTheme(profileTheme, p.id);
     getDocuments(p.id).then(docs => setDocuments(markOverdue(docs))).catch(() => setDocuments(MOCK_DOCUMENTS));
     getDeadlines(p.id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
     getAccountant(p.id).then(acc => { if (acc) setAccountant(acc); else setAccountant(MOCK_ACCOUNTANT); }).catch(() => {});
@@ -486,7 +490,7 @@ function AppInner() {
               darkMode={darkMode}
             />
           ) : isSettingsPage ? (
-            <SettingsView key="settings" theme={theme} setTheme={setTheme} isPro={activeProfile.isPro ?? false} />
+            <SettingsView key="settings" theme={theme} setTheme={(t) => setProfileTheme(t)} isPro={activeProfile.isPro ?? false} />
           ) : isAccountantPage ? (
             <AccountantView
               key="accountant"
