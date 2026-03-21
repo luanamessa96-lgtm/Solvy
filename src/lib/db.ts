@@ -108,12 +108,12 @@ export async function deleteDocument(id: string): Promise<void> {
   if (error) throw error;
 }
 
-export async function getProfiles(userId: string): Promise<Profile[]> {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .order('name', { ascending: true });
+export async function getProfiles(userId: string, userEmail?: string): Promise<Profile[]> {
+  const query = supabase.from('profiles').select('*');
+  const { data, error } = await (userEmail
+    ? query.or(`id.eq.${userId},email.eq.${userEmail}`)
+    : query.eq('id', userId))
+    .order('job_type', { ascending: true });
 
   if (error) throw error;
   return (data || []).map(p => ({

@@ -100,10 +100,11 @@ function AppInner() {
 
   useEffect(() => {
     if (!isAuthenticated) return;
+    setIsLoading(true);
     getAccountant().then(data => { if (data) setAccountant(data); });
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
-      const data = await getProfiles(user.id).catch(() => null);
+      const data = await getProfiles(user.id, user.email ?? undefined).catch(() => null);
       if (data && data.length > 0) {
         localStorage.setItem('onboardingComplete', 'true');
         setShowOnboarding(false);
@@ -141,6 +142,7 @@ function AppInner() {
         setIsLoading(false);
       } else {
         // Errore di rete: usa dati mock
+        setShowOnboarding(false);
         setProfiles(MOCK_PROFILES);
         setDocuments(MOCK_DOCUMENTS);
         setDeadlines(MOCK_DEADLINES);
@@ -355,6 +357,7 @@ function AppInner() {
     setActiveProfile(p);
     setProfiles(prev => prev.map(x => x.id === p.id ? p : x));
     try { await updateProfile(p); } catch (e) { showToast(dbError(e), 'error'); }
+    localStorage.setItem('onboardingComplete', 'true');
     setShowOnboarding(false);
   };
 
