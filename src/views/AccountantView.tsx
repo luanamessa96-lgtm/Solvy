@@ -35,8 +35,8 @@ const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) =
     { label: 'Istruzioni Invio Fatture', key: 'sendingInstructions', placeholder: 'Come e quando inviare i documenti' },
   ];
 
-  const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.03 } } };
-  const item = { hidden: { opacity: 0, y: 4 }, show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 400, damping: 30 } } };
+  const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.15 } } };
+  const item = { hidden: { opacity: 0 }, show: { opacity: 1 } };
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-6 pb-24">

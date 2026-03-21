@@ -11,8 +11,8 @@ interface SettingsViewProps {
 const SettingsView = ({ theme, setTheme, isPro }: SettingsViewProps) => {
   const darkMode = theme === 'dark' || theme === 'pro-dark';
 
-  const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.03 } } };
-  const item = { hidden: { opacity: 0, y: 4 }, show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 400, damping: 30 } } };
+  const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.15 } } };
+  const item = { hidden: { opacity: 0 }, show: { opacity: 1 } };
 
   const themes = [
     { id: 'light', label: 'Light', icon: Sun, pro: false },
