@@ -339,6 +339,9 @@ function AppInner() {
   const handleTabChange = (tab: string) => { resetSubPages(); setActiveTab(tab); };
   const handleSwitchProfile = (p: Profile) => {
     setActiveProfile(p);
+    setDocuments([]);
+    setDeadlines([]);
+    setAccountant(MOCK_ACCOUNTANT);
     resetSubPages();
     setActiveTab('home');
     const profileTheme = localStorage.getItem(`theme_${p.id}`) || 'light';
