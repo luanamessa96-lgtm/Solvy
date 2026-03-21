@@ -67,6 +67,7 @@ function AppInner() {
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const activeProfileRef = useRef(activeProfile);
+  const profileCache = useRef<Record<string, { documents: Document[], deadlines: Deadline[], accountant: Accountant | null }>>({});
   const { showToast } = useToast();
 
   // Auth: controlla sessione e ascolta eventi
@@ -130,9 +131,11 @@ function AppInner() {
           getDeadlines(profile.id).catch(() => MOCK_DEADLINES),
           getAccountant(profile.id).catch(() => null),
         ]).then(([docs, deadlines, acc]) => {
-          setDocuments(markOverdue(docs));
+          const freshDocs = markOverdue(docs);
+          setDocuments(freshDocs);
           setDeadlines(deadlines);
           if (acc) setAccountant(acc);
+          profileCache.current[profile.id] = { documents: freshDocs, deadlines, accountant: acc };
           setIsLoading(false);
         });
       } else if (data && data.length === 0) {
@@ -342,21 +345,30 @@ function AppInner() {
   const handleMediaLibraryClick = () => { resetSubPages(); setIsMediaLibraryPage(true); setActiveTab('docs'); };
   const handleTabChange = (tab: string) => { resetSubPages(); setActiveTab(tab); };
   const handleSwitchProfile = (p: Profile) => {
-    // Switch immediato — UI risponde subito
+    // Mostra dati dalla cache se disponibili, altrimenti vuoto
+    const cached = profileCache.current[p.id];
     setActiveProfile(p);
-    setDocuments([]);
-    setDeadlines([]);
-    setAccountant(MOCK_ACCOUNTANT);
+    setDocuments(cached ? cached.documents : []);
+    setDeadlines(cached ? cached.deadlines : []);
+    setAccountant(cached?.accountant || MOCK_ACCOUNTANT);
     resetSubPages();
     setActiveTab('home');
     const profileTheme = localStorage.getItem(`theme_${p.id}`) || localStorage.getItem('theme') || 'light';
     setTheme(profileTheme);
     localStorage.setItem('theme', profileTheme);
     localStorage.setItem(`theme_${p.id}`, profileTheme);
-    // Carica dati in background
-    getDocuments(p.id).then(docs => setDocuments(markOverdue(docs))).catch(() => setDocuments(MOCK_DOCUMENTS));
-    getDeadlines(p.id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
-    getAccountant(p.id).then(acc => { if (acc) setAccountant(acc); }).catch(() => {});
+    // Aggiorna in background e salva in cache
+    Promise.all([
+      getDocuments(p.id).catch(() => MOCK_DOCUMENTS),
+      getDeadlines(p.id).catch(() => MOCK_DEADLINES),
+      getAccountant(p.id).catch(() => null),
+    ]).then(([docs, deadlines, acc]) => {
+      const freshDocs = markOverdue(docs);
+      setDocuments(freshDocs);
+      setDeadlines(deadlines);
+      if (acc) setAccountant(acc);
+      profileCache.current[p.id] = { documents: freshDocs, deadlines, accountant: acc };
+    });
   };
   const handleBack = () => { resetSubPages(); };
 
