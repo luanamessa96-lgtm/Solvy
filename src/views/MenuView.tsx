@@ -27,8 +27,8 @@ const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountant
     { label: 'Logout', icon: LogOut, onClick: () => setIsLogoutModalOpen(true), color: 'text-red-500' },
   ];
 
-  const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.05 } } };
-  const item = { hidden: { opacity: 0, y: 15, scale: 0.98 }, show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 260, damping: 20 } } };
+  const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.03 } } };
+  const item = { hidden: { opacity: 0, y: 4 }, show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 400, damping: 30 } } };
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-6 pb-24">
