@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -23,8 +23,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
 
   const clearError = () => setError('');
 
-  const handleLogin = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async () => {
     setLoading(true);
     clearError();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -36,8 +35,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     }
   };
 
-  const handleRegister = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleRegister = async () => {
     if (password.length < 8) { setError('La password deve essere di almeno 8 caratteri.'); return; }
     setLoading(true);
     clearError();
@@ -49,8 +47,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     }
   };
 
-  const handleForgot = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleForgot = async () => {
     setLoading(true);
     clearError();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -61,8 +58,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     setScreen('forgot-sent');
   };
 
-  const handleResetPassword = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleResetPassword = async () => {
     if (newPassword.length < 8) { setError('La password deve essere di almeno 8 caratteri.'); return; }
     setLoading(true);
     clearError();
@@ -135,7 +131,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
 
           {/* LOGIN */}
           {screen === 'login' && (
-            <motion.form key="login-form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} onSubmit={handleLogin} className="space-y-4">
+            <motion.div key="login-form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
               <div className="space-y-3">
                 <div className="relative">
                   <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -156,7 +152,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
                 Hai dimenticato la password?
               </button>
 
-              <button type="submit" disabled={loading} className={btnPrimary}>
+              <button type="button" onClick={handleLogin} disabled={loading} className={btnPrimary}>
                 {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : 'Accedi'}
               </button>
 
@@ -169,12 +165,12 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
               <button type="button" onClick={() => { clearError(); setScreen('register'); }} className={`w-full py-4 rounded-2xl font-bold transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 text-white' : 'bg-white text-slate-900 border-2 border-slate-200'}`}>
                 Crea un account
               </button>
-            </motion.form>
+            </motion.div>
           )}
 
           {/* REGISTER */}
           {screen === 'register' && (
-            <motion.form key="register-form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} onSubmit={handleRegister} className="space-y-4">
+            <motion.div key="register-form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
               <div className="space-y-3">
                 <div className="relative">
                   <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -191,19 +187,19 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
 
               {error && <p className="text-sm text-red-500 font-medium px-1">{error}</p>}
 
-              <button type="submit" disabled={loading} className={btnPrimary}>
+              <button type="button" onClick={handleRegister} disabled={loading} className={btnPrimary}>
                 {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : 'Registrati'}
               </button>
 
               <button type="button" onClick={() => { clearError(); setScreen('login'); }} className={`w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-400`}>
                 <ArrowLeft size={14} /> Torna al login
               </button>
-            </motion.form>
+            </motion.div>
           )}
 
           {/* FORGOT PASSWORD */}
           {screen === 'forgot' && (
-            <motion.form key="forgot-form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} onSubmit={handleForgot} className="space-y-4">
+            <motion.div key="forgot-form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
               <div className="relative">
                 <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input type="email" placeholder="La tua email" value={email} onChange={e => { setEmail(e.target.value); clearError(); }} required className={`${inputClass} pl-11`} />
@@ -211,14 +207,14 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
 
               {error && <p className="text-sm text-red-500 font-medium px-1">{error}</p>}
 
-              <button type="submit" disabled={loading} className={btnPrimary}>
+              <button type="button" onClick={handleForgot} disabled={loading} className={btnPrimary}>
                 {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : 'Invia link di reset'}
               </button>
 
               <button type="button" onClick={() => { clearError(); setScreen('login'); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-400">
                 <ArrowLeft size={14} /> Torna al login
               </button>
-            </motion.form>
+            </motion.div>
           )}
 
           {/* EMAIL SENT */}
@@ -239,7 +235,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
 
           {/* RESET PASSWORD */}
           {screen === 'reset' && (
-            <motion.form key="reset-form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} onSubmit={handleResetPassword} className="space-y-4">
+            <motion.div key="reset-form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
               <div className="relative">
                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input type={showNewPassword ? 'text' : 'password'} placeholder="Nuova password (min. 8 caratteri)" value={newPassword} onChange={e => { setNewPassword(e.target.value); clearError(); }} required className={`${inputClass} pl-11 pr-11`} />
@@ -250,10 +246,10 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
 
               {error && <p className="text-sm text-red-500 font-medium px-1">{error}</p>}
 
-              <button type="submit" disabled={loading} className={btnPrimary}>
+              <button type="button" onClick={handleResetPassword} disabled={loading} className={btnPrimary}>
                 {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : 'Salva nuova password'}
               </button>
-            </motion.form>
+            </motion.div>
           )}
 
         </AnimatePresence>
