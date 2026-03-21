@@ -380,10 +380,6 @@ function AppInner() {
     return <AuthView darkMode={darkMode} initialScreen="reset" onResetPassword={() => setIsPasswordRecovery(false)} />;
   }
 
-  if (showOnboarding) {
-    return <OnboardingView profile={activeProfile} onComplete={handleOnboardingComplete} darkMode={darkMode} />;
-  }
-
   if (isLoading) {
     return (
       <div className={`max-w-md mx-auto min-h-screen flex flex-col items-center justify-center gap-4 ${darkMode ? 'bg-slate-950' : 'bg-slate-50'}`}>
@@ -396,6 +392,10 @@ function AppInner() {
         <p className={`text-sm font-semibold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Caricamento in corso…</p>
       </div>
     );
+  }
+
+  if (showOnboarding) {
+    return <OnboardingView profile={activeProfile} onComplete={handleOnboardingComplete} darkMode={darkMode} />;
   }
 
   return (
