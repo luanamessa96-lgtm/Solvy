@@ -341,22 +341,22 @@ function AppInner() {
   const handleAccountantClick = () => { resetSubPages(); setIsAccountantPage(true); setActiveTab('menu'); };
   const handleMediaLibraryClick = () => { resetSubPages(); setIsMediaLibraryPage(true); setActiveTab('docs'); };
   const handleTabChange = (tab: string) => { resetSubPages(); setActiveTab(tab); };
-  const handleSwitchProfile = async (p: Profile) => {
-    const [docs, deadlines, acc] = await Promise.all([
-      getDocuments(p.id).catch(() => MOCK_DOCUMENTS),
-      getDeadlines(p.id).catch(() => MOCK_DEADLINES),
-      getAccountant(p.id).catch(() => null),
-    ]);
-    setDocuments(markOverdue(docs));
-    setDeadlines(deadlines);
-    setAccountant(acc || MOCK_ACCOUNTANT);
+  const handleSwitchProfile = (p: Profile) => {
+    // Switch immediato — UI risponde subito
     setActiveProfile(p);
+    setDocuments([]);
+    setDeadlines([]);
+    setAccountant(MOCK_ACCOUNTANT);
     resetSubPages();
     setActiveTab('home');
     const profileTheme = localStorage.getItem(`theme_${p.id}`) || localStorage.getItem('theme') || 'light';
     setTheme(profileTheme);
     localStorage.setItem('theme', profileTheme);
     localStorage.setItem(`theme_${p.id}`, profileTheme);
+    // Carica dati in background
+    getDocuments(p.id).then(docs => setDocuments(markOverdue(docs))).catch(() => setDocuments(MOCK_DOCUMENTS));
+    getDeadlines(p.id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
+    getAccountant(p.id).then(acc => { if (acc) setAccountant(acc); }).catch(() => {});
   };
   const handleBack = () => { resetSubPages(); };
 
