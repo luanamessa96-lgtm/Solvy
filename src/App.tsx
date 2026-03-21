@@ -102,7 +102,7 @@ function AppInner() {
     if (!isAuthenticated) return;
     getAccountant().then(data => { if (data) setAccountant(data); });
     getProfiles()
-      .then(data => {
+      .then(async data => {
         if (data.length > 0) {
           setProfiles(data);
           const savedId = localStorage.getItem('activeProfileId');
@@ -117,15 +117,24 @@ function AppInner() {
             setIsLoading(false);
           });
         } else {
-          setProfiles(MOCK_PROFILES);
-          Promise.all([
-            getDocuments(MOCK_PROFILES[0].id).catch(() => MOCK_DOCUMENTS),
-            getDeadlines(MOCK_PROFILES[0].id).catch(() => MOCK_DEADLINES),
-          ]).then(([docs, deadlines]) => {
-            setDocuments(markOverdue(docs));
-            setDeadlines(deadlines);
-            setIsLoading(false);
-          });
+          // Nuovo utente: crea profilo reale dall'account Supabase
+          const { data: { user } } = await supabase.auth.getUser();
+          const newProfile: Profile = {
+            id: user!.id,
+            name: user!.user_metadata?.name || user!.email?.split('@')[0] || 'Utente',
+            email: user!.email || '',
+            jobType: 'Freelance',
+            country: 'Italy' as Profile['country'],
+            currency: 'EUR' as Profile['currency'],
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user!.id}`,
+            regime: 'forfettario',
+          };
+          await updateProfile(newProfile).catch(() => {});
+          setProfiles([newProfile]);
+          setActiveProfile(newProfile);
+          setDocuments([]);
+          setDeadlines([]);
+          setIsLoading(false);
         }
       })
       .catch(() => {
