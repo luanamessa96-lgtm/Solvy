@@ -152,10 +152,11 @@ export async function updateProfile(profile: Profile): Promise<void> {
   if (error) throw error;
 }
 
-export async function getAccountant(): Promise<Accountant | null> {
+export async function getAccountant(profileId: string): Promise<Accountant | null> {
   const { data, error } = await supabase
     .from('accountant')
     .select('*')
+    .eq('profile_id', profileId)
     .single();
 
   if (error) return null;
@@ -170,10 +171,11 @@ export async function getAccountant(): Promise<Accountant | null> {
   };
 }
 
-export async function updateAccountant(a: Accountant): Promise<void> {
+export async function updateAccountant(a: Accountant, profileId: string): Promise<void> {
   const { error } = await supabase
     .from('accountant')
-    .update({
+    .upsert({
+      profile_id: profileId,
       first_name: a.firstName,
       last_name: a.lastName,
       email: a.email,
@@ -181,8 +183,7 @@ export async function updateAccountant(a: Accountant): Promise<void> {
       office: a.office,
       contract_details: a.contractDetails,
       sending_instructions: a.sendingInstructions,
-    })
-    .eq('id', '1');
+    }, { onConflict: 'profile_id' });
 
   if (error) throw error;
 }

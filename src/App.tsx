@@ -106,7 +106,6 @@ function AppInner() {
   useEffect(() => {
     if (!isAuthenticated) return;
     setIsLoading(true);
-    getAccountant().then(data => { if (data) setAccountant(data); });
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
       const data = await getProfiles(user.id, user.email ?? undefined).catch(() => null);
@@ -122,9 +121,11 @@ function AppInner() {
         Promise.all([
           getDocuments(profile.id).catch(() => MOCK_DOCUMENTS),
           getDeadlines(profile.id).catch(() => MOCK_DEADLINES),
-        ]).then(([docs, deadlines]) => {
+          getAccountant(profile.id).catch(() => null),
+        ]).then(([docs, deadlines, acc]) => {
           setDocuments(markOverdue(docs));
           setDeadlines(deadlines);
+          if (acc) setAccountant(acc);
           setIsLoading(false);
         });
       } else if (data && data.length === 0) {
@@ -344,6 +345,7 @@ function AppInner() {
     setTheme(profileTheme);
     getDocuments(p.id).then(docs => setDocuments(markOverdue(docs))).catch(() => setDocuments(MOCK_DOCUMENTS));
     getDeadlines(p.id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
+    getAccountant(p.id).then(acc => { if (acc) setAccountant(acc); else setAccountant(MOCK_ACCOUNTANT); }).catch(() => {});
   };
   const handleBack = () => { resetSubPages(); };
 
@@ -486,7 +488,7 @@ function AppInner() {
             <AccountantView
               key="accountant"
               accountant={accountant}
-              onSave={async a => { setAccountant(a); try { await updateAccountant(a); showToast('Commercialista salvato'); } catch (e) { showToast(dbError(e), 'error'); } }}
+              onSave={async a => { setAccountant(a); try { await updateAccountant(a, activeProfile.id); showToast('Commercialista salvato'); } catch (e) { showToast(dbError(e), 'error'); } }}
               darkMode={darkMode}
             />
           ) : isMediaLibraryPage ? (
