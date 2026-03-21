@@ -117,6 +117,8 @@ function AppInner() {
         const savedId = localStorage.getItem('activeProfileId');
         const profile = data.find(p => p.id === savedId) || data[0];
         setActiveProfile(profile);
+        const profileTheme = localStorage.getItem(`theme_${profile.id}`) || localStorage.getItem('theme') || 'light';
+        setTheme(profileTheme);
         Promise.all([
           getDocuments(profile.id).catch(() => MOCK_DOCUMENTS),
           getDeadlines(profile.id).catch(() => MOCK_DEADLINES),
@@ -209,7 +211,10 @@ function AppInner() {
     };
   }, [isAuthenticated, activeProfile.id]);
 
-  useEffect(() => { localStorage.setItem('theme', theme); }, [theme]);
+  useEffect(() => {
+    localStorage.setItem('theme', theme);
+    if (activeProfile.id) localStorage.setItem(`theme_${activeProfile.id}`, theme);
+  }, [theme, activeProfile.id]);
   useEffect(() => {
     localStorage.setItem('activeProfileId', activeProfile.id);
     activeProfileRef.current = activeProfile;
@@ -335,6 +340,8 @@ function AppInner() {
     setActiveProfile(p);
     resetSubPages();
     setActiveTab('home');
+    const profileTheme = localStorage.getItem(`theme_${p.id}`) || 'light';
+    setTheme(profileTheme);
     getDocuments(p.id).then(docs => setDocuments(markOverdue(docs))).catch(() => setDocuments(MOCK_DOCUMENTS));
     getDeadlines(p.id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
   };
