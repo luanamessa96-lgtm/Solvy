@@ -1,11 +1,11 @@
 {
-  "name": "Freelance App",
-  "short_name": "Freelance",
+  "name": "Solvy",
+  "short_name": "Solvy",
   "description": "Gestione fatture e finanze per freelance",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#1e3a8a",
+  "background_color": "#0A1628",
+  "theme_color": "#0A1628",
   "orientation": "portrait",
   "icons": [
     {
@@ -17,6 +17,12 @@
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }

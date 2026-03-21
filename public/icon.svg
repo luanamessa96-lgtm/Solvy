@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A1628"/>
+      <stop offset="100%" stop-color="#112244"/>
+    </linearGradient>
+    <linearGradient id="doc" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#2E5097"/>
+      <stop offset="50%" stop-color="#1E3A7A"/>
+      <stop offset="100%" stop-color="#162D60"/>
+    </linearGradient>
+    <linearGradient id="fold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A8C0E8" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#6A90CC" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Sfondo app icon -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+
+  <!-- Corpo documento -->
+  <path d="M 108 58 L 342 58 L 432 148 L 432 426 Q 432 462 396 462 L 108 462 Q 72 462 72 426 L 72 94 Q 72 58 108 58 Z" fill="url(#doc)"/>
+
+  <!-- Bordo glass luminoso -->
+  <path d="M 108 58 L 342 58 L 432 148 L 432 426 Q 432 462 396 462 L 108 462 Q 72 462 72 426 L 72 94 Q 72 58 108 58 Z" fill="none" stroke="rgba(120,170,240,0.35)" stroke-width="2.5"/>
+
+  <!-- Highlight glass (zona superiore) -->
+  <path d="M 108 58 L 300 58 L 300 220 L 72 220 L 72 94 Q 72 58 108 58 Z" fill="url(#shine)"/>
+
+  <!-- Triangolo angolo piegato -->
+  <path d="M 342 58 L 432 148 L 342 148 Z" fill="url(#fold)"/>
+
+  <!-- Bordo angolo piegato -->
+  <path d="M 342 58 L 432 148 L 342 148 Z" fill="none" stroke="rgba(180,210,255,0.4)" stroke-width="1.5"/>
+
+  <!-- Linee testo -->
+  <rect x="152" y="278" width="192" height="22" rx="11" fill="white" opacity="0.88"/>
+  <rect x="152" y="318" width="192" height="22" rx="11" fill="white" opacity="0.75"/>
+  <rect x="152" y="358" width="130" height="22" rx="11" fill="white" opacity="0.50"/>
+</svg>
