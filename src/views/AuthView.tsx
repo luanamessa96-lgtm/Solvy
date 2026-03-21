@@ -30,9 +30,9 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
     setLoading(false);
     if (error) {
-      if (error.message.includes('Invalid login') || error.message.includes('invalid_grant')) setError('Email o password non corretti. Controlla i dati e riprova.');
+      if (error.message.includes('Invalid login') || error.message.includes('invalid_grant') || error.message.includes('Invalid credentials')) setError('Email o password non corretti. Controlla i dati e riprova.');
       else if (error.message.includes('Email not confirmed')) setError('Conferma prima la tua email — controlla la casella di posta.');
-      else setError('Errore di accesso. Riprova.');
+      else setError(`Errore: ${error.message}`);
     } else if (!ricordami) {
       document.cookie.split(';').forEach(c => {
         const key = c.trim().split('=')[0];
@@ -149,11 +149,11 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
               <div className="space-y-3">
                 <div className="relative">
                   <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input type="email" placeholder="Email" value={email} onChange={e => { setEmail(e.target.value); clearError(); }} required className={`${inputClass} pl-11`} />
+                  <input type="email" placeholder="Email" value={email} onChange={e => { setEmail(e.target.value); clearError(); }} autoComplete="email" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11`} />
                 </div>
                 <div className="relative">
                   <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input type={showPassword ? 'text' : 'password'} placeholder="Password" value={password} onChange={e => { setPassword(e.target.value); clearError(); }} required className={`${inputClass} pl-11 pr-11`} />
+                  <input type={showPassword ? 'text' : 'password'} placeholder="Password" value={password} onChange={e => { setPassword(e.target.value); clearError(); }} autoComplete="current-password" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11 pr-11`} />
                   <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -194,11 +194,11 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
               <div className="space-y-3">
                 <div className="relative">
                   <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input type="email" placeholder="Email" value={email} onChange={e => { setEmail(e.target.value); clearError(); }} required className={`${inputClass} pl-11`} />
+                  <input type="email" placeholder="Email" value={email} onChange={e => { setEmail(e.target.value); clearError(); }} autoComplete="email" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11`} />
                 </div>
                 <div className="relative">
                   <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input type={showPassword ? 'text' : 'password'} placeholder="Password (min. 8 caratteri)" value={password} onChange={e => { setPassword(e.target.value); clearError(); }} required className={`${inputClass} pl-11 pr-11`} />
+                  <input type={showPassword ? 'text' : 'password'} placeholder="Password (min. 8 caratteri)" value={password} onChange={e => { setPassword(e.target.value); clearError(); }} autoComplete="new-password" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11 pr-11`} />
                   <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -222,7 +222,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
             <motion.div key="forgot-form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
               <div className="relative">
                 <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input type="email" placeholder="La tua email" value={email} onChange={e => { setEmail(e.target.value); clearError(); }} required className={`${inputClass} pl-11`} />
+                <input type="email" placeholder="La tua email" value={email} onChange={e => { setEmail(e.target.value); clearError(); }} autoComplete="email" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11`} />
               </div>
 
               {error && <p className="text-sm text-red-500 font-medium px-1">{error}</p>}
@@ -274,7 +274,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
             <motion.div key="reset-form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
               <div className="relative">
                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input type={showNewPassword ? 'text' : 'password'} placeholder="Nuova password (min. 8 caratteri)" value={newPassword} onChange={e => { setNewPassword(e.target.value); clearError(); }} required className={`${inputClass} pl-11 pr-11`} />
+                <input type={showNewPassword ? 'text' : 'password'} placeholder="Nuova password (min. 8 caratteri)" value={newPassword} onChange={e => { setNewPassword(e.target.value); clearError(); }} autoComplete="new-password" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11 pr-11`} />
                 <button type="button" onClick={() => setShowNewPassword(v => !v)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                   {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
