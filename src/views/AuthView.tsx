@@ -160,12 +160,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
                 </div>
               </div>
 
-              {error && (
-                <div className="space-y-1">
-                  <p className="text-sm text-red-500 font-medium px-1">{error}</p>
-                  <p className="text-sm text-slate-400 px-1">Non hai un account? <button type="button" onClick={() => { clearError(); setScreen('register'); }} className="text-primary font-semibold">Registrati</button></p>
-                </div>
-              )}
+              {error && <p className="text-sm text-red-500 font-medium px-1">{error}</p>}
 
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 cursor-pointer select-none">
