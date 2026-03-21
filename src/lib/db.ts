@@ -112,6 +112,7 @@ export async function getProfiles(userId: string, userEmail?: string): Promise<P
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
+    .eq('user_id', userId)
     .order('job_type', { ascending: true });
 
   if (error) throw error;
@@ -127,10 +128,12 @@ export async function getProfiles(userId: string, userEmail?: string): Promise<P
 }
 
 export async function updateProfile(profile: Profile): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
   const { error } = await supabase
     .from('profiles')
     .upsert({
       id: profile.id,
+      user_id: user?.id,
       name: profile.name,
       email: profile.email,
       country: profile.country,
