@@ -44,7 +44,12 @@ function AppInner() {
   const [isAccountantPage, setIsAccountantPage] = useState(false);
   const [isMediaLibraryPage, setIsMediaLibraryPage] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState<boolean>(() => JSON.parse(localStorage.getItem('darkMode') || 'false'));
+  const [theme, setTheme] = useState<string>(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved) return saved;
+    return JSON.parse(localStorage.getItem('darkMode') || 'false') ? 'dark' : 'light';
+  });
+  const darkMode = theme === 'dark' || theme === 'pro-dark';
   const [showOnboarding, setShowOnboarding] = useState<boolean>(() => !localStorage.getItem('onboardingComplete'));
   const [documents, setDocuments] = useState<Document[]>([]);
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
@@ -204,7 +209,7 @@ function AppInner() {
     };
   }, [isAuthenticated, activeProfile.id]);
 
-  useEffect(() => { localStorage.setItem('darkMode', JSON.stringify(darkMode)); }, [darkMode]);
+  useEffect(() => { localStorage.setItem('theme', theme); }, [theme]);
   useEffect(() => {
     localStorage.setItem('activeProfileId', activeProfile.id);
     activeProfileRef.current = activeProfile;
@@ -403,9 +408,42 @@ function AppInner() {
     return <OnboardingView profile={activeProfile} onComplete={handleOnboardingComplete} darkMode={darkMode} />;
   }
 
+  const proGradient = theme === 'pro-light'
+    ? 'linear-gradient(135deg, #EEF6FF 0%, #D5E8FF 100%)'
+    : theme === 'pro-dark'
+    ? 'linear-gradient(135deg, #0A1628 0%, #0D2137 55%, #061020 100%)'
+    : undefined;
+
   return (
     <>
-    <div className={`max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative overflow-hidden transition-colors duration-500 ${darkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
+    {(theme === 'pro-light' || theme === 'pro-dark') && (
+      <style>{`
+        [data-theme="pro-light"] main .bg-white {
+          background: rgba(255,255,255,0.68) !important;
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+        }
+        [data-theme="pro-light"] main .border-slate-100 {
+          border-color: rgba(0,100,255,0.12) !important;
+        }
+        [data-theme="pro-dark"] main .bg-slate-900 {
+          background: rgba(255,255,255,0.06) !important;
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+        }
+        [data-theme="pro-dark"] main .border-slate-800 {
+          border-color: rgba(255,255,255,0.08) !important;
+        }
+        [data-theme="pro-dark"] main .bg-slate-950 {
+          background: transparent !important;
+        }
+      `}</style>
+    )}
+    <div
+      data-theme={theme}
+      style={proGradient ? { background: proGradient } : undefined}
+      className={`max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative overflow-hidden transition-colors duration-500 ${darkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}
+    >
       {isOffline && (
         <div className="bg-amber-500 text-white text-xs font-bold text-center py-2 px-4 flex items-center justify-center gap-2 z-50">
           <span>⚠️</span> Nessuna connessione — le modifiche verranno salvate quando torni online
@@ -436,7 +474,7 @@ function AppInner() {
               darkMode={darkMode}
             />
           ) : isSettingsPage ? (
-            <SettingsView key="settings" darkMode={darkMode} setDarkMode={setDarkMode} />
+            <SettingsView key="settings" theme={theme} setTheme={setTheme} isPro={activeProfile.isPro ?? false} />
           ) : isAccountantPage ? (
             <AccountantView
               key="accountant"
@@ -458,7 +496,7 @@ function AppInner() {
       </main>
 
     </div>
-    <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} />
+    <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} theme={theme} />
     </>
   );
 }

@@ -1,31 +1,65 @@
 import { motion } from 'motion/react';
-import { Sun, Moon, Languages } from 'lucide-react';
+import { Sun, Moon, Sparkles, Lock, Languages } from 'lucide-react';
 
 interface SettingsViewProps {
-  darkMode: boolean;
-  setDarkMode: (v: boolean) => void;
+  theme: string;
+  setTheme: (t: string) => void;
+  isPro: boolean;
   key?: string;
 }
 
-const SettingsView = ({ darkMode, setDarkMode }: SettingsViewProps) => {
+const SettingsView = ({ theme, setTheme, isPro }: SettingsViewProps) => {
+  const darkMode = theme === 'dark' || theme === 'pro-dark';
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.05 } } };
   const item = { hidden: { opacity: 0, y: 20, scale: 0.98 }, show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 260, damping: 20 } } };
 
+  const themes = [
+    { id: 'light', label: 'Light', icon: Sun, pro: false },
+    { id: 'dark', label: 'Dark', icon: Moon, pro: false },
+    { id: 'pro-light', label: 'Pro Light', icon: Sparkles, pro: true },
+    { id: 'pro-dark', label: 'Pro Dark', icon: Sparkles, pro: true },
+  ];
+
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-8">
+    <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-8 pb-24">
       <motion.div variants={item} className="space-y-4">
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Aspetto</p>
-        <div className={`rounded-3xl p-2 border flex gap-2 transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
-          <button onClick={() => setDarkMode(false)} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl transition-all active:scale-95 ${!darkMode ? 'bg-white text-slate-900 shadow-lg shadow-slate-200' : 'text-slate-500 hover:text-slate-300'}`}>
-            <Sun size={18} />
-            <span className="text-sm font-bold">Light</span>
-          </button>
-          <button onClick={() => setDarkMode(true)} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl transition-all active:scale-95 ${darkMode ? 'bg-slate-700 text-white shadow-lg shadow-slate-900/40' : 'text-slate-400 hover:text-slate-600'}`}>
-            <Moon size={18} />
-            <span className="text-sm font-bold">Dark</span>
-          </button>
+        <div className={`rounded-3xl p-2 border grid grid-cols-2 gap-2 transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+          {themes.map(t => {
+            const Icon = t.icon;
+            const isActive = theme === t.id;
+            const locked = t.pro && !isPro;
+            return (
+              <button
+                key={t.id}
+                onClick={() => !locked && setTheme(t.id)}
+                className={`relative flex items-center justify-center gap-2 py-3 rounded-2xl transition-all active:scale-95 ${
+                  isActive
+                    ? t.pro
+                      ? 'bg-primary/10 text-primary border border-primary/20'
+                      : darkMode
+                      ? 'bg-slate-700 text-white shadow-lg shadow-slate-900/40'
+                      : 'bg-white text-slate-900 shadow-lg shadow-slate-200'
+                    : locked
+                    ? 'opacity-50 cursor-not-allowed'
+                    : darkMode
+                    ? 'text-slate-500 hover:text-slate-300'
+                    : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                <Icon size={16} />
+                <span className="text-sm font-bold">{t.label}</span>
+                {locked && <Lock size={11} className="absolute top-2 right-2 text-slate-400" />}
+              </button>
+            );
+          })}
         </div>
+        {!isPro && (
+          <p className="text-xs text-slate-400 text-center ml-1">
+            I temi Pro richiedono un abbonamento <span className="text-primary font-semibold">FreelanceApp Pro</span>
+          </p>
+        )}
       </motion.div>
 
       <motion.div variants={item} className="space-y-4">
