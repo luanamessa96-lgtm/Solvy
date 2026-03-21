@@ -104,6 +104,8 @@ function AppInner() {
     getProfiles()
       .then(async data => {
         if (data.length > 0) {
+          localStorage.setItem('onboardingComplete', 'true');
+          setShowOnboarding(false);
           setProfiles(data);
           const savedId = localStorage.getItem('activeProfileId');
           const profile = data.find(p => p.id === savedId) || data[0];
