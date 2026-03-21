@@ -136,6 +136,8 @@ function AppInner() {
           setActiveProfile(newProfile);
           setDocuments([]);
           setDeadlines([]);
+          localStorage.removeItem('onboardingComplete');
+          setShowOnboarding(true);
           setIsLoading(false);
         }
       })
