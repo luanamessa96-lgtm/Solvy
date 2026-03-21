@@ -10,6 +10,7 @@ interface PaywallModalProps {
 const features = [
   'Temi glassmorphism esclusivi (Light & Dark Pro)',
   'Libreria media con UI premium',
+  'Clienti ricorrenti',
   'Scadenze con descrizione personalizzata',
   'Export avanzato per il commercialista',
   'Supporto prioritario',

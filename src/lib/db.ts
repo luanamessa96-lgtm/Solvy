@@ -109,10 +109,9 @@ export async function deleteDocument(id: string): Promise<void> {
 }
 
 export async function getProfiles(userId: string, userEmail?: string): Promise<Profile[]> {
-  const query = supabase.from('profiles').select('*');
-  const { data, error } = await (userEmail
-    ? query.or(`id.eq.${userId},email.eq.${userEmail}`)
-    : query.eq('id', userId))
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
     .order('job_type', { ascending: true });
 
   if (error) throw error;
