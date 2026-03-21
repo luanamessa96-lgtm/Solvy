@@ -341,18 +341,22 @@ function AppInner() {
   const handleAccountantClick = () => { resetSubPages(); setIsAccountantPage(true); setActiveTab('menu'); };
   const handleMediaLibraryClick = () => { resetSubPages(); setIsMediaLibraryPage(true); setActiveTab('docs'); };
   const handleTabChange = (tab: string) => { resetSubPages(); setActiveTab(tab); };
-  const handleSwitchProfile = (p: Profile) => {
+  const handleSwitchProfile = async (p: Profile) => {
+    const [docs, deadlines, acc] = await Promise.all([
+      getDocuments(p.id).catch(() => MOCK_DOCUMENTS),
+      getDeadlines(p.id).catch(() => MOCK_DEADLINES),
+      getAccountant(p.id).catch(() => null),
+    ]);
+    setDocuments(markOverdue(docs));
+    setDeadlines(deadlines);
+    setAccountant(acc || MOCK_ACCOUNTANT);
     setActiveProfile(p);
-    setDocuments([]);
-    setDeadlines([]);
-    setAccountant(MOCK_ACCOUNTANT);
     resetSubPages();
     setActiveTab('home');
-    const profileTheme = localStorage.getItem(`theme_${p.id}`) || 'light';
-    setProfileTheme(profileTheme, p.id);
-    getDocuments(p.id).then(docs => setDocuments(markOverdue(docs))).catch(() => setDocuments(MOCK_DOCUMENTS));
-    getDeadlines(p.id).then(setDeadlines).catch(() => setDeadlines(MOCK_DEADLINES));
-    getAccountant(p.id).then(acc => { if (acc) setAccountant(acc); else setAccountant(MOCK_ACCOUNTANT); }).catch(() => {});
+    const profileTheme = localStorage.getItem(`theme_${p.id}`) || localStorage.getItem('theme') || 'light';
+    setTheme(profileTheme);
+    localStorage.setItem('theme', profileTheme);
+    localStorage.setItem(`theme_${p.id}`, profileTheme);
   };
   const handleBack = () => { resetSubPages(); };
 
@@ -490,7 +494,7 @@ function AppInner() {
               darkMode={darkMode}
             />
           ) : isSettingsPage ? (
-            <SettingsView key="settings" theme={theme} setTheme={(t) => setProfileTheme(t)} isPro={activeProfile.isPro ?? false} />
+            <SettingsView key="settings" theme={theme} setTheme={(t) => setProfileTheme(t, activeProfile.id)} isPro={activeProfile.isPro ?? false} />
           ) : isAccountantPage ? (
             <AccountantView
               key="accountant"
