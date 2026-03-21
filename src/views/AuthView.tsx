@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-type Screen = 'login' | 'register' | 'forgot' | 'forgot-sent' | 'reset';
+type Screen = 'login' | 'register' | 'forgot' | 'forgot-sent' | 'reset' | 'register-sent';
 
 interface AuthViewProps {
   darkMode?: boolean;
@@ -30,7 +30,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     setLoading(false);
     if (error) {
       if (error.message.includes('Invalid login')) setError('Email o password non corretti.');
-      else if (error.message.includes('Email not confirmed')) setError('Conferma prima la tua email.');
+      else if (error.message.includes('Email not confirmed')) setError('Conferma prima la tua email — controlla la casella di posta.');
       else setError('Errore di accesso. Riprova.');
     }
   };
@@ -44,6 +44,8 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     if (error) {
       if (error.message.includes('already registered')) setError('Questa email è già registrata. Accedi.');
       else setError('Errore nella registrazione. Riprova.');
+    } else {
+      setScreen('register-sent');
     }
   };
 
@@ -115,6 +117,12 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
               <motion.div key="sent-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
                 <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Email inviata!</h1>
                 <p className="text-slate-400 mt-1 text-sm">Controlla la tua casella di posta</p>
+              </motion.div>
+            )}
+            {screen === 'register-sent' && (
+              <motion.div key="register-sent-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Controlla la email!</h1>
+                <p className="text-slate-400 mt-1 text-sm">Abbiamo inviato un link di conferma</p>
               </motion.div>
             )}
             {screen === 'reset' && (
@@ -211,6 +219,22 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
                 {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : 'Invia link di reset'}
               </button>
 
+              <button type="button" onClick={() => { clearError(); setScreen('login'); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-400">
+                <ArrowLeft size={14} /> Torna al login
+              </button>
+            </motion.div>
+          )}
+
+          {/* REGISTER SENT */}
+          {screen === 'register-sent' && (
+            <motion.div key="register-sent-form" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
+              <div className={`p-6 rounded-3xl text-center space-y-3 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
+                <CheckCircle2 size={40} className="text-emerald-500 mx-auto" />
+                <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                  Abbiamo inviato un link di conferma a <span className="text-primary">{email}</span>
+                </p>
+                <p className="text-xs text-slate-400">Clicca il link nell'email per attivare il tuo account. Controlla anche la cartella spam.</p>
+              </div>
               <button type="button" onClick={() => { clearError(); setScreen('login'); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-400">
                 <ArrowLeft size={14} /> Torna al login
               </button>
