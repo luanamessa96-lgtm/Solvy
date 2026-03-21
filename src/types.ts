@@ -16,6 +16,7 @@ export interface Profile {
   coefficiente?: number;
   annoInizioAttivita?: number;
   iban?: string;
+  isPro?: boolean;
 }
 
 export interface Document {

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Briefcase, Settings, CreditCard, LogOut, ChevronRight, type LucideIcon } from 'lucide-react';
+import { Briefcase, Settings, CreditCard, LogOut, ChevronRight, Sparkles, type LucideIcon } from 'lucide-react';
 import { Profile } from '../types';
 import LogoutModal from '../components/modals/LogoutModal';
+import PaywallModal from '../components/modals/PaywallModal';
 
 interface MenuViewProps {
   activeProfile: Profile;
@@ -16,11 +17,13 @@ interface MenuViewProps {
 
 const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountantClick, onLogout, darkMode }: MenuViewProps) => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isPaywallOpen, setIsPaywallOpen] = useState(false);
+  const isPro = activeProfile.isPro ?? false;
 
   const menuItems: { label: string; icon: LucideIcon; onClick: () => void; color?: string }[] = [
     { label: 'Il mio Commercialista', icon: Briefcase, onClick: onAccountantClick },
     { label: 'Impostazioni', icon: Settings, onClick: onSettingsClick },
-    { label: 'Abbonamento', icon: CreditCard, onClick: () => {} },
+    { label: 'Abbonamento', icon: CreditCard, onClick: () => setIsPaywallOpen(true) },
     { label: 'Logout', icon: LogOut, onClick: () => setIsLogoutModalOpen(true), color: 'text-red-500' },
   ];
 
@@ -37,7 +40,14 @@ const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountant
           <div className={`absolute inset-0 rounded-full border-2 ${darkMode ? 'border-slate-700/50' : 'border-white/50'}`} />
         </div>
         <div className="text-left">
-          <h2 className={`text-xl font-bold leading-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>{activeProfile.name}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className={`text-xl font-bold leading-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>{activeProfile.name}</h2>
+            {isPro && (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold">
+                <Sparkles size={9} /> PRO
+              </span>
+            )}
+          </div>
           <p className={`text-sm font-medium ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{activeProfile.jobType}</p>
         </div>
         <ChevronRight size={20} className="ml-auto text-slate-300" />
@@ -58,14 +68,17 @@ const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountant
         })}
       </div>
 
-      <div className={`p-6 rounded-3xl space-y-4 relative overflow-hidden transition-all hover:shadow-2xl active:scale-[0.99] ${darkMode ? 'bg-primary/10 border border-primary/20 hover:border-primary/40 hover:shadow-primary/10' : 'bg-slate-900 text-white hover:shadow-slate-900/20'}`}>
-        {!darkMode && <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />}
-        <h3 className={`text-lg font-bold relative z-10 ${darkMode ? 'text-primary' : 'text-white'}`}>Passa a Pro</h3>
-        <p className={`text-xs relative z-10 leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>Sblocca l'export per il commercialista, tasse automatiche e profili illimitati.</p>
-        <button className="w-full bg-primary py-3 rounded-xl text-sm font-bold relative z-10 text-white shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all">Scopri i Piani</button>
-      </div>
+      {!isPro && (
+        <div className={`p-6 rounded-3xl space-y-4 relative overflow-hidden transition-all hover:shadow-2xl active:scale-[0.99] ${darkMode ? 'bg-primary/10 border border-primary/20 hover:border-primary/40 hover:shadow-primary/10' : 'bg-slate-900 text-white hover:shadow-slate-900/20'}`}>
+          {!darkMode && <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />}
+          <h3 className={`text-lg font-bold relative z-10 ${darkMode ? 'text-primary' : 'text-white'}`}>Passa a Pro</h3>
+          <p className={`text-xs relative z-10 leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>Sblocca temi esclusivi, libreria premium e funzionalità avanzate.</p>
+          <button onClick={() => setIsPaywallOpen(true)} className="w-full bg-primary py-3 rounded-xl text-sm font-bold relative z-10 text-white shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all">Scopri i Piani</button>
+        </div>
+      )}
 
       <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={() => { setIsLogoutModalOpen(false); onLogout(); }} darkMode={darkMode} />
+      <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} darkMode={darkMode} />
     </motion.div>
   );
 };
