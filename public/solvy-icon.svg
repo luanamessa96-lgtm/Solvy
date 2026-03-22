@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 100" width="88" height="100">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4CD9D0"/>
+      <stop offset="50%" stop-color="#38BFC8"/>
+      <stop offset="100%" stop-color="#C060A0"/>
+    </linearGradient>
+    <filter id="fold-shadow">
+      <feDropShadow dx="-1" dy="1" stdDeviation="1.5" flood-color="rgba(0,0,0,0.15)"/>
+    </filter>
+  </defs>
+
+  <!-- Main document body (with folded corner cut out) -->
+  <path d="M6 4 Q6 0 10 0 L62 0 L88 26 L88 96 Q88 100 84 100 L10 100 Q6 100 6 96 Z" fill="url(#bg)"/>
+
+  <!-- Top-left glass highlight line -->
+  <line x1="6" y1="8" x2="6" y2="92" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Wave 1 -->
+  <path d="M13 55 C26 44 40 66 53 55 C62 47 68 51 74 49" fill="none" stroke="rgba(255,255,255,0.92)" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Wave 2 -->
+  <path d="M13 69 C26 58 40 80 53 69 C62 61 68 65 74 63" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="3.2" stroke-linecap="round"/>
+
+  <!-- Folded corner back (white paper effect) -->
+  <path d="M62 0 L88 26 L62 26 Z" fill="rgba(255,255,255,0.92)" filter="url(#fold-shadow)"/>
+
+  <!-- Fold crease line -->
+  <line x1="62" y1="0" x2="88" y2="26" stroke="rgba(0,0,0,0.10)" stroke-width="0.8"/>
+</svg>
