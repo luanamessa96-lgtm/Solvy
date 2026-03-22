@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { MOCK_PROFILES, MOCK_DOCUMENTS, MOCK_DEADLINES, MOCK_ACCOUNTANT } from './constants';
 import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, addDeadline, updateDeadline, deleteDeadline, getProfiles, updateProfile, getAccountant, updateAccountant, uploadFile } from './lib/db';
@@ -30,10 +30,10 @@ import DashboardView from './views/DashboardView';
 import DocumentsView from './views/DocumentsView';
 import CalendarView from './views/CalendarView';
 import ProfileView from './views/ProfileView';
-import SettingsView from './views/SettingsView';
-import AccountantView from './views/AccountantView';
+const SettingsView = lazy(() => import('./views/SettingsView'));
+const AccountantView = lazy(() => import('./views/AccountantView'));
+const MediaLibraryView = lazy(() => import('./views/MediaLibraryView'));
 import MenuView from './views/MenuView';
-import MediaLibraryView from './views/MediaLibraryView';
 import OnboardingView from './views/OnboardingView';
 
 function AppInner() {
@@ -508,6 +508,7 @@ function AppInner() {
       <NotificationsPanel isOpen={isNotificationsOpen} deadlines={deadlines} onClose={() => setIsNotificationsOpen(false)} onUpdateDeadline={handleUpdateDeadline} darkMode={darkMode} />
 
       <main className={`flex-1 overflow-y-auto ${darkMode ? 'bg-slate-950' : ''}`}>
+        <Suspense fallback={<div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>}>
           {isProfilePage ? (
             <ProfileView
               activeProfile={activeProfile}
@@ -534,6 +535,7 @@ function AppInner() {
               <div style={{ display: activeTab === 'menu' ? 'block' : 'none' }}><MenuView activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} onLogout={handleLogout} darkMode={darkMode} /></div>
             </>
           )}
+        </Suspense>
       </main>
 
     </div>
