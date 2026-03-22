@@ -23,7 +23,9 @@ const hybridStorage = {
     // max-age 1 anno, SameSite=Lax per compatibilità PWA
     try {
       document.cookie = `${cookieKey}=${encodeURIComponent(value)}; path=/; max-age=31536000; SameSite=Lax`;
-    } catch {}
+    } catch (e) {
+      console.error('[hybridStorage] Cookie write failed:', e);
+    }
   },
   removeItem: (key: string): void => {
     localStorage.removeItem(key);

@@ -264,8 +264,9 @@ function AppInner() {
         const url = await uploadFile(doc.imageData, name);
         docToSave = { ...doc, imageData: url };
         setDocuments(prev => prev.map(d => d.id === doc.id ? docToSave : d));
-      } catch {
+      } catch (e) {
         // Upload allegato fallito: salva il documento senza file
+        console.error('[handleAddDocument] Upload allegato fallito:', e);
         docToSave = { ...doc, imageData: undefined };
         showToast('Allegato non caricato — documento salvato senza file', 'error');
       }
@@ -273,7 +274,7 @@ function AppInner() {
 
     try {
       await addDocument(docToSave, activeProfile.id);
-    } catch { showToast('Errore nel salvataggio', 'error'); }
+    } catch (e) { console.error('[handleAddDocument] Salvataggio fallito:', e); showToast('Errore nel salvataggio', 'error'); }
   };
 
   const handleDeleteDocument = async (id: string) => {
@@ -285,19 +286,19 @@ function AppInner() {
   const handleUpdateDocument = async (doc: Document) => {
     setDocuments(prev => prev.map(d => d.id === doc.id ? doc : d));
     showToast('Documento aggiornato');
-    try { await updateDocument(doc); } catch { showToast('Errore nel salvataggio', 'error'); }
+    try { await updateDocument(doc); } catch (e) { console.error('[handleUpdateDocument] Salvataggio fallito:', e); showToast('Errore nel salvataggio', 'error'); }
   };
 
   const handleAddDeadline = async (d: Deadline) => {
     setDeadlines(prev => [...prev, d].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
     showToast('Scadenza aggiunta');
-    try { await addDeadline(d, activeProfile.id); } catch { showToast('Errore nel salvataggio', 'error'); }
+    try { await addDeadline(d, activeProfile.id); } catch (e) { console.error('[handleAddDeadline] Salvataggio fallito:', e); showToast('Errore nel salvataggio', 'error'); }
   };
 
   const handleUpdateDeadline = async (d: Deadline) => {
     setDeadlines(prev => prev.map(x => x.id === d.id ? d : x));
     showToast(d.completed ? 'Scadenza completata' : 'Scadenza aggiornata');
-    try { await updateDeadline(d); } catch { showToast('Errore nel salvataggio', 'error'); }
+    try { await updateDeadline(d); } catch (e) { console.error('[handleUpdateDeadline] Salvataggio fallito:', e); showToast('Errore nel salvataggio', 'error'); }
   };
 
   const handleDeleteDeadline = async (id: string) => {
@@ -389,7 +390,8 @@ function AppInner() {
     try {
       await updateProfile(p);
       showToast('Profilo salvato');
-    } catch {
+    } catch (e) {
+      console.error('[handleUpdateProfile] Salvataggio fallito:', e);
       showToast('Errore nel salvataggio del profilo', 'error');
     }
   };
