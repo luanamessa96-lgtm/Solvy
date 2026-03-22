@@ -1,50 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 100" width="88" height="100">
   <defs>
-    <linearGradient id="doc" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#3358A8"/>
-      <stop offset="50%" stop-color="#1E3A7A"/>
-      <stop offset="100%" stop-color="#132860"/>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4CD9D0"/>
+      <stop offset="50%" stop-color="#38BFC8"/>
+      <stop offset="100%" stop-color="#C060A0"/>
     </linearGradient>
-    <linearGradient id="fold" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#B0C8EE"/>
-      <stop offset="100%" stop-color="#7A9FD4"/>
-    </linearGradient>
-    <linearGradient id="shine" x1="0%" y1="0%" x2="10%" y2="60%">
-      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.22"/>
-      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
-    </linearGradient>
-    <linearGradient id="line1" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.7"/>
-    </linearGradient>
-    <linearGradient id="line2" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.85"/>
-      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.55"/>
-    </linearGradient>
-    <linearGradient id="line3" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.55"/>
-      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.3"/>
-    </linearGradient>
+    <filter id="fold-shadow">
+      <feDropShadow dx="-1" dy="1" stdDeviation="1.5" flood-color="rgba(0,0,0,0.15)"/>
+    </filter>
   </defs>
 
-  <!-- Corpo documento = intera icona -->
-  <rect width="512" height="512" fill="url(#doc)"/>
+  <!-- Main document body (with folded corner cut out) -->
+  <path d="M6 4 Q6 0 10 0 L62 0 L88 26 L88 96 Q88 100 84 100 L10 100 Q6 100 6 96 Z" fill="url(#bg)"/>
 
-  <!-- Maschera angolo piegato: copre angolo top-right con colore uguale al fondo per creare il "taglio" -->
-  <polygon points="360,0 512,0 512,152" fill="#132860"/>
+  <!-- Top-left glass highlight line -->
+  <line x1="6" y1="8" x2="6" y2="92" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"/>
 
-  <!-- Triangolo fold (angolo piegato visibile) -->
-  <polygon points="360,0 512,152 360,152" fill="url(#fold)"/>
+  <!-- Wave 1 -->
+  <path d="M13 55 C26 44 40 66 53 55 C62 47 68 51 74 49" fill="none" stroke="rgba(255,255,255,0.92)" stroke-width="4" stroke-linecap="round"/>
 
-  <!-- Bordo sottile sul triangolo fold -->
-  <line x1="360" y1="0" x2="360" y2="152" stroke="rgba(180,210,255,0.3)" stroke-width="2"/>
-  <line x1="360" y1="152" x2="512" y2="152" stroke="rgba(180,210,255,0.2)" stroke-width="2"/>
+  <!-- Wave 2 -->
+  <path d="M13 69 C26 58 40 80 53 69 C62 61 68 65 74 63" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="3.2" stroke-linecap="round"/>
 
-  <!-- Shine glass in alto a sinistra -->
-  <rect width="512" height="512" fill="url(#shine)"/>
+  <!-- Folded corner back (white paper effect) -->
+  <path d="M62 0 L88 26 L62 26 Z" fill="rgba(255,255,255,0.92)" filter="url(#fold-shadow)"/>
 
-  <!-- Linee testo -->
-  <rect x="110" y="300" width="292" height="28" rx="14" fill="url(#line1)"/>
-  <rect x="110" y="350" width="292" height="28" rx="14" fill="url(#line2)"/>
-  <rect x="110" y="400" width="200" height="28" rx="14" fill="url(#line3)"/>
+  <!-- Fold crease line -->
+  <line x1="62" y1="0" x2="88" y2="26" stroke="rgba(0,0,0,0.10)" stroke-width="0.8"/>
 </svg>
