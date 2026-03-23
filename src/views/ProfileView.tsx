@@ -264,6 +264,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Cuota RETA mensual</label>
                         <select value={editData.retaMensile} onChange={e => setEditData({ ...editData, retaMensile: e.target.value })} className={inputClass()}>
+                          <option value="80">€ 80/mes — Tarifa Plana (1er/2º año)</option>
                           <option value="230">€ 230/mes</option>
                           <option value="260">€ 260/mes</option>
                           <option value="275">€ 275/mes</option>

@@ -346,6 +346,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                 <div className="space-y-1.5">
                   <label className={lc}>Cuota RETA mensual</label>
                   <select value={retaMensile} onChange={e => setRetaMensile(e.target.value)} className={ic}>
+                    <option value="80">€ 80/mes — Tarifa Plana (1er/2º año)</option>
                     <option value="230">€ 230/mes</option>
                     <option value="260">€ 260/mes</option>
                     <option value="275">€ 275/mes</option>
