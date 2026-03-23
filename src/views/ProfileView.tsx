@@ -278,6 +278,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Año inicio actividad</label>
                         <input type="number" min="2000" max={new Date().getFullYear()} value={editData.annoInizioAttivita} onChange={e => setEditData({ ...editData, annoInizioAttivita: e.target.value })} placeholder="Es. 2022" className={inputClass()} />
+                        <p className="text-[10px] text-slate-400 ml-1">Usato per calcolare la Tarifa Plana RETA (€80/mes primo anno)</p>
                       </div>
                     </>
                   ) : (

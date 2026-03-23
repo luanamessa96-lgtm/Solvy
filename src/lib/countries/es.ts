@@ -34,6 +34,43 @@ const RETA_BRACKETS = [
   { maxIncome: Infinity, monthlyQuote: 500 },
 ];
 
+// Tarifa plana threshold: annual net income below this qualifies for year-2 extension
+const TARIFA_PLANA_INCOME_THRESHOLD = 10800; // SMI 2024 approx.
+const TARIFA_PLANA_QUOTE = 80;
+
+export type TarifaPlanaStatus = 'year1' | 'year2_below_threshold' | 'normal';
+
+/**
+ * Returns tarifa plana status based on start year and annual gross income.
+ * - year1: first calendar year → €80/month flat
+ * - year2_below_threshold: second year AND income < SMI → €80/month extended
+ * - normal: third year onwards or income above threshold → standard brackets
+ */
+export function getTarifaPlanaStatus(
+  startYear: number | undefined,
+  currentYear: number,
+  annualGrossIncome: number
+): TarifaPlanaStatus {
+  if (!startYear) return 'normal';
+  const yearsActive = currentYear - startYear;
+  if (yearsActive < 1) return 'year1';
+  if (yearsActive < 2 && annualGrossIncome < TARIFA_PLANA_INCOME_THRESHOLD) return 'year2_below_threshold';
+  return 'normal';
+}
+
+export function calculateRETA_withTarifaPlana(
+  monthlyNetIncome: number,
+  startYear: number | undefined,
+  currentYear: number,
+  annualGrossIncome: number
+): { monthly: number; status: TarifaPlanaStatus } {
+  const status = getTarifaPlanaStatus(startYear, currentYear, annualGrossIncome);
+  if (status === 'year1' || status === 'year2_below_threshold') {
+    return { monthly: TARIFA_PLANA_QUOTE, status };
+  }
+  return { monthly: calculateRETA(monthlyNetIncome), status: 'normal' };
+}
+
 export function calculateIRPF(grossIncome: number): number {
   if (grossIncome <= 0) return 0;
   let tax = 0;
@@ -62,11 +99,15 @@ export function calculateRetenciones(amount: number, isFirstThreeYears: boolean 
 export function calculateSpanishTaxes(
   grossIncome: number,
   isFirstThreeYears: boolean = false,
-  applyRetenciones: boolean = false
-): SpanishTaxResult {
+  applyRetenciones: boolean = false,
+  startYear?: number,
+  currentYear: number = new Date().getFullYear()
+): SpanishTaxResult & { tarifaPlanaStatus: TarifaPlanaStatus; monthlyRETA: number } {
   const irpf = calculateIRPF(grossIncome);
   const monthlyNet = grossIncome / 12;
-  const monthlyRETA = calculateRETA(monthlyNet);
+  const { monthly: monthlyRETA, status: tarifaPlanaStatus } = calculateRETA_withTarifaPlana(
+    monthlyNet, startYear, currentYear, grossIncome
+  );
   const reta = monthlyRETA * 12;
   const retenciones = applyRetenciones ? calculateRetenciones(grossIncome, isFirstThreeYears) : 0;
   const netIncome = grossIncome - irpf - reta;
@@ -79,6 +120,8 @@ export function calculateSpanishTaxes(
     retenciones,
     netIncome,
     effectiveRate,
+    tarifaPlanaStatus,
+    monthlyRETA,
   };
 }
 
@@ -160,10 +203,13 @@ export const spainModule: CountryModule = {
     showBollo: false,
   },
   calculateTax: (input: TaxInput): TaxResult => {
-    const { grossIncome = 0, isFirstThreeYears = false, applyRetenciones = false } = input;
+    const { grossIncome = 0, isFirstThreeYears = false, applyRetenciones = false, startYear } = input;
+    const currentYear = new Date().getFullYear();
     const irpf = calculateIRPF(grossIncome);
     const monthlyNet = grossIncome / 12;
-    const monthlyRETA = calculateRETA(monthlyNet);
+    const { monthly: monthlyRETA, status: tarifaPlanaStatus } = calculateRETA_withTarifaPlana(
+      monthlyNet, startYear, currentYear, grossIncome
+    );
     const reta = monthlyRETA * 12;
     const retenciones = applyRetenciones ? calculateRetenciones(grossIncome, isFirstThreeYears) : 0;
     const netIncome = grossIncome - irpf - reta;
@@ -180,17 +226,24 @@ export const spainModule: CountryModule = {
         reta,
         retenciones,
         monthlyRETA,
+        tarifaPlanaStatus,
         retencionRate: isFirstThreeYears ? 0.07 : 0.15,
       },
     };
   },
   calculateContributions: (input: TaxInput): ContributionsResult => {
+    const currentYear = new Date().getFullYear();
     const monthlyNet = (input.grossIncome ?? 0) / 12;
-    const monthly = calculateRETA(monthlyNet);
+    const { monthly, status } = calculateRETA_withTarifaPlana(
+      monthlyNet, input.startYear, currentYear, input.grossIncome ?? 0
+    );
+    const isTarifaPlana = status !== 'normal';
     return {
       monthly,
       annual: monthly * 12,
-      label: 'RETA (Seguridad Social autónomos)',
+      label: isTarifaPlana
+        ? `RETA — Tarifa Plana €${monthly}/mes (${status === 'year1' ? '1er año' : '2º año'})`
+        : 'RETA (Seguridad Social autónomos)',
     };
   },
 };

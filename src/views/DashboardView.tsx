@@ -309,7 +309,8 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
 
         {/* ── TASSE ── */}
         {activeTab === 'taxes' && profile.country === 'Spain' && (() => {
-          const spTaxes = calculateSpanishTaxes(income);
+          const spTaxes = calculateSpanishTaxes(income, false, false, profile.annoInizioAttivita, displayYear);
+          const isTarifaPlana = spTaxes.tarifaPlanaStatus !== 'normal';
           const spDeadlines = getSpanishDeadlines(displayYear);
           const today = new Date();
           const nextSpDeadline = spDeadlines
@@ -346,8 +347,15 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <div className="flex justify-between">
-                      <span className="text-xs font-bold text-slate-400">RETA anual</span>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-slate-400">RETA anual</span>
+                        {isTarifaPlana && (
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${darkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                            Tarifa Plana €{spTaxes.monthlyRETA}/mes
+                          </span>
+                        )}
+                      </div>
                       <span className="text-xs font-bold text-amber-500">€{Math.round(spTaxes.reta).toLocaleString()}</span>
                     </div>
                     <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
