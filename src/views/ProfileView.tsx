@@ -78,6 +78,9 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [taxIdType, setTaxIdType] = useState<'nif' | 'nie'>(() =>
+    profileStorage.get(`nie_${activeProfile.id}`) ? 'nie' : 'nif'
+  );
   const [editData, setEditData] = useState({
     name: activeProfile.name,
     email: activeProfile.email,
@@ -91,7 +94,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     regime: activeProfile.regime || 'forfettario' as 'forfettario' | 'ordinario',
     coefficiente: activeProfile.coefficiente?.toString() || '',
     annoInizioAttivita: activeProfile.annoInizioAttivita?.toString() || '',
-    nie: '',
+    nie: profileStorage.get(`nie_${activeProfile.id}`) || '',
     retaMensile: profileStorage.get(`reta_${activeProfile.id}`) || '500',
   });
 
@@ -101,13 +104,12 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     iban: isSpain
       ? (editData.iban && !validateIBAN_ES(editData.iban) ? 'IBAN spagnolo non valido (ES + 22 cifre)' : null)
       : validateIBAN(editData.iban),
-    // NIF: only validate if Spain AND field is non-empty
+    // Valida solo il campo attivo nel toggle NIF/NIE
     piva: isSpain
-      ? (editData.piva.length > 0 && !validateNIF(editData.piva) ? 'NIF non valido (8 cifre + lettera)' : null)
+      ? (taxIdType === 'nif' && editData.piva.length > 0 && !validateNIF(editData.piva) ? 'NIF non valido (8 cifre + lettera)' : null)
       : validatePiva(editData.piva),
     codiceFiscale: isSpain ? null : validateCF(editData.codiceFiscale),
-    // NIE: only validate if non-empty
-    nie: isSpain && editData.nie && editData.nie.length > 0
+    nie: isSpain && taxIdType === 'nie' && editData.nie.length > 0
       ? (!validateNIE(editData.nie) ? 'NIE non valido (X/Y/Z + 7 cifre + lettera)' : null)
       : null,
   };
@@ -118,11 +120,14 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     setIsSaving(true);
     try {
       // Save localStorage-only fields separately (not in Supabase schema)
-      if (isSpain && editData.retaMensile) {
-        profileStorage.set(`reta_${activeProfile.id}`, editData.retaMensile);
-      }
-      if (editData.nie) {
-        profileStorage.set(`nie_${activeProfile.id}`, editData.nie);
+      if (isSpain) {
+        if (editData.retaMensile) profileStorage.set(`reta_${activeProfile.id}`, editData.retaMensile);
+        if (taxIdType === 'nie' && editData.nie) {
+          profileStorage.set(`nie_${activeProfile.id}`, editData.nie);
+        } else {
+          // Se si salva con NIF, pulisci il NIE dal localStorage
+          localStorage.removeItem(`nie_${activeProfile.id}`);
+        }
       }
 
       // Build a clean profile object with only valid DB fields (no nie, no retaMensile)
@@ -134,7 +139,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
         country: editData.country,
         currency: editData.currency,
         address: editData.address || undefined,
-        piva: editData.piva || undefined,
+        piva: isSpain ? (taxIdType === 'nif' ? editData.piva || undefined : undefined) : editData.piva || undefined,
         codiceFiscale: editData.codiceFiscale || undefined,
         iban: editData.iban || undefined,
         regime: editData.regime,
@@ -241,15 +246,23 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                 <div className="space-y-3">
                   {isSpain ? (
                     <>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">NIF</label>
-                        <input type="text" value={editData.piva} onChange={e => setEditData({ ...editData, piva: e.target.value.toUpperCase() })} placeholder="Es. 12345678A" className={inputClass(errors.piva)} />
-                        {errors.piva && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.piva}</p>}
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">NIE (opcional)</label>
-                        <input type="text" value={editData.nie} onChange={e => setEditData({ ...editData, nie: e.target.value.toUpperCase() })} placeholder="Es. X1234567A" className={inputClass(errors.nie)} />
-                        {errors.nie && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.nie}</p>}
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Documento fiscal</label>
+                        <div className={`flex rounded-xl p-1 gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                          <button type="button" onClick={() => { setTaxIdType('nif'); setEditData({ ...editData, nie: '' }); }} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${taxIdType === 'nif' ? 'bg-primary text-white shadow' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>NIF</button>
+                          <button type="button" onClick={() => { setTaxIdType('nie'); setEditData({ ...editData, piva: '' }); }} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${taxIdType === 'nie' ? 'bg-primary text-white shadow' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>NIE</button>
+                        </div>
+                        {taxIdType === 'nif' ? (
+                          <div>
+                            <input type="text" value={editData.piva} onChange={e => setEditData({ ...editData, piva: e.target.value.toUpperCase() })} placeholder="Es. 12345678A" className={inputClass(errors.piva)} />
+                            {errors.piva && <p className="text-xs text-red-500 ml-1 flex items-center gap-1 mt-1">⚠ {errors.piva}</p>}
+                          </div>
+                        ) : (
+                          <div>
+                            <input type="text" value={editData.nie} onChange={e => setEditData({ ...editData, nie: e.target.value.toUpperCase() })} placeholder="Es. X1234567A" className={inputClass(errors.nie)} />
+                            {errors.nie && <p className="text-xs text-red-500 ml-1 flex items-center gap-1 mt-1">⚠ {errors.nie}</p>}
+                          </div>
+                        )}
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">IBAN</label>
