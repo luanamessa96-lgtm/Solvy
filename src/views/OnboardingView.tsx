@@ -17,15 +17,21 @@ const CATEGORIE: { label: string; value: number }[] = [
   { label: 'Commercio e ristorazione', value: 40 },
 ];
 
-const STEPS = ['Chi sei', 'Regime fiscale', 'Dati fiscali'];
-const TOTAL_STEPS = STEPS.length;
+// Steps vary by country: 0=welcome, 'country'=country selection, 1-N=data steps, 'done'=done
+type OnboardingStep = 0 | 'country' | 1 | 2 | 3 | 'done';
 
 export default function OnboardingView({ profile, onComplete, darkMode }: OnboardingViewProps) {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState<OnboardingStep>(0);
   const [direction, setDirection] = useState(1);
 
+  // Country selection
+  const [selectedCountry, setSelectedCountry] = useState<'Italy' | 'Spain'>('Italy');
+
+  // Common fields
   const [name, setName] = useState('');
   const [jobType, setJobType] = useState('');
+
+  // Italy fields
   const [regime, setRegime] = useState<'forfettario' | 'ordinario'>('forfettario');
   const [coefficiente, setCoefficiente] = useState<number | undefined>(undefined);
   const [annoInizioAttivita, setAnnoInizioAttivita] = useState('');
@@ -33,21 +39,45 @@ export default function OnboardingView({ profile, onComplete, darkMode }: Onboar
   const [codiceFiscale, setCodiceFiscale] = useState('');
   const [address, setAddress] = useState('');
 
-  const goNext = () => { setDirection(1); setStep(s => s + 1); };
-  const goBack = () => { setDirection(-1); setStep(s => s - 1); };
+  // Spain fields
+  const [nif, setNif] = useState('');
+  const [nie, setNie] = useState('');
+  const [retaMensile, setRetaMensile] = useState('500');
+  const [annoInizioSpagna, setAnnoInizioSpagna] = useState('');
+  const [addressSpagna, setAddressSpagna] = useState('');
+
+  const goNext = (nextStep: OnboardingStep) => { setDirection(1); setStep(nextStep); };
+  const goBack = (prevStep: OnboardingStep) => { setDirection(-1); setStep(prevStep); };
 
   const handleComplete = () => {
+    const isSpain = selectedCountry === 'Spain';
     const updated: Profile = {
       ...profile,
       name: name || profile.name,
       jobType: jobType || profile.jobType,
-      regime,
-      coefficiente,
-      annoInizioAttivita: annoInizioAttivita ? parseInt(annoInizioAttivita) : undefined,
-      piva: piva || undefined,
-      codiceFiscale: codiceFiscale || undefined,
-      address: address || undefined,
+      country: selectedCountry,
+      currency: 'EUR',
+      ...(isSpain ? {
+        piva: nif || undefined,
+        regime: undefined,
+        coefficiente: undefined,
+        annoInizioAttivita: annoInizioSpagna ? parseInt(annoInizioSpagna) : undefined,
+        address: addressSpagna || undefined,
+      } : {
+        regime,
+        coefficiente,
+        annoInizioAttivita: annoInizioAttivita ? parseInt(annoInizioAttivita) : undefined,
+        piva: piva || undefined,
+        codiceFiscale: codiceFiscale || undefined,
+        address: address || undefined,
+      }),
     };
+    if (isSpain && nie) {
+      localStorage.setItem(`nie_${profile.id}`, nie);
+    }
+    if (isSpain && retaMensile) {
+      localStorage.setItem(`reta_${profile.id}`, retaMensile);
+    }
     localStorage.setItem('onboardingComplete', 'true');
     onComplete(updated);
   };
@@ -69,19 +99,36 @@ export default function OnboardingView({ profile, onComplete, darkMode }: Onboar
     </div>
   );
 
+  // Progress bar logic: for Italy steps 1-3, for Spain steps 1-2
+  const getProgressInfo = () => {
+    if (step === 0 || step === 'country') return null;
+    if (step === 'done') return null;
+    const isSpain = selectedCountry === 'Spain';
+    const total = isSpain ? 2 : 3;
+    const current = step as number;
+    return { current, total };
+  };
+
+  const stepLabels: Record<string, Record<number, string>> = {
+    Italy: { 1: 'Chi sei', 2: 'Regime fiscale', 3: 'Dati fiscali' },
+    Spain: { 1: 'Chi sei', 2: 'Dati fiscali' },
+  };
+
+  const progressInfo = getProgressInfo();
+
   return (
     <div className={`fixed inset-0 z-[200] flex flex-col max-w-md mx-auto transition-colors ${darkMode ? 'bg-slate-950' : 'bg-white'}`}>
 
-      {/* Progress bar con step names */}
-      {step > 0 && step <= TOTAL_STEPS && (
+      {/* Progress bar */}
+      {progressInfo && (
         <div className="px-6 pt-6 space-y-2">
           <div className="flex gap-1.5">
-            {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-              <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-500 ${i < step ? 'bg-primary' : (darkMode ? 'bg-slate-800' : 'bg-slate-100')}`} />
+            {Array.from({ length: progressInfo.total }).map((_, i) => (
+              <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-500 ${i < progressInfo.current ? 'bg-primary' : (darkMode ? 'bg-slate-800' : 'bg-slate-100')}`} />
             ))}
           </div>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            {step} di {TOTAL_STEPS} — {STEPS[step - 1]}
+            {progressInfo.current} di {progressInfo.total} — {stepLabels[selectedCountry][progressInfo.current]}
           </p>
         </div>
       )}
@@ -103,7 +150,7 @@ export default function OnboardingView({ profile, onComplete, darkMode }: Onboar
                 </div>
                 <div className="space-y-3">
                   <h1 className={`text-3xl font-black ${darkMode ? 'text-white' : 'text-slate-900'}`}>Benvenuto</h1>
-                  <p className="text-slate-500 text-base leading-relaxed">Il tuo assistente fiscale per freelance italiani. Fatture, scadenze e tasse — tutto in un posto.</p>
+                  <p className="text-slate-500 text-base leading-relaxed">Il tuo assistente fiscale per freelance. Fatture, scadenze e tasse — tutto in un posto.</p>
                 </div>
                 <div className={`flex justify-center gap-6 pt-2 text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                   {['🧾 Fatture', '📅 Scadenze', '📊 Tasse'].map(item => (
@@ -112,21 +159,59 @@ export default function OnboardingView({ profile, onComplete, darkMode }: Onboar
                 </div>
               </div>
               <div className="w-full space-y-3">
-                <button onClick={goNext} className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-base shadow-xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                <button onClick={() => goNext('country')} className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-base shadow-xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
                   Inizia <ChevronRight size={20} />
                 </button>
-                <p className="text-[11px] text-slate-400 text-center">3 passaggi · meno di 2 minuti</p>
+                <p className="text-[11px] text-slate-400 text-center">pochi passaggi · meno di 2 minuti</p>
               </div>
             </motion.div>
           )}
 
-          {/* STEP 1 — Chi sei */}
+          {/* COUNTRY SELECTION */}
+          {step === 'country' && (
+            <motion.div key="country" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col items-center justify-center p-8 space-y-8">
+              <div className="w-full space-y-3 text-center">
+                <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Scegli il paese fiscale</h2>
+                <p className="text-sm text-slate-500">Determina le regole fiscali, le scadenze e il formato delle fatture.</p>
+              </div>
+              <div className="w-full space-y-4">
+                <button
+                  onClick={() => { setSelectedCountry('Italy'); goNext(1); }}
+                  className={`w-full p-6 rounded-3xl border-2 flex items-center gap-5 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-primary' : 'bg-white border-slate-100 hover:border-primary shadow-sm hover:shadow-lg hover:shadow-primary/10'}`}
+                >
+                  <span className="text-4xl">🇮🇹</span>
+                  <div className="text-left">
+                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Italia</p>
+                    <p className="text-sm text-slate-400">Regime forfettario / ordinario</p>
+                  </div>
+                  <ChevronRight size={20} className="ml-auto text-slate-300" />
+                </button>
+                <button
+                  onClick={() => { setSelectedCountry('Spain'); goNext(1); }}
+                  className={`w-full p-6 rounded-3xl border-2 flex items-center gap-5 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-primary' : 'bg-white border-slate-100 hover:border-primary shadow-sm hover:shadow-lg hover:shadow-primary/10'}`}
+                >
+                  <span className="text-4xl">🇪🇸</span>
+                  <div className="text-left">
+                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Spagna</p>
+                    <p className="text-sm text-slate-400">Estimación directa simplificada</p>
+                  </div>
+                  <ChevronRight size={20} className="ml-auto text-slate-300" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* STEP 1 — Chi sei (common) */}
           {step === 1 && (
             <motion.div key="step1" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col p-8 pt-6 space-y-6">
-              <div className="space-y-1">
-                <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Chi sei?</h2>
-                <p className="text-sm text-slate-500">Iniziamo con le informazioni base del tuo profilo.</p>
+              {/* Country badge */}
+              <div className="flex items-center gap-2">
+                <span className={`text-lg font-black ${darkMode ? 'text-white' : 'text-slate-900'}`}>Chi sei?</span>
+                <span className={`ml-auto text-xs font-bold px-3 py-1 rounded-full ${selectedCountry === 'Spain' ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600'}`}>
+                  {selectedCountry === 'Spain' ? '🇪🇸 Spagna' : '🇮🇹 Italia'}
+                </span>
               </div>
+              <p className="text-sm text-slate-500 -mt-4">Iniziamo con le informazioni base del tuo profilo.</p>
               <div className="space-y-5 flex-1">
                 <div className="space-y-1.5">
                   <label className={lc}>Nome e Cognome *</label>
@@ -140,19 +225,19 @@ export default function OnboardingView({ profile, onComplete, darkMode }: Onboar
                 </div>
               </div>
               <div className="flex gap-3">
-                <button onClick={goBack} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                <button onClick={() => goBack('country')} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
                   <ChevronLeft size={20} />
                 </button>
-                <button onClick={goNext} disabled={!name.trim()} className="flex-1 bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                <button onClick={() => goNext(2)} disabled={!name.trim()} className="flex-1 bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                   Continua
                 </button>
               </div>
             </motion.div>
           )}
 
-          {/* STEP 2 — Regime fiscale */}
-          {step === 2 && (
-            <motion.div key="step2" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col p-8 pt-6 space-y-6 overflow-y-auto">
+          {/* STEP 2 — Regime fiscale (Italy) OR Dati fiscali (Spain) */}
+          {step === 2 && selectedCountry === 'Italy' && (
+            <motion.div key="step2-italy" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col p-8 pt-6 space-y-6 overflow-y-auto">
               <div className="space-y-1">
                 <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Regime fiscale</h2>
                 <p className="text-sm text-slate-500">Usato per calcolare correttamente le tue tasse.</p>
@@ -208,18 +293,79 @@ export default function OnboardingView({ profile, onComplete, darkMode }: Onboar
                 )}
               </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={goBack} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                <button onClick={() => goBack(1)} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
                   <ChevronLeft size={20} />
                 </button>
-                <button onClick={goNext} className="flex-1 bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">
+                <button onClick={() => goNext(3)} className="flex-1 bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">
                   Continua
                 </button>
               </div>
             </motion.div>
           )}
 
-          {/* STEP 3 — Dati fiscali (opzionale) */}
-          {step === 3 && (
+          {/* STEP 2 — Dati fiscali (Spain) */}
+          {step === 2 && selectedCountry === 'Spain' && (
+            <motion.div key="step2-spain" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col p-8 pt-6 space-y-6 overflow-y-auto">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Dati fiscali</h2>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400'}`}>OPZIONALE</span>
+                </div>
+                <p className="text-sm text-slate-500">Appariranno sulle tue fatture. Puoi aggiungerli in seguito dal Profilo.</p>
+              </div>
+              <div className="space-y-4 flex-1">
+                <div className="space-y-1.5">
+                  <label className={lc}>NIF (Número de Identificación Fiscal)</label>
+                  <input type="text" value={nif} onChange={e => setNif(e.target.value.toUpperCase())} placeholder="Es. 12345678A" className={ic} />
+                  <HelpText text="8 cifre + lettera. Lo trovi sul tuo DNI o NIE." />
+                </div>
+                <div className="space-y-1.5">
+                  <label className={lc}>NIE (Número de Identidad de Extranjero) — opcional</label>
+                  <input type="text" value={nie} onChange={e => setNie(e.target.value.toUpperCase())} placeholder="Es. X1234567A" className={ic} />
+                  <HelpText text="Solo per stranieri residenti in Spagna." />
+                </div>
+                <div className="space-y-1.5">
+                  <label className={lc}>Cuota RETA mensual</label>
+                  <select value={retaMensile} onChange={e => setRetaMensile(e.target.value)} className={ic}>
+                    <option value="230">€ 230/mes</option>
+                    <option value="260">€ 260/mes</option>
+                    <option value="275">€ 275/mes</option>
+                    <option value="294">€ 294/mes</option>
+                    <option value="320">€ 320/mes</option>
+                    <option value="350">€ 350/mes</option>
+                    <option value="370">€ 370/mes</option>
+                    <option value="390">€ 390/mes</option>
+                    <option value="500">€ 500+/mes</option>
+                  </select>
+                  <HelpText text="Quota mensile per il Régimen Especial de Trabajadores Autónomos." />
+                </div>
+                <div className="space-y-1.5">
+                  <label className={lc}>Año inicio actividad</label>
+                  <input type="number" min="2000" max={currentYear} value={annoInizioSpagna} onChange={e => setAnnoInizioSpagna(e.target.value)} placeholder={`Es. ${currentYear - 2}`} className={ic} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className={lc}>Indirizzo / Dirección</label>
+                  <input type="text" value={addressSpagna} onChange={e => setAddressSpagna(e.target.value)} placeholder="Calle Gran Vía 1, 28013 Madrid" className={ic} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex gap-3">
+                  <button onClick={() => goBack(1)} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                    <ChevronLeft size={20} />
+                  </button>
+                  <button onClick={() => goNext('done')} className="flex-1 bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">
+                    Continua
+                  </button>
+                </div>
+                <button onClick={() => goNext('done')} className="w-full py-3 text-sm font-semibold text-slate-400 active:scale-[0.98] transition-all">
+                  Salta per ora
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* STEP 3 — Dati fiscali (Italy only) */}
+          {step === 3 && selectedCountry === 'Italy' && (
             <motion.div key="step3" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col p-8 pt-6 space-y-6">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
@@ -247,14 +393,14 @@ export default function OnboardingView({ profile, onComplete, darkMode }: Onboar
               </div>
               <div className="space-y-2">
                 <div className="flex gap-3">
-                  <button onClick={goBack} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                  <button onClick={() => goBack(2)} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
                     <ChevronLeft size={20} />
                   </button>
-                  <button onClick={goNext} className="flex-1 bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">
+                  <button onClick={() => goNext('done')} className="flex-1 bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">
                     Continua
                   </button>
                 </div>
-                <button onClick={goNext} className="w-full py-3 text-sm font-semibold text-slate-400 active:scale-[0.98] transition-all">
+                <button onClick={() => goNext('done')} className="w-full py-3 text-sm font-semibold text-slate-400 active:scale-[0.98] transition-all">
                   Salta per ora
                 </button>
               </div>
@@ -262,7 +408,7 @@ export default function OnboardingView({ profile, onComplete, darkMode }: Onboar
           )}
 
           {/* DONE */}
-          {step === 4 && (
+          {step === 'done' && (
             <motion.div key="done" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-8">
               <div className="space-y-4">
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.15 }} className="w-24 h-24 bg-emerald-500 rounded-3xl flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/30">
