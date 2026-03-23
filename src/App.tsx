@@ -409,11 +409,9 @@ function AppInner() {
   const handleOnboardingComplete = async (p: Profile) => {
     setActiveProfile(p);
     setProfiles(prev => prev.map(x => x.id === p.id ? p : x));
-    try { await updateProfile(p); } catch (e) {
-      const msg = (e as { message?: string })?.message ?? String(e);
-      console.error('[handleOnboardingComplete] updateProfile failed:', e);
-      showToast(`DEBUG: ${msg}`, 'error');
-    }
+    // Refresh session before saving — previene 401 se la sessione è scaduta durante l'onboarding
+    await supabase.auth.refreshSession().catch(() => {});
+    try { await updateProfile(p); } catch (e) { showToast(dbError(e), 'error'); }
     localStorage.setItem('onboardingComplete', 'true');
     setShowOnboarding(false);
   };

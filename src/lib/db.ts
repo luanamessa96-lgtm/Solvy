@@ -157,9 +157,9 @@ export async function getAccountant(profileId: string): Promise<Accountant | nul
     .from('accountant')
     .select('*')
     .eq('profile_id', profileId)
-    .single();
+    .maybeSingle();
 
-  if (error) return null;
+  if (error || !data) return null;
   return {
     firstName: data.first_name,
     lastName: data.last_name,
