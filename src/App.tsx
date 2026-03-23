@@ -409,7 +409,11 @@ function AppInner() {
   const handleOnboardingComplete = async (p: Profile) => {
     setActiveProfile(p);
     setProfiles(prev => prev.map(x => x.id === p.id ? p : x));
-    try { await updateProfile(p); } catch (e) { showToast(dbError(e), 'error'); }
+    try { await updateProfile(p); } catch (e) {
+      const msg = (e as { message?: string })?.message ?? String(e);
+      console.error('[handleOnboardingComplete] updateProfile failed:', e);
+      showToast(`DEBUG: ${msg}`, 'error');
+    }
     localStorage.setItem('onboardingComplete', 'true');
     setShowOnboarding(false);
   };
