@@ -127,6 +127,31 @@ export async function getProfiles(userId: string, userEmail?: string): Promise<P
   }));
 }
 
+export async function createProfile(profile: Profile): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  const { error } = await supabase
+    .from('profiles')
+    .insert({
+      id: profile.id,
+      user_id: user?.id,
+      name: profile.name,
+      email: profile.email,
+      country: profile.country,
+      currency: profile.currency,
+      job_type: profile.jobType,
+      avatar: profile.avatar,
+      address: profile.address,
+      piva: profile.piva,
+      codice_fiscale: profile.codiceFiscale,
+      regime: profile.regime,
+      coefficiente: profile.coefficiente,
+      anno_inizio_attivita: profile.annoInizioAttivita,
+      iban: profile.iban,
+    });
+
+  if (error) throw error;
+}
+
 export async function updateProfile(profile: Profile): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   const { error } = await supabase

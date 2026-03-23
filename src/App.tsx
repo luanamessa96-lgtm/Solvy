@@ -6,7 +6,7 @@
 import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { MOCK_PROFILES, MOCK_DOCUMENTS, MOCK_DEADLINES, MOCK_ACCOUNTANT } from './constants';
-import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, addDeadline, updateDeadline, deleteDeadline, getProfiles, updateProfile, getAccountant, updateAccountant, uploadFile } from './lib/db';
+import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, addDeadline, updateDeadline, deleteDeadline, getProfiles, createProfile, updateProfile, getAccountant, updateAccountant, uploadFile } from './lib/db';
 import { supabase } from './lib/supabase';
 import { Profile, Document, Deadline, Accountant } from './types';
 import AuthView from './views/AuthView';
@@ -119,14 +119,22 @@ function AppInner() {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
       const data = await getProfiles(user.id, user.email ?? undefined).catch(() => null);
-      if (data && data.length > 0) {
+
+      // Profili completi = onboarding già completato (country impostato dal trigger+onboarding)
+      // country=NULL significa profilo creato dal trigger ma onboarding non ancora fatto
+      const completeProfiles = data
+        ? data.filter(p => !!(p as { country: string | null }).country)
+        : null;
+
+      if (completeProfiles && completeProfiles.length > 0) {
+        // Utente esistente con onboarding completato → dashboard
         localStorage.setItem('onboardingComplete', 'true');
         setShowOnboarding(false);
-        setProfiles(data);
+        setProfiles(completeProfiles);
         const savedId = localStorage.getItem('activeProfileId') || document.cookie.match(/activeProfileId=([^;]+)/)?.[1];
-        const profile = data.find(p => p.id === savedId) || data[0];
+        const profile = completeProfiles.find(p => p.id === savedId) || completeProfiles[0];
         setActiveProfile(profile);
-            const profileTheme = localStorage.getItem(`theme_${profile.id}`) || localStorage.getItem('theme') || 'light';
+        const profileTheme = localStorage.getItem(`theme_${profile.id}`) || localStorage.getItem('theme') || 'light';
         setProfileTheme(profileTheme, profile.id);
         Promise.all([
           getDocuments(profile.id).catch(() => MOCK_DOCUMENTS),
@@ -140,7 +148,7 @@ function AppInner() {
           profileCache.current[profile.id] = { documents: freshDocs, deadlines, accountant: acc };
           setIsLoading(false);
           // Pre-fetch degli altri profili in background per cache istantanea al switch
-          data.filter(p => p.id !== profile.id).forEach(p => {
+          completeProfiles.filter(p => p.id !== profile.id).forEach(p => {
             Promise.all([
               getDocuments(p.id).catch(() => []),
               getDeadlines(p.id).catch(() => []),
@@ -150,15 +158,16 @@ function AppInner() {
             });
           });
         });
-      } else if (data && data.length === 0) {
-        // Nuovo utente: prepara shell per l'onboarding senza salvare ancora nel DB
-        // Il paese sarà scelto dall'utente nello Step 0 — niente profilo Italia di default
+      } else if (data !== null) {
+        // Nuovo utente: trigger ha creato profilo con country=NULL (o trigger fallito).
+        // Non scrivere nulla nel DB — sarà handleOnboardingComplete a farlo dopo la scelta paese.
+        const triggerProfileId = data.length > 0 ? data[0].id : user.id;
         const shell: Profile = {
-          id: user.id,
+          id: triggerProfileId,
           name: user.user_metadata?.name || user.email?.split('@')[0] || 'Utente',
           email: user.email || '',
           jobType: '',
-          country: 'Italy' as Profile['country'],
+          country: 'Italy' as Profile['country'], // placeholder UI — verrà sovrascritto in onboarding
           currency: 'EUR' as Profile['currency'],
           avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`,
           regime: 'forfettario',
@@ -447,7 +456,8 @@ function AppInner() {
       regime: p.country === 'Spain' ? 'autonomo' : (p.regime ?? 'forfettario'),
     };
     try {
-      await updateProfile(normalized);
+      // INSERT esplicito — mai toccare profili esistenti con upsert
+      await createProfile(normalized);
     } catch (e) {
       console.error('[handleNewProfileComplete] Salvataggio fallito:', e);
       showToast(dbError(e), 'error');
