@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { TrendingUp, AlertTriangle, AlertCircle, Info, FileText, Receipt } from 'lucide-react';
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Profile, Document } from '../types';
+import { calculateSpanishTaxes } from '../lib/countries/es';
+import { getSpanishDeadlines } from '../data/deadlines-es';
 
 interface DashboardViewProps {
   profile: Profile;
@@ -302,7 +304,84 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
         )}
 
         {/* ── TASSE ── */}
-        {activeTab === 'taxes' && (
+        {activeTab === 'taxes' && profile.country === 'Spain' && (() => {
+          const spTaxes = calculateSpanishTaxes(income);
+          const spDeadlines = getSpanishDeadlines(displayYear);
+          const today = new Date();
+          const nextSpDeadline = spDeadlines
+            .map(d => ({ ...d, dateObj: new Date(d.date) }))
+            .filter(d => d.dateObj >= today)
+            .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime())[0] || null;
+          const daysToNext = nextSpDeadline ? Math.ceil((nextSpDeadline.dateObj.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
+          const barIRPF = income > 0 ? (spTaxes.irpf / income) * 100 : 0;
+          const barRETA = income > 0 ? (spTaxes.reta / income) * 100 : 0;
+          const barNetES = income > 0 ? (Math.max(0, spTaxes.netIncome) / income) * 100 : 0;
+          return (
+            <motion.div key="taxes" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }} className="px-6 space-y-4">
+              <div className={`rounded-3xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                <div className={`px-6 pt-5 pb-4 border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Estimación Fiscal {displayYear}</p>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>Estimación Directa</span>
+                  </div>
+                  <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{Math.round(spTaxes.irpf + spTaxes.reta).toLocaleString()}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">IRPF + RETA estimados</p>
+                </div>
+                <div className="px-6 py-4 space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-xs font-bold text-slate-400">Facturación bruta</span>
+                    <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>€{income.toLocaleString()}</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between">
+                      <span className="text-xs font-bold text-slate-400">IRPF estimado</span>
+                      <span className="text-xs font-bold text-rose-500">€{Math.round(spTaxes.irpf).toLocaleString()}</span>
+                    </div>
+                    <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                      <div className="bg-rose-400 h-full rounded-full" style={{ width: `${Math.min(barIRPF, 100)}%` }} />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between">
+                      <span className="text-xs font-bold text-slate-400">RETA anual</span>
+                      <span className="text-xs font-bold text-amber-500">€{Math.round(spTaxes.reta).toLocaleString()}</span>
+                    </div>
+                    <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                      <div className="bg-amber-400 h-full rounded-full" style={{ width: `${Math.min(barRETA, 100)}%` }} />
+                    </div>
+                  </div>
+                  <div className={`pt-3 border-t space-y-1.5 ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
+                    <div className="flex justify-between">
+                      <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Neto estimado</span>
+                      <span className={`text-sm font-bold ${spTaxes.netIncome >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>€{Math.round(spTaxes.netIncome).toLocaleString()}</span>
+                    </div>
+                    <div className={`w-full h-2 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                      <div className="bg-emerald-400 h-full rounded-full" style={{ width: `${Math.min(barNetES, 100)}%` }} />
+                    </div>
+                  </div>
+                  {income > 0 && (
+                    <div className={`pt-3 border-t flex items-start gap-2 ${darkMode ? 'border-slate-800 text-slate-400' : 'border-slate-50 text-slate-400'}`}>
+                      <Info size={13} className="mt-0.5 shrink-0" />
+                      <p className="text-[11px] leading-relaxed">Tipo efectivo: <span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{Math.round(spTaxes.effectiveRate * 100)}%</span></p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {nextSpDeadline && (
+                <div className={`rounded-3xl p-5 border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Próximo vencimiento</p>
+                  <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{nextSpDeadline.title}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {new Date(nextSpDeadline.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
+                    {daysToNext !== null && ` — faltan ${daysToNext} días`}
+                  </p>
+                </div>
+              )}
+            </motion.div>
+          );
+        })()}
+
+        {activeTab === 'taxes' && profile.country !== 'Spain' && (
           <motion.div key="taxes" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }} className="px-6">
             <div className={`rounded-3xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
               <div className={`px-6 pt-5 pb-4 border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>

@@ -1,0 +1,7 @@
+{
+  "dashboard": { "title": "Panel", "income": "Facturación", "expenses": "Gastos", "taxes": "Impuestos", "net": "Neto estimado" },
+  "documents": { "invoice": "Factura", "expense": "Gasto", "new_invoice": "Nueva factura", "new_expense": "Nuevo gasto" },
+  "profile": { "vat": "NIF", "iban": "IBAN", "regime": "Régimen fiscal", "country": "País" },
+  "calendar": { "deadlines": "Vencimientos fiscales", "add_all": "Añadir todos los vencimientos fiscales" },
+  "common": { "save": "Guardar", "cancel": "Cancelar", "delete": "Eliminar", "edit": "Editar", "total": "Total" }
+}

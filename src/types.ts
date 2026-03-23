@@ -1,5 +1,5 @@
 export type Currency = 'EUR' | 'USD' | 'GBP';
-export type Country = 'Italy' | 'USA' | 'UK' | 'Germany';
+export type Country = 'Italy' | 'USA' | 'UK' | 'Germany' | 'Spain';
 
 export interface Profile {
   id: string;

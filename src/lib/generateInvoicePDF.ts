@@ -11,6 +11,9 @@ const FORFETTARIO_NOTE =
   "Non soggetta ad IVA ai sensi dell'art. 1, co. 58, L. 190/2014. " +
   "Non soggetta a ritenuta d'acconto ai sensi dell'art. 1, co. 67, L. 190/2014.";
 
+const SPAIN_NOTE =
+  "Régimen especial de trabajadores autónomos. Sujeto a retención del IRPF según normativa vigente.";
+
 const MARCA_BOLLO_THRESHOLD = 77.47;
 const MARCA_BOLLO_AMOUNT = 2;
 const RITENUTA_RATE = 0.20;
@@ -21,6 +24,7 @@ function fmt(n: number) {
 }
 
 export function buildInvoicePDF(doc: Document, profile: Profile): jsPDF {
+  const isSpain = profile.country === 'Spain';
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
   const W = 210;
   const M = 16; // margin
@@ -32,46 +36,52 @@ export function buildInvoicePDF(doc: Document, profile: Profile): jsPDF {
   const primary: [number, number, number] = [79, 70, 229];
 
   // ─── Header ───────────────────────────────────────────────────────────────
-  // "FATTURA" top left
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(22);
   pdf.setTextColor(...black);
-  pdf.text('FATTURA', M, 18);
+  pdf.text(isSpain ? 'FACTURA' : 'FATTURA', M, 18);
 
   // Numero fattura top right
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(11);
   pdf.setTextColor(...grey);
-  pdf.text(`N° ${doc.invoiceNumber || '—'}`, R, 14, { align: 'right' });
+  const invoiceNum = isSpain
+    ? (() => {
+        const year = new Date(doc.date).getFullYear();
+        const num = (doc.invoiceNumber || '001').replace(/\D/g, '').padStart(3, '0');
+        return `F-${year}-${num}`;
+      })()
+    : `N° ${doc.invoiceNumber || '—'}`;
+  pdf.text(invoiceNum, R, 14, { align: 'right' });
 
   // Data
   pdf.setFontSize(9);
   pdf.text(
-    new Date(doc.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' }),
+    new Date(doc.date).toLocaleDateString(isSpain ? 'es-ES' : 'it-IT', { day: '2-digit', month: 'long', year: 'numeric' }),
     R, 20, { align: 'right' }
   );
 
   // Regime
   pdf.setFontSize(8);
   pdf.setTextColor(...grey);
-  pdf.text((profile.regime === 'ordinario' ? 'Regime Ordinario' : 'Regime Forfettario').toUpperCase(), M, 24);
+  pdf.text(isSpain ? 'ESTIMACIÓN DIRECTA SIMPLIFICADA' : (profile.regime === 'ordinario' ? 'Regime Ordinario' : 'Regime Forfettario').toUpperCase(), M, 24);
 
   // Divider
   pdf.setDrawColor(...lightGrey);
   pdf.setLineWidth(0.4);
   pdf.line(M, 28, R, 28);
 
-  // ─── Fornitore + Cliente ───────────────────────────────────────────────────
+  // ─── Fornitore + Cliente (Emisor + Receptor for Spain) ─────────────────────
   let y = 35;
   const colW = (R - M - 8) / 2;
   const col2 = M + colW + 8;
 
-  // Label FORNITORE
+  // Label FORNITORE / EMISOR
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(7);
   pdf.setTextColor(...grey);
-  pdf.text('FORNITORE', M, y);
-  pdf.text('CLIENTE', col2, y);
+  pdf.text(isSpain ? 'EMISOR' : 'FORNITORE', M, y);
+  pdf.text(isSpain ? 'RECEPTOR' : 'CLIENTE', col2, y);
 
   y += 6;
 
@@ -92,8 +102,8 @@ export function buildInvoicePDF(doc: Document, profile: Profile): jsPDF {
   // Righe fornitore
   const fornitoreLines: string[] = [];
   if (profile.address) fornitoreLines.push(profile.address);
-  if (profile.piva) fornitoreLines.push(`P.IVA: ${profile.piva}`);
-  if (profile.codiceFiscale) fornitoreLines.push(`C.F.: ${profile.codiceFiscale}`);
+  if (profile.piva) fornitoreLines.push(isSpain ? `NIF: ${profile.piva}` : `P.IVA: ${profile.piva}`);
+  if (!isSpain && profile.codiceFiscale) fornitoreLines.push(`C.F.: ${profile.codiceFiscale}`);
   if (profile.email) fornitoreLines.push(profile.email);
   if (profile.iban) fornitoreLines.push(`IBAN: ${profile.iban}`);
 
@@ -126,7 +136,8 @@ export function buildInvoicePDF(doc: Document, profile: Profile): jsPDF {
   const ivaRate = doc.ivaRate ?? 0;
   const rivalsaInps = doc.rivalsaInps ?? false;
   const ritenuta = doc.ritenuta ?? false;
-  const marcaBollo = !isOrdinario && (doc.marcaBollo ?? (doc.amount > MARCA_BOLLO_THRESHOLD));
+  // No marca da bollo for Spanish invoices
+  const marcaBollo = isSpain ? false : (!isOrdinario && (doc.marcaBollo ?? (doc.amount > MARCA_BOLLO_THRESHOLD)));
 
   const rivalsaAmount = rivalsaInps ? doc.amount * INPS_RATE : 0;
   const totaleImponibile = doc.amount + rivalsaAmount;
@@ -164,13 +175,19 @@ export function buildInvoicePDF(doc: Document, profile: Profile): jsPDF {
   const summaryX = W - M - 72;
   const summaryW = 72;
 
-  const summaryRows: [string, string, boolean][] = [
-    ['Imponibile', fmt(doc.amount), false],
-    ...(rivalsaInps ? [[`Rivalsa INPS (4%)`, `+ ${fmt(rivalsaAmount)}`, false] as [string, string, boolean]] : []),
-    ...(isOrdinario ? [[`IVA ${ivaRate}%`, `+ ${fmt(ivaAmount)}`, false] as [string, string, boolean]] : []),
-    ...(marcaBollo ? [['Marca da bollo', `+ ${fmt(MARCA_BOLLO_AMOUNT)}`, false] as [string, string, boolean]] : []),
-    ...(ritenuta ? [["Ritenuta d'acconto (20%)", `- ${fmt(ritenutaAmount)}`, false] as [string, string, boolean]] : []),
-  ];
+  const summaryRows: [string, string, boolean][] = isSpain
+    ? [
+        ['Base imponible', fmt(doc.amount), false],
+        ...(isOrdinario ? [[`Cuota IVA ${ivaRate}%`, `+ ${fmt(ivaAmount)}`, false] as [string, string, boolean]] : []),
+        ...(ritenuta ? [['Retención IRPF (15%)', `- ${fmt(ritenutaAmount)}`, false] as [string, string, boolean]] : []),
+      ]
+    : [
+        ['Imponibile', fmt(doc.amount), false],
+        ...(rivalsaInps ? [[`Rivalsa INPS (4%)`, `+ ${fmt(rivalsaAmount)}`, false] as [string, string, boolean]] : []),
+        ...(isOrdinario ? [[`IVA ${ivaRate}%`, `+ ${fmt(ivaAmount)}`, false] as [string, string, boolean]] : []),
+        ...(marcaBollo ? [['Marca da bollo', `+ ${fmt(MARCA_BOLLO_AMOUNT)}`, false] as [string, string, boolean]] : []),
+        ...(ritenuta ? [["Ritenuta d'acconto (20%)", `- ${fmt(ritenutaAmount)}`, false] as [string, string, boolean]] : []),
+      ];
 
   summaryRows.forEach(([label, value]) => {
     pdf.setFont('helvetica', 'normal');
@@ -190,15 +207,25 @@ export function buildInvoicePDF(doc: Document, profile: Profile): jsPDF {
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(10);
   pdf.setTextColor(...black);
-  pdf.text('TOTALE DA RICEVERE', summaryX, y + 5);
+  pdf.text(isSpain ? 'TOTAL A COBRAR' : 'TOTALE DA RICEVERE', summaryX, y + 5);
   pdf.setFontSize(11);
   pdf.setTextColor(...primary);
   pdf.text(fmt(totale), summaryX + summaryW, y + 5, { align: 'right' });
 
   y += 14;
 
-  // ─── Nota legale forfettario ───────────────────────────────────────────────
-  if (!isOrdinario) {
+  // ─── Nota legale ───────────────────────────────────────────────────────────
+  if (isSpain) {
+    pdf.setDrawColor(...lightGrey);
+    pdf.line(M, y, R, y);
+    y += 5;
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(7);
+    pdf.setTextColor(...grey);
+    const lines = pdf.splitTextToSize(SPAIN_NOTE, W - M * 2);
+    pdf.text(lines, M, y);
+    y += lines.length * 3.5 + 4;
+  } else if (!isOrdinario) {
     pdf.setDrawColor(...lightGrey);
     pdf.line(M, y, R, y);
     y += 5;
@@ -230,7 +257,10 @@ export function buildInvoicePDF(doc: Document, profile: Profile): jsPDF {
 
 export async function generateInvoicePDF(doc: Document, profile: Profile): Promise<void> {
   const pdf = buildInvoicePDF(doc, profile);
-  const fileName = `fattura_${doc.invoiceNumber?.replace('/', '-') || doc.id}_${profile.name.replace(/\s+/g, '_')}.pdf`;
+  const _isSpain = profile.country === 'Spain';
+  const fileName = _isSpain
+    ? `factura_${doc.invoiceNumber?.replace('/', '-') || doc.id}_${profile.name.replace(/\s+/g, '_')}.pdf`
+    : `fattura_${doc.invoiceNumber?.replace('/', '-') || doc.id}_${profile.name.replace(/\s+/g, '_')}.pdf`;
   const blob = pdf.output('blob');
   const file = new File([blob], fileName, { type: 'application/pdf' });
 

@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft, Search, X } from 'lucide-react';
-import { Deadline } from '../types';
+import { Deadline, Profile } from '../types';
+import { getSpanishDeadlines } from '../data/deadlines-es';
 
 function getScadenzeFiscali(year: number): Omit<Deadline, 'id'>[] {
   return [
@@ -21,9 +22,11 @@ interface CalendarViewProps {
   onDeleteDeadline: (id: string) => void;
   darkMode?: boolean;
   key?: string;
+  profile?: Profile;
 }
 
-const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDeadline, darkMode }: CalendarViewProps) => {
+const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDeadline, darkMode, profile }: CalendarViewProps) => {
+  const isSpain = profile?.country === 'Spain';
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [selectedDeadline, setSelectedDeadline] = useState<Deadline | null>(null);
@@ -37,7 +40,10 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const scadenzeFiscali = getScadenzeFiscali(selectedYear);
+  const scadenzeFiscaliRaw = isSpain
+    ? getSpanishDeadlines(selectedYear).map(s => ({ title: s.title, date: s.date, type: 'tax' as Deadline['type'] }))
+    : getScadenzeFiscali(selectedYear);
+  const scadenzeFiscali = scadenzeFiscaliRaw;
   const addedCount = scadenzeFiscali.filter(s => deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === selectedYear)).length;
   const hasFiscalDeadlines = addedCount === scadenzeFiscali.length;
   const partialFiscalDeadlines = addedCount > 0 && addedCount < scadenzeFiscali.length;

@@ -13,6 +13,32 @@ interface ProfileViewProps {
 }
 
 // ─── Validatori ───────────────────────────────────────────────────────────────
+const NIF_LETTERS = 'TRWAGMYFPDXBNJZSQVHLCKE';
+
+function validateNIF(nif: string): boolean {
+  if (!nif) return false;
+  const cleaned = nif.toUpperCase().trim();
+  if (!/^\d{8}[A-Z]$/.test(cleaned)) return false;
+  const number = parseInt(cleaned.slice(0, 8), 10);
+  const letter = cleaned[8];
+  return letter === NIF_LETTERS[number % 23];
+}
+
+function validateNIE(nie: string): boolean {
+  if (!nie) return false;
+  const cleaned = nie.toUpperCase().trim();
+  if (!/^[XYZ]\d{7}[A-Z]$/.test(cleaned)) return false;
+  const prefix = cleaned[0];
+  const replacement = prefix === 'X' ? '0' : prefix === 'Y' ? '1' : '2';
+  return validateNIF(replacement + cleaned.slice(1));
+}
+
+function validateIBAN_ES(iban: string): boolean {
+  if (!iban) return false;
+  const cleaned = iban.replace(/\s/g, '').toUpperCase();
+  return cleaned.startsWith('ES') && cleaned.length === 24;
+}
+
 function validateIBAN(v: string): string | null {
   if (!v) return null;
   const clean = v.replace(/\s+/g, '').toUpperCase();
@@ -54,12 +80,21 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     regime: activeProfile.regime || 'forfettario' as 'forfettario' | 'ordinario',
     coefficiente: activeProfile.coefficiente?.toString() || '',
     annoInizioAttivita: activeProfile.annoInizioAttivita?.toString() || '',
+    nie: '',
+    retaMensile: localStorage.getItem(`reta_${activeProfile.id}`) || '500',
   });
 
+  const isSpain = editData.country === 'Spain';
+
   const errors = {
-    iban: validateIBAN(editData.iban),
-    piva: validatePiva(editData.piva),
-    codiceFiscale: validateCF(editData.codiceFiscale),
+    iban: isSpain
+      ? (editData.iban && !validateIBAN_ES(editData.iban) ? 'IBAN spagnolo non valido (ES + 22 cifre)' : null)
+      : validateIBAN(editData.iban),
+    piva: isSpain
+      ? (editData.piva && !validateNIF(editData.piva) ? 'NIF non valido (8 cifre + lettera)' : null)
+      : validatePiva(editData.piva),
+    codiceFiscale: isSpain ? null : validateCF(editData.codiceFiscale),
+    nie: isSpain && editData.nie ? (!validateNIE(editData.nie) ? 'NIE non valido (X/Y/Z + 7 cifre + lettera)' : null) : null,
   };
   const hasErrors = Object.values(errors).some(Boolean);
 
@@ -67,6 +102,9 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     if (hasErrors) return;
     setIsSaving(true);
     try {
+      if (isSpain && editData.retaMensile) {
+        localStorage.setItem(`reta_${activeProfile.id}`, editData.retaMensile);
+      }
       await onUpdateProfile({
         ...activeProfile,
         ...editData,
@@ -145,7 +183,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Paese</label>
                       <select value={editData.country} onChange={e => setEditData({ ...editData, country: e.target.value as import('../types').Country })} className={inputClass()}>
-                        <option>Italy</option><option>USA</option><option>UK</option><option>Germany</option>
+                        <option>Italy</option><option>Spain</option><option>USA</option><option>UK</option><option>Germany</option>
                       </select>
                     </div>
                     <div className="space-y-1.5">
@@ -162,50 +200,96 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dati Fiscali</p>
                 </div>
                 <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Partita IVA</label>
-                    <input type="text" value={editData.piva} onChange={e => setEditData({ ...editData, piva: e.target.value })} placeholder="Es. 12345678901" className={inputClass(errors.piva)} />
-                    {errors.piva && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.piva}</p>}
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Codice Fiscale</label>
-                    <input type="text" value={editData.codiceFiscale} onChange={e => setEditData({ ...editData, codiceFiscale: e.target.value.toUpperCase() })} placeholder="Es. RSSMRA80A01H501Z" className={inputClass(errors.codiceFiscale)} />
-                    {errors.codiceFiscale && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.codiceFiscale}</p>}
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">IBAN</label>
-                    <input type="text" value={editData.iban} onChange={e => setEditData({ ...editData, iban: e.target.value.replace(/\s+/g, '').toUpperCase() })} placeholder="Es. IT60X0542811101000000123456" className={inputClass(errors.iban)} />
-                    {errors.iban && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.iban}</p>}
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Regime Fiscale</label>
-                    <div className={`p-1 rounded-2xl flex gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                      {(['forfettario', 'ordinario'] as const).map(r => (
-                        <button key={r} type="button" onClick={() => setEditData({ ...editData, regime: r })} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all capitalize ${editData.regime === r ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
-                          {r.charAt(0).toUpperCase() + r.slice(1)}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Categoria Attività</label>
-                    <select
-                      value={editData.coefficiente}
-                      onChange={e => setEditData({ ...editData, coefficiente: e.target.value })}
-                      className={inputClass()}
-                    >
-                      <option value="">Seleziona categoria...</option>
-                      <option value="86">Costruzioni e attività immobiliari — 86%</option>
-                      <option value="78">Professionisti (consulenti, designer, sviluppatori…) — 78%</option>
-                      <option value="67">Artigiani e altri servizi — 67%</option>
-                      <option value="62">Intermediari del commercio — 62%</option>
-                      <option value="40">Commercio e ristorazione — 40%</option>
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Anno Inizio Attività</label>
-                    <input type="number" min="2000" max={new Date().getFullYear()} value={editData.annoInizioAttivita} onChange={e => setEditData({ ...editData, annoInizioAttivita: e.target.value })} placeholder="Es. 2022" className={inputClass()} />
-                  </div>
+                  {isSpain ? (
+                    <>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">NIF</label>
+                        <input type="text" value={editData.piva} onChange={e => setEditData({ ...editData, piva: e.target.value.toUpperCase() })} placeholder="Es. 12345678A" className={inputClass(errors.piva)} />
+                        {errors.piva && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.piva}</p>}
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">NIE (opcional)</label>
+                        <input type="text" value={editData.nie} onChange={e => setEditData({ ...editData, nie: e.target.value.toUpperCase() })} placeholder="Es. X1234567A" className={inputClass(errors.nie)} />
+                        {errors.nie && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.nie}</p>}
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">IBAN</label>
+                        <input type="text" value={editData.iban} onChange={e => setEditData({ ...editData, iban: e.target.value.replace(/\s+/g, '').toUpperCase() })} placeholder="Es. ES9121000418450200051332" className={inputClass(errors.iban)} />
+                        {errors.iban && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.iban}</p>}
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Régimen Fiscal</label>
+                        <div className={`px-4 py-3 border rounded-xl text-sm ${darkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-600'}`}>
+                          Estimación directa simplificada
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Cuota RETA mensual</label>
+                        <select value={editData.retaMensile} onChange={e => setEditData({ ...editData, retaMensile: e.target.value })} className={inputClass()}>
+                          <option value="230">€ 230/mes</option>
+                          <option value="260">€ 260/mes</option>
+                          <option value="275">€ 275/mes</option>
+                          <option value="294">€ 294/mes</option>
+                          <option value="320">€ 320/mes</option>
+                          <option value="350">€ 350/mes</option>
+                          <option value="370">€ 370/mes</option>
+                          <option value="390">€ 390/mes</option>
+                          <option value="500">€ 500+/mes</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Año inicio actividad</label>
+                        <input type="number" min="2000" max={new Date().getFullYear()} value={editData.annoInizioAttivita} onChange={e => setEditData({ ...editData, annoInizioAttivita: e.target.value })} placeholder="Es. 2022" className={inputClass()} />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Partita IVA</label>
+                        <input type="text" value={editData.piva} onChange={e => setEditData({ ...editData, piva: e.target.value })} placeholder="Es. 12345678901" className={inputClass(errors.piva)} />
+                        {errors.piva && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.piva}</p>}
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Codice Fiscale</label>
+                        <input type="text" value={editData.codiceFiscale} onChange={e => setEditData({ ...editData, codiceFiscale: e.target.value.toUpperCase() })} placeholder="Es. RSSMRA80A01H501Z" className={inputClass(errors.codiceFiscale)} />
+                        {errors.codiceFiscale && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.codiceFiscale}</p>}
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">IBAN</label>
+                        <input type="text" value={editData.iban} onChange={e => setEditData({ ...editData, iban: e.target.value.replace(/\s+/g, '').toUpperCase() })} placeholder="Es. IT60X0542811101000000123456" className={inputClass(errors.iban)} />
+                        {errors.iban && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.iban}</p>}
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Regime Fiscale</label>
+                        <div className={`p-1 rounded-2xl flex gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                          {(['forfettario', 'ordinario'] as const).map(r => (
+                            <button key={r} type="button" onClick={() => setEditData({ ...editData, regime: r })} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all capitalize ${editData.regime === r ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
+                              {r.charAt(0).toUpperCase() + r.slice(1)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Categoria Attività</label>
+                        <select
+                          value={editData.coefficiente}
+                          onChange={e => setEditData({ ...editData, coefficiente: e.target.value })}
+                          className={inputClass()}
+                        >
+                          <option value="">Seleziona categoria...</option>
+                          <option value="86">Costruzioni e attività immobiliari — 86%</option>
+                          <option value="78">Professionisti (consulenti, designer, sviluppatori…) — 78%</option>
+                          <option value="67">Artigiani e altri servizi — 67%</option>
+                          <option value="62">Intermediari del commercio — 62%</option>
+                          <option value="40">Commercio e ristorazione — 40%</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Anno Inizio Attività</label>
+                        <input type="number" min="2000" max={new Date().getFullYear()} value={editData.annoInizioAttivita} onChange={e => setEditData({ ...editData, annoInizioAttivita: e.target.value })} placeholder="Es. 2022" className={inputClass()} />
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <button onClick={handleSaveEdit} disabled={hasErrors || isSaving} className={`w-full py-4 rounded-2xl font-bold shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${hasErrors ? 'bg-slate-200 text-slate-400 shadow-none cursor-not-allowed' : saveSuccess ? 'bg-emerald-500 text-white shadow-emerald-500/30' : 'bg-primary text-white shadow-primary/30'}`}>
@@ -263,12 +347,13 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
           </div>
           <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
             {[
-              { icon: Receipt, label: 'Partita IVA', value: activeProfile.piva || '—' },
-              { icon: User, label: 'Codice Fiscale', value: activeProfile.codiceFiscale || '—' },
+              { icon: Receipt, label: activeProfile.country === 'Spain' ? 'NIF' : 'Partita IVA', value: activeProfile.piva || '—' },
+              ...(activeProfile.country !== 'Spain' ? [{ icon: User, label: 'Codice Fiscale', value: activeProfile.codiceFiscale || '—' }] : []),
               { icon: MapPin, label: 'Indirizzo', value: activeProfile.address || '—' },
               { icon: CreditCard, label: 'IBAN', value: activeProfile.iban || '—' },
-              { icon: Briefcase, label: 'Regime', value: activeProfile.regime ? activeProfile.regime.charAt(0).toUpperCase() + activeProfile.regime.slice(1) : 'Forfettario' },
-              ...(activeProfile.coefficiente ? [{ icon: Receipt, label: 'Categoria', value: `${CATEGORIE_COEFFICIENTE[activeProfile.coefficiente] || activeProfile.coefficiente + '%'} (${activeProfile.coefficiente}%)` }] : []),
+              { icon: Briefcase, label: activeProfile.country === 'Spain' ? 'Régimen' : 'Regime', value: activeProfile.country === 'Spain' ? 'Estimación directa simplificada' : (activeProfile.regime ? activeProfile.regime.charAt(0).toUpperCase() + activeProfile.regime.slice(1) : 'Forfettario') },
+              ...(activeProfile.country !== 'Spain' && activeProfile.coefficiente ? [{ icon: Receipt, label: 'Categoria', value: `${CATEGORIE_COEFFICIENTE[activeProfile.coefficiente] || activeProfile.coefficiente + '%'} (${activeProfile.coefficiente}%)` }] : []),
+              ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'RETA mensual', value: `€${localStorage.getItem(`reta_${activeProfile.id}`) || '500'}/mes` }] : []),
             ].map(({ icon: Icon, label, value }, i, arr) => (
               <div key={label} className={`w-full p-4 flex items-center justify-between ${i < arr.length - 1 ? (darkMode ? 'border-b border-slate-800' : 'border-b border-slate-50') : ''}`}>
                 <div className="flex items-center gap-3">

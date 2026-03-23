@@ -1,0 +1,7 @@
+{
+  "dashboard": { "title": "Dashboard", "income": "Fatturato", "expenses": "Spese", "taxes": "Tasse", "net": "Netto stimato" },
+  "documents": { "invoice": "Fattura", "expense": "Spesa", "new_invoice": "Nuova fattura", "new_expense": "Nuova spesa" },
+  "profile": { "vat": "Partita IVA", "iban": "IBAN", "regime": "Regime fiscale", "country": "Paese" },
+  "calendar": { "deadlines": "Scadenze fiscali", "add_all": "Aggiungi tutte le scadenze fiscali" },
+  "common": { "save": "Salva", "cancel": "Annulla", "delete": "Elimina", "edit": "Modifica", "total": "Totale" }
+}
