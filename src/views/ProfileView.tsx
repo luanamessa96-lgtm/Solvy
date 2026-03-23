@@ -17,6 +17,7 @@ interface ProfileViewProps {
   profiles: Profile[];
   onSwitchProfile: (p: Profile) => void;
   onUpdateProfile: (p: Profile) => Promise<void> | void;
+  onAddProfile?: () => void;
   darkMode?: boolean;
   key?: string;
 }
@@ -72,7 +73,7 @@ function validateCF(v: string): string | null {
   return null;
 }
 
-const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile, darkMode }: ProfileViewProps) => {
+const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile, onAddProfile, darkMode }: ProfileViewProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -419,16 +420,23 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                 {activeProfile.id === p.id && <CheckCircle2 size={20} className="text-primary" />}
               </button>
             ))}
-            <div className={`w-full p-4 rounded-2xl border border-dashed flex items-center justify-between gap-2 text-sm font-bold ${darkMode ? 'border-slate-800 text-slate-600' : 'border-slate-200 text-slate-300'}`}>
-              <div className="flex items-center gap-2">
+            {activeProfile.isPro ? (
+              <button onClick={onAddProfile} className={`w-full p-4 rounded-2xl border border-dashed flex items-center gap-2 text-sm font-bold transition-all active:scale-[0.98] ${darkMode ? 'border-primary/40 text-primary hover:bg-primary/10' : 'border-primary/30 text-primary hover:bg-primary/5'}`}>
                 <Plus size={18} />
                 Aggiungi Profilo
+              </button>
+            ) : (
+              <div className={`w-full p-4 rounded-2xl border border-dashed flex items-center justify-between gap-2 text-sm font-bold ${darkMode ? 'border-slate-800 text-slate-600' : 'border-slate-200 text-slate-300'}`}>
+                <div className="flex items-center gap-2">
+                  <Plus size={18} />
+                  Aggiungi Profilo
+                </div>
+                <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-1 rounded-full">
+                  <Lock size={11} />
+                  <span className="text-[10px] font-bold uppercase tracking-wide">Pro</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-1 rounded-full">
-                <Lock size={11} />
-                <span className="text-[10px] font-bold uppercase tracking-wide">Pro</span>
-              </div>
-            </div>
+            )}
           </div>
         </motion.div>
       </motion.div>

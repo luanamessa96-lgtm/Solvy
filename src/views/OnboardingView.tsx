@@ -6,6 +6,7 @@ import { Profile } from '../types';
 interface OnboardingViewProps {
   profile: Profile;
   onComplete: (p: Profile) => void;
+  onCancel?: () => void;
   darkMode?: boolean;
 }
 
@@ -20,7 +21,7 @@ const CATEGORIE: { label: string; value: number }[] = [
 // Steps vary by country: 0=welcome, 'country'=country selection, 1-N=data steps, 'done'=done
 type OnboardingStep = 0 | 'country' | 1 | 2 | 3 | 'done';
 
-export default function OnboardingView({ profile, onComplete, darkMode }: OnboardingViewProps) {
+export default function OnboardingView({ profile, onComplete, onCancel, darkMode }: OnboardingViewProps) {
   const [step, setStep] = useState<OnboardingStep>(0);
   const [direction, setDirection] = useState(1);
 
@@ -202,6 +203,11 @@ export default function OnboardingView({ profile, onComplete, darkMode }: Onboar
                 <span className="text-slate-400 mt-0.5 shrink-0">🔒</span>
                 <p className="text-xs text-slate-400 leading-relaxed">Il paese fiscale non potrà essere modificato dopo la creazione. Puoi sempre creare un secondo profilo per un altro paese.</p>
               </div>
+              {onCancel && (
+                <button onClick={onCancel} className="text-sm text-slate-400 underline underline-offset-2 active:opacity-60">
+                  Annulla
+                </button>
+              )}
             </motion.div>
           )}
 

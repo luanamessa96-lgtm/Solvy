@@ -58,6 +58,7 @@ function AppInner() {
   };
   const darkMode = theme === 'dark' || theme === 'pro-dark';
   const [showOnboarding, setShowOnboarding] = useState<boolean>(() => !localStorage.getItem('onboardingComplete'));
+  const [isAddingProfile, setIsAddingProfile] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -411,6 +412,22 @@ function AppInner() {
     setShowOnboarding(false);
   };
 
+  const handleAddProfile = () => setIsAddingProfile(true);
+
+  const handleNewProfileComplete = async (p: Profile) => {
+    try {
+      await updateProfile(p);
+      setProfiles(prev => [...prev, p]);
+      setActiveProfile(p);
+      profileCache.current[p.id] = { documents: [], deadlines: [], accountant: null };
+      setDocuments([]);
+      setDeadlines([]);
+      setIsAddingProfile(false);
+    } catch (e) {
+      showToast(dbError(e), 'error');
+    }
+  };
+
   // Schermata di caricamento auth iniziale
   if (isAuthenticated === null) {
     return (
@@ -451,6 +468,21 @@ function AppInner() {
 
   if (showOnboarding) {
     return <OnboardingView profile={activeProfile} onComplete={handleOnboardingComplete} darkMode={darkMode} />;
+  }
+
+  if (isAddingProfile) {
+    const newProfileShell: Profile = {
+      id: crypto.randomUUID(),
+      name: '',
+      email: activeProfile.email,
+      jobType: '',
+      country: 'Italy' as Profile['country'],
+      currency: 'EUR' as Profile['currency'],
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`,
+      regime: 'forfettario',
+      isPro: true,
+    };
+    return <OnboardingView profile={newProfileShell} onComplete={handleNewProfileComplete} darkMode={darkMode} onCancel={() => setIsAddingProfile(false)} />;
   }
 
   const proGradient = theme === 'pro-light'
@@ -515,6 +547,7 @@ function AppInner() {
               profiles={profiles}
               onSwitchProfile={handleSwitchProfile}
               onUpdateProfile={handleUpdateProfile}
+              onAddProfile={handleAddProfile}
               darkMode={darkMode}
             />
           ) : isSettingsPage ? (
