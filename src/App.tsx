@@ -59,6 +59,7 @@ function AppInner() {
   const darkMode = theme === 'dark' || theme === 'pro-dark';
   const [showOnboarding, setShowOnboarding] = useState<boolean>(() => !localStorage.getItem('onboardingComplete'));
   const [isAddingProfile, setIsAddingProfile] = useState(false);
+  const [newProfileShell, setNewProfileShell] = useState<Profile | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -413,24 +414,39 @@ function AppInner() {
     setShowOnboarding(false);
   };
 
-  const handleAddProfile = () => setIsAddingProfile(true);
+  const handleAddProfile = () => {
+    const shell: Profile = {
+      id: crypto.randomUUID(),
+      name: '',
+      email: activeProfile.email,
+      jobType: '',
+      country: 'Italy' as Profile['country'],
+      currency: 'EUR' as Profile['currency'],
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`,
+      regime: 'forfettario',
+      isPro: true,
+    };
+    setNewProfileShell(shell);
+    setIsAddingProfile(true);
+  };
 
   const handleNewProfileComplete = async (p: Profile) => {
-    // Close onboarding immediately — optimistic UI
-    setIsAddingProfile(false);
+    // Save first — mirror della prima creazione profilo
+    try {
+      await updateProfile(p);
+    } catch (e) {
+      console.error('[handleNewProfileComplete] Salvataggio fallito:', e);
+      showToast(dbError(e), 'error');
+      return; // Tieni l'utente nell'onboarding
+    }
     setProfiles(prev => [...prev, p]);
     setActiveProfile(p);
     setDocuments([]);
     setDeadlines([]);
     setAccountant(MOCK_ACCOUNTANT);
     profileCache.current[p.id] = { documents: [], deadlines: [], accountant: null };
-    // Save to DB in background
-    try {
-      await updateProfile(p);
-    } catch (e) {
-      console.error('[handleNewProfileComplete] Salvataggio fallito:', e);
-      showToast(dbError(e), 'error');
-    }
+    setNewProfileShell(null);
+    setIsAddingProfile(false);
   };
 
   // Schermata di caricamento auth iniziale
@@ -475,19 +491,8 @@ function AppInner() {
     return <OnboardingView profile={activeProfile} onComplete={handleOnboardingComplete} darkMode={darkMode} />;
   }
 
-  if (isAddingProfile) {
-    const newProfileShell: Profile = {
-      id: crypto.randomUUID(),
-      name: '',
-      email: activeProfile.email,
-      jobType: '',
-      country: 'Italy' as Profile['country'],
-      currency: 'EUR' as Profile['currency'],
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`,
-      regime: 'forfettario',
-      isPro: true,
-    };
-    return <OnboardingView profile={newProfileShell} onComplete={handleNewProfileComplete} darkMode={darkMode} onCancel={() => setIsAddingProfile(false)} />;
+  if (isAddingProfile && newProfileShell) {
+    return <OnboardingView profile={newProfileShell} onComplete={handleNewProfileComplete} darkMode={darkMode} onCancel={() => { setIsAddingProfile(false); setNewProfileShell(null); }} />;
   }
 
   const proGradient = theme === 'pro-light'
