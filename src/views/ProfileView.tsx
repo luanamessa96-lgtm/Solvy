@@ -221,7 +221,6 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                       <div className={`${inputClass()} flex items-center gap-2 opacity-70 cursor-not-allowed`}>
                         <span>{editData.country === 'Spain' ? '🇪🇸' : '🇮🇹'}</span>
                         <span>{editData.country === 'Spain' ? 'Spagna' : 'Italia'}</span>
-                        <span className="ml-auto text-xs opacity-50">non modificabile</span>
                       </div>
                     </div>
                     <div className="space-y-1.5">
