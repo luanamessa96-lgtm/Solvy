@@ -392,8 +392,9 @@ function AppInner() {
       await updateProfile(p);
       showToast('Profilo salvato');
     } catch (e) {
+      const msg = (e as { message?: string })?.message ?? 'errore sconosciuto';
       console.error('[handleUpdateProfile] Salvataggio fallito:', e);
-      showToast('Errore nel salvataggio del profilo', 'error');
+      showToast(`Save error: ${msg}`, 'error');
     }
   };
 
