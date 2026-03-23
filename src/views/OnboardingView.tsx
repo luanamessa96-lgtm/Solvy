@@ -198,6 +198,10 @@ export default function OnboardingView({ profile, onComplete, darkMode }: Onboar
                   <ChevronRight size={20} className="ml-auto text-slate-300" />
                 </button>
               </div>
+              <div className="flex items-start gap-2 px-1">
+                <span className="text-slate-400 mt-0.5 shrink-0">🔒</span>
+                <p className="text-xs text-slate-400 leading-relaxed">Il paese fiscale non potrà essere modificato dopo la creazione. Puoi sempre creare un secondo profilo per un altro paese.</p>
+              </div>
             </motion.div>
           )}
 
