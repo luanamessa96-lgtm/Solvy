@@ -5,6 +5,7 @@ import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Profile, Document } from '../types';
 import { calculateSpanishTaxes } from '../lib/countries/es';
 import { getSpanishDeadlines } from '../data/deadlines-es';
+import { CountryBadge } from '../components/CountryBadge';
 
 interface DashboardViewProps {
   profile: Profile;
@@ -159,7 +160,10 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
       <div className="px-6 pt-6 pb-4 space-y-4">
         <motion.div variants={item} className="space-y-1">
           <h2 className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>Ciao, {(profile.name || '').split(' ')[0] || 'utente'}!</h2>
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{profile.country}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{profile.country}</p>
+            <CountryBadge country={profile.country} size="sm" />
+          </div>
         </motion.div>
 
         {/* Tab bar */}

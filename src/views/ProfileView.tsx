@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Globe, CreditCard, Briefcase, FileEdit, CheckCircle2, MapPin, Receipt, User, Lock } from 'lucide-react';
 import { Profile } from '../types';
+import { CountryBadge } from '../components/CountryBadge';
+import { setLanguageByCountry } from '../lib/i18n';
 
 interface ProfileViewProps {
   activeProfile: Profile;
@@ -67,6 +69,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [pendingCountry, setPendingCountry] = useState<{ from: string; to: string } | null>(null);
   const [editData, setEditData] = useState({
     name: activeProfile.name,
     email: activeProfile.email,
@@ -112,6 +115,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
         annoInizioAttivita: editData.annoInizioAttivita ? parseInt(editData.annoInizioAttivita) : undefined,
         iban: editData.iban || undefined,
       });
+      setLanguageByCountry(editData.country);
       setSaveSuccess(true);
       setTimeout(() => { setSaveSuccess(false); setIsEditing(false); }, 1000);
     } finally {
@@ -182,7 +186,16 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Paese</label>
-                      <select value={editData.country} onChange={e => setEditData({ ...editData, country: e.target.value as import('../types').Country })} className={inputClass()}>
+                      <select
+                        value={editData.country}
+                        onChange={e => {
+                          const newCountry = e.target.value as import('../types').Country;
+                          if (newCountry !== editData.country) {
+                            setPendingCountry({ from: editData.country, to: newCountry });
+                          }
+                        }}
+                        className={inputClass()}
+                      >
                         <option>Italy</option><option>Spain</option><option>USA</option><option>UK</option><option>Germany</option>
                       </select>
                     </div>
@@ -302,6 +315,36 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
         )}
       </AnimatePresence>
 
+      {/* Conferma cambio paese */}
+      {pendingCountry && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setPendingCountry(null)} />
+          <div className={`relative w-full max-w-sm rounded-[24px] overflow-hidden shadow-2xl p-6 space-y-4 ${darkMode ? 'bg-slate-900' : 'bg-white'}`}>
+            <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Cambio paese fiscale</h3>
+            <p className={`text-sm leading-relaxed ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+              Stai cambiando il paese fiscale da <strong>{pendingCountry.from}</strong> a <strong>{pendingCountry.to}</strong>. Tutti i calcoli, le scadenze e il formato fattura cambieranno. Vuoi continuare?
+            </p>
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={() => setPendingCountry(null)}
+                className={`flex-1 py-3 rounded-2xl font-bold text-sm transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}
+              >
+                Annulla
+              </button>
+              <button
+                onClick={() => {
+                  setEditData(prev => ({ ...prev, country: pendingCountry.to as import('../types').Country }));
+                  setPendingCountry(null);
+                }}
+                className="flex-1 py-3 rounded-2xl font-bold text-sm bg-primary text-white shadow-lg shadow-primary/30 transition-all active:scale-[0.98]"
+              >
+                Conferma
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-8 pb-24">
         <motion.div variants={item} className="flex flex-col items-center text-center space-y-4">
           <div className="relative group">
@@ -312,9 +355,12 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
               <FileEdit size={14} />
             </button>
           </div>
-          <div>
+          <div className="space-y-1.5">
             <h2 className={`text-xl font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>{activeProfile.name}</h2>
             <p className="text-sm text-slate-500">{activeProfile.jobType}</p>
+            <div className="flex justify-center">
+              <CountryBadge country={activeProfile.country} size="md" />
+            </div>
           </div>
         </motion.div>
 
