@@ -12,7 +12,7 @@ export interface Profile {
   address?: string;
   piva?: string;
   codiceFiscale?: string;
-  regime?: 'forfettario' | 'ordinario';
+  regime?: 'forfettario' | 'ordinario' | 'autonomo';
   coefficiente?: number;
   annoInizioAttivita?: number;
   iban?: string;

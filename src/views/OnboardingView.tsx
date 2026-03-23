@@ -6,7 +6,7 @@ import { profileStorage } from '../lib/supabase';
 
 interface OnboardingViewProps {
   profile: Profile;
-  onComplete: (p: Profile) => void;
+  onComplete: (p: Profile) => Promise<void>;
   onCancel?: () => void;
   darkMode?: boolean;
 }
@@ -25,6 +25,7 @@ type OnboardingStep = 0 | 'country' | 1 | 2 | 3 | 'done';
 export default function OnboardingView({ profile, onComplete, onCancel, darkMode }: OnboardingViewProps) {
   const [step, setStep] = useState<OnboardingStep>(0);
   const [direction, setDirection] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Country selection
   const [selectedCountry, setSelectedCountry] = useState<'Italy' | 'Spain'>('Italy');
@@ -52,7 +53,9 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
   const goNext = (nextStep: OnboardingStep) => { setDirection(1); setStep(nextStep); };
   const goBack = (prevStep: OnboardingStep) => { setDirection(-1); setStep(prevStep); };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     const isSpain = selectedCountry === 'Spain';
     const updated: Profile = {
       ...profile,
@@ -82,7 +85,11 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
       profileStorage.set(`reta_${profile.id}`, retaMensile);
     }
     localStorage.setItem('onboardingComplete', 'true');
-    onComplete(updated);
+    try {
+      await onComplete(updated);
+    } catch {
+      setIsSubmitting(false);
+    }
   };
 
   const ic = `w-full px-4 py-3.5 border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400 transition-colors ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`;
@@ -448,8 +455,8 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                   ))}
                 </div>
               </div>
-              <button onClick={handleComplete} className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-base shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">
-                Vai alla Dashboard
+              <button onClick={handleComplete} disabled={isSubmitting} className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-base shadow-xl shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+                {isSubmitting ? 'Salvataggio…' : 'Vai alla Dashboard'}
               </button>
             </motion.div>
           )}

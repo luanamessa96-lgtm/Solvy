@@ -151,20 +151,20 @@ function AppInner() {
           });
         });
       } else if (data && data.length === 0) {
-        // Nuovo utente: crea profilo reale dall'account Supabase
-        const newProfile: Profile = {
+        // Nuovo utente: prepara shell per l'onboarding senza salvare ancora nel DB
+        // Il paese sarà scelto dall'utente nello Step 0 — niente profilo Italia di default
+        const shell: Profile = {
           id: user.id,
           name: user.user_metadata?.name || user.email?.split('@')[0] || 'Utente',
           email: user.email || '',
-          jobType: 'Freelance',
+          jobType: '',
           country: 'Italy' as Profile['country'],
           currency: 'EUR' as Profile['currency'],
           avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`,
           regime: 'forfettario',
         };
-        await updateProfile(newProfile).catch(() => {});
-        setProfiles([newProfile]);
-        setActiveProfile(newProfile);
+        setProfiles([shell]);
+        setActiveProfile(shell);
         setDocuments([]);
         setDeadlines([]);
         localStorage.removeItem('onboardingComplete');
@@ -406,12 +406,21 @@ function AppInner() {
     window.location.reload();
   };
 
-  const handleOnboardingComplete = async (p: Profile) => {
-    setActiveProfile(p);
-    setProfiles(prev => prev.map(x => x.id === p.id ? p : x));
+  const handleOnboardingComplete = async (p: Profile): Promise<void> => {
+    const normalized: Profile = {
+      ...p,
+      regime: p.country === 'Spain' ? 'autonomo' : (p.regime ?? 'forfettario'),
+    };
+    setActiveProfile(normalized);
+    setProfiles(prev => prev.map(x => x.id === normalized.id ? normalized : x));
     // Refresh session before saving — previene 401 se la sessione è scaduta durante l'onboarding
     await supabase.auth.refreshSession().catch(() => {});
-    try { await updateProfile(p); } catch (e) { showToast(dbError(e), 'error'); }
+    try {
+      await updateProfile(normalized);
+    } catch (e) {
+      showToast(dbError(e), 'error');
+      throw e;
+    }
     localStorage.setItem('onboardingComplete', 'true');
     setShowOnboarding(false);
   };
@@ -432,21 +441,24 @@ function AppInner() {
     setIsAddingProfile(true);
   };
 
-  const handleNewProfileComplete = async (p: Profile) => {
-    // Save first — mirror della prima creazione profilo
+  const handleNewProfileComplete = async (p: Profile): Promise<void> => {
+    const normalized: Profile = {
+      ...p,
+      regime: p.country === 'Spain' ? 'autonomo' : (p.regime ?? 'forfettario'),
+    };
     try {
-      await updateProfile(p);
+      await updateProfile(normalized);
     } catch (e) {
       console.error('[handleNewProfileComplete] Salvataggio fallito:', e);
       showToast(dbError(e), 'error');
-      return; // Tieni l'utente nell'onboarding
+      throw e; // Tieni l'utente nell'onboarding per riprovare
     }
-    setProfiles(prev => [...prev, p]);
-    setActiveProfile(p);
+    setProfiles(prev => [...prev, normalized]);
+    setActiveProfile(normalized);
     setDocuments([]);
     setDeadlines([]);
     setAccountant(MOCK_ACCOUNTANT);
-    profileCache.current[p.id] = { documents: [], deadlines: [], accountant: null };
+    profileCache.current[normalized.id] = { documents: [], deadlines: [], accountant: null };
     setNewProfileShell(null);
     setIsAddingProfile(false);
   };
