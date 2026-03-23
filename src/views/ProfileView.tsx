@@ -4,6 +4,7 @@ import { Plus, Globe, CreditCard, Briefcase, FileEdit, CheckCircle2, MapPin, Rec
 import { Profile } from '../types';
 import { CountryBadge } from '../components/CountryBadge';
 import { setLanguageByCountry } from '../lib/i18n';
+import { profileStorage } from '../lib/supabase';
 
 // Fields that exist in the Supabase profiles table schema
 const DB_PROFILE_FIELDS: (keyof Profile)[] = [
@@ -91,7 +92,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     coefficiente: activeProfile.coefficiente?.toString() || '',
     annoInizioAttivita: activeProfile.annoInizioAttivita?.toString() || '',
     nie: '',
-    retaMensile: localStorage.getItem(`reta_${activeProfile.id}`) || '500',
+    retaMensile: profileStorage.get(`reta_${activeProfile.id}`) || '500',
   });
 
   const isSpain = editData.country === 'Spain';
@@ -118,10 +119,10 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     try {
       // Save localStorage-only fields separately (not in Supabase schema)
       if (isSpain && editData.retaMensile) {
-        localStorage.setItem(`reta_${activeProfile.id}`, editData.retaMensile);
+        profileStorage.set(`reta_${activeProfile.id}`, editData.retaMensile);
       }
       if (editData.nie) {
-        localStorage.setItem(`nie_${activeProfile.id}`, editData.nie);
+        profileStorage.set(`nie_${activeProfile.id}`, editData.nie);
       }
 
       // Build a clean profile object with only valid DB fields (no nie, no retaMensile)
@@ -396,7 +397,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
               { icon: CreditCard, label: 'IBAN', value: activeProfile.iban || '—' },
               { icon: Briefcase, label: activeProfile.country === 'Spain' ? 'Régimen' : 'Regime', value: activeProfile.country === 'Spain' ? 'Estimación directa simplificada' : (activeProfile.regime ? activeProfile.regime.charAt(0).toUpperCase() + activeProfile.regime.slice(1) : 'Forfettario') },
               ...(activeProfile.country !== 'Spain' && activeProfile.coefficiente ? [{ icon: Receipt, label: 'Categoria', value: `${CATEGORIE_COEFFICIENTE[activeProfile.coefficiente] || activeProfile.coefficiente + '%'} (${activeProfile.coefficiente}%)` }] : []),
-              ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'RETA mensual', value: `€${localStorage.getItem(`reta_${activeProfile.id}`) || '500'}/mes` }] : []),
+              ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'RETA mensual', value: `€${profileStorage.get(`reta_${activeProfile.id}`) || '500'}/mes` }] : []),
             ].map(({ icon: Icon, label, value }, i, arr) => (
               <div key={label} className={`w-full p-4 flex items-center justify-between ${i < arr.length - 1 ? (darkMode ? 'border-b border-slate-800' : 'border-b border-slate-50') : ''}`}>
                 <div className="flex items-center gap-3">

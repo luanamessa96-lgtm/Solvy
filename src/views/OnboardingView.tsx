@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, ChevronLeft, Info } from 'lucide-react';
 import { Profile } from '../types';
+import { profileStorage } from '../lib/supabase';
 
 interface OnboardingViewProps {
   profile: Profile;
@@ -75,10 +76,10 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
       }),
     };
     if (isSpain && nie) {
-      localStorage.setItem(`nie_${profile.id}`, nie);
+      profileStorage.set(`nie_${profile.id}`, nie);
     }
     if (isSpain && retaMensile) {
-      localStorage.setItem(`reta_${profile.id}`, retaMensile);
+      profileStorage.set(`reta_${profile.id}`, retaMensile);
     }
     localStorage.setItem('onboardingComplete', 'true');
     onComplete(updated);

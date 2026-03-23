@@ -34,6 +34,32 @@ const hybridStorage = {
   },
 };
 
+// Persistent storage for profile-specific fields not in Supabase schema (nie, retaMensile)
+// Uses same hybrid localStorage+cookie pattern as session storage to survive iOS PWA background
+export const profileStorage = {
+  get: (key: string): string | null => {
+    const lsValue = localStorage.getItem(key);
+    if (lsValue) return lsValue;
+    const ck = 'ps_' + key.replace(/[^a-zA-Z0-9]/g, '_');
+    const match = document.cookie.match(new RegExp('(^| )' + ck + '=([^;]+)'));
+    if (match) {
+      const value = decodeURIComponent(match[2]);
+      localStorage.setItem(key, value);
+      return value;
+    }
+    return null;
+  },
+  set: (key: string, value: string): void => {
+    localStorage.setItem(key, value);
+    const ck = 'ps_' + key.replace(/[^a-zA-Z0-9]/g, '_');
+    try {
+      document.cookie = `${ck}=${encodeURIComponent(value)}; path=/; max-age=31536000; SameSite=Lax`;
+    } catch (e) {
+      console.error('[profileStorage] Cookie write failed:', e);
+    }
+  },
+};
+
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     storage: hybridStorage,
