@@ -123,7 +123,7 @@ export async function getProfiles(userId: string, userEmail?: string): Promise<P
     coefficiente: p.coefficiente,
     annoInizioAttivita: p.anno_inizio_attivita,
     iban: p.iban,
-    isPro: p.is_pro ?? false,
+    isPro: true, // TODO: rimuovere — forzato per test Pro (ripristinare con: p.is_pro ?? false)
   }));
 }
 
