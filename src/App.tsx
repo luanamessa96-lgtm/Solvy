@@ -415,15 +415,19 @@ function AppInner() {
   const handleAddProfile = () => setIsAddingProfile(true);
 
   const handleNewProfileComplete = async (p: Profile) => {
+    // Close onboarding immediately — optimistic UI
+    setIsAddingProfile(false);
+    setProfiles(prev => [...prev, p]);
+    setActiveProfile(p);
+    setDocuments([]);
+    setDeadlines([]);
+    setAccountant(MOCK_ACCOUNTANT);
+    profileCache.current[p.id] = { documents: [], deadlines: [], accountant: null };
+    // Save to DB in background
     try {
       await updateProfile(p);
-      setProfiles(prev => [...prev, p]);
-      setActiveProfile(p);
-      profileCache.current[p.id] = { documents: [], deadlines: [], accountant: null };
-      setDocuments([]);
-      setDeadlines([]);
-      setIsAddingProfile(false);
     } catch (e) {
+      console.error('[handleNewProfileComplete] Salvataggio fallito:', e);
       showToast(dbError(e), 'error');
     }
   };

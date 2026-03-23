@@ -41,6 +41,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
   const [address, setAddress] = useState('');
 
   // Spain fields
+  const [taxIdType, setTaxIdType] = useState<'nif' | 'nie'>('nif');
   const [nif, setNif] = useState('');
   const [nie, setNie] = useState('');
   const [retaMensile, setRetaMensile] = useState('500');
@@ -324,15 +325,23 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                 <p className="text-sm text-slate-500">Appariranno sulle tue fatture. Puoi aggiungerli in seguito dal Profilo.</p>
               </div>
               <div className="space-y-4 flex-1">
-                <div className="space-y-1.5">
-                  <label className={lc}>NIF (Número de Identificación Fiscal)</label>
-                  <input type="text" value={nif} onChange={e => setNif(e.target.value.toUpperCase())} placeholder="Es. 12345678A" className={ic} />
-                  <HelpText text="8 cifre + lettera. Lo trovi sul tuo DNI o NIE." />
-                </div>
-                <div className="space-y-1.5">
-                  <label className={lc}>NIE (Número de Identidad de Extranjero) — opcional</label>
-                  <input type="text" value={nie} onChange={e => setNie(e.target.value.toUpperCase())} placeholder="Es. X1234567A" className={ic} />
-                  <HelpText text="Solo per stranieri residenti in Spagna." />
+                <div className="space-y-2">
+                  <label className={lc}>Tipo documento fiscale</label>
+                  <div className={`flex rounded-xl p-1 gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                    <button type="button" onClick={() => setTaxIdType('nif')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${taxIdType === 'nif' ? 'bg-primary text-white shadow' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>NIF</button>
+                    <button type="button" onClick={() => setTaxIdType('nie')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${taxIdType === 'nie' ? 'bg-primary text-white shadow' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>NIE</button>
+                  </div>
+                  {taxIdType === 'nif' ? (
+                    <div className="space-y-1.5">
+                      <input type="text" value={nif} onChange={e => { setNif(e.target.value.toUpperCase()); setNie(''); }} placeholder="Es. 12345678A" className={ic} />
+                      <HelpText text="8 cifre + lettera. Per cittadini spagnoli." />
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      <input type="text" value={nie} onChange={e => { setNie(e.target.value.toUpperCase()); setNif(''); }} placeholder="Es. X1234567A" className={ic} />
+                      <HelpText text="X/Y/Z + 7 cifre + lettera. Per stranieri residenti in Spagna." />
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <label className={lc}>Cuota RETA mensual</label>
