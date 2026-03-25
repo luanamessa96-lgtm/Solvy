@@ -243,6 +243,19 @@ function AppInner() {
     };
   }, [isAuthenticated, activeProfile.id]);
 
+  // Mostra feedback dopo redirect Stripe
+  useEffect(() => {
+    if (isLoading) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('checkout') === 'success') {
+      showToast('Benvenuto in Solvy Pro! Il tuo abbonamento è attivo.', 'success');
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (params.get('checkout') === 'cancelled') {
+      showToast('Pagamento annullato.', 'error');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [isLoading]);
+
   useEffect(() => { localStorage.setItem('theme', theme); }, [theme]);
   useEffect(() => {
     localStorage.setItem('activeProfileId', activeProfile.id);
@@ -444,7 +457,7 @@ function AppInner() {
       currency: 'EUR' as Profile['currency'],
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`,
       regime: 'forfettario',
-      isPro: true,
+      isPro: activeProfile.isPro ?? false,
     };
     setNewProfileShell(shell);
     setIsAddingProfile(true);

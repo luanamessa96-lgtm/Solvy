@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Sun, Moon, Sparkles, Lock, Languages } from 'lucide-react';
+import PaywallModal from '../components/modals/PaywallModal';
 
 interface SettingsViewProps {
   theme: string;
@@ -10,6 +12,7 @@ interface SettingsViewProps {
 
 const SettingsView = ({ theme, setTheme, isPro }: SettingsViewProps) => {
   const darkMode = theme === 'dark' || theme === 'pro-dark';
+  const [isPaywallOpen, setIsPaywallOpen] = useState(false);
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.15 } } };
   const item = { hidden: { opacity: 0 }, show: { opacity: 1 } };
@@ -22,6 +25,7 @@ const SettingsView = ({ theme, setTheme, isPro }: SettingsViewProps) => {
   ];
 
   return (
+    <>
     <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-8 pb-24">
       <motion.div variants={item} className="space-y-4">
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Aspetto</p>
@@ -33,7 +37,7 @@ const SettingsView = ({ theme, setTheme, isPro }: SettingsViewProps) => {
             return (
               <button
                 key={t.id}
-                onClick={() => !locked && setTheme(t.id)}
+                onClick={() => { if (locked) { setIsPaywallOpen(true); return; } setTheme(t.id); }}
                 className={`relative flex items-center justify-center gap-2 py-3 rounded-2xl transition-all active:scale-95 ${
                   isActive
                     ? t.pro
@@ -82,6 +86,8 @@ const SettingsView = ({ theme, setTheme, isPro }: SettingsViewProps) => {
         </div>
       </motion.div>
     </motion.div>
+    <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} darkMode={darkMode} />
+    </>
   );
 };
 

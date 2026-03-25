@@ -147,6 +147,7 @@ export async function createProfile(profile: Profile): Promise<void> {
       coefficiente: profile.coefficiente,
       anno_inizio_attivita: profile.annoInizioAttivita,
       iban: profile.iban,
+      is_pro: profile.isPro ?? false,
     });
 
   if (error) throw error;
