@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Check, Sparkles } from 'lucide-react';
+import { X, Check, Sparkles, Loader2 } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 interface PaywallModalProps {
   isOpen: boolean;
@@ -8,17 +10,70 @@ interface PaywallModalProps {
 }
 
 const features = [
-  'Temi glassmorphism esclusivi (Light & Dark Pro)',
-  'Libreria media con UI premium',
+  'Fatture illimitate',
+  'Profili multipli illimitati',
   'Clienti ricorrenti',
-  'Scadenze con descrizione personalizzata',
-  'Export avanzato per il commercialista',
-  'Supporto prioritario',
+  'Preventivi convertibili in fattura',
+  'Export completo per il commercialista',
+  'Report avanzati',
+  'Promemoria pagamento automatici',
+  'OCR scontrini',
+  'Temi glassmorphism (Pro Light & Dark)',
 ];
 
-export default function PaywallModal({ isOpen, onClose, darkMode }: PaywallModalProps) {
-  const handleUpgrade = () => {
-    window.location.href = 'mailto:luanamessa96@gmail.com?subject=Richiesta%20upgrade%20Pro&body=Ciao%2C%20vorrei%20passare%20al%20piano%20Pro!';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+
+export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
+  const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const priceMonthly = '€7,99';
+  const priceYearly = '€59,99';
+  const priceYearlyMonthly = '€5,00';
+
+  const handleUpgrade = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setError('Devi essere autenticato per procedere.');
+        return;
+      }
+
+      const priceId = billing === 'monthly'
+        ? import.meta.env.VITE_STRIPE_PRICE_MONTHLY
+        : import.meta.env.VITE_STRIPE_PRICE_YEARLY;
+
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/create-checkout-session`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            price_id: priceId,
+            success_url: `${window.location.origin}/?checkout=success`,
+            cancel_url: `${window.location.origin}/?checkout=cancelled`,
+          }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        throw new Error(data.error ?? 'Errore nel creare la sessione di pagamento.');
+      }
+
+      window.location.href = data.url;
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -46,7 +101,10 @@ export default function PaywallModal({ isOpen, onClose, darkMode }: PaywallModal
 
             <div className="relative z-10 p-8 overflow-y-auto max-h-[90vh]">
               {/* Close */}
-              <button onClick={onClose} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors">
+              <button
+                onClick={onClose}
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+              >
                 <X size={16} />
               </button>
 
@@ -56,8 +114,35 @@ export default function PaywallModal({ isOpen, onClose, darkMode }: PaywallModal
               </div>
 
               {/* Titolo */}
-              <h2 className="text-2xl font-bold text-white mb-1">FreelanceApp Pro</h2>
+              <h2 className="text-2xl font-bold text-white mb-1">Solvy Pro</h2>
               <p className="text-slate-400 text-sm mb-6">Sblocca tutte le funzionalità premium</p>
+
+              {/* Toggle mensile / annuale */}
+              <div className="flex items-center bg-white/5 rounded-2xl p-1 mb-6">
+                <button
+                  onClick={() => setBilling('monthly')}
+                  className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${
+                    billing === 'monthly'
+                      ? 'bg-primary text-white shadow'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Mensile
+                </button>
+                <button
+                  onClick={() => setBilling('yearly')}
+                  className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all relative ${
+                    billing === 'yearly'
+                      ? 'bg-primary text-white shadow'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Annuale
+                  <span className="absolute -top-2 -right-1 bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                    -37%
+                  </span>
+                </button>
+              </div>
 
               {/* Features */}
               <div className="space-y-3 mb-8">
@@ -72,20 +157,47 @@ export default function PaywallModal({ isOpen, onClose, darkMode }: PaywallModal
               </div>
 
               {/* Prezzo */}
-              <div className="flex items-end gap-1 mb-6">
-                <span className="text-4xl font-bold text-white">€4.99</span>
-                <span className="text-slate-400 text-sm mb-1">/mese</span>
+              <div className="mb-6">
+                {billing === 'monthly' ? (
+                  <div className="flex items-end gap-1">
+                    <span className="text-4xl font-bold text-white">{priceMonthly}</span>
+                    <span className="text-slate-400 text-sm mb-1">/mese</span>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-end gap-1">
+                      <span className="text-4xl font-bold text-white">{priceYearly}</span>
+                      <span className="text-slate-400 text-sm mb-1">/anno</span>
+                    </div>
+                    <p className="text-green-400 text-sm mt-1">
+                      Solo {priceYearlyMonthly}/mese — risparmi €35,88
+                    </p>
+                  </div>
+                )}
               </div>
+
+              {/* Errore */}
+              {error && (
+                <p className="text-red-400 text-xs mb-4 text-center">{error}</p>
+              )}
 
               {/* CTA */}
               <button
                 onClick={handleUpgrade}
-                className="w-full py-4 rounded-2xl bg-primary font-bold text-white text-sm shadow-xl shadow-primary/30 active:scale-[0.98] transition-all hover:bg-primary/90"
+                disabled={loading}
+                className="w-full py-4 rounded-2xl bg-primary font-bold text-white text-sm shadow-xl shadow-primary/30 active:scale-[0.98] transition-all hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Passa a Pro
+                {loading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Reindirizzamento…
+                  </>
+                ) : (
+                  'Passa a Pro'
+                )}
               </button>
               <p className="text-center text-xs text-slate-500 mt-3">
-                Scrivi una email e ti attiviamo entro 24h
+                Pagamento sicuro via Stripe · Cancella quando vuoi
               </p>
             </div>
           </motion.div>
