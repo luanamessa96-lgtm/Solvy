@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TrendingUp, AlertTriangle, AlertCircle, Info, FileText, Receipt } from 'lucide-react';
+import PaywallModal from '../components/modals/PaywallModal';
+import { useProStatus } from '../hooks/useProStatus';
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Profile, Document } from '../types';
 import { calculateSpanishTaxes } from '../lib/countries/es';
@@ -64,6 +66,8 @@ type DashTab = 'overview' | 'taxes' | 'expenses';
 const DashboardView = ({ profile, income, expenses, paidPercentage, documents, darkMode, onProfileClick, onAddDocumentClick }: DashboardViewProps) => {
   const displayYear = new Date().getFullYear();
   const [activeTab, setActiveTab] = useState<DashTab>('overview');
+  const [isPaywallOpen, setIsPaywallOpen] = useState(false);
+  const isPro = useProStatus(profile);
 
   const container = {
     hidden: { opacity: 0 },
@@ -171,10 +175,14 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
           {tabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === tab.id ? (darkMode ? 'bg-slate-800 text-white shadow-sm' : 'bg-white text-slate-900 shadow-sm') : 'text-slate-400'}`}
+              onClick={() => {
+                if (tab.id === 'taxes' && !isPro) { setIsPaywallOpen(true); return; }
+                setActiveTab(tab.id);
+              }}
+              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all relative ${activeTab === tab.id ? (darkMode ? 'bg-slate-800 text-white shadow-sm' : 'bg-white text-slate-900 shadow-sm') : 'text-slate-400'}`}
             >
               {tab.label}
+              {tab.id === 'taxes' && !isPro && <span className="absolute top-0.5 right-1 text-[8px] font-black text-primary/60 uppercase">Pro</span>}
             </button>
           ))}
         </motion.div>
@@ -561,6 +569,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
           </motion.div>
         )}
       </AnimatePresence>
+      <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} darkMode={darkMode} />
     </motion.div>
   );
 };

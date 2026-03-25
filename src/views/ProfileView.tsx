@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Globe, CreditCard, Briefcase, FileEdit, CheckCircle2, MapPin, Receipt, User, Lock } from 'lucide-react';
 import { Profile } from '../types';
+import PaywallModal from '../components/modals/PaywallModal';
 import { CountryBadge } from '../components/CountryBadge';
 import { setLanguageByCountry } from '../lib/i18n';
 import { profileStorage } from '../lib/supabase';
@@ -76,6 +77,7 @@ function validateCF(v: string): string | null {
 
 const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile, onAddProfile, darkMode }: ProfileViewProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [taxIdType, setTaxIdType] = useState<'nif' | 'nie'>(() =>
@@ -442,7 +444,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                 Aggiungi Profilo
               </button>
             ) : (
-              <div className={`w-full p-4 rounded-2xl border border-dashed flex items-center justify-between gap-2 text-sm font-bold ${darkMode ? 'border-slate-800 text-slate-600' : 'border-slate-200 text-slate-300'}`}>
+              <button onClick={() => setIsPaywallOpen(true)} className={`w-full p-4 rounded-2xl border border-dashed flex items-center justify-between gap-2 text-sm font-bold transition-all active:scale-[0.98] ${darkMode ? 'border-slate-800 text-slate-600 hover:border-primary/30' : 'border-slate-200 text-slate-300 hover:border-primary/30'}`}>
                 <div className="flex items-center gap-2">
                   <Plus size={18} />
                   Aggiungi Profilo
@@ -451,11 +453,12 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                   <Lock size={11} />
                   <span className="text-[10px] font-bold uppercase tracking-wide">Pro</span>
                 </div>
-              </div>
+              </button>
             )}
           </div>
         </motion.div>
       </motion.div>
+      <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} darkMode={darkMode} />
     </>
   );
 };

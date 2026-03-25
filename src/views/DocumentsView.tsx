@@ -8,6 +8,8 @@ import CreateExpenseModal from '../components/modals/CreateExpenseModal';
 import SearchOverlay from '../components/modals/SearchOverlay';
 import ExportModal from '../components/modals/ExportModal';
 import { generateInvoicePDF } from '../lib/generateInvoicePDF';
+import PaywallModal from '../components/modals/PaywallModal';
+import { useProStatus } from '../hooks/useProStatus';
 
 interface DocumentsViewProps {
   documents: Document[];
@@ -24,6 +26,8 @@ interface DocumentsViewProps {
 
 const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, onUpdateProfile, accountant, profile, darkMode, onMediaLibraryClick }: DocumentsViewProps) => {
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isPaywallOpen, setIsPaywallOpen] = useState(false);
+  const isPro = useProStatus(profile);
   const [isChoiceOpen, setIsChoiceOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isExpenseOpen, setIsExpenseOpen] = useState(false);
@@ -293,9 +297,10 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   </button>
                 )}
                 {selectedDoc.type === 'invoice' && (
-                  <button onClick={() => { generateInvoicePDF(selectedDoc, profile); setSelectedDoc(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-primary/10 border-primary/20' : 'bg-primary/5 border-primary/10'}`}>
+                  <button onClick={() => { if (!isPro) { setIsPaywallOpen(true); return; } generateInvoicePDF(selectedDoc, profile); setSelectedDoc(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-primary/10 border-primary/20' : 'bg-primary/5 border-primary/10'}`}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary text-white"><Download size={18} /></div>
                     <span className="font-bold text-primary">Scarica PDF Fattura</span>
+                    {!isPro && <span className="ml-auto text-[10px] font-bold text-primary/60 uppercase tracking-wide">Pro</span>}
                   </button>
                 )}
                 {selectedDoc.type === 'invoice' && (
@@ -485,6 +490,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
       </AnimatePresence>
 
       <ExportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} documents={documents} selectedYear={selectedYear} profile={profile} accountant={accountant} darkMode={darkMode} />
+      <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} darkMode={darkMode} />
 
     </motion.div>
   );

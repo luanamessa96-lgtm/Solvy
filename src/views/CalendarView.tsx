@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft, Search, X } from 'lucide-react';
 import { Deadline, Profile } from '../types';
 import { getSpanishDeadlines } from '../data/deadlines-es';
+import PaywallModal from '../components/modals/PaywallModal';
+import { useProStatus } from '../hooks/useProStatus';
 
 function getScadenzeFiscali(year: number): Omit<Deadline, 'id'>[] {
   return [
@@ -34,6 +36,8 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   const [deadlineToDelete, setDeadlineToDelete] = useState<Deadline | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isPreloadOpen, setIsPreloadOpen] = useState(false);
+  const [isPaywallOpen, setIsPaywallOpen] = useState(false);
+  const isPro = useProStatus(profile);
   const [newDeadline, setNewDeadline] = useState({ title: '', date: new Date().toISOString().split('T')[0], type: 'tax' as Deadline['type'], amount: '' });
 
   const currentYear = new Date().getFullYear();
@@ -138,7 +142,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
           )}
 
           {!hasFiscalDeadlines && !searchQuery && (
-            <motion.div variants={item} onClick={() => setIsPreloadOpen(true)} className={`p-5 rounded-3xl border cursor-pointer active:scale-[0.98] transition-all ${partialFiscalDeadlines ? (darkMode ? 'bg-amber-500/5 border-amber-500/30' : 'bg-amber-50 border-amber-200') : (darkMode ? 'bg-slate-900 border-slate-700 hover:border-primary/40' : 'bg-slate-50 border-slate-200 hover:border-primary/30')}`}>
+            <motion.div variants={item} onClick={() => { if (!isPro) { setIsPaywallOpen(true); return; } setIsPreloadOpen(true); }} className={`p-5 rounded-3xl border cursor-pointer active:scale-[0.98] transition-all ${partialFiscalDeadlines ? (darkMode ? 'bg-amber-500/5 border-amber-500/30' : 'bg-amber-50 border-amber-200') : (darkMode ? 'bg-slate-900 border-slate-700 hover:border-primary/40' : 'bg-slate-50 border-slate-200 hover:border-primary/30')}`}>
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className={`text-sm font-bold ${partialFiscalDeadlines ? 'text-amber-600' : (darkMode ? 'text-white' : 'text-slate-900')}`}>
@@ -388,6 +392,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
           </div>
         )}
       </AnimatePresence>
+      <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} darkMode={darkMode} />
     </motion.div>
   );
 };
