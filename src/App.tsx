@@ -68,6 +68,7 @@ function AppInner() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const activeProfileRef = useRef(activeProfile);
   const profileCache = useRef<Record<string, { documents: Document[], deadlines: Deadline[], accountant: Accountant | null }>>({});
   const { showToast } = useToast();
@@ -118,6 +119,7 @@ function AppInner() {
     setIsLoading(true);
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
+      setUserId(user.id);
       const data = await getProfiles(user.id, user.email ?? undefined).catch(() => null);
 
       // Profili completi = onboarding già completato (country impostato dal trigger+onboarding)
@@ -242,6 +244,24 @@ function AppInner() {
       supabase.removeChannel(deadlinesChannel);
     };
   }, [isAuthenticated, activeProfile.id]);
+
+  // Realtime: ascolta UPDATE su profiles → aggiorna is_pro senza refresh
+  // Risolve la race condition Stripe: webhook può arrivare dopo il redirect
+  useEffect(() => {
+    if (!isAuthenticated || !userId) return;
+
+    const profilesChannel = supabase
+      .channel(`profiles-${userId}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${userId}` }, payload => {
+        const updated = payload.new as Record<string, unknown>;
+        const isPro = (updated.is_pro as boolean) ?? false;
+        setProfiles(prev => prev.map(p => p.id === (updated.id as string) ? { ...p, isPro } : p));
+        setActiveProfile(prev => prev.id === (updated.id as string) ? { ...prev, isPro } : prev);
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(profilesChannel); };
+  }, [isAuthenticated, userId]);
 
   // Mostra feedback dopo redirect Stripe
   useEffect(() => {
