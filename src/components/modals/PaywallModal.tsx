@@ -47,6 +47,11 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
         ? import.meta.env.VITE_STRIPE_PRICE_MONTHLY
         : import.meta.env.VITE_STRIPE_PRICE_YEARLY;
 
+      if (!priceId || priceId.startsWith('price_YOUR_')) {
+        setError('Configurazione pagamento non disponibile. Riprova più tardi.');
+        return;
+      }
+
       const res = await fetch(
         `${SUPABASE_URL}/functions/v1/create-checkout-session`,
         {
