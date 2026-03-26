@@ -10,7 +10,7 @@ import { profileStorage } from '../lib/supabase';
 // Fields that exist in the Supabase profiles table schema
 const DB_PROFILE_FIELDS: (keyof Profile)[] = [
   'id', 'name', 'email', 'jobType', 'country', 'currency', 'avatar',
-  'address', 'piva', 'codiceFiscale', 'iban', 'regime', 'coefficiente',
+  'address', 'piva', 'nie', 'codiceFiscale', 'iban', 'regime', 'coefficiente',
   'annoInizioAttivita', 'isPro',
 ];
 
