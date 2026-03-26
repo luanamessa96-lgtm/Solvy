@@ -12,21 +12,19 @@ ALTER TABLE profiles ALTER COLUMN regime DROP DEFAULT;
 -- 3. Aggiungi colonna email a profiles se mancante
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS email text;
 
--- 4. Ricrea la funzione trigger: inserisce solo i campi minimi obbligatori.
---    country e regime saranno NULL finché l'utente non completa l'onboarding.
+-- 4. Ricrea la funzione trigger in modo difensivo.
+--    Inserisce solo id e user_id (minimo garantito).
+--    Se fallisce per qualsiasi motivo, logga e non blocca auth.
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, user_id, email, currency, is_pro, theme)
-  VALUES (
-    NEW.id,
-    NEW.id,
-    NEW.email,
-    'EUR',
-    FALSE,
-    'light'
-  );
+  INSERT INTO public.profiles (id, user_id)
+  VALUES (NEW.id, NEW.id);
   RETURN NEW;
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE LOG 'handle_new_user failed for user %: % %', NEW.id, SQLERRM, SQLSTATE;
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
