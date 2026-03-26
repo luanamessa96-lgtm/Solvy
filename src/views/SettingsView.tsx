@@ -31,7 +31,7 @@ const SettingsView = ({ theme, setTheme, profile }: SettingsViewProps) => {
 
   return (
     <>
-    <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-8 pb-24">
+    <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-8 pb-40">
       <motion.div variants={item} className="space-y-4">
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Aspetto</p>
         <div className={`rounded-3xl p-2 border grid grid-cols-2 gap-2 transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
@@ -112,7 +112,7 @@ const SettingsView = ({ theme, setTheme, profile }: SettingsViewProps) => {
       <motion.div variants={item} className="pt-2">
         <button
           onClick={() => setIsDeleteModalOpen(true)}
-          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold text-red-500 border border-red-200 hover:bg-red-50 active:scale-[0.98] transition-all"
+          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold text-red-500 border active:scale-[0.98] transition-all ${darkMode ? 'border-red-900 hover:bg-red-900/20' : 'border-red-200 hover:bg-red-50'}`}
         >
           <Trash2 size={15} />
           Elimina account
