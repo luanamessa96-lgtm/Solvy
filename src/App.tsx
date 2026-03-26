@@ -26,10 +26,10 @@ import Header from './components/layout/Header';
 import BottomNav from './components/layout/BottomNav';
 import NotificationsPanel from './components/layout/NotificationsPanel';
 
-import DashboardView from './views/DashboardView';
-import DocumentsView from './views/DocumentsView';
-import CalendarView from './views/CalendarView';
-import ProfileView from './views/ProfileView';
+const DashboardView = lazy(() => import('./views/DashboardView'));
+const DocumentsView = lazy(() => import('./views/DocumentsView'));
+const CalendarView = lazy(() => import('./views/CalendarView'));
+const ProfileView = lazy(() => import('./views/ProfileView'));
 const SettingsView = lazy(() => import('./views/SettingsView'));
 const AccountantView = lazy(() => import('./views/AccountantView'));
 const MediaLibraryView = lazy(() => import('./views/MediaLibraryView'));
@@ -77,6 +77,9 @@ function AppInner() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAuthenticated(!!session);
+      // Rimuovi splash screen quando la sessione è nota
+      const splash = document.getElementById('splash');
+      if (splash) { splash.classList.add('hide'); setTimeout(() => splash.remove(), 280); }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -629,10 +632,10 @@ function AppInner() {
             <MediaLibraryView documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} darkMode={darkMode} />
           ) : (
             <>
-              <div style={{ display: activeTab === 'home' ? 'block' : 'none' }}><DashboardView profile={activeProfile} onProfileClick={handleProfileClick} onAddDocumentClick={() => handleTabChange('docs')} income={totalIncome} expenses={totalExpenses} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} /></div>
-              <div style={{ display: activeTab === 'docs' ? 'block' : 'none' }}><DocumentsView documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} onUpdateProfile={handleUpdateProfile} accountant={accountant} profile={activeProfile} darkMode={darkMode} onMediaLibraryClick={handleMediaLibraryClick} /></div>
-              <div style={{ display: activeTab === 'calendar' ? 'block' : 'none' }}><CalendarView deadlines={deadlines} onAddDeadline={handleAddDeadline} onUpdateDeadline={handleUpdateDeadline} onDeleteDeadline={handleDeleteDeadline} darkMode={darkMode} profile={activeProfile} /></div>
-              <div style={{ display: activeTab === 'menu' ? 'block' : 'none' }}><MenuView activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} onLogout={handleLogout} darkMode={darkMode} /></div>
+              <div style={{ display: activeTab === 'home' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><DashboardView profile={activeProfile} onProfileClick={handleProfileClick} onAddDocumentClick={() => handleTabChange('docs')} income={totalIncome} expenses={totalExpenses} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} /></Suspense></div>
+              <div style={{ display: activeTab === 'docs' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><DocumentsView documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} onUpdateProfile={handleUpdateProfile} accountant={accountant} profile={activeProfile} darkMode={darkMode} onMediaLibraryClick={handleMediaLibraryClick} /></Suspense></div>
+              <div style={{ display: activeTab === 'calendar' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><CalendarView deadlines={deadlines} onAddDeadline={handleAddDeadline} onUpdateDeadline={handleUpdateDeadline} onDeleteDeadline={handleDeleteDeadline} darkMode={darkMode} profile={activeProfile} /></Suspense></div>
+              <div style={{ display: activeTab === 'menu' ? 'block' : 'none' }}><Suspense fallback={null}><MenuView activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} onLogout={handleLogout} darkMode={darkMode} /></Suspense></div>
             </>
           )}
         </Suspense>

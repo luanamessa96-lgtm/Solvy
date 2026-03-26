@@ -150,13 +150,15 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
             <motion.div key="login-form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
               <div className="space-y-3">
                 <div className="relative">
-                  <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input type="email" placeholder="Email" value={email} onChange={e => { setEmail(e.target.value); clearError(); }} autoComplete="email" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11`} />
+                  <label htmlFor="login-email" className="sr-only">Email</label>
+                  <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+                  <input id="login-email" type="email" placeholder="Email" value={email} onChange={e => { setEmail(e.target.value); clearError(); }} autoComplete="email" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11`} />
                 </div>
                 <div className="relative">
-                  <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input type={showPassword ? 'text' : 'password'} placeholder="Password" value={password} onChange={e => { setPassword(e.target.value); clearError(); }} autoComplete="current-password" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11 pr-11`} />
-                  <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                  <label htmlFor="login-password" className="sr-only">Password</label>
+                  <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+                  <input id="login-password" type={showPassword ? 'text' : 'password'} placeholder="Password" value={password} onChange={e => { setPassword(e.target.value); clearError(); }} autoComplete="current-password" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11 pr-11`} />
+                  <button type="button" onClick={() => setShowPassword(v => !v)} aria-label="Mostra/nascondi password" className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
@@ -195,13 +197,15 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
             <motion.div key="register-form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
               <div className="space-y-3">
                 <div className="relative">
-                  <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input type="email" placeholder="Email" value={email} onChange={e => { setEmail(e.target.value); clearError(); }} autoComplete="email" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11`} />
+                  <label htmlFor="register-email" className="sr-only">Email</label>
+                  <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+                  <input id="register-email" type="email" placeholder="Email" value={email} onChange={e => { setEmail(e.target.value); clearError(); }} autoComplete="email" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11`} />
                 </div>
                 <div className="relative">
-                  <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input type={showPassword ? 'text' : 'password'} placeholder="Password (min. 8 caratteri)" value={password} onChange={e => { setPassword(e.target.value); clearError(); }} autoComplete="new-password" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11 pr-11`} />
-                  <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                  <label htmlFor="register-password" className="sr-only">Password</label>
+                  <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+                  <input id="register-password" type={showPassword ? 'text' : 'password'} placeholder="Password (min. 8 caratteri)" value={password} onChange={e => { setPassword(e.target.value); clearError(); }} autoComplete="new-password" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11 pr-11`} />
+                  <button type="button" onClick={() => setShowPassword(v => !v)} aria-label="Mostra/nascondi password" className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
@@ -278,7 +282,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
                 <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
                   Abbiamo inviato un link a <span className="text-primary">{email}</span>
                 </p>
-                <p className="text-xs text-slate-400">Clicca il link nell'email per scegliere una nuova password. Controlla anche la cartella spam.</p>
+                <p className="text-xs text-slate-500">Clicca il link nell'email per scegliere una nuova password. Controlla anche la cartella spam.</p>
               </div>
               <button type="button" onClick={() => { clearError(); setScreen('login'); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-500">
                 <ArrowLeft size={14} /> Torna al login
@@ -292,7 +296,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
               <div className="relative">
                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input type={showNewPassword ? 'text' : 'password'} placeholder="Nuova password (min. 8 caratteri)" value={newPassword} onChange={e => { setNewPassword(e.target.value); clearError(); }} autoComplete="new-password" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11 pr-11`} />
-                <button type="button" onClick={() => setShowNewPassword(v => !v)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <button type="button" onClick={() => setShowNewPassword(v => !v)} aria-label="Mostra/nascondi password" className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
                   {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
