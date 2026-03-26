@@ -21,11 +21,10 @@ export default defineConfig(({mode}) => {
         output: {
           manualChunks: {
             'supabase': ['@supabase/supabase-js'],
-            'jspdf': ['jspdf'],
-            'jspdf-autotable': ['jspdf-autotable'],
-            'html2canvas': ['html2canvas'],
+            'jspdf': ['jspdf', 'jspdf-autotable'],
             'charts': ['recharts'],
-            'motion': ['framer-motion'],
+            'motion': ['motion'],
+            'i18n': ['i18next', 'react-i18next'],
           },
         },
       },

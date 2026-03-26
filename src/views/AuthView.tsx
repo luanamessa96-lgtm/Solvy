@@ -106,37 +106,37 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
             {screen === 'login' && (
               <motion.div key="login-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
                 <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Bentornato</h1>
-                <p className="text-slate-400 mt-1 text-sm">Accedi al tuo account</p>
+                <p className="text-slate-500 mt-1 text-sm">Accedi al tuo account</p>
               </motion.div>
             )}
             {screen === 'register' && (
               <motion.div key="register-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
                 <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Crea account</h1>
-                <p className="text-slate-400 mt-1 text-sm">Inizia a gestire le tue finanze</p>
+                <p className="text-slate-500 mt-1 text-sm">Inizia a gestire le tue finanze</p>
               </motion.div>
             )}
             {screen === 'forgot' && (
               <motion.div key="forgot-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
                 <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Password dimenticata?</h1>
-                <p className="text-slate-400 mt-1 text-sm">Ti mandiamo un link per reimpostarla</p>
+                <p className="text-slate-500 mt-1 text-sm">Ti mandiamo un link per reimpostarla</p>
               </motion.div>
             )}
             {(screen === 'forgot-sent') && (
               <motion.div key="sent-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
                 <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Email inviata!</h1>
-                <p className="text-slate-400 mt-1 text-sm">Controlla la tua casella di posta</p>
+                <p className="text-slate-500 mt-1 text-sm">Controlla la tua casella di posta</p>
               </motion.div>
             )}
             {screen === 'register-sent' && (
               <motion.div key="register-sent-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
                 <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Controlla la email!</h1>
-                <p className="text-slate-400 mt-1 text-sm">Abbiamo inviato un link di conferma</p>
+                <p className="text-slate-500 mt-1 text-sm">Abbiamo inviato un link di conferma</p>
               </motion.div>
             )}
             {screen === 'reset' && (
               <motion.div key="reset-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
                 <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Nuova password</h1>
-                <p className="text-slate-400 mt-1 text-sm">Scegli una password sicura</p>
+                <p className="text-slate-500 mt-1 text-sm">Scegli una password sicura</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -180,7 +180,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
 
               <div className="flex items-center gap-3 py-1">
                 <div className={`flex-1 h-px ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
-                <span className="text-xs text-slate-400 font-medium">oppure</span>
+                <span className="text-xs text-slate-500 font-medium">oppure</span>
                 <div className={`flex-1 h-px ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
               </div>
 
@@ -228,7 +228,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
                 {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : 'Registrati'}
               </button>
 
-              <button type="button" onClick={() => { clearError(); setScreen('login'); }} className={`w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-400`}>
+              <button type="button" onClick={() => { clearError(); setScreen('login'); }} className={`w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-500`}>
                 <ArrowLeft size={14} /> Torna al login
               </button>
             </motion.div>
@@ -248,7 +248,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
                 {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : 'Invia link di reset'}
               </button>
 
-              <button type="button" onClick={() => { clearError(); setScreen('login'); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-400">
+              <button type="button" onClick={() => { clearError(); setScreen('login'); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-500">
                 <ArrowLeft size={14} /> Torna al login
               </button>
             </motion.div>
@@ -262,9 +262,9 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
                 <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
                   Abbiamo inviato un link di conferma a <span className="text-primary">{email}</span>
                 </p>
-                <p className="text-xs text-slate-400">Clicca il link nell'email per attivare il tuo account. Controlla anche la cartella spam.</p>
+                <p className="text-xs text-slate-500">Clicca il link nell'email per attivare il tuo account. Controlla anche la cartella spam.</p>
               </div>
-              <button type="button" onClick={() => { clearError(); setScreen('login'); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-400">
+              <button type="button" onClick={() => { clearError(); setScreen('login'); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-500">
                 <ArrowLeft size={14} /> Torna al login
               </button>
             </motion.div>
@@ -280,7 +280,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
                 </p>
                 <p className="text-xs text-slate-400">Clicca il link nell'email per scegliere una nuova password. Controlla anche la cartella spam.</p>
               </div>
-              <button type="button" onClick={() => { clearError(); setScreen('login'); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-400">
+              <button type="button" onClick={() => { clearError(); setScreen('login'); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-500">
                 <ArrowLeft size={14} /> Torna al login
               </button>
             </motion.div>
