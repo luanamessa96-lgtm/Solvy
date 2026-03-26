@@ -118,6 +118,7 @@ export async function getProfiles(userId: string, userEmail?: string): Promise<P
   if (error) throw error;
   return (data || []).map(p => ({
     ...p,
+    name: p.name || userEmail?.split('@')[0] || 'Utente',
     jobType: p.job_type,
     codiceFiscale: p.codice_fiscale,
     coefficiente: p.coefficiente,

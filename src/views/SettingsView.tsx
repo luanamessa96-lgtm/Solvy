@@ -2,15 +2,18 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Sun, Moon, Sparkles, Lock, Languages } from 'lucide-react';
 import PaywallModal from '../components/modals/PaywallModal';
+import { useProStatus } from '../hooks/useProStatus';
+import { Profile } from '../types';
 
 interface SettingsViewProps {
   theme: string;
   setTheme: (t: string) => void;
-  isPro: boolean;
+  profile: Profile;
   key?: string;
 }
 
-const SettingsView = ({ theme, setTheme, isPro }: SettingsViewProps) => {
+const SettingsView = ({ theme, setTheme, profile }: SettingsViewProps) => {
+  const isPro = useProStatus(profile);
   const darkMode = theme === 'dark' || theme === 'pro-dark';
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
 

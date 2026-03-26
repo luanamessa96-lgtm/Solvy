@@ -68,7 +68,20 @@ const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountant
         })}
       </div>
 
-      {!isPro && (
+      {isPro ? (
+        <div className={`p-5 rounded-3xl flex items-center gap-4 border transition-colors ${darkMode ? 'bg-primary/10 border-primary/20' : 'bg-primary/5 border-primary/15'}`}>
+          <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0">
+            <Sparkles size={18} className="text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-primary">Solvy Pro attivo</p>
+            <p className="text-xs text-slate-400 mt-0.5">Tutte le funzionalità premium sbloccate</p>
+          </div>
+          <button onClick={() => setIsPaywallOpen(true)} className={`text-xs font-bold text-primary shrink-0 active:scale-90 transition-all ${darkMode ? 'hover:text-primary/80' : ''}`}>
+            Gestisci
+          </button>
+        </div>
+      ) : (
         <div className={`p-6 rounded-3xl space-y-4 relative overflow-hidden transition-all hover:shadow-2xl active:scale-[0.99] ${darkMode ? 'bg-primary/10 border border-primary/20 hover:border-primary/40 hover:shadow-primary/10' : 'bg-slate-900 text-white hover:shadow-slate-900/20'}`}>
           {!darkMode && <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />}
           <h3 className={`text-lg font-bold relative z-10 ${darkMode ? 'text-primary' : 'text-white'}`}>Passa a Pro</h3>
