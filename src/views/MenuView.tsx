@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Briefcase, Settings, CreditCard, LogOut, ChevronRight, Sparkles, type LucideIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Profile } from '../types';
 import LogoutModal from '../components/modals/LogoutModal';
 import PaywallModal from '../components/modals/PaywallModal';
@@ -16,15 +17,16 @@ interface MenuViewProps {
 }
 
 const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountantClick, onLogout, darkMode }: MenuViewProps) => {
+  const { t } = useTranslation();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const isPro = activeProfile.isPro ?? false;
 
   const menuItems: { label: string; icon: LucideIcon; onClick: () => void; color?: string }[] = [
-    { label: 'Il mio Commercialista', icon: Briefcase, onClick: onAccountantClick },
-    { label: 'Impostazioni', icon: Settings, onClick: onSettingsClick },
-    { label: 'Abbonamento', icon: CreditCard, onClick: () => setIsPaywallOpen(true) },
-    { label: 'Logout', icon: LogOut, onClick: () => setIsLogoutModalOpen(true), color: 'text-red-500' },
+    { label: t('menu.accountant'), icon: Briefcase, onClick: onAccountantClick },
+    { label: t('menu.settings'), icon: Settings, onClick: onSettingsClick },
+    { label: t('menu.subscription'), icon: CreditCard, onClick: () => setIsPaywallOpen(true) },
+    { label: t('menu.logout'), icon: LogOut, onClick: () => setIsLogoutModalOpen(true), color: 'text-red-500' },
   ];
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.15 } } };
@@ -74,19 +76,19 @@ const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountant
             <Sparkles size={18} className="text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-primary">Solvy Pro attivo</p>
-            <p className="text-xs text-slate-400 mt-0.5">Tutte le funzionalità premium sbloccate</p>
+            <p className="text-sm font-bold text-primary">{t('menu.pro_active')}</p>
+            <p className="text-xs text-slate-400 mt-0.5">{t('menu.pro_features')}</p>
           </div>
           <button onClick={() => setIsPaywallOpen(true)} className={`text-xs font-bold text-primary shrink-0 active:scale-90 transition-all ${darkMode ? 'hover:text-primary/80' : ''}`}>
-            Gestisci
+            {t('menu.manage')}
           </button>
         </div>
       ) : (
         <div className={`p-6 rounded-3xl space-y-4 relative overflow-hidden transition-all hover:shadow-2xl active:scale-[0.99] ${darkMode ? 'bg-primary/10 border border-primary/20 hover:border-primary/40 hover:shadow-primary/10' : 'bg-slate-900 text-white hover:shadow-slate-900/20'}`}>
           {!darkMode && <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />}
-          <h3 className={`text-lg font-bold relative z-10 ${darkMode ? 'text-primary' : 'text-white'}`}>Passa a Pro</h3>
-          <p className={`text-xs relative z-10 leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>Sblocca temi esclusivi, libreria premium e funzionalità avanzate.</p>
-          <button onClick={() => setIsPaywallOpen(true)} className="w-full bg-primary py-3 rounded-xl text-sm font-bold relative z-10 text-white shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all">Scopri i Piani</button>
+          <h3 className={`text-lg font-bold relative z-10 ${darkMode ? 'text-primary' : 'text-white'}`}>{t('menu.upgrade_title')}</h3>
+          <p className={`text-xs relative z-10 leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>{t('menu.upgrade_body')}</p>
+          <button onClick={() => setIsPaywallOpen(true)} className="w-full bg-primary py-3 rounded-xl text-sm font-bold relative z-10 text-white shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all">{t('menu.discover_plans')}</button>
         </div>
       )}
 

@@ -6,6 +6,7 @@ import PaywallModal from '../components/modals/PaywallModal';
 import { CountryBadge } from '../components/CountryBadge';
 import { setLanguageByCountry } from '../lib/i18n';
 import { profileStorage } from '../lib/supabase';
+import { useTranslation } from 'react-i18next';
 
 // Fields that exist in the Supabase profiles table schema
 const DB_PROFILE_FIELDS: (keyof Profile)[] = [
@@ -76,6 +77,7 @@ function validateCF(v: string): string | null {
 }
 
 const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile, onAddProfile, darkMode }: ProfileViewProps) => {
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -196,22 +198,22 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
               <div className="overflow-y-auto max-h-[90vh] p-8 space-y-5">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Modifica Profilo</h2>
-                    <p className="text-sm text-slate-500">Dati personali e fiscali</p>
+                    <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('profile.edit_title')}</h2>
+                    <p className="text-sm text-slate-500">{t('profile.edit_subtitle')}</p>
                   </div>
                   <button onClick={() => setIsEditing(false)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
                 </div>
 
                 {/* Dati personali */}
                 <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dati Personali</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('profile.personal_data')}</p>
                 </div>
                 <div className="space-y-3">
                   {[
-                    { label: 'Nome e Cognome', key: 'name', placeholder: 'Es. Mario Rossi' },
-                    { label: 'Email', key: 'email', placeholder: 'La tua email' },
-                    { label: 'Tipo Lavoro', key: 'jobType', placeholder: 'Es. Freelance Designer' },
-                    { label: 'Indirizzo', key: 'address', placeholder: 'Via Roma 1, 20100 Milano' },
+                    { label: t('profile.field_name'), key: 'name', placeholder: t('profile.field_name_placeholder') },
+                    { label: t('profile.field_email'), key: 'email', placeholder: t('profile.field_email_placeholder') },
+                    { label: t('profile.field_job_type'), key: 'jobType', placeholder: t('profile.field_job_type_placeholder') },
+                    { label: t('profile.field_address'), key: 'address', placeholder: t('profile.field_address_placeholder') },
                   ].map(({ label, key, placeholder }) => (
                     <div key={key} className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{label}</label>
@@ -226,15 +228,15 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                   ))}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Paese</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('profile.country_label')}</label>
                       {/* Country — read only, immutable after creation */}
                       <div className={`${inputClass()} flex items-center gap-2 opacity-70 cursor-not-allowed`}>
                         <span>{editData.country === 'Spain' ? '🇪🇸' : '🇮🇹'}</span>
-                        <span>{editData.country === 'Spain' ? 'Spagna' : 'Italia'}</span>
+                        <span>{editData.country === 'Spain' ? t('profile.country_spain') : t('profile.country_italy')}</span>
                       </div>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Valuta</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('profile.currency_label')}</label>
                       <select value={editData.currency} onChange={e => setEditData({ ...editData, currency: e.target.value as import('../types').Currency })} className={inputClass()}>
                         <option>EUR</option><option>USD</option><option>GBP</option>
                       </select>
@@ -244,7 +246,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
 
                 {/* Dati fiscali */}
                 <div className="space-y-1 pt-1">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dati Fiscali</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('profile.fiscal_data')}</p>
                 </div>
                 <div className="space-y-3">
                   {isSpain ? (
@@ -296,18 +298,18 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Año inicio actividad</label>
                         <input type="number" min="2000" max={new Date().getFullYear()} value={editData.annoInizioAttivita} onChange={e => setEditData({ ...editData, annoInizioAttivita: e.target.value })} placeholder="Es. 2022" className={inputClass()} />
-                        <p className="text-[10px] text-slate-400 ml-1">Usato per calcolare la Tarifa Plana RETA (€80/mes primo anno)</p>
+                        <p className="text-[10px] text-slate-400 ml-1">{t('profile.reta_note')}</p>
                       </div>
                     </>
                   ) : (
                     <>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Partita IVA</label>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('profile.piva_label')}</label>
                         <input type="text" value={editData.piva} onChange={e => setEditData({ ...editData, piva: e.target.value })} placeholder="Es. 12345678901" className={inputClass(errors.piva)} />
                         {errors.piva && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.piva}</p>}
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Codice Fiscale</label>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('profile.cf_label')}</label>
                         <input type="text" value={editData.codiceFiscale} onChange={e => setEditData({ ...editData, codiceFiscale: e.target.value.toUpperCase() })} placeholder="Es. RSSMRA80A01H501Z" className={inputClass(errors.codiceFiscale)} />
                         {errors.codiceFiscale && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.codiceFiscale}</p>}
                       </div>
@@ -317,7 +319,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                         {errors.iban && <p className="text-xs text-red-500 ml-1 flex items-center gap-1">⚠ {errors.iban}</p>}
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Regime Fiscale</label>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('profile.regime_label')}</label>
                         <div className={`p-1 rounded-2xl flex gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                           {(['forfettario', 'ordinario'] as const).map(r => (
                             <button key={r} type="button" onClick={() => setEditData({ ...editData, regime: r })} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all capitalize ${editData.regime === r ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
@@ -327,22 +329,22 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                         </div>
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Categoria Attività</label>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('profile.activity_category')}</label>
                         <select
                           value={editData.coefficiente}
                           onChange={e => setEditData({ ...editData, coefficiente: e.target.value })}
                           className={inputClass()}
                         >
-                          <option value="">Seleziona categoria...</option>
-                          <option value="86">Costruzioni e attività immobiliari — 86%</option>
-                          <option value="78">Professionisti (consulenti, designer, sviluppatori…) — 78%</option>
-                          <option value="67">Artigiani e altri servizi — 67%</option>
-                          <option value="62">Intermediari del commercio — 62%</option>
-                          <option value="40">Commercio e ristorazione — 40%</option>
+                          <option value="">{t('profile.select_category')}</option>
+                          <option value="86">{t('profile.cat_construction')}</option>
+                          <option value="78">{t('profile.cat_professionals')}</option>
+                          <option value="67">{t('profile.cat_artisans')}</option>
+                          <option value="62">{t('profile.cat_commerce_intermediaries')}</option>
+                          <option value="40">{t('profile.cat_commerce')}</option>
                         </select>
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Anno Inizio Attività</label>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('profile.activity_start_year')}</label>
                         <input type="number" min="2000" max={new Date().getFullYear()} value={editData.annoInizioAttivita} onChange={e => setEditData({ ...editData, annoInizioAttivita: e.target.value })} placeholder="Es. 2022" className={inputClass()} />
                       </div>
                     </>
@@ -351,7 +353,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
 
                 <button onClick={handleSaveEdit} disabled={hasErrors || isSaving} className={`w-full py-4 rounded-2xl font-bold shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${hasErrors ? 'bg-slate-200 text-slate-400 shadow-none cursor-not-allowed' : saveSuccess ? 'bg-emerald-500 text-white shadow-emerald-500/30' : 'bg-primary text-white shadow-primary/30'}`}>
                   {isSaving ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
-                  {hasErrors ? 'Correggi gli errori per salvare' : saveSuccess ? '✓ Salvato!' : isSaving ? 'Salvataggio…' : 'Salva Modifiche'}
+                  {hasErrors ? t('profile.save_error') : saveSuccess ? t('profile.save_success') : isSaving ? t('profile.saving') : t('profile.save_btn')}
                 </button>
               </div>
             </motion.div>
@@ -379,12 +381,12 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
         </motion.div>
 
         <motion.div variants={item} className="space-y-4">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-2">Impostazioni Profilo</h3>
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-2">{t('profile.profile_settings')}</h3>
           <div className={`rounded-2xl border overflow-hidden transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
             {[
-              { icon: Globe, label: 'Paese', value: activeProfile.country },
-              { icon: CreditCard, label: 'Valuta', value: activeProfile.currency },
-              { icon: Briefcase, label: 'Tipo Lavoro', value: activeProfile.jobType },
+              { icon: Globe, label: t('profile.label_country'), value: activeProfile.country },
+              { icon: CreditCard, label: t('profile.label_currency'), value: activeProfile.currency },
+              { icon: Briefcase, label: t('profile.label_job_type'), value: activeProfile.jobType },
             ].map(({ icon: Icon, label, value }, i, arr) => (
               <div key={label} className={`w-full p-4 flex items-center justify-between ${i < arr.length - 1 ? (darkMode ? 'border-b border-slate-800' : 'border-b border-slate-50') : ''}`}>
                 <div className="flex items-center gap-3">
@@ -400,19 +402,19 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
         {/* Dati fiscali */}
         <motion.div variants={item} className="space-y-4">
           <div className="flex items-center justify-between px-2">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Dati Fiscali</h3>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('profile.fiscal_data')}</h3>
             {!hasFiscalData && (
-              <button onClick={() => setIsEditing(true)} className="text-xs font-bold text-primary uppercase tracking-wider">Aggiungi</button>
+              <button onClick={() => setIsEditing(true)} className="text-xs font-bold text-primary uppercase tracking-wider">{t('profile.add_fiscal')}</button>
             )}
           </div>
           <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
             {[
-              { icon: Receipt, label: activeProfile.country === 'Spain' ? (taxIdType === 'nie' ? 'NIE' : 'NIF') : 'Partita IVA', value: activeProfile.country === 'Spain' ? (taxIdType === 'nie' ? (activeProfile.nie || '—') : (activeProfile.piva || '—')) : (activeProfile.piva || '—') },
-              ...(activeProfile.country !== 'Spain' ? [{ icon: User, label: 'Codice Fiscale', value: activeProfile.codiceFiscale || '—' }] : []),
-              { icon: MapPin, label: 'Indirizzo', value: activeProfile.address || '—' },
+              { icon: Receipt, label: activeProfile.country === 'Spain' ? (taxIdType === 'nie' ? 'NIE' : 'NIF') : t('profile.piva_label'), value: activeProfile.country === 'Spain' ? (taxIdType === 'nie' ? (activeProfile.nie || '—') : (activeProfile.piva || '—')) : (activeProfile.piva || '—') },
+              ...(activeProfile.country !== 'Spain' ? [{ icon: User, label: t('profile.label_cf'), value: activeProfile.codiceFiscale || '—' }] : []),
+              { icon: MapPin, label: t('profile.label_address'), value: activeProfile.address || '—' },
               { icon: CreditCard, label: 'IBAN', value: activeProfile.iban || '—' },
-              { icon: Briefcase, label: activeProfile.country === 'Spain' ? 'Régimen' : 'Regime', value: activeProfile.country === 'Spain' ? 'Estimación directa simplificada' : (activeProfile.regime ? activeProfile.regime.charAt(0).toUpperCase() + activeProfile.regime.slice(1) : 'Forfettario') },
-              ...(activeProfile.country !== 'Spain' && activeProfile.coefficiente ? [{ icon: Receipt, label: 'Categoria', value: `${CATEGORIE_COEFFICIENTE[activeProfile.coefficiente] || activeProfile.coefficiente + '%'} (${activeProfile.coefficiente}%)` }] : []),
+              { icon: Briefcase, label: t('profile.label_regime'), value: activeProfile.country === 'Spain' ? 'Estimación directa simplificada' : (activeProfile.regime ? activeProfile.regime.charAt(0).toUpperCase() + activeProfile.regime.slice(1) : 'Forfettario') },
+              ...(activeProfile.country !== 'Spain' && activeProfile.coefficiente ? [{ icon: Receipt, label: t('profile.label_category'), value: `${CATEGORIE_COEFFICIENTE[activeProfile.coefficiente] || activeProfile.coefficiente + '%'} (${activeProfile.coefficiente}%)` }] : []),
               ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'RETA mensual', value: `€${profileStorage.get(`reta_${activeProfile.id}`) || '500'}/mes` }] : []),
             ].map(({ icon: Icon, label, value }, i, arr) => (
               <div key={label} className={`w-full p-4 flex items-center justify-between ${i < arr.length - 1 ? (darkMode ? 'border-b border-slate-800' : 'border-b border-slate-50') : ''}`}>
@@ -427,7 +429,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
         </motion.div>
 
         <motion.div variants={item} className="space-y-4">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-2">Cambia Profilo</h3>
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-2">{t('profile.change_profile')}</h3>
           <div className="space-y-3">
             {profiles.map(p => (
               <button key={p.id} onClick={() => onSwitchProfile(p)} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${activeProfile.id === p.id ? (darkMode ? 'bg-primary/10 border-primary shadow-xl shadow-primary/20' : 'bg-primary/5 border-primary shadow-lg shadow-primary/10') : (darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5')}`}>
@@ -442,13 +444,13 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
             {activeProfile.isPro ? (
               <button onClick={onAddProfile} className={`w-full p-4 rounded-2xl border border-dashed flex items-center gap-2 text-sm font-bold transition-all active:scale-[0.98] ${darkMode ? 'border-primary/40 text-primary hover:bg-primary/10' : 'border-primary/30 text-primary hover:bg-primary/5'}`}>
                 <Plus size={18} />
-                Aggiungi Profilo
+                {t('profile.add_profile')}
               </button>
             ) : (
               <button onClick={() => setIsPaywallOpen(true)} className={`w-full p-4 rounded-2xl border border-dashed flex items-center justify-between gap-2 text-sm font-bold transition-all active:scale-[0.98] ${darkMode ? 'border-slate-800 text-slate-600 hover:border-primary/30' : 'border-slate-200 text-slate-300 hover:border-primary/30'}`}>
                 <div className="flex items-center gap-2">
                   <Plus size={18} />
-                  Aggiungi Profilo
+                  {t('profile.add_profile')}
                 </div>
                 <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-1 rounded-full">
                   <Lock size={11} />

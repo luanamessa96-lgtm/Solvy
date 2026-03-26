@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, Mail, Camera, ChevronRight, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus, Download, Copy, AlertTriangle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { Document, Accountant, Profile } from '../types';
 import CreateInvoiceModal from '../components/modals/CreateInvoiceModal';
@@ -25,6 +26,7 @@ interface DocumentsViewProps {
 }
 
 const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, onUpdateProfile, accountant, profile, darkMode, onMediaLibraryClick }: DocumentsViewProps) => {
+  const { t } = useTranslation();
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const isPro = useProStatus(profile);
@@ -100,15 +102,15 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
     <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-8 pb-24">
       <button type="button" onClick={() => setIsSearchOpen(true)} className={`w-full flex items-center gap-3 pl-4 pr-4 py-3 border rounded-2xl text-sm text-left transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-600 hover:border-primary/30' : 'bg-white border-slate-100 text-slate-400 hover:border-primary/20'}`}>
         <Search size={18} className="shrink-0 text-slate-400" />
-        <span className="flex-1">Cerca fatture e spese...</span>
+        <span className="flex-1">{t('documents.search_placeholder')}</span>
       </button>
 
       <motion.button variants={item} onClick={() => setIsExportOpen(true)} className={`w-full p-6 border rounded-3xl flex items-center justify-between transition-all group active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5'}`}>
         <div className="flex items-center gap-4">
           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${darkMode ? 'bg-slate-800 text-primary group-hover:bg-primary group-hover:text-white' : 'bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white'}`}><Mail size={28} strokeWidth={1.5} /></div>
           <div className="text-left">
-            <p className={`text-base font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>Invia Documenti</p>
-            <p className="text-xs text-slate-500">Al tuo commercialista</p>
+            <p className={`text-base font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('documents.send_documents')}</p>
+            <p className="text-xs text-slate-500">{t('documents.send_to_accountant')}</p>
           </div>
         </div>
         <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${darkMode ? 'bg-slate-800 text-slate-600 group-hover:bg-primary/20 group-hover:text-primary' : 'bg-slate-50 text-slate-300 group-hover:bg-primary/10 group-hover:text-primary'}`}><ChevronRight size={20} /></div>
@@ -116,20 +118,20 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
 
       <motion.div variants={item} className="space-y-3">
         <div className="flex items-center justify-between px-2">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Caricamento Rapido</span>
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{t('documents.quick_upload')}</span>
         </div>
         <button onClick={onMediaLibraryClick} className={`w-full p-5 rounded-3xl border flex items-center gap-4 transition-all active:scale-[0.96] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-lg'}`}>
           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${darkMode ? 'bg-primary/10 text-primary' : 'bg-primary/5 text-primary'}`}><Camera size={22} /></div>
           <div className="text-left">
-            <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Libreria</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Foto, scontrini e documenti</p>
+            <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('documents.library')}</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">{t('documents.library_subtitle')}</p>
           </div>
         </button>
       </motion.div>
 
       <motion.div variants={item} className="space-y-3">
         <div className="flex items-center justify-between px-2">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Anno</span>
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{t('documents.year')}</span>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {availableYears.map(year => (

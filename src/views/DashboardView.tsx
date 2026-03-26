@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TrendingUp, AlertTriangle, AlertCircle, Info, FileText, Receipt } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
@@ -64,6 +65,7 @@ function fmt(n: number) {
 type DashTab = 'overview' | 'taxes' | 'expenses';
 
 const DashboardView = ({ profile, income, expenses, paidPercentage, documents, darkMode, onProfileClick, onAddDocumentClick }: DashboardViewProps) => {
+  const { t } = useTranslation();
   const displayYear = new Date().getFullYear();
   const [activeTab, setActiveTab] = useState<DashTab>('overview');
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
@@ -160,9 +162,9 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
   const barNetto = income > 0 ? (Math.max(0, tasse.netto) / income) * 100 : 0;
 
   const tabs: { id: DashTab; label: string }[] = [
-    { id: 'overview', label: 'Panoramica' },
-    { id: 'taxes', label: 'Tasse' },
-    { id: 'expenses', label: 'Spese' },
+    { id: 'overview', label: t('dashboard.tab_overview') },
+    { id: 'taxes', label: t('dashboard.tab_taxes') },
+    { id: 'expenses', label: t('dashboard.tab_expenses') },
   ];
 
   return (
@@ -170,7 +172,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
       {/* Header */}
       <div className="px-6 pt-6 pb-4 space-y-4">
         <motion.div variants={item} className="space-y-1">
-          <h2 className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>Ciao, {(profile.name || '').split(' ')[0] || 'utente'}!</h2>
+          <h2 className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('dashboard.hello', { name: (profile.name || '').split(' ')[0] || 'utente' })}</h2>
           <div className="flex items-center gap-2">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{profile.country}</p>
             <CountryBadge country={profile.country} size="sm" />
@@ -202,12 +204,12 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
               <FileText size={32} />
             </div>
             <div className="space-y-1">
-              <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>Nessun documento ancora</p>
-              <p className="text-xs text-slate-400">Aggiungi la tua prima fattura per vedere le statistiche</p>
+              <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{t('dashboard.no_documents_title')}</p>
+              <p className="text-xs text-slate-400">{t('dashboard.no_documents_subtitle')}</p>
             </div>
             {onAddDocumentClick && (
               <button onClick={onAddDocumentClick} className="mx-auto flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/30 active:scale-95 transition-all">
-                <span>+ Aggiungi fattura</span>
+                <span>{t('dashboard.add_invoice_btn')}</span>
               </button>
             )}
           </motion.div>
@@ -221,10 +223,10 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
             {/* Entrate */}
             <div className={`rounded-3xl p-6 border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} space-y-4`}>
               <div className="flex justify-between items-center">
-                <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Entrate Annuali</span>
+                <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('dashboard.annual_income')}</span>
                 <div className="flex items-center gap-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sincronizzato</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('dashboard.synced')}</span>
                 </div>
               </div>
               <div className="space-y-1">
@@ -232,7 +234,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                 <h2 className={`text-3xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{income.toLocaleString()}</h2>
               </div>
               <div className={`pt-4 border-t flex justify-between items-center ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Fatture Saldate</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('dashboard.paid_invoices')}</span>
                 <span className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-900'}`}>{paidPercentage}%</span>
               </div>
             </div>
@@ -241,7 +243,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
             <div className={`rounded-3xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} overflow-hidden`}>
               <div className={`px-6 py-5 flex items-center justify-between border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
                 <div className="space-y-0.5">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Margine Netto</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('dashboard.net_margin')}</p>
                   <p className={`text-2xl font-bold ${income - expenses >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>€{(income - expenses).toLocaleString()}</p>
                 </div>
                 <div className={`px-3 py-1.5 rounded-full text-xs font-bold ${income - expenses >= 0 ? (darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600') : (darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600')}`}>
@@ -250,14 +252,14 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
               </div>
               <div className="grid grid-cols-2 divide-x divide-slate-100 dark:divide-slate-800">
                 <div className="px-5 py-4 space-y-1">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Totale Spese</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('dashboard.total_expenses')}</p>
                   <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{expenses.toLocaleString()}</p>
                   <div className={`w-full h-1 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                     <div className="bg-red-400 h-full rounded-full" style={{ width: income > 0 ? `${Math.min((expenses / income) * 100, 100)}%` : '0%' }} />
                   </div>
                 </div>
                 <div className="px-5 py-4 space-y-1">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tasse Stimate</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('dashboard.estimated_taxes')}</p>
                   <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fmt(totaleTasse)}</p>
                   <div className={`w-full h-1 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                     <div className="bg-primary h-full rounded-full" style={{ width: income > 0 ? `${Math.min((totaleTasse / income) * 100, 100)}%` : '0%' }} />
@@ -270,7 +272,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
             <div className={`rounded-3xl p-6 border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} space-y-6`}>
               <div className="flex justify-between items-center">
                 <div className="space-y-1">
-                  <h3 className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Andamento Mensile</h3>
+                  <h3 className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('dashboard.monthly_trend')}</h3>
                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{displayYear}</p>
                 </div>
                 <div className={`p-2 rounded-xl ${darkMode ? 'bg-slate-800 text-primary' : 'bg-slate-50 text-primary'}`}><TrendingUp size={18} /></div>
@@ -290,11 +292,11 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                       if (active && payload && payload.length) {
                         return (
                           <div className={`p-2 rounded-xl border shadow-xl backdrop-blur-md ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white/90 border-slate-100'}`}>
-                            <p className={`text-[10px] font-bold mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mese {payload[0].payload.name}</p>
+                            <p className={`text-[10px] font-bold mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{t('dashboard.tooltip_month', { month: payload[0].payload.name })}</p>
                             <div className="space-y-0.5">
                               {payload.map((entry: { name: string; value: number }, i: number) => (
                                 <div key={i} className="flex items-center justify-between gap-4">
-                                  <span className="text-[10px] font-bold text-slate-400 uppercase">{entry.name === 'income' ? 'Entrate' : 'Uscite'}</span>
+                                  <span className="text-[10px] font-bold text-slate-400 uppercase">{entry.name === 'income' ? t('dashboard.chart_income') : t('dashboard.chart_outflows')}</span>
                                   <span className={`text-[10px] font-black ${entry.name === 'income' ? 'text-emerald-500' : 'text-indigo-500'}`}>€{Math.round(entry.value).toLocaleString()}</span>
                                 </div>
                               ))}
@@ -311,7 +313,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                 </ResponsiveContainer>
               </div>
               <div className="flex gap-4 pt-2">
-                {[{ label: 'Entrate', color: 'bg-emerald-500' }, { label: 'Uscite', color: 'bg-indigo-500' }].map(l => (
+                {[{ label: t('dashboard.chart_income'), color: 'bg-emerald-500' }, { label: t('dashboard.chart_outflows'), color: 'bg-indigo-500' }].map(l => (
                   <div key={l.label} className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${l.color}`} />
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{l.label}</span>
@@ -413,20 +415,20 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
             <div className={`rounded-3xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
               <div className={`px-6 pt-5 pb-4 border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Stima Fiscale {displayYear}</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('dashboard.fiscal_estimate', { year: displayYear })}</p>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isForfettario ? (darkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600') : (darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600')}`}>
                     {isForfettario ? (tasse.isFivePercent ? 'Forfettario 5%' : 'Forfettario 15%') : 'Ordinario'}
                   </span>
                 </div>
                 <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fmt(totaleTasse)}</p>
-                <p className="text-xs text-slate-400 mt-0.5">imposta + contributi stimati</p>
+                <p className="text-xs text-slate-400 mt-0.5">{t('dashboard.tax_subtitle')}</p>
               </div>
 
               {isForfettario && sogliAlert && (
                 <div className={`mx-4 mt-4 px-4 py-3 rounded-2xl flex items-start gap-3 ${sogliAlert === 'exceeded' ? (darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600') : (darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600')}`}>
                   {sogliAlert === 'exceeded' ? <AlertCircle size={16} className="mt-0.5 shrink-0" /> : <AlertTriangle size={16} className="mt-0.5 shrink-0" />}
                   <p className="text-xs font-bold leading-relaxed">
-                    {sogliAlert === 'exceeded' ? `Hai superato la soglia di €85.000. Potresti dover uscire dal regime forfettario.` : `Stai avvicinandoti alla soglia di €85.000 (${fmt(SOGLIA_FORFETTARIO - income)} mancanti).`}
+                    {sogliAlert === 'exceeded' ? t('dashboard.alert_exceeded') : t('dashboard.alert_warning', { remaining: fmt(SOGLIA_FORFETTARIO - income) })}
                   </p>
                 </div>
               )}
@@ -434,12 +436,12 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
               <div className="px-6 py-4 space-y-3">
                 {isForfettario ? (<>
                   <div className="flex justify-between">
-                    <span className="text-xs font-bold text-slate-400">Reddito imponibile ({tasse.regime === 'forfettario' ? Math.round(tasse.coeff * 100) : 100}%)</span>
+                    <span className="text-xs font-bold text-slate-400">{t('dashboard.taxable_income', { pct: tasse.regime === 'forfettario' ? Math.round(tasse.coeff * 100) : 100 })}</span>
                     <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(tasse.redditoImponibile)}</span>
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
-                      <span className="text-xs font-bold text-slate-400">Imposta sostitutiva ({Math.round(tasse.aliquota * 100)}%)</span>
+                      <span className="text-xs font-bold text-slate-400">{t('dashboard.substitutive_tax', { pct: Math.round(tasse.aliquota * 100) })}</span>
                       <span className="text-xs font-bold text-rose-500">{fmt(tasse.imposta)}</span>
                     </div>
                     <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
@@ -448,7 +450,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
-                      <span className="text-xs font-bold text-slate-400">INPS gest. separata (26.07%)</span>
+                      <span className="text-xs font-bold text-slate-400">{t('dashboard.inps_sep')}</span>
                       <span className="text-xs font-bold text-amber-500">{fmt(tasse.inps)}</span>
                     </div>
                     <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
@@ -457,13 +459,13 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   </div>
                 </>) : (<>
                   <div className="flex justify-between">
-                    <span className="text-xs font-bold text-slate-400">Reddito imponibile</span>
+                    <span className="text-xs font-bold text-slate-400">{t('dashboard.taxable_income_plain')}</span>
                     <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(tasse.redditoImponibile)}</span>
                   </div>
                   {tasse.regime === 'ordinario' && (<>
                     <div className="space-y-1.5">
                       <div className="flex justify-between">
-                        <span className="text-xs font-bold text-slate-400">IRPEF (scaglioni)</span>
+                        <span className="text-xs font-bold text-slate-400">{t('dashboard.irpef_brackets')}</span>
                         <span className="text-xs font-bold text-rose-500">{fmt(tasse.irpef)}</span>
                       </div>
                       <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
@@ -471,13 +473,13 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                       </div>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-xs font-bold text-slate-400">Addizionali (~2.3%)</span>
+                      <span className="text-xs font-bold text-slate-400">{t('dashboard.surcharges')}</span>
                       <span className="text-xs font-bold text-orange-500">{fmt(tasse.addizionali)}</span>
                     </div>
                   </>)}
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
-                      <span className="text-xs font-bold text-slate-400">INPS artigiani/comm. (~24%)</span>
+                      <span className="text-xs font-bold text-slate-400">{t('dashboard.inps_artisan')}</span>
                       <span className="text-xs font-bold text-amber-500">{fmt(tasse.inps)}</span>
                     </div>
                     <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
@@ -488,7 +490,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
 
                 <div className={`pt-3 border-t space-y-1.5 ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
                   <div className="flex justify-between">
-                    <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Netto stimato</span>
+                    <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('dashboard.net_estimated')}</span>
                     <span className={`text-sm font-bold ${tasse.netto >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{fmt(tasse.netto)}</span>
                   </div>
                   <div className={`w-full h-2 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
@@ -499,14 +501,14 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                 {income > 0 && proiezione !== income && (
                   <div className={`pt-3 border-t flex items-start gap-2 ${darkMode ? 'border-slate-800 text-slate-400' : 'border-slate-50 text-slate-400'}`}>
                     <Info size={13} className="mt-0.5 shrink-0" />
-                    <p className="text-[11px] leading-relaxed">Proiezione annuale: <span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(proiezione)}</span></p>
+                    <p className="text-[11px] leading-relaxed">{t('dashboard.annual_projection')}<span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(proiezione)}</span></p>
                   </div>
                 )}
 
                 {isForfettario && !profile.coefficiente && (
                   <div className={`pt-2 flex items-start gap-2 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                     <Info size={13} className="mt-0.5 shrink-0" />
-                    <p className="text-[11px] leading-relaxed">Coefficiente non impostato, usando 78%. <button onClick={onProfileClick} className="text-primary font-bold">Imposta nel profilo →</button></p>
+                    <p className="text-[11px] leading-relaxed">{t('dashboard.coeff_missing')}<button onClick={onProfileClick} className="text-primary font-bold">{t('dashboard.set_in_profile')}</button></p>
                   </div>
                 )}
               </div>
@@ -520,14 +522,14 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
             {spesePerCategoria.length === 0 ? (
               <div className={`rounded-3xl p-10 border text-center space-y-3 ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
                 <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto ${darkMode ? 'bg-slate-800 text-slate-600' : 'bg-slate-50 text-slate-300'}`}><Receipt size={32} /></div>
-                <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>Nessuna spesa registrata</p>
-                <p className="text-xs text-slate-400">Aggiungi le tue spese dai Documenti</p>
+                <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{t('dashboard.no_expenses_title')}</p>
+                <p className="text-xs text-slate-400">{t('dashboard.no_expenses_subtitle')}</p>
               </div>
             ) : (
               <div className={`rounded-3xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
                 <div className={`px-6 py-5 flex items-center justify-between border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
                   <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Spese per Categoria</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('dashboard.expenses_by_category')}</p>
                     <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{expenses.toLocaleString()}</p>
                   </div>
                   <div className={`p-2 rounded-xl ${darkMode ? 'bg-slate-800 text-red-400' : 'bg-red-50 text-red-500'}`}><Receipt size={18} /></div>

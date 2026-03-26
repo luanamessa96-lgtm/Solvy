@@ -5,6 +5,7 @@ import { Deadline, Profile } from '../types';
 import { getSpanishDeadlines } from '../data/deadlines-es';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
+import { useTranslation } from 'react-i18next';
 
 function getScadenzeFiscali(year: number): Omit<Deadline, 'id'>[] {
   return [
@@ -28,6 +29,7 @@ interface CalendarViewProps {
 }
 
 const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDeadline, darkMode, profile }: CalendarViewProps) => {
+  const { t, i18n } = useTranslation();
   const isSpain = profile?.country === 'Spain';
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
@@ -53,7 +55,10 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   const partialFiscalDeadlines = addedCount > 0 && addedCount < scadenzeFiscali.length;
   const missingCount = scadenzeFiscali.length - addedCount;
 
-  const months = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+  const months = Array.from({ length: 12 }, (_, i) =>
+    new Intl.DateTimeFormat(i18n.language, { month: 'long' }).format(new Date(2024, i, 1))
+      .replace(/^\w/, c => c.toUpperCase())
+  );
 
   const yearDeadlines = useMemo(() => deadlines.filter(d => new Date(d.date).getFullYear() === selectedYear), [deadlines, selectedYear]);
 
@@ -93,7 +98,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
           type="text"
           value={searchQuery}
           onChange={e => { setSearchQuery(e.target.value); if (e.target.value) { setViewMode('list'); setSelectedMonth(null); } }}
-          placeholder="Cerca scadenza..."
+          placeholder={t('calendar.search_placeholder')}
           className={`flex-1 text-sm bg-transparent focus:outline-none ${darkMode ? 'text-white placeholder:text-slate-600' : 'text-slate-900 placeholder:text-slate-400'}`}
         />
         {searchQuery && (
@@ -106,7 +111,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
       {viewMode === 'grid' ? (
         <motion.div variants={container} className="space-y-6">
           <motion.div variants={item} className="flex items-center justify-between px-2">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Seleziona Mese</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{t('calendar.select_month')}</span>
           </motion.div>
           <div className="grid grid-cols-3 gap-3">
             {months.map((month, index) => {
@@ -131,8 +136,8 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md"><AlertCircle size={20} /></div>
                   <div>
-                    <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Prossima Scadenza</p>
-                    <p className="text-sm font-bold">{daysUntilNext === 0 ? 'Oggi!' : daysUntilNext === 1 ? 'Domani' : `Mancano ${daysUntilNext} giorni`}</p>
+                    <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider">{t('calendar.next_deadline')}</p>
+                    <p className="text-sm font-bold">{daysUntilNext === 0 ? t('calendar.today') : daysUntilNext === 1 ? t('calendar.tomorrow') : t('calendar.days_left', { count: daysUntilNext })}</p>
                   </div>
                 </div>
                 <h3 className="text-lg font-bold leading-tight">{nextDeadline.title}</h3>
@@ -146,14 +151,14 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className={`text-sm font-bold ${partialFiscalDeadlines ? 'text-amber-600' : (darkMode ? 'text-white' : 'text-slate-900')}`}>
-                    {partialFiscalDeadlines ? `Hai rimosso ${missingCount} scadenz${missingCount === 1 ? 'a' : 'e'} fiscale` : `Scadenze fiscali ${selectedYear}`}
+                    {partialFiscalDeadlines ? t('calendar.removed_deadlines', { count: missingCount, suffix: i18n.language.startsWith('es') ? (missingCount === 1 ? '' : 's') : (missingCount === 1 ? 'a' : 'e') }) : t('calendar.fiscal_deadlines_year', { year: selectedYear })}
                   </p>
                   <p className="text-xs text-slate-400">
-                    {partialFiscalDeadlines ? 'Vuoi ripristinarle?' : isSpain ? 'Aggiungi le scadenze Modelo in un tap' : 'Aggiungi le principali scadenze italiane in un tap'}
+                    {partialFiscalDeadlines ? t('calendar.restore_deadlines_hint') : isSpain ? t('calendar.add_spain_hint') : t('calendar.add_italian_hint')}
                   </p>
                 </div>
                 <div className={`px-3 py-1.5 text-white text-xs font-bold rounded-xl shrink-0 ml-4 ${partialFiscalDeadlines ? 'bg-amber-500' : 'bg-primary'}`}>
-                  {partialFiscalDeadlines ? 'Ripristina' : 'Aggiungi'}
+                  {partialFiscalDeadlines ? t('calendar.restore') : t('calendar.add')}
                 </div>
               </div>
             </motion.div>
@@ -161,8 +166,8 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
 
           <motion.div variants={item} className="space-y-4">
             <div className="flex items-center justify-between px-2">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{selectedMonth !== null ? `Scadenze di ${months[selectedMonth]}` : 'Tutte le Scadenze'}</span>
-              {selectedMonth !== null && <button onClick={() => setSelectedMonth(null)} className="text-[11px] font-bold text-primary uppercase tracking-wider active:scale-90 transition-all hover:drop-shadow-[0_0_4px_rgba(59,130,246,0.3)]">Vedi Tutte</button>}
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{selectedMonth !== null ? t('calendar.deadlines_of_month', { month: months[selectedMonth] }) : t('calendar.all_deadlines')}</span>
+              {selectedMonth !== null && <button onClick={() => setSelectedMonth(null)} className="text-[11px] font-bold text-primary uppercase tracking-wider active:scale-90 transition-all hover:drop-shadow-[0_0_4px_rgba(59,130,246,0.3)]">{t('calendar.view_all')}</button>}
             </div>
             <div className="space-y-3">
               {filteredDeadlines.length > 0 ? filteredDeadlines.map(deadline => (
@@ -178,12 +183,12 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                     </div>
                     <div className="flex items-center gap-2">
                       {deadline.completed ? (
-                        <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">Completata</span>
+                        <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">{t('calendar.completed')}</span>
                       ) : (
                         <>
-                          <span className="text-[10px] font-medium text-slate-400">{deadline.type === 'tax' ? 'Adempimento Fiscale' : deadline.type === 'payment' ? 'Pagamento Fornitore' : 'Altro'}</span>
+                          <span className="text-[10px] font-medium text-slate-400">{deadline.type === 'tax' ? t('calendar.type_tax') : deadline.type === 'payment' ? t('calendar.type_payment') : t('calendar.type_other')}</span>
                           <div className={`w-1 h-1 rounded-full ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
-                          <span className={`text-[10px] font-bold uppercase tracking-wider ${deadline.type === 'tax' ? 'text-red-500' : 'text-blue-500'}`}>{deadline.type === 'tax' ? 'Urgente' : 'In Scadenza'}</span>
+                          <span className={`text-[10px] font-bold uppercase tracking-wider ${deadline.type === 'tax' ? 'text-red-500' : 'text-blue-500'}`}>{deadline.type === 'tax' ? t('calendar.urgent') : t('calendar.expiring')}</span>
                         </>
                       )}
                     </div>
@@ -197,16 +202,16 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   </div>
                   <div className="space-y-1">
                     <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>
-                      {searchQuery ? `Nessun risultato per "${searchQuery}"` : selectedMonth !== null ? 'Nessuna scadenza questo mese' : 'Nessuna scadenza'}
+                      {searchQuery ? t('calendar.no_deadline_search', { query: searchQuery }) : selectedMonth !== null ? t('calendar.no_deadlines_month') : t('calendar.no_deadlines')}
                     </p>
                     <p className="text-xs text-slate-400">
-                      {searchQuery ? 'Prova con un termine diverso' : 'Aggiungi una scadenza fiscale o un pagamento'}
+                      {searchQuery ? t('calendar.no_deadline_search_hint') : t('calendar.no_deadline_hint')}
                     </p>
                   </div>
                   {!searchQuery && (
                     <button onClick={() => setIsAddOpen(true)} className="mx-auto flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/30 active:scale-95 transition-all">
                       <Plus size={16} />
-                      Aggiungi scadenza
+                      {t('calendar.add_deadline_btn')}
                     </button>
                   )}
                 </div>
@@ -231,36 +236,36 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className={`relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
               <div className="p-8 space-y-5">
                 <div className="flex justify-between items-start">
-                  <div><h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Nuova Scadenza</h2><p className="text-sm text-slate-500">Aggiungi una scadenza fiscale o pagamento</p></div>
+                  <div><h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('calendar.add_modal_title')}</h2><p className="text-sm text-slate-500">{t('calendar.add_modal_subtitle')}</p></div>
                   <button onClick={() => setIsAddOpen(false)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
                 </div>
                 <div className="space-y-3">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Titolo</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('calendar.field_title')}</label>
                     <input type="text" value={newDeadline.title} onChange={e => setNewDeadline({ ...newDeadline, title: e.target.value })} placeholder="Es: IVA Trimestrale" className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`} />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Data</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('calendar.field_date')}</label>
                       <input type="date" value={newDeadline.date} onChange={e => setNewDeadline({ ...newDeadline, date: e.target.value })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Importo</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('calendar.field_amount')}</label>
                       <input type="number" value={newDeadline.amount} onChange={e => setNewDeadline({ ...newDeadline, amount: e.target.value })} placeholder="0.00" className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`} />
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Tipo</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('calendar.field_type')}</label>
                     <div className="grid grid-cols-3 gap-2">
-                      {(['tax', 'payment', 'other'] as const).map(t => (
-                        <button key={t} onClick={() => setNewDeadline({ ...newDeadline, type: t })} className={`py-3 rounded-xl text-xs font-bold border transition-all ${newDeadline.type === t ? 'bg-primary border-primary text-white' : (darkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-600')}`}>
-                          {t === 'tax' ? 'Fiscale' : t === 'payment' ? 'Pagamento' : 'Altro'}
+                      {(['tax', 'payment', 'other'] as const).map(type => (
+                        <button key={type} onClick={() => setNewDeadline({ ...newDeadline, type })} className={`py-3 rounded-xl text-xs font-bold border transition-all ${newDeadline.type === type ? 'bg-primary border-primary text-white' : (darkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-600')}`}>
+                          {type === 'tax' ? t('calendar.type_fiscal') : type === 'payment' ? t('calendar.type_payment_btn') : t('calendar.type_other_btn')}
                         </button>
                       ))}
                     </div>
                   </div>
                 </div>
-                <button onClick={() => { if (!newDeadline.title) return; onAddDeadline({ id: Math.random().toString(36).substr(2, 9), title: newDeadline.title, date: newDeadline.date, type: newDeadline.type, amount: newDeadline.amount ? parseFloat(newDeadline.amount) : undefined }); setIsAddOpen(false); setNewDeadline({ title: '', date: new Date().toISOString().split('T')[0], type: 'tax', amount: '' }); }} className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">Aggiungi Scadenza</button>
+                <button onClick={() => { if (!newDeadline.title) return; onAddDeadline({ id: Math.random().toString(36).substr(2, 9), title: newDeadline.title, date: newDeadline.date, type: newDeadline.type, amount: newDeadline.amount ? parseFloat(newDeadline.amount) : undefined }); setIsAddOpen(false); setNewDeadline({ title: '', date: new Date().toISOString().split('T')[0], type: 'tax', amount: '' }); }} className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">{t('calendar.add_deadline_confirm')}</button>
               </div>
             </motion.div>
           </div>
@@ -279,17 +284,17 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                 </div>
                 <button onClick={() => { onUpdateDeadline({ ...selectedDeadline, completed: !selectedDeadline.completed }); setSelectedDeadline(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedDeadline.completed ? (darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400') : 'bg-emerald-50 text-emerald-500'}`}><CheckCircle2 size={18} /></div>
-                  <span className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedDeadline.completed ? 'Segna come da fare' : 'Segna completata'}</span>
+                  <span className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedDeadline.completed ? t('calendar.mark_todo') : t('calendar.mark_complete')}</span>
                 </button>
                 <button onClick={() => { setDeadlineToEdit({ ...selectedDeadline }); setSelectedDeadline(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${darkMode ? 'bg-slate-700 text-primary' : 'bg-primary/10 text-primary'}`}><FileEdit size={18} /></div>
-                  <span className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Modifica</span>
+                  <span className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('common.edit')}</span>
                 </button>
                 <button onClick={() => { setDeadlineToDelete(selectedDeadline); setSelectedDeadline(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-red-50 text-red-500"><Trash2 size={18} /></div>
-                  <span className="font-bold text-red-500">Elimina</span>
+                  <span className="font-bold text-red-500">{t('common.delete')}</span>
                 </button>
-                <button onClick={() => setSelectedDeadline(null)} className={`w-full py-4 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>Annulla</button>
+                <button onClick={() => setSelectedDeadline(null)} className={`w-full py-4 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{t('common.cancel')}</button>
               </div>
             </motion.div>
           </div>
@@ -303,26 +308,26 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className={`relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
               <div className="p-8 space-y-5">
                 <div className="flex justify-between items-start">
-                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Modifica Scadenza</h2>
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('calendar.edit_deadline_title')}</h2>
                   <button onClick={() => setDeadlineToEdit(null)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
                 </div>
                 <div className="space-y-3">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Titolo</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('calendar.field_title')}</label>
                     <input type="text" value={deadlineToEdit.title} onChange={e => setDeadlineToEdit({ ...deadlineToEdit, title: e.target.value })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Data</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('calendar.field_date')}</label>
                       <input type="date" value={deadlineToEdit.date} onChange={e => setDeadlineToEdit({ ...deadlineToEdit, date: e.target.value })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Importo</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('calendar.field_amount')}</label>
                       <input type="number" value={deadlineToEdit.amount || ''} onChange={e => setDeadlineToEdit({ ...deadlineToEdit, amount: parseFloat(e.target.value) || undefined })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
                     </div>
                   </div>
                 </div>
-                <button onClick={() => { onUpdateDeadline(deadlineToEdit); setDeadlineToEdit(null); }} className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">Salva</button>
+                <button onClick={() => { onUpdateDeadline(deadlineToEdit); setDeadlineToEdit(null); }} className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">{t('common.save')}</button>
               </div>
             </motion.div>
           </div>
@@ -337,8 +342,8 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
               <div className="p-8 space-y-5">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{partialFiscalDeadlines ? 'Ripristina Scadenze' : `Scadenze Fiscali ${selectedYear}`}</h2>
-                    <p className="text-sm text-slate-500 mt-1">Verifica le date sul sito dell'Agenzia delle Entrate — possono variare per proroghe o festività.</p>
+                    <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{partialFiscalDeadlines ? t('calendar.restore_modal_title') : t('calendar.fiscal_deadlines_year', { year: selectedYear })}</h2>
+                    <p className="text-sm text-slate-500 mt-1">{t('calendar.preload_disclaimer')}</p>
                   </div>
                   <button onClick={() => setIsPreloadOpen(false)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
                 </div>
@@ -362,7 +367,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   }}
                   className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all"
                 >
-                  Aggiungi tutte al calendario
+                  {t('calendar.add_all_btn')}
                 </button>
               </div>
             </motion.div>
@@ -379,13 +384,13 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                 <div className="flex flex-col items-center text-center space-y-3">
                   <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center text-red-500"><Trash2 size={24} /></div>
                   <div>
-                    <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Elimina scadenza</h2>
-                    <p className="text-sm text-slate-500 mt-1">Vuoi eliminare <span className="font-bold">{deadlineToDelete.title}</span>?</p>
+                    <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('calendar.delete_deadline_title')}</h2>
+                    <p className="text-sm text-slate-500 mt-1">{t('calendar.delete_deadline_body')}<span className="font-bold">{deadlineToDelete.title}</span>?</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <button onClick={() => setDeadlineToDelete(null)} className={`py-4 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>Annulla</button>
-                  <button onClick={() => { onDeleteDeadline(deadlineToDelete.id); setDeadlineToDelete(null); }} className="py-4 rounded-2xl font-bold bg-red-500 text-white shadow-xl shadow-red-500/30">Elimina</button>
+                  <button onClick={() => setDeadlineToDelete(null)} className={`py-4 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>{t('common.cancel')}</button>
+                  <button onClick={() => { onDeleteDeadline(deadlineToDelete.id); setDeadlineToDelete(null); }} className="py-4 rounded-2xl font-bold bg-red-500 text-white shadow-xl shadow-red-500/30">{t('common.delete')}</button>
                 </div>
               </div>
             </motion.div>

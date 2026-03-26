@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 
 type Screen = 'login' | 'register' | 'forgot' | 'forgot-sent' | 'reset' | 'register-sent';
@@ -12,6 +13,7 @@ interface AuthViewProps {
 }
 
 export default function AuthView({ darkMode, onResetPassword, initialScreen }: AuthViewProps) {
+  const { t } = useTranslation();
   const [screen, setScreen] = useState<Screen>(initialScreen ?? 'login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,8 +33,8 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
     setLoading(false);
     if (error) {
-      if (error.message.includes('Invalid login') || error.message.includes('invalid_grant') || error.message.includes('Invalid credentials')) setError('Email o password non corretti. Controlla i dati e riprova.');
-      else if (error.message.includes('Email not confirmed')) setError('Conferma prima la tua email — controlla la casella di posta.');
+      if (error.message.includes('Invalid login') || error.message.includes('invalid_grant') || error.message.includes('Invalid credentials')) setError(t('auth.error_invalid_credentials'));
+      else if (error.message.includes('Email not confirmed')) setError(t('auth.error_email_not_confirmed'));
       else setError(`Errore: ${error.message}`);
     } else if (!ricordami) {
       document.cookie.split(';').forEach(c => {
@@ -43,14 +45,14 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
   };
 
   const handleRegister = async () => {
-    if (!termsAccepted) { setError('Devi accettare la Privacy Policy e i Termini di Servizio per registrarti.'); return; }
-    if (password.length < 8) { setError('La password deve essere di almeno 8 caratteri.'); return; }
+    if (!termsAccepted) { setError(t('auth.error_terms')); return; }
+    if (password.length < 8) { setError(t('auth.error_password_length')); return; }
     setLoading(true);
     clearError();
     const { error } = await supabase.auth.signUp({ email, password });
     setLoading(false);
     if (error) {
-      if (error.message.includes('already registered')) setError('Questa email è già registrata. Accedi.');
+      if (error.message.includes('already registered')) setError(t('auth.error_already_registered'));
       else setError(`Errore: ${error.message}`);
     } else {
       setScreen('register-sent');
@@ -64,17 +66,17 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
       redirectTo: window.location.origin,
     });
     setLoading(false);
-    if (error) { setError('Errore nell\'invio. Controlla l\'email.'); return; }
+    if (error) { setError(t('auth.error_forgot_send')); return; }
     setScreen('forgot-sent');
   };
 
   const handleResetPassword = async () => {
-    if (newPassword.length < 8) { setError('La password deve essere di almeno 8 caratteri.'); return; }
+    if (newPassword.length < 8) { setError(t('auth.error_password_length')); return; }
     setLoading(true);
     clearError();
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setLoading(false);
-    if (error) { setError('Errore nel salvataggio. Riprova.'); return; }
+    if (error) { setError(t('auth.error_reset_save')); return; }
     onResetPassword?.();
   };
 
@@ -105,38 +107,38 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
           <AnimatePresence mode="wait">
             {screen === 'login' && (
               <motion.div key="login-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Bentornato</h1>
-                <p className="text-slate-500 mt-1 text-sm">Accedi al tuo account</p>
+                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.login_title')}</h1>
+                <p className="text-slate-500 mt-1 text-sm">{t('auth.login_subtitle')}</p>
               </motion.div>
             )}
             {screen === 'register' && (
               <motion.div key="register-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Crea account</h1>
-                <p className="text-slate-500 mt-1 text-sm">Inizia a gestire le tue finanze</p>
+                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.register_title')}</h1>
+                <p className="text-slate-500 mt-1 text-sm">{t('auth.register_subtitle')}</p>
               </motion.div>
             )}
             {screen === 'forgot' && (
               <motion.div key="forgot-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Password dimenticata?</h1>
-                <p className="text-slate-500 mt-1 text-sm">Ti mandiamo un link per reimpostarla</p>
+                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.forgot_title')}</h1>
+                <p className="text-slate-500 mt-1 text-sm">{t('auth.forgot_subtitle')}</p>
               </motion.div>
             )}
             {(screen === 'forgot-sent') && (
               <motion.div key="sent-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Email inviata!</h1>
-                <p className="text-slate-500 mt-1 text-sm">Controlla la tua casella di posta</p>
+                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.forgot_sent_title')}</h1>
+                <p className="text-slate-500 mt-1 text-sm">{t('auth.forgot_sent_subtitle')}</p>
               </motion.div>
             )}
             {screen === 'register-sent' && (
               <motion.div key="register-sent-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Controlla la email!</h1>
-                <p className="text-slate-500 mt-1 text-sm">Abbiamo inviato un link di conferma</p>
+                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.register_sent_title')}</h1>
+                <p className="text-slate-500 mt-1 text-sm">{t('auth.register_sent_subtitle')}</p>
               </motion.div>
             )}
             {screen === 'reset' && (
               <motion.div key="reset-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Nuova password</h1>
-                <p className="text-slate-500 mt-1 text-sm">Scegli una password sicura</p>
+                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.reset_title')}</h1>
+                <p className="text-slate-500 mt-1 text-sm">{t('auth.reset_subtitle')}</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -169,25 +171,25 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input type="checkbox" checked={ricordami} onChange={e => setRicordami(e.target.checked)} className="w-4 h-4 rounded accent-primary cursor-pointer" />
-                  <span className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Ricordami</span>
+                  <span className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{t('auth.remember_me')}</span>
                 </label>
                 <button type="button" onClick={() => { clearError(); setScreen('forgot'); }} className="text-sm text-primary font-semibold">
-                  Password dimenticata?
+                  {t('auth.forgot_link')}
                 </button>
               </div>
 
               <button type="button" onClick={handleLogin} disabled={loading} className={btnPrimary}>
-                {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : 'Accedi'}
+                {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : t('auth.login_btn')}
               </button>
 
               <div className="flex items-center gap-3 py-1">
                 <div className={`flex-1 h-px ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
-                <span className="text-xs text-slate-500 font-medium">oppure</span>
+                <span className="text-xs text-slate-500 font-medium">{t('auth.or')}</span>
                 <div className={`flex-1 h-px ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
               </div>
 
               <button type="button" onClick={() => { clearError(); setScreen('register'); }} className={`w-full py-4 rounded-2xl font-bold transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 text-white' : 'bg-white text-slate-900 border-2 border-slate-200'}`}>
-                Crea un account
+                {t('auth.create_account_btn')}
               </button>
             </motion.div>
           )}
@@ -204,7 +206,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
                 <div className="relative">
                   <label htmlFor="register-password" className="sr-only">Password</label>
                   <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
-                  <input id="register-password" type={showPassword ? 'text' : 'password'} placeholder="Password (min. 8 caratteri)" value={password} onChange={e => { setPassword(e.target.value); clearError(); }} autoComplete="new-password" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11 pr-11`} />
+                  <input id="register-password" type={showPassword ? 'text' : 'password'} placeholder={t('auth.password_placeholder')} value={password} onChange={e => { setPassword(e.target.value); clearError(); }} autoComplete="new-password" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11 pr-11`} />
                   <button type="button" onClick={() => setShowPassword(v => !v)} aria-label="Mostra/nascondi password" className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -221,19 +223,19 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
                   className="w-4 h-4 mt-0.5 rounded accent-primary cursor-pointer shrink-0"
                 />
                 <span className={`text-xs leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Ho letto e accetto la{' '}
-                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">Privacy Policy</a>
-                  {' '}e i{' '}
-                  <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">Termini di Servizio</a>
+                  {t('auth.terms_text')}
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">{t('auth.privacy_policy')}</a>
+                  {t('auth.terms_and')}
+                  <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">{t('auth.terms_of_service')}</a>
                 </span>
               </label>
 
               <button type="button" onClick={handleRegister} disabled={loading || !termsAccepted} className={btnPrimary}>
-                {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : 'Registrati'}
+                {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : t('auth.register_btn')}
               </button>
 
               <button type="button" onClick={() => { clearError(); setScreen('login'); }} className={`w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-500`}>
-                <ArrowLeft size={14} /> Torna al login
+                <ArrowLeft size={14} /> {t('auth.back_to_login')}
               </button>
             </motion.div>
           )}
@@ -243,17 +245,17 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
             <motion.div key="forgot-form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
               <div className="relative">
                 <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input type="email" placeholder="La tua email" value={email} onChange={e => { setEmail(e.target.value); clearError(); }} autoComplete="email" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11`} />
+                <input type="email" placeholder={t('auth.your_email_placeholder')} value={email} onChange={e => { setEmail(e.target.value); clearError(); }} autoComplete="email" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11`} />
               </div>
 
               {error && <p className="text-sm text-red-500 font-medium px-1">{error}</p>}
 
               <button type="button" onClick={handleForgot} disabled={loading} className={btnPrimary}>
-                {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : 'Invia link di reset'}
+                {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : t('auth.send_reset_link')}
               </button>
 
               <button type="button" onClick={() => { clearError(); setScreen('login'); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-500">
-                <ArrowLeft size={14} /> Torna al login
+                <ArrowLeft size={14} /> {t('auth.back_to_login')}
               </button>
             </motion.div>
           )}
@@ -264,12 +266,12 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
               <div className={`p-6 rounded-3xl text-center space-y-3 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
                 <CheckCircle2 size={40} className="text-emerald-500 mx-auto" />
                 <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                  Abbiamo inviato un link di conferma a <span className="text-primary">{email}</span>
+                  {t('auth.register_sent_body')}<span className="text-primary">{email}</span>
                 </p>
-                <p className="text-xs text-slate-500">Clicca il link nell'email per attivare il tuo account. Controlla anche la cartella spam.</p>
+                <p className="text-xs text-slate-500">{t('auth.register_sent_spam')}</p>
               </div>
               <button type="button" onClick={() => { clearError(); setScreen('login'); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-500">
-                <ArrowLeft size={14} /> Torna al login
+                <ArrowLeft size={14} /> {t('auth.back_to_login')}
               </button>
             </motion.div>
           )}
@@ -280,12 +282,12 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
               <div className={`p-6 rounded-3xl text-center space-y-3 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
                 <CheckCircle2 size={40} className="text-emerald-500 mx-auto" />
                 <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                  Abbiamo inviato un link a <span className="text-primary">{email}</span>
+                  {t('auth.forgot_sent_body')}<span className="text-primary">{email}</span>
                 </p>
-                <p className="text-xs text-slate-500">Clicca il link nell'email per scegliere una nuova password. Controlla anche la cartella spam.</p>
+                <p className="text-xs text-slate-500">{t('auth.forgot_sent_spam')}</p>
               </div>
               <button type="button" onClick={() => { clearError(); setScreen('login'); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-500">
-                <ArrowLeft size={14} /> Torna al login
+                <ArrowLeft size={14} /> {t('auth.back_to_login')}
               </button>
             </motion.div>
           )}
@@ -295,7 +297,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
             <motion.div key="reset-form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
               <div className="relative">
                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input type={showNewPassword ? 'text' : 'password'} placeholder="Nuova password (min. 8 caratteri)" value={newPassword} onChange={e => { setNewPassword(e.target.value); clearError(); }} autoComplete="new-password" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11 pr-11`} />
+                <input type={showNewPassword ? 'text' : 'password'} placeholder={t('auth.new_password_placeholder')} value={newPassword} onChange={e => { setNewPassword(e.target.value); clearError(); }} autoComplete="new-password" autoCorrect="off" autoCapitalize="none" spellCheck={false} className={`${inputClass} pl-11 pr-11`} />
                 <button type="button" onClick={() => setShowNewPassword(v => !v)} aria-label="Mostra/nascondi password" className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
                   {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -304,7 +306,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
               {error && <p className="text-sm text-red-500 font-medium px-1">{error}</p>}
 
               <button type="button" onClick={handleResetPassword} disabled={loading} className={btnPrimary}>
-                {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : 'Salva nuova password'}
+                {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : t('auth.save_new_password')}
               </button>
             </motion.div>
           )}
