@@ -9,6 +9,7 @@ import { MOCK_PROFILES, MOCK_DOCUMENTS, MOCK_DEADLINES, MOCK_ACCOUNTANT } from '
 import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, addDeadline, updateDeadline, deleteDeadline, getProfiles, createProfile, updateProfile, getAccountant, updateAccountant, uploadFile } from './lib/db';
 import { supabase } from './lib/supabase';
 import { Profile, Document, Deadline, Accountant } from './types';
+import { setLanguageByCountry } from './lib/i18n';
 import AuthView from './views/AuthView';
 
 import { ToastProvider, useToast } from './components/ui/Toast';
@@ -139,6 +140,7 @@ function AppInner() {
         const savedId = localStorage.getItem('activeProfileId') || document.cookie.match(/activeProfileId=([^;]+)/)?.[1];
         const profile = completeProfiles.find(p => p.id === savedId) || completeProfiles[0];
         setActiveProfile(profile);
+        setLanguageByCountry(profile.country);
         const profileTheme = localStorage.getItem(`theme_${profile.id}`) || localStorage.getItem('theme') || 'light';
         setProfileTheme(profileTheme, profile.id);
         Promise.all([
@@ -407,6 +409,7 @@ function AppInner() {
     // Mostra dati dalla cache se disponibili, altrimenti vuoto
     const cached = profileCache.current[p.id];
     setActiveProfile(p);
+    setLanguageByCountry(p.country);
     setDocuments(cached ? cached.documents : []);
     setDeadlines(cached ? cached.deadlines : []);
     setAccountant(cached?.accountant || MOCK_ACCOUNTANT);
