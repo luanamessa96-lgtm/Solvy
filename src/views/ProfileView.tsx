@@ -153,10 +153,6 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
         Object.entries(updatedProfile).filter(([k]) => DB_PROFILE_FIELDS.includes(k as keyof Profile))
       ) as Profile;
 
-      console.log('[ProfileView] updatedProfile.nie:', updatedProfile.nie);
-      console.log('[ProfileView] safeProfile.nie:', safeProfile.nie);
-      console.log('[ProfileView] taxIdType:', taxIdType, '| editData.nie:', editData.nie);
-
       await onUpdateProfile(safeProfile);
       setLanguageByCountry(editData.country);
       setSaveSuccess(true);

@@ -157,7 +157,6 @@ export async function createProfile(profile: Profile): Promise<void> {
 }
 
 export async function updateProfile(profile: Profile): Promise<void> {
-  console.log('[db.updateProfile] nie ricevuto:', profile.nie);
   const { data: { user } } = await supabase.auth.getUser();
   const { error } = await supabase
     .from('profiles')
