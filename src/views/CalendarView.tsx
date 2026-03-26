@@ -50,7 +50,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     ? getSpanishDeadlines(selectedYear).map(s => ({ title: s.title, date: s.date, type: 'tax' as Deadline['type'] }))
     : getScadenzeFiscali(selectedYear);
   const scadenzeFiscali = scadenzeFiscaliRaw;
-  const addedCount = scadenzeFiscali.filter(s => deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === selectedYear)).length;
+  const addedCount = scadenzeFiscali.filter(s => deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === new Date(s.date).getFullYear())).length;
   const hasFiscalDeadlines = addedCount === scadenzeFiscali.length;
   const partialFiscalDeadlines = addedCount > 0 && addedCount < scadenzeFiscali.length;
   const missingCount = scadenzeFiscali.length - addedCount;
@@ -348,7 +348,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   <button onClick={() => setIsPreloadOpen(false)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
                 </div>
                 <div className="space-y-2">
-                  {scadenzeFiscali.filter(s => !deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === selectedYear)).map((s, i) => (
+                  {scadenzeFiscali.filter(s => !deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === new Date(s.date).getFullYear())).map((s, i) => (
                     <div key={i} className={`flex items-center gap-3 p-3 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
                       <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 text-red-500 ${darkMode ? 'bg-red-500/10' : 'bg-red-50'}`}>
                         <span className="text-[9px] font-bold uppercase">{new Date(s.date).toLocaleDateString('it-IT', { month: 'short' })}</span>
@@ -361,7 +361,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                 <button
                   onClick={() => {
                     scadenzeFiscali
-                      .filter(s => !deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === selectedYear))
+                      .filter(s => !deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === new Date(s.date).getFullYear()))
                       .forEach(s => onAddDeadline({ ...s, id: Math.random().toString(36).substr(2, 9) }));
                     setIsPreloadOpen(false);
                   }}
