@@ -60,7 +60,21 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
       .replace(/^\w/, c => c.toUpperCase())
   );
 
-  const yearDeadlines = useMemo(() => deadlines.filter(d => new Date(d.date).getFullYear() === selectedYear), [deadlines, selectedYear]);
+  const yearDeadlines = useMemo(() => {
+    // Build a map title→date from this year's fiscal templates
+    // (handles ES deadlines like T4/390 whose date falls in year+1)
+    const templates = isSpain
+      ? getSpanishDeadlines(selectedYear).map(s => ({ title: s.title, date: s.date }))
+      : getScadenzeFiscali(selectedYear);
+    const templateMap = new Map(templates.map(s => [s.title, s.date]));
+    return deadlines.filter(d => {
+      const templateDate = templateMap.get(d.title);
+      // Template deadline: show if title+date matches this year's template exactly
+      if (templateDate !== undefined) return templateDate === d.date;
+      // User-created deadline: show by date year
+      return new Date(d.date).getFullYear() === selectedYear;
+    });
+  }, [deadlines, selectedYear, isSpain]);
 
   const filteredDeadlines = useMemo(() => {
     let result = selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => new Date(d.date).getMonth() === selectedMonth);
