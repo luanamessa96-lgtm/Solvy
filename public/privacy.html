@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Solvy</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #3b82f6;
+      --primary-light: #eff6ff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --bg: #f8fafc;
+      --white: #ffffff;
+      --accent: #fef3c7;
+      --accent-border: #f59e0b;
+      --radius: 12px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 15px; }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Header */
+    .header { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 780px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; color: var(--text); text-decoration: none; }
+    .logo-icon { width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .logo-icon svg { width: 18px; height: 18px; }
+    .badge { font-size: 11px; font-weight: 700; background: var(--primary-light); color: var(--primary); padding: 4px 10px; border-radius: 20px; border: 1px solid #bfdbfe; letter-spacing: 0.3px; }
+    .back-link { font-size: 13px; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .back-link::before { content: '←'; }
+
+    /* Main */
+    .container { max-width: 780px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* Hero */
+    .hero { margin-bottom: 48px; }
+    .hero h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 12px; }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .meta-item { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+    .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--border); }
+
+    /* TOC */
+    .toc { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 48px; }
+    .toc h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 14px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { padding: 4px 0; font-size: 14px; }
+    .toc li a { color: var(--text); font-weight: 500; }
+    .toc li a:hover { color: var(--primary); }
+
+    /* Sections */
+    .section { margin-bottom: 48px; scroll-margin-top: 80px; }
+    .section h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--primary); display: flex; align-items: center; gap: 10px; }
+    .section-num { width: 28px; height: 28px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+    .section h3 { font-size: 15px; font-weight: 700; margin: 24px 0 10px; color: var(--text); }
+    .section p { margin-bottom: 14px; color: #334155; }
+    .section ul, .section ol { padding-left: 22px; margin-bottom: 14px; }
+    .section li { padding: 3px 0; color: #334155; }
+
+    /* Placeholder highlight */
+    .ph { background: var(--accent); color: #92400e; font-weight: 700; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--accent-border); font-size: 13px; white-space: nowrap; }
+
+    /* Info box */
+    .infobox { background: var(--primary-light); border: 1px solid #bfdbfe; border-radius: var(--radius); padding: 16px 20px; margin: 16px 0; font-size: 14px; color: #1e40af; }
+    .infobox strong { display: block; margin-bottom: 4px; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+    th { background: var(--bg); font-weight: 700; text-align: left; padding: 10px 14px; border: 1px solid var(--border); color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 10px 14px; border: 1px solid var(--border); vertical-align: top; color: #334155; }
+    tr:hover td { background: #f8fafc; }
+
+    /* Rights grid */
+    .rights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 16px 0; }
+    .right-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+    .right-card .art { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--primary); letter-spacing: 0.5px; margin-bottom: 6px; }
+    .right-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .right-card p { font-size: 13px; color: var(--muted); margin: 0; }
+
+    /* Footer */
+    .footer { border-top: 1px solid var(--border); padding: 32px 24px; text-align: center; font-size: 13px; color: var(--muted); max-width: 780px; margin: 0 auto; }
+    .footer a { color: var(--primary); font-weight: 600; }
+    .lang-switch { display: flex; justify-content: center; gap: 12px; margin-bottom: 16px; }
+    .lang-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); font-size: 13px; font-weight: 600; cursor: pointer; background: var(--white); color: var(--text); }
+    .lang-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .es-content { display: none; }
+
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 26px; }
+      .container { padding: 28px 16px 60px; }
+      .header-inner { padding: 12px 16px; }
+      .rights-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+      </div>
+      Solvy
+    </a>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span class="badge">Privacy Policy</span>
+      <a href="/" class="back-link">App</a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="lang-switch">
+    <button class="lang-btn active" onclick="setLang('it')">🇮🇹 Italiano</button>
+    <button class="lang-btn" onclick="setLang('es')">🇪🇸 Español</button>
+  </div>
+
+  <!-- ITALIAN CONTENT -->
+  <div id="it-content">
+
+    <div class="hero">
+      <h1>Informativa sulla Privacy</h1>
+      <div class="hero-meta">
+        <span class="meta-item">📅 Aggiornata: 26 marzo 2026</span>
+        <span class="dot"></span>
+        <span class="meta-item">⚖️ Conforme al Regolamento UE 2016/679 (GDPR)</span>
+        <span class="dot"></span>
+        <span class="meta-item">🌍 Applicabile in Italia e Spagna</span>
+      </div>
+    </div>
+
+    <div class="toc">
+      <h2>Sommario</h2>
+      <ol>
+        <li><a href="#titolare">Titolare del trattamento</a></li>
+        <li><a href="#dati">Dati personali raccolti</a></li>
+        <li><a href="#finalita">Finalità e base giuridica</a></li>
+        <li><a href="#conservazione">Conservazione dei dati</a></li>
+        <li><a href="#terze-parti">Servizi di terze parti</a></li>
+        <li><a href="#trasferimento">Trasferimento internazionale</a></li>
+        <li><a href="#diritti">Diritti degli interessati</a></li>
+        <li><a href="#minori">Minori</a></li>
+        <li><a href="#sicurezza">Sicurezza</a></li>
+        <li><a href="#modifiche">Modifiche alla policy</a></li>
+        <li><a href="#contatti">Contatti e reclami</a></li>
+      </ol>
+    </div>
+
+    <div class="infobox">
+      <strong>In sintesi</strong>
+      Solvy raccoglie solo i dati necessari per fornire il servizio di gestione finanziaria per freelancer. Non vendiamo dati a terzi. I dati fiscali sono cifrati e archiviati nell'UE tramite Supabase. Puoi richiedere la cancellazione del tuo account in qualsiasi momento.
+    </div>
+
+    <!-- 1 -->
+    <section class="section" id="titolare">
+      <h2><span class="section-num">1</span> Titolare del trattamento</h2>
+      <p>Il titolare del trattamento dei dati personali è:</p>
+      <table>
+        <tr><th>Campo</th><th>Valore</th></tr>
+        <tr><td>Ragione sociale / Nome</td><td><span class="ph">[DA COMPILARE — Nome o Ragione Sociale]</span></td></tr>
+        <tr><td>Indirizzo</td><td><span class="ph">[DA COMPILARE — Via, CAP, Città, Paese]</span></td></tr>
+        <tr><td>P.IVA / Codice Fiscale</td><td><span class="ph">[DA COMPILARE]</span></td></tr>
+        <tr><td>Email</td><td><span class="ph">[DA COMPILARE — privacy@esempio.it]</span></td></tr>
+        <tr><td>Sito web</td><td>solvy.app</td></tr>
+      </table>
+      <p>Per "dati personali" si intende qualsiasi informazione relativa a una persona fisica identificata o identificabile (art. 4 n.1 GDPR). Per "trattamento" si intende qualsiasi operazione eseguita su dati personali (art. 4 n.2 GDPR).</p>
+    </section>
+
+    <!-- 2 -->
+    <section class="section" id="dati">
+      <h2><span class="section-num">2</span> Dati personali raccolti</h2>
+
+      <h3>2.1 Dati forniti direttamente dall'utente</h3>
+      <table>
+        <tr><th>Categoria</th><th>Dati specifici</th><th>Obbligatorietà</th></tr>
+        <tr><td>Dati di account</td><td>Indirizzo email, password (hash)</td><td>Obbligatoria</td></tr>
+        <tr><td>Dati anagrafici</td><td>Nome e cognome, tipo di lavoro/professione</td><td>Obbligatoria (onboarding)</td></tr>
+        <tr><td>Dati fiscali italiani</td><td>Partita IVA, Codice Fiscale, indirizzo, regime fiscale, coefficiente di redditività, anno inizio attività</td><td>Facoltativa</td></tr>
+        <tr><td>Dati fiscali spagnoli</td><td>NIF o NIE, IBAN, cuota RETA mensile, anno inicio actividad</td><td>Facoltativa</td></tr>
+        <tr><td>Dati finanziari</td><td>Fatture emesse, spese, importi, clienti, categorie di spesa</td><td>Facoltativa (inserita dall'utente)</td></tr>
+        <tr><td>Dati del commercialista</td><td>Nome, email, telefono, indirizzo del commercialista di fiducia</td><td>Facoltativa</td></tr>
+        <tr><td>Documenti caricati</td><td>Immagini di scontrini, PDF di fatture</td><td>Facoltativa</td></tr>
+        <tr><td>Dati di pagamento</td><td>Dati carta di credito (gestiti esclusivamente da Stripe, non archiviati da Solvy), email di fatturazione</td><td>Solo per abbonamento Pro</td></tr>
+      </table>
+
+      <h3>2.2 Dati raccolti automaticamente</h3>
+      <ul>
+        <li><strong>Dati di sessione:</strong> token di autenticazione Supabase archiviati in localStorage e cookie per garantire la persistenza della sessione</li>
+        <li><strong>Metadati tecnici:</strong> timestamp di creazione/modifica dei record</li>
+        <li><strong>Log di errore:</strong> errori applicativi anonimi per il miglioramento del servizio</li>
+      </ul>
+      <p>Solvy <strong>non utilizza cookie di tracciamento</strong> di terze parti, non installa pixel pubblicitari e non effettua profilazione comportamentale.</p>
+    </section>
+
+    <!-- 3 -->
+    <section class="section" id="finalita">
+      <h2><span class="section-num">3</span> Finalità e base giuridica</h2>
+      <table>
+        <tr><th>Finalità</th><th>Base giuridica (GDPR)</th><th>Dettaglio</th></tr>
+        <tr><td>Autenticazione e gestione account</td><td>Art. 6(1)(b) — Esecuzione del contratto</td><td>Necessario per fornire il servizio</td></tr>
+        <tr><td>Calcolo tasse e gestione finanziaria</td><td>Art. 6(1)(b) — Esecuzione del contratto</td><td>Funzionalità core dell'app</td></tr>
+        <tr><td>Gestione abbonamento Pro e pagamenti</td><td>Art. 6(1)(b) — Esecuzione del contratto</td><td>Tramite Stripe</td></tr>
+        <tr><td>Conformità obblighi legali</td><td>Art. 6(1)(c) — Obbligo legale</td><td>Normativa fiscale IT/ES, antiriciclaggio</td></tr>
+        <tr><td>Comunicazioni di servizio (email transazionali)</td><td>Art. 6(1)(b) — Esecuzione del contratto</td><td>Conferma registrazione, reset password</td></tr>
+        <tr><td>Miglioramento del servizio</td><td>Art. 6(1)(f) — Legittimo interesse</td><td>Log anonimi di errore, metriche aggregate</td></tr>
+        <tr><td>Marketing e comunicazioni promozionali</td><td>Art. 6(1)(a) — Consenso</td><td>Solo previo consenso esplicito e separato</td></tr>
+      </table>
+      <p>Il titolare non adotta processi decisionali automatizzati che producono effetti giuridici significativi (art. 22 GDPR).</p>
+    </section>
+
+    <!-- 4 -->
+    <section class="section" id="conservazione">
+      <h2><span class="section-num">4</span> Conservazione dei dati</h2>
+      <table>
+        <tr><th>Tipo di dato</th><th>Periodo di conservazione</th></tr>
+        <tr><td>Dati di account (email, password hash)</td><td>Per tutta la durata dell'account + 30 giorni dopo la cancellazione</td></tr>
+        <tr><td>Dati fiscali e finanziari (fatture, spese)</td><td>10 anni dalla data dell'operazione (obbligo di legge — art. 2220 c.c. IT; art. 30 Código de Comercio ES)</td></tr>
+        <tr><td>Dati di pagamento (log Stripe)</td><td>7 anni (normativa fiscale UE)</td></tr>
+        <tr><td>Log di autenticazione e sicurezza</td><td>90 giorni</td></tr>
+        <tr><td>Log di errore anonimi</td><td>30 giorni</td></tr>
+        <tr><td>Cookie di sessione</td><td>Fino a logout o scadenza (12 mesi massimo)</td></tr>
+      </table>
+      <p>Alla scadenza dei periodi sopra indicati, i dati vengono cancellati automaticamente o anonimizzati in modo irreversibile. I dati fiscali soggetti ad obblighi di legge vengono conservati per il periodo minimo richiesto dalla normativa applicabile.</p>
+    </section>
+
+    <!-- 5 -->
+    <section class="section" id="terze-parti">
+      <h2><span class="section-num">5</span> Servizi di terze parti (Sub-responsabili)</h2>
+      <p>Solvy si avvale dei seguenti fornitori di servizi che trattano dati personali per conto del titolare in qualità di responsabili del trattamento (art. 28 GDPR):</p>
+      <table>
+        <tr><th>Fornitore</th><th>Servizio</th><th>Dati trattati</th><th>Paese</th><th>Garanzie</th></tr>
+        <tr>
+          <td><strong>Supabase Inc.</strong></td>
+          <td>Database, autenticazione, storage file, Realtime</td>
+          <td>Tutti i dati utente, file caricati, sessioni</td>
+          <td>UE (AWS eu-west-3, Parigi)</td>
+          <td>DPA, SCCs, ISO 27001</td>
+        </tr>
+        <tr>
+          <td><strong>Stripe Inc.</strong></td>
+          <td>Elaborazione pagamenti, gestione abbonamenti</td>
+          <td>Email, dati carta (tokenizzati), storico pagamenti</td>
+          <td>UE (Irlanda) + USA</td>
+          <td>DPA, SCCs, PCI DSS Level 1</td>
+        </tr>
+        <tr>
+          <td><strong>Vercel Inc.</strong></td>
+          <td>Hosting applicazione web, CDN</td>
+          <td>Indirizzi IP (log temporanei), richieste HTTP</td>
+          <td>UE + USA</td>
+          <td>DPA, SCCs, SOC 2 Type II</td>
+        </tr>
+        <tr>
+          <td><strong>DiceBear</strong></td>
+          <td>Generazione avatar profilo</td>
+          <td>ID utente (seed anonimo)</td>
+          <td>UE</td>
+          <td>Servizio stateless, nessuna archiviazione</td>
+        </tr>
+      </table>
+      <p>Il titolare si assicura che tutti i sub-responsabili offrano garanzie adeguate ai sensi dell'art. 28 GDPR. I dati non vengono mai venduti a terzi né utilizzati per finalità pubblicitarie da parte dei fornitori.</p>
+    </section>
+
+    <!-- 6 -->
+    <section class="section" id="trasferimento">
+      <h2><span class="section-num">6</span> Trasferimento internazionale dei dati</h2>
+      <p>I dati principali (database, autenticazione) sono archiviati nell'UE (data center Supabase eu-west-3, Parigi). Alcuni servizi di supporto (Vercel CDN, Stripe) possono comportare trasferimenti verso paesi terzi (USA).</p>
+      <p>Tutti i trasferimenti extra-UE avvengono nel rispetto del Capo V GDPR mediante:</p>
+      <ul>
+        <li><strong>Clausole contrattuali standard (SCCs)</strong> adottate dalla Commissione Europea con Decisione 2021/914/UE</li>
+        <li>Valutazioni di impatto sul trasferimento (TIA) da parte dei singoli fornitori</li>
+        <li>Misure tecniche supplementari (cifratura end-to-end, pseudonimizzazione)</li>
+      </ul>
+    </section>
+
+    <!-- 7 -->
+    <section class="section" id="diritti">
+      <h2><span class="section-num">7</span> Diritti degli interessati (artt. 15–22 GDPR)</h2>
+      <p>In qualità di interessato, hai i seguenti diritti. Puoi esercitarli in qualsiasi momento inviando una richiesta all'indirizzo email del titolare indicato nella sezione 1.</p>
+
+      <div class="rights-grid">
+        <div class="right-card">
+          <div class="art">Art. 15 GDPR</div>
+          <h4>Diritto di accesso</h4>
+          <p>Ottenere conferma del trattamento e copia dei dati personali che ti riguardano.</p>
+        </div>
+        <div class="right-card">
+          <div class="art">Art. 16 GDPR</div>
+          <h4>Diritto di rettifica</h4>
+          <p>Correggere dati inesatti o completare dati incompleti.</p>
+        </div>
+        <div class="right-card">
+          <div class="art">Art. 17 GDPR</div>
+          <h4>Diritto alla cancellazione</h4>
+          <p>Ottenere la cancellazione dei tuoi dati ("diritto all'oblio"), salvo obblighi di legge.</p>
+        </div>
+        <div class="right-card">
+          <div class="art">Art. 18 GDPR</div>
+          <h4>Diritto di limitazione</h4>
+          <p>Limitare il trattamento mentre è in corso una contestazione o verifica.</p>
+        </div>
+        <div class="right-card">
+          <div class="art">Art. 20 GDPR</div>
+          <h4>Portabilità dei dati</h4>
+          <p>Ricevere i tuoi dati in formato strutturato e leggibile da macchina (JSON/CSV).</p>
+        </div>
+        <div class="right-card">
+          <div class="art">Art. 21 GDPR</div>
+          <h4>Diritto di opposizione</h4>
+          <p>Opporti al trattamento basato su legittimo interesse, incluse finalità di marketing.</p>
+        </div>
+        <div class="right-card">
+          <div class="art">Art. 7(3) GDPR</div>
+          <h4>Revoca del consenso</h4>
+          <p>Revocare il consenso in qualsiasi momento, senza pregiudizio per la legittimità del trattamento precedente.</p>
+        </div>
+        <div class="right-card">
+          <div class="art">Art. 77 GDPR</div>
+          <h4>Diritto di reclamo</h4>
+          <p>Presentare reclamo al Garante Privacy (IT: gpdp.it) o all'AEPD (ES: aepd.es).</p>
+        </div>
+      </div>
+
+      <h3>Come esercitare i diritti</h3>
+      <p>Invia una richiesta scritta a <span class="ph">[DA COMPILARE — privacy@esempio.it]</span> specificando: (a) il diritto che intendi esercitare, (b) i dati a cui la richiesta si riferisce, (c) un documento di identità. Il titolare risponde entro 30 giorni (prorogabili a 90 in casi complessi, con comunicazione del motivo entro il primo mese — art. 12(3) GDPR).</p>
+
+      <h3>Cancellazione account</h3>
+      <p>Puoi richiedere la cancellazione del tuo account e dei dati associati in qualsiasi momento inviando una richiesta a <span class="ph">[DA COMPILARE — privacy@esempio.it]</span>. I dati fiscali soggetti ad obbligo legale di conservazione (fatture, spese) saranno anonimizzati e conservati per il periodo minimo richiesto dalla legge.</p>
+    </section>
+
+    <!-- 8 -->
+    <section class="section" id="minori">
+      <h2><span class="section-num">8</span> Minori</h2>
+      <p>Il servizio Solvy è destinato esclusivamente a persone fisiche che svolgono attività professionale autonoma e che abbiano compiuto i <strong>18 anni di età</strong>. Il titolare non raccoglie consapevolmente dati personali di minori di 18 anni. Qualora vengano identificati dati appartenenti a minori, questi verranno immediatamente cancellati.</p>
+    </section>
+
+    <!-- 9 -->
+    <section class="section" id="sicurezza">
+      <h2><span class="section-num">9</span> Sicurezza dei dati</h2>
+      <p>Solvy adotta misure tecniche e organizzative adeguate ai sensi dell'art. 32 GDPR per proteggere i dati personali da accesso, divulgazione, alterazione o distruzione non autorizzati:</p>
+      <ul>
+        <li><strong>Cifratura in transito:</strong> tutte le comunicazioni avvengono tramite HTTPS/TLS 1.3</li>
+        <li><strong>Cifratura a riposo:</strong> i database Supabase sono cifrati con AES-256</li>
+        <li><strong>Autenticazione sicura:</strong> le password sono archiviate come hash bcrypt tramite Supabase Auth; non viene mai archiviata la password in chiaro</li>
+        <li><strong>Row Level Security (RLS):</strong> i dati di ciascun utente sono isolati a livello di database tramite policy RLS di Supabase</li>
+        <li><strong>Dati di pagamento:</strong> i dati delle carte di credito sono gestiti interamente da Stripe (PCI DSS Level 1) e non transitano mai per i server di Solvy</li>
+        <li><strong>Accesso privilegiato:</strong> l'accesso ai dati di produzione è limitato al minimo necessario (principio del least privilege)</li>
+      </ul>
+      <p>In caso di violazione dei dati personali che possa comportare un rischio per i diritti e le libertà degli interessati, il titolare notificherà l'autorità di controllo competente entro 72 ore (art. 33 GDPR) e gli interessati coinvolti senza ingiustificato ritardo (art. 34 GDPR).</p>
+    </section>
+
+    <!-- 10 -->
+    <section class="section" id="modifiche">
+      <h2><span class="section-num">10</span> Modifiche alla Privacy Policy</h2>
+      <p>Il titolare si riserva il diritto di modificare la presente informativa. Le modifiche sostanziali saranno comunicate tramite email all'indirizzo registrato o tramite notifica in-app almeno <strong>15 giorni prima</strong> dell'entrata in vigore. L'utilizzo continuato del servizio dopo tale termine costituisce accettazione delle modifiche. La data dell'ultima modifica è sempre indicata in cima a questo documento.</p>
+    </section>
+
+    <!-- 11 -->
+    <section class="section" id="contatti">
+      <h2><span class="section-num">11</span> Contatti e reclami</h2>
+      <p>Per qualsiasi questione relativa al trattamento dei tuoi dati personali, puoi contattare il titolare:</p>
+      <ul>
+        <li><strong>Email:</strong> <span class="ph">[DA COMPILARE — privacy@esempio.it]</span></li>
+        <li><strong>Indirizzo postale:</strong> <span class="ph">[DA COMPILARE — Via, CAP, Città]</span></li>
+      </ul>
+      <p>Hai il diritto di proporre reclamo all'autorità di controllo competente:</p>
+      <ul>
+        <li><strong>Italia:</strong> Garante per la Protezione dei Dati Personali — <a href="https://www.gpdp.it" target="_blank">www.gpdp.it</a></li>
+        <li><strong>Spagna:</strong> Agencia Española de Protección de Datos (AEPD) — <a href="https://www.aepd.es" target="_blank">www.aepd.es</a></li>
+      </ul>
+      <p style="margin-top:24px;padding:16px;background:#f1f5f9;border-radius:8px;font-size:13px;color:#64748b;">
+        Questa informativa è conforme al Regolamento (UE) 2016/679 del Parlamento Europeo e del Consiglio del 27 aprile 2016 (GDPR) e, per l'Italia, al D.Lgs. 196/2003 come modificato dal D.Lgs. 101/2018. Per la Spagna, è altresì conforme alla Ley Orgánica 3/2018 (LOPDGDD).
+      </p>
+    </section>
+
+  </div><!-- /it-content -->
+
+  <!-- SPANISH CONTENT -->
+  <div id="es-content" class="es-content">
+    <div class="hero">
+      <h1>Política de Privacidad</h1>
+      <div class="hero-meta">
+        <span class="meta-item">📅 Actualizada: 26 de marzo de 2026</span>
+        <span class="dot"></span>
+        <span class="meta-item">⚖️ Conforme al Reglamento UE 2016/679 (RGPD)</span>
+      </div>
+    </div>
+
+    <div class="infobox">
+      <strong>Responsable del tratamiento</strong>
+      <span class="ph">[DA COMPILARE — Nombre / Razón Social, Dirección, Email]</span>
+    </div>
+
+    <div class="section">
+      <h2><span class="section-num">1</span> Datos recogidos</h2>
+      <p>Solvy recopila los siguientes datos personales: dirección de correo electrónico, nombre, datos fiscales (NIF/NIE, IBAN, régimen fiscal), datos financieros introducidos por el usuario (facturas, gastos), y datos de pago gestionados exclusivamente por Stripe.</p>
+    </div>
+    <div class="section">
+      <h2><span class="section-num">2</span> Finalidad y base jurídica</h2>
+      <p>Los datos se tratan para: (a) prestar el servicio de gestión financiera contratado — base: ejecución del contrato (art. 6.1.b RGPD); (b) cumplir obligaciones legales — base: obligación legal (art. 6.1.c RGPD); (c) mejorar el servicio mediante análisis agregado anónimo — base: interés legítimo (art. 6.1.f RGPD).</p>
+    </div>
+    <div class="section">
+      <h2><span class="section-num">3</span> Conservación</h2>
+      <p>Los datos de cuenta se conservan durante la vigencia del contrato y 30 días tras la baja. Los datos fiscales y financieros se conservan durante 6 años (art. 30 Código de Comercio) o el período legalmente exigible.</p>
+    </div>
+    <div class="section">
+      <h2><span class="section-num">4</span> Terceros subencargados</h2>
+      <p><strong>Supabase</strong> (base de datos, UE), <strong>Stripe</strong> (pagos, UE+USA con SCCs), <strong>Vercel</strong> (hosting, UE+USA con SCCs). Ningún dato se vende a terceros.</p>
+    </div>
+    <div class="section">
+      <h2><span class="section-num">5</span> Sus derechos (arts. 15–22 RGPD)</h2>
+      <p>Tiene derecho de acceso, rectificación, supresión, limitación, portabilidad y oposición. Para ejercerlos o presentar una reclamación, contacte a <span class="ph">[DA COMPILARE — privacy@ejemplo.com]</span> o a la AEPD (<a href="https://www.aepd.es">www.aepd.es</a>).</p>
+    </div>
+  </div><!-- /es-content -->
+
+</div><!-- /container -->
+
+<div class="footer">
+  <p><a href="/">← Torna all'app</a> &nbsp;·&nbsp; <a href="/terms">Termini di Servizio</a> &nbsp;·&nbsp; <span class="ph">[DA COMPILARE — privacy@esempio.it]</span></p>
+  <p style="margin-top:8px;">© <span id="year"></span> Solvy — <span class="ph">[DA COMPILARE — Nome/Ragione Sociale]</span>. Tutti i diritti riservati.</p>
+</div>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  function setLang(lang) {
+    document.getElementById('it-content').style.display = lang === 'it' ? 'block' : 'none';
+    document.getElementById('es-content').style.display = lang === 'es' ? 'block' : 'none';
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.onclick.toString().includes("'" + lang + "'")));
+  }
+</script>
+</body>
+</html>

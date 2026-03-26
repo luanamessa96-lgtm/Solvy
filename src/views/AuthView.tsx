@@ -21,6 +21,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [ricordami, setRicordami] = useState(true);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const clearError = () => setError('');
 
@@ -42,6 +43,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
   };
 
   const handleRegister = async () => {
+    if (!termsAccepted) { setError('Devi accettare la Privacy Policy e i Termini di Servizio per registrarti.'); return; }
     if (password.length < 8) { setError('La password deve essere di almeno 8 caratteri.'); return; }
     setLoading(true);
     clearError();
@@ -207,7 +209,22 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
 
               {error && <p className="text-sm text-red-500 font-medium px-1">{error}</p>}
 
-              <button type="button" onClick={handleRegister} disabled={loading} className={btnPrimary}>
+              <label className="flex items-start gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={e => { setTermsAccepted(e.target.checked); clearError(); }}
+                  className="w-4 h-4 mt-0.5 rounded accent-primary cursor-pointer shrink-0"
+                />
+                <span className={`text-xs leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Ho letto e accetto la{' '}
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">Privacy Policy</a>
+                  {' '}e i{' '}
+                  <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">Termini di Servizio</a>
+                </span>
+              </label>
+
+              <button type="button" onClick={handleRegister} disabled={loading || !termsAccepted} className={btnPrimary}>
                 {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : 'Registrati'}
               </button>
 

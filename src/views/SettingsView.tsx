@@ -88,6 +88,25 @@ const SettingsView = ({ theme, setTheme, profile }: SettingsViewProps) => {
           <button className="text-[10px] font-bold text-primary uppercase tracking-wider active:scale-90 transition-all hover:drop-shadow-[0_0_4px_rgba(59,130,246,0.3)]">Supporto</button>
         </div>
       </motion.div>
+
+      <motion.div variants={item} className={`rounded-3xl border overflow-hidden transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-5 pt-5 pb-3">Legale</p>
+        {[
+          { label: 'Privacy Policy', href: '/privacy' },
+          { label: 'Termini di Servizio', href: '/terms' },
+        ].map(({ label, href }, i, arr) => (
+          <a
+            key={href}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`flex items-center justify-between px-5 py-3.5 active:bg-primary/5 transition-colors ${i < arr.length - 1 ? (darkMode ? 'border-b border-slate-800' : 'border-b border-slate-50') : ''}`}
+          >
+            <span className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{label}</span>
+            <span className="text-slate-400 text-xs">↗</span>
+          </a>
+        ))}
+      </motion.div>
     </motion.div>
     <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} darkMode={darkMode} />
     </>

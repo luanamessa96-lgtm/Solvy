@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Termini di Servizio — Solvy</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #3b82f6;
+      --primary-light: #eff6ff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --bg: #f8fafc;
+      --white: #ffffff;
+      --accent: #fef3c7;
+      --accent-border: #f59e0b;
+      --radius: 12px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 15px; }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .header { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 780px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; color: var(--text); text-decoration: none; }
+    .logo-icon { width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .logo-icon svg { width: 18px; height: 18px; }
+    .badge { font-size: 11px; font-weight: 700; background: var(--primary-light); color: var(--primary); padding: 4px 10px; border-radius: 20px; border: 1px solid #bfdbfe; letter-spacing: 0.3px; }
+    .back-link { font-size: 13px; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .back-link::before { content: '←'; }
+
+    .container { max-width: 780px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    .hero { margin-bottom: 48px; }
+    .hero h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 12px; }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .meta-item { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+    .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--border); }
+
+    .toc { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 48px; }
+    .toc h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 14px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { padding: 4px 0; font-size: 14px; }
+    .toc li a { color: var(--text); font-weight: 500; }
+    .toc li a:hover { color: var(--primary); }
+
+    .section { margin-bottom: 48px; scroll-margin-top: 80px; }
+    .section h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--primary); display: flex; align-items: center; gap: 10px; }
+    .section-num { width: 28px; height: 28px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+    .section h3 { font-size: 15px; font-weight: 700; margin: 24px 0 10px; color: var(--text); }
+    .section p { margin-bottom: 14px; color: #334155; }
+    .section ul, .section ol { padding-left: 22px; margin-bottom: 14px; }
+    .section li { padding: 3px 0; color: #334155; }
+
+    .ph { background: var(--accent); color: #92400e; font-weight: 700; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--accent-border); font-size: 13px; white-space: nowrap; }
+
+    .infobox { background: var(--primary-light); border: 1px solid #bfdbfe; border-radius: var(--radius); padding: 16px 20px; margin: 16px 0; font-size: 14px; color: #1e40af; }
+    .infobox strong { display: block; margin-bottom: 4px; }
+
+    .warnbox { background: #fff7ed; border: 1px solid #fed7aa; border-radius: var(--radius); padding: 16px 20px; margin: 16px 0; font-size: 14px; color: #9a3412; }
+
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+    th { background: var(--bg); font-weight: 700; text-align: left; padding: 10px 14px; border: 1px solid var(--border); color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 10px 14px; border: 1px solid var(--border); vertical-align: top; color: #334155; }
+    tr:hover td { background: #f8fafc; }
+
+    .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+    .plan-card { background: var(--white); border: 2px solid var(--border); border-radius: var(--radius); padding: 20px; }
+    .plan-card.pro { border-color: var(--primary); background: var(--primary-light); }
+    .plan-card .plan-name { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 8px; }
+    .plan-card.pro .plan-name { color: var(--primary); }
+    .plan-card .plan-price { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+    .plan-card .plan-period { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+    .plan-card ul { padding-left: 18px; font-size: 13px; }
+    .plan-card li { padding: 2px 0; color: #334155; }
+
+    .lang-switch { display: flex; justify-content: center; gap: 12px; margin-bottom: 32px; }
+    .lang-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); font-size: 13px; font-weight: 600; cursor: pointer; background: var(--white); color: var(--text); }
+    .lang-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .es-content { display: none; }
+
+    .footer { border-top: 1px solid var(--border); padding: 32px 24px; text-align: center; font-size: 13px; color: var(--muted); max-width: 780px; margin: 0 auto; }
+    .footer a { color: var(--primary); font-weight: 600; }
+
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 26px; }
+      .container { padding: 28px 16px 60px; }
+      .header-inner { padding: 12px 16px; }
+      .plan-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+      </div>
+      Solvy
+    </a>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span class="badge">Termini di Servizio</span>
+      <a href="/" class="back-link">App</a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="lang-switch">
+    <button class="lang-btn active" onclick="setLang('it')">🇮🇹 Italiano</button>
+    <button class="lang-btn" onclick="setLang('es')">🇪🇸 Español</button>
+  </div>
+
+  <!-- ITALIAN CONTENT -->
+  <div id="it-content">
+
+    <div class="hero">
+      <h1>Termini di Servizio</h1>
+      <div class="hero-meta">
+        <span class="meta-item">📅 In vigore dal: 26 marzo 2026</span>
+        <span class="dot"></span>
+        <span class="meta-item">🌍 Applicabile in Italia e Spagna</span>
+        <span class="dot"></span>
+        <span class="meta-item">⚖️ Legge applicabile: Italiana</span>
+      </div>
+    </div>
+
+    <div class="toc">
+      <h2>Sommario</h2>
+      <ol>
+        <li><a href="#definizioni">Definizioni</a></li>
+        <li><a href="#accettazione">Accettazione e capacità</a></li>
+        <li><a href="#servizio">Descrizione del servizio</a></li>
+        <li><a href="#account">Creazione e gestione dell'account</a></li>
+        <li><a href="#piani">Piani e prezzi</a></li>
+        <li><a href="#pagamenti">Pagamenti, rinnovi e cancellazione</a></li>
+        <li><a href="#uso-consentito">Uso consentito e condotte vietate</a></li>
+        <li><a href="#contenuti">Contenuti dell'utente</a></li>
+        <li><a href="#ip">Proprietà intellettuale</a></li>
+        <li><a href="#disclaimer">Disclaimer e limitazione di responsabilità</a></li>
+        <li><a href="#sospensione">Sospensione e risoluzione</a></li>
+        <li><a href="#modifiche-termini">Modifiche ai termini</a></li>
+        <li><a href="#legge">Legge applicabile e risoluzione delle controversie</a></li>
+        <li><a href="#contatti-terms">Contatti</a></li>
+      </ol>
+    </div>
+
+    <div class="infobox">
+      <strong>In sintesi</strong>
+      Solvy è un'app SaaS per freelancer (Italia e Spagna) per la gestione di fatture, spese e tasse. Offre un piano Free gratuito e un piano Pro in abbonamento. Il servizio è riservato a persone fisiche che svolgono attività professionale autonoma, maggiorenni. I dati fiscali inseriti restano di tua proprietà.
+    </div>
+
+    <!-- 1 -->
+    <section class="section" id="definizioni">
+      <h2><span class="section-num">1</span> Definizioni</h2>
+      <table>
+        <tr><th>Termine</th><th>Significato</th></tr>
+        <tr><td><strong>"Solvy" / "Servizio"</strong></td><td>La piattaforma software come servizio (SaaS) accessibile tramite l'applicazione web e PWA all'indirizzo solvy.app</td></tr>
+        <tr><td><strong>"Fornitore"</strong></td><td><span class="ph">[DA COMPILARE — Nome/Ragione Sociale]</span>, titolare e gestore del Servizio</td></tr>
+        <tr><td><strong>"Utente"</strong></td><td>Persona fisica maggiorenne che si registra e utilizza il Servizio nell'esercizio della propria attività professionale autonoma</td></tr>
+        <tr><td><strong>"Account"</strong></td><td>Le credenziali (email + password) associate al profilo dell'Utente su Solvy</td></tr>
+        <tr><td><strong>"Profilo"</strong></td><td>Insieme dei dati anagrafici e fiscali di un'attività professionale gestita tramite Solvy</td></tr>
+        <tr><td><strong>"Piano Free"</strong></td><td>Il livello di servizio gratuito con funzionalità di base</td></tr>
+        <tr><td><strong>"Piano Pro"</strong></td><td>Il livello di servizio in abbonamento a pagamento con funzionalità avanzate</td></tr>
+        <tr><td><strong>"Contenuti"</strong></td><td>Tutti i dati, file, testi e informazioni inseriti dall'Utente nel Servizio (fatture, spese, documenti)</td></tr>
+      </table>
+    </section>
+
+    <!-- 2 -->
+    <section class="section" id="accettazione">
+      <h2><span class="section-num">2</span> Accettazione e capacità</h2>
+      <p>Registrandosi a Solvy, l'Utente dichiara di:</p>
+      <ul>
+        <li>Aver letto, compreso e accettato integralmente i presenti Termini di Servizio e la <a href="/privacy">Privacy Policy</a></li>
+        <li>Avere almeno <strong>18 anni di età</strong> e piena capacità giuridica</li>
+        <li>Utilizzare il Servizio nell'ambito della propria attività professionale autonoma (non per uso personale o di consumo)</li>
+        <li>Fornire informazioni veritiere, accurate e aggiornate in fase di registrazione e durante l'utilizzo</li>
+      </ul>
+      <p>Se si utilizza Solvy per conto di un'organizzazione, si dichiara di avere l'autorità per accettare i presenti Termini per conto di tale organizzazione.</p>
+      <div class="warnbox">
+        I presenti Termini costituiscono un contratto vincolante tra l'Utente e il Fornitore. L'utilizzo del Servizio implica l'accettazione integrale. In caso di disaccordo, si prega di non registrarsi o di cessare l'utilizzo del Servizio.
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="section" id="servizio">
+      <h2><span class="section-num">3</span> Descrizione del servizio</h2>
+      <p>Solvy è un'applicazione web progressiva (PWA) che fornisce agli utenti freelancer strumenti per:</p>
+      <ul>
+        <li>Emissione e gestione di fatture e note spese</li>
+        <li>Calcolo automatico delle imposte (regime forfettario e ordinario IT; estimación directa ES)</li>
+        <li>Monitoraggio delle scadenze fiscali (F24, IVA, INPS, RETA)</li>
+        <li>Dashboard finanziaria con statistiche di entrate/uscite</li>
+        <li>Gestione del profilo fiscale (Partita IVA, NIF/NIE, IBAN)</li>
+        <li>Libreria media per documenti e scontrini</li>
+        <li>Funzionalità avanzate riservate al Piano Pro (vedi sezione 5)</li>
+      </ul>
+      <p>Il Fornitore si riserva il diritto di modificare, aggiungere o rimuovere funzionalità del Servizio in qualsiasi momento, con l'obbligo di preavviso di 30 giorni per le modifiche che riducono sostanzialmente le funzionalità incluse nel Piano Pro a pagamento.</p>
+
+      <h3>Limitazioni del servizio</h3>
+      <p>Solvy è uno strumento di supporto alla gestione finanziaria e <strong>non costituisce consulenza fiscale, legale o contabile professionale</strong>. I calcoli delle imposte forniti sono indicativi e basati sulle aliquote e normative vigenti al momento dell'ultimo aggiornamento dell'app. L'Utente è responsabile della verifica con un professionista abilitato (commercialista, consulente del lavoro) prima di adottare decisioni fiscali.</p>
+    </section>
+
+    <!-- 4 -->
+    <section class="section" id="account">
+      <h2><span class="section-num">4</span> Creazione e gestione dell'account</h2>
+      <h3>4.1 Registrazione</h3>
+      <p>La registrazione richiede un indirizzo email valido e una password di almeno 8 caratteri. Il Fornitore può richiedere la verifica dell'indirizzo email tramite link di conferma. È consentito un solo account per persona fisica.</p>
+
+      <h3>4.2 Sicurezza dell'account</h3>
+      <p>L'Utente è responsabile di:</p>
+      <ul>
+        <li>Mantenere le credenziali di accesso riservate e non condividerle con terzi</li>
+        <li>Adottare una password sicura e aggiornarla periodicamente</li>
+        <li>Notificare immediatamente il Fornitore in caso di accesso non autorizzato all'account (<span class="ph">[DA COMPILARE — security@esempio.it]</span>)</li>
+      </ul>
+      <p>Il Fornitore non è responsabile per danni derivanti da accesso non autorizzato causato dalla negligenza dell'Utente nella custodia delle credenziali.</p>
+
+      <h3>4.3 Profili multipli</h3>
+      <p>Un singolo account può gestire più profili fiscali (es. attività in Italia e Spagna). La gestione di profili multipli è disponibile esclusivamente nel Piano Pro.</p>
+    </section>
+
+    <!-- 5 -->
+    <section class="section" id="piani">
+      <h2><span class="section-num">5</span> Piani e prezzi</h2>
+
+      <div class="plan-grid">
+        <div class="plan-card">
+          <div class="plan-name">Piano Free</div>
+          <div class="plan-price">€0</div>
+          <div class="plan-period">Gratuito per sempre</div>
+          <ul>
+            <li>1 profilo fiscale</li>
+            <li>Fatture e spese illimitate</li>
+            <li>Calcolo tasse base</li>
+            <li>Dashboard finanziaria</li>
+            <li>Calendario scadenze</li>
+            <li>Tema Light e Dark</li>
+          </ul>
+        </div>
+        <div class="plan-card pro">
+          <div class="plan-name">Piano Pro</div>
+          <div class="plan-price">€7,99</div>
+          <div class="plan-period">/mese (oppure €59,99/anno)</div>
+          <ul>
+            <li>Tutto il Piano Free</li>
+            <li>Profili multipli illimitati</li>
+            <li>Export completo commercialista</li>
+            <li>Dashboard tasse avanzata</li>
+            <li>Scadenze fiscali dettagliate</li>
+            <li>Temi Pro Light e Pro Dark</li>
+            <li>Report avanzati</li>
+            <li>OCR scontrini</li>
+          </ul>
+        </div>
+      </div>
+
+      <p>I prezzi sono IVA inclusa per i consumatori UE. Per i titolari di Partita IVA, l'operazione è esente IVA ai sensi dell'art. 1 co. 58 L. 190/2014 (regime forfettario) o soggetta a inversione contabile (reverse charge) per i servizi elettronici B2B.</p>
+      <div class="infobox">I prezzi indicati sono quelli in vigore alla data di pubblicazione del presente documento. Il Fornitore si riserva di aggiornare i prezzi con preavviso di almeno 30 giorni per gli abbonamenti in corso.</div>
+    </section>
+
+    <!-- 6 -->
+    <section class="section" id="pagamenti">
+      <h2><span class="section-num">6</span> Pagamenti, rinnovi e cancellazione</h2>
+
+      <h3>6.1 Elaborazione pagamenti</h3>
+      <p>I pagamenti sono elaborati da <strong>Stripe Inc.</strong> (PCI DSS Level 1). Il Fornitore non archivia dati di pagamento. I dati della carta di credito sono trattati esclusivamente da Stripe secondo le proprie condizioni di servizio (<a href="https://stripe.com/privacy" target="_blank">stripe.com/privacy</a>).</p>
+
+      <h3>6.2 Rinnovo automatico</h3>
+      <p>L'abbonamento Pro si rinnova automaticamente alla scadenza (mensile o annuale) addebitando il metodo di pagamento registrato. L'Utente riceve una notifica via email almeno 7 giorni prima del rinnovo annuale. Il rinnovo mensile non richiede preavviso specifico.</p>
+
+      <h3>6.3 Cancellazione dell'abbonamento</h3>
+      <p>L'Utente può cancellare l'abbonamento Pro in qualsiasi momento tramite la sezione "Abbonamento" dell'app o contattando il supporto a <span class="ph">[DA COMPILARE — support@esempio.it]</span>. La cancellazione è efficace alla fine del periodo di fatturazione corrente; l'Utente mantiene l'accesso alle funzionalità Pro fino a tale data.</p>
+
+      <h3>6.4 Diritto di recesso (consumatori UE)</h3>
+      <p>Ai sensi del D.Lgs. 206/2005 (Codice del Consumo IT) e del RD 1/2007 (ES), l'Utente che agisce come consumatore (non nell'esercizio di attività professionale) ha diritto di recedere dal contratto di abbonamento Pro entro <strong>14 giorni</strong> dall'acquisto, senza necessità di motivazione. Per esercitare il diritto di recesso, inviare comunicazione a <span class="ph">[DA COMPILARE — support@esempio.it]</span>. Il rimborso viene elaborato entro 14 giorni dalla ricezione della comunicazione.</p>
+      <p class="warnbox" style="padding:14px;border-radius:8px;margin-top:8px;">Il diritto di recesso non si applica se l'Utente ha espressamente richiesto l'inizio immediato dell'esecuzione del servizio digitale e ne ha preso atto (art. 59(a) Dir. 2011/83/UE). Completando l'acquisto si conferma la rinuncia al diritto di recesso previo accesso immediato alle funzionalità Pro.</p>
+
+      <h3>6.5 Politica di rimborso</h3>
+      <p>Salvo diverso accordo, i pagamenti effettuati non sono rimborsabili una volta iniziato il periodo di abbonamento, ad eccezione del periodo di recesso di 14 giorni di cui al punto 6.4 o di malfunzionamenti imputabili al Fornitore che abbiano reso il servizio inutilizzabile per più di 72 ore consecutive.</p>
+    </section>
+
+    <!-- 7 -->
+    <section class="section" id="uso-consentito">
+      <h2><span class="section-num">7</span> Uso consentito e condotte vietate</h2>
+      <h3>7.1 Uso consentito</h3>
+      <p>Il Servizio è destinato esclusivamente alla gestione finanziaria della propria attività professionale autonoma. È consentito utilizzare il Servizio per: emettere fatture, registrare spese, monitorare la propria situazione fiscale.</p>
+
+      <h3>7.2 Condotte vietate</h3>
+      <p>È espressamente vietato:</p>
+      <ul>
+        <li>Utilizzare il Servizio per attività illegali, incluse frode fiscale, riciclaggio di denaro o evasione fiscale</li>
+        <li>Inserire dati falsi, fuorvianti o relativi a terzi senza autorizzazione</li>
+        <li>Tentare di accedere a dati di altri utenti o violare i sistemi di sicurezza</li>
+        <li>Effettuare scraping, reverse engineering o decompilazione del Servizio</li>
+        <li>Sovraccaricare artificialmente i server (attacchi DoS, spam di richieste)</li>
+        <li>Rivendere o sublicenziare l'accesso al Servizio a terzi</li>
+        <li>Utilizzare il Servizio per gestire attività di terzi senza un accordo scritto con il Fornitore</li>
+      </ul>
+      <p>La violazione delle presenti disposizioni può comportare la sospensione o risoluzione immediata dell'account, senza rimborso.</p>
+    </section>
+
+    <!-- 8 -->
+    <section class="section" id="contenuti">
+      <h2><span class="section-num">8</span> Contenuti dell'utente</h2>
+      <p>L'Utente rimane titolare di tutti i dati e contenuti inseriti nel Servizio (fatture, documenti, dati fiscali). Il Fornitore non rivendica alcun diritto di proprietà su tali contenuti.</p>
+      <p>L'Utente concede al Fornitore una licenza limitata, non esclusiva, per elaborare i contenuti al solo scopo di fornire il Servizio (es. calcolo tasse, generazione PDF, backup). Questa licenza termina con la cancellazione dell'account.</p>
+      <p>L'Utente è responsabile della legittimità, accuratezza e completezza dei dati inseriti, inclusa la conformità alle normative fiscali applicabili.</p>
+
+      <h3>Esportazione dei dati</h3>
+      <p>L'Utente può esportare i propri dati in qualsiasi momento tramite le funzioni di export dell'app (PDF fatture, export commercialista). In caso di cancellazione dell'account, si consiglia di esportare i dati prima della cancellazione.</p>
+    </section>
+
+    <!-- 9 -->
+    <section class="section" id="ip">
+      <h2><span class="section-num">9</span> Proprietà intellettuale</h2>
+      <p>Il Servizio Solvy, inclusi il codice sorgente, il design, il logo, i testi, le funzionalità e la struttura, sono di proprietà esclusiva del Fornitore (<span class="ph">[DA COMPILARE — Nome/Ragione Sociale]</span>) e sono protetti dalle leggi sul diritto d'autore e sulla proprietà intellettuale applicabili.</p>
+      <p>L'Utente riceve una licenza d'uso personale, non esclusiva, non trasferibile e revocabile per accedere e utilizzare il Servizio nei termini del presente contratto. Non è consentita alcuna riproduzione, distribuzione o utilizzo commerciale dei contenuti del Servizio senza autorizzazione scritta del Fornitore.</p>
+    </section>
+
+    <!-- 10 -->
+    <section class="section" id="disclaimer">
+      <h2><span class="section-num">10</span> Disclaimer e limitazione di responsabilità</h2>
+      <h3>10.1 Disponibilità del servizio</h3>
+      <p>Il Fornitore si impegna a garantire la massima disponibilità del Servizio, ma non offre garanzie di uptime specifico. Il Servizio è fornito "così com'è" (<em>as is</em>) e "come disponibile" (<em>as available</em>). Manutenzioni programmate saranno comunicate con congruo anticipo.</p>
+
+      <h3>10.2 Accuratezza dei calcoli fiscali</h3>
+      <div class="warnbox">
+        <strong>⚠️ Importante — Limitazione responsabilità fiscale</strong>
+        I calcoli delle imposte (IRPEF, INPS, IVA, IRPF, RETA) forniti da Solvy sono puramente indicativi e basati su aliquote e normative vigenti alla data dell'ultimo aggiornamento dell'app. Il Fornitore non garantisce la correttezza, completezza o aggiornamento dei calcoli fiscali. <strong>Non si assume alcuna responsabilità per danni derivanti dall'utilizzo di tali calcoli senza verifica da parte di un professionista abilitato.</strong>
+      </div>
+
+      <h3>10.3 Limitazione di responsabilità</h3>
+      <p>Nei limiti consentiti dalla legge applicabile, il Fornitore non è responsabile per:</p>
+      <ul>
+        <li>Danni indiretti, consequenziali, incidentali o punitivi</li>
+        <li>Perdita di dati causata da guasti tecnici non imputabili a dolo o colpa grave del Fornitore</li>
+        <li>Danni derivanti da uso improprio del Servizio da parte dell'Utente</li>
+        <li>Interruzioni del Servizio causate da terzi (Supabase, Vercel, Stripe) o da cause di forza maggiore</li>
+        <li>Sanzioni fiscali derivanti da dati errati inseriti dall'Utente o da calcoli applicati senza verifica professionale</li>
+      </ul>
+      <p>La responsabilità massima del Fornitore per qualsiasi danno diretto è limitata al totale dei corrispettivi versati dall'Utente nei 12 mesi precedenti all'evento dannoso.</p>
+    </section>
+
+    <!-- 11 -->
+    <section class="section" id="sospensione">
+      <h2><span class="section-num">11</span> Sospensione e risoluzione</h2>
+      <h3>11.1 Risoluzione da parte dell'Utente</h3>
+      <p>L'Utente può cancellare il proprio account in qualsiasi momento inviando una richiesta a <span class="ph">[DA COMPILARE — support@esempio.it]</span>. La cancellazione è irreversibile. Si raccomanda di esportare tutti i dati prima della cancellazione.</p>
+
+      <h3>11.2 Sospensione o risoluzione da parte del Fornitore</h3>
+      <p>Il Fornitore può sospendere o risolvere l'account dell'Utente, con o senza preavviso a seconda della gravità, in caso di:</p>
+      <ul>
+        <li>Violazione dei presenti Termini di Servizio</li>
+        <li>Mancato pagamento dell'abbonamento Pro</li>
+        <li>Attività fraudolenta, illegale o che ponga a rischio altri utenti o il Servizio</li>
+        <li>Ordine di autorità giudiziaria o amministrativa</li>
+      </ul>
+      <p>In caso di sospensione o chiusura per ragioni non imputabili all'Utente, il Fornitore rimborserà pro-rata la quota dell'abbonamento Pro non utilizzata.</p>
+
+      <h3>11.3 Effetti della risoluzione</h3>
+      <p>Alla risoluzione del contratto, l'Utente perde l'accesso al Servizio. I dati soggetti a obblighi legali di conservazione saranno anonimizzati. I presenti Termini sopravvivono alla risoluzione per le clausole che per natura debbono sopravvivere (limitazione di responsabilità, proprietà intellettuale, legge applicabile).</p>
+    </section>
+
+    <!-- 12 -->
+    <section class="section" id="modifiche-termini">
+      <h2><span class="section-num">12</span> Modifiche ai termini</h2>
+      <p>Il Fornitore si riserva di modificare i presenti Termini in qualsiasi momento. Le modifiche sostanziali (che influenzino i diritti degli Utenti o i prezzi) saranno comunicate via email e/o tramite notifica in-app almeno <strong>30 giorni prima</strong> dell'entrata in vigore.</p>
+      <p>L'utilizzo continuato del Servizio dopo tale termine costituisce accettazione delle modifiche. In caso di disaccordo, l'Utente può recedere cancellando il proprio account prima dell'entrata in vigore delle modifiche.</p>
+    </section>
+
+    <!-- 13 -->
+    <section class="section" id="legge">
+      <h2><span class="section-num">13</span> Legge applicabile e risoluzione controversie</h2>
+      <h3>13.1 Legge applicabile</h3>
+      <p>I presenti Termini sono regolati dalla <strong>legge italiana</strong>. Per gli Utenti residenti in Spagna, le disposizioni inderogabili del diritto spagnolo a tutela dei consumatori (Real Decreto Legislativo 1/2007) restano applicabili nella misura prevista dalla normativa UE sul conflitto di leggi (Regolamento Roma I).</p>
+
+      <h3>13.2 Foro competente</h3>
+      <p>Per le controversie tra il Fornitore e l'Utente che agisce nell'esercizio della propria attività professionale autonoma (B2B), è competente in via esclusiva il Tribunale di <span class="ph">[DA COMPILARE — Città]</span>.</p>
+      <p>Per gli Utenti che agiscono come consumatori (B2C), è competente il Tribunale del luogo di residenza o domicilio del consumatore, ai sensi dell'art. 33 D.Lgs. 206/2005.</p>
+
+      <h3>13.3 Risoluzione alternativa delle controversie (ODR)</h3>
+      <p>Gli Utenti residenti nell'UE possono avvalersi della piattaforma europea di risoluzione delle controversie online (ODR) all'indirizzo: <a href="https://ec.europa.eu/consumers/odr" target="_blank">ec.europa.eu/consumers/odr</a></p>
+
+      <h3>13.4 Tentativo obbligatorio di conciliazione</h3>
+      <p>Prima di adire l'autorità giudiziaria, le parti si impegnano a tentare una risoluzione amichevole della controversia entro 30 giorni dalla notifica formale del problema.</p>
+    </section>
+
+    <!-- 14 -->
+    <section class="section" id="contatti-terms">
+      <h2><span class="section-num">14</span> Contatti</h2>
+      <table>
+        <tr><th>Tipo di richiesta</th><th>Contatto</th></tr>
+        <tr><td>Supporto tecnico e assistenza generale</td><td><span class="ph">[DA COMPILARE — support@esempio.it]</span></td></tr>
+        <tr><td>Questioni privacy e GDPR</td><td><span class="ph">[DA COMPILARE — privacy@esempio.it]</span></td></tr>
+        <tr><td>Questioni legali e contratti</td><td><span class="ph">[DA COMPILARE — legal@esempio.it]</span></td></tr>
+        <tr><td>Fatturazione e abbonamenti</td><td><span class="ph">[DA COMPILARE — billing@esempio.it]</span></td></tr>
+        <tr><td>Indirizzo postale</td><td><span class="ph">[DA COMPILARE — Via, CAP, Città, Paese]</span></td></tr>
+      </table>
+      <p style="margin-top:24px;padding:16px;background:#f1f5f9;border-radius:8px;font-size:13px;color:#64748b;">
+        Versione 1.0 — In vigore dal 26 marzo 2026. Redatti in conformità al D.Lgs. 206/2005 (IT), al RD 1/2007 (ES), alla Direttiva UE 2019/2161 (Omnibus), al Regolamento (UE) 2022/2065 (DSA) e alla Direttiva UE 2011/83 sui diritti dei consumatori.
+      </p>
+    </section>
+
+  </div><!-- /it-content -->
+
+  <!-- SPANISH CONTENT -->
+  <div id="es-content" class="es-content">
+    <div class="hero">
+      <h1>Términos de Servicio</h1>
+      <div class="hero-meta">
+        <span class="meta-item">📅 En vigor desde: 26 de marzo de 2026</span>
+        <span class="dot"></span>
+        <span class="meta-item">⚖️ Ley aplicable: Italiana (con protecciones ES para consumidores)</span>
+      </div>
+    </div>
+
+    <div class="infobox">
+      <strong>Resumen ejecutivo</strong>
+      Solvy es una app SaaS de gestión financiera para autónomos en Italia y España. Ofrece un plan gratuito y un plan Pro (€7,99/mes o €59,99/año). Los datos son del usuario. Los cálculos fiscales son orientativos. Derecho de desistimiento de 14 días.
+    </div>
+
+    <div class="section">
+      <h2><span class="section-num">1</span> Prestador del servicio</h2>
+      <p><strong>Solvy</strong> es operado por <span class="ph">[DA COMPILARE — Nombre/Razón Social]</span>, con domicilio en <span class="ph">[DA COMPILARE — Dirección]</span>. Contacto: <span class="ph">[DA COMPILARE — support@ejemplo.com]</span></p>
+    </div>
+
+    <div class="section">
+      <h2><span class="section-num">2</span> Aceptación y uso del servicio</h2>
+      <p>Al registrarse, el usuario acepta los presentes Términos, declara tener al menos 18 años y utilizar el servicio en el ejercicio de su actividad profesional autónoma. El servicio no constituye asesoramiento fiscal profesional.</p>
+    </div>
+
+    <div class="section">
+      <h2><span class="section-num">3</span> Planes y precios</h2>
+      <table>
+        <tr><th>Plan</th><th>Precio</th><th>Características</th></tr>
+        <tr><td><strong>Free</strong></td><td>€0 / siempre</td><td>1 perfil fiscal, facturas ilimitadas, cálculo fiscal básico</td></tr>
+        <tr><td><strong>Pro Mensual</strong></td><td>€7,99 / mes</td><td>Todo Free + perfiles múltiples, dashboard tasses, exportación contable, temas Pro</td></tr>
+        <tr><td><strong>Pro Anual</strong></td><td>€59,99 / año</td><td>Todo Pro mensual con descuento del 37%</td></tr>
+      </table>
+      <p>Pagos procesados por Stripe. Renovación automática salvo cancelación previa.</p>
+    </div>
+
+    <div class="section">
+      <h2><span class="section-num">4</span> Derecho de desistimiento</h2>
+      <p>Los usuarios que actúen como consumidores tienen derecho a desistir del contrato en los <strong>14 días naturales</strong> siguientes a la contratación (art. 102 RDL 1/2007). Para ejercerlo, contactar a <span class="ph">[DA COMPILARE — support@ejemplo.com]</span>. El reembolso se procesa en 14 días.</p>
+    </div>
+
+    <div class="section">
+      <h2><span class="section-num">5</span> Limitación de responsabilidad</h2>
+      <p>Los cálculos de IRPF, IVA y cuotas RETA son orientativos. Solvy no asume responsabilidad por sanciones fiscales derivadas del uso de dichos cálculos sin verificación profesional. La responsabilidad máxima se limita a los importes abonados en los últimos 12 meses.</p>
+    </div>
+
+    <div class="section">
+      <h2><span class="section-num">6</span> Resolución de disputas</h2>
+      <p>Ley aplicable: italiana. Para consumidores españoles, son de aplicación las protecciones del RDL 1/2007. Plataforma ODR de la UE disponible en: <a href="https://ec.europa.eu/consumers/odr" target="_blank">ec.europa.eu/consumers/odr</a></p>
+    </div>
+  </div><!-- /es-content -->
+
+</div>
+
+<div class="footer">
+  <p><a href="/">← Torna all'app</a> &nbsp;·&nbsp; <a href="/privacy">Privacy Policy</a> &nbsp;·&nbsp; <span class="ph">[DA COMPILARE — legal@esempio.it]</span></p>
+  <p style="margin-top:8px;">© <span id="year"></span> Solvy — <span class="ph">[DA COMPILARE — Nome/Ragione Sociale]</span>. Tutti i diritti riservati.</p>
+</div>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  function setLang(lang) {
+    document.getElementById('it-content').style.display = lang === 'it' ? 'block' : 'none';
+    document.getElementById('es-content').style.display = lang === 'es' ? 'block' : 'none';
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.onclick.toString().includes("'" + lang + "'")));
+  }
+</script>
+</body>
+</html>
