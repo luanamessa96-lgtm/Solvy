@@ -406,7 +406,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
           </div>
           <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
             {[
-              { icon: Receipt, label: activeProfile.country === 'Spain' ? 'NIF' : 'Partita IVA', value: activeProfile.piva || '—' },
+              { icon: Receipt, label: activeProfile.country === 'Spain' ? (taxIdType === 'nie' ? 'NIE' : 'NIF') : 'Partita IVA', value: activeProfile.country === 'Spain' ? (taxIdType === 'nie' ? (profileStorage.get(`nie_${activeProfile.id}`) || '—') : (activeProfile.piva || '—')) : (activeProfile.piva || '—') },
               ...(activeProfile.country !== 'Spain' ? [{ icon: User, label: 'Codice Fiscale', value: activeProfile.codiceFiscale || '—' }] : []),
               { icon: MapPin, label: 'Indirizzo', value: activeProfile.address || '—' },
               { icon: CreditCard, label: 'IBAN', value: activeProfile.iban || '—' },
