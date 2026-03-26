@@ -9,16 +9,19 @@ ALTER TABLE profiles ALTER COLUMN country DROP DEFAULT;
 -- 2. Rimuovi DEFAULT 'forfettario' — dipende dal paese scelto
 ALTER TABLE profiles ALTER COLUMN regime DROP DEFAULT;
 
--- 3. Ricrea la funzione trigger: inserisce solo i campi minimi obbligatori.
+-- 3. Aggiungi colonna email a profiles se mancante
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS email text;
+
+-- 4. Ricrea la funzione trigger: inserisce solo i campi minimi obbligatori.
 --    country e regime saranno NULL finché l'utente non completa l'onboarding.
---    NOTA: email non è una colonna di profiles — l'app la legge da auth.users.
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, user_id, currency, is_pro, theme)
+  INSERT INTO public.profiles (id, user_id, email, currency, is_pro, theme)
   VALUES (
     NEW.id,
     NEW.id,
+    NEW.email,
     'EUR',
     FALSE,
     'light'
