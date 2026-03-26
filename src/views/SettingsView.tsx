@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Sun, Moon, Sparkles, Lock, Languages } from 'lucide-react';
+import { Sun, Moon, Sparkles, Lock, Languages, Trash2 } from 'lucide-react';
 import PaywallModal from '../components/modals/PaywallModal';
+import DeleteAccountModal from '../components/modals/DeleteAccountModal';
 import { useProStatus } from '../hooks/useProStatus';
 import { Profile } from '../types';
 
@@ -16,6 +17,7 @@ const SettingsView = ({ theme, setTheme, profile }: SettingsViewProps) => {
   const isPro = useProStatus(profile);
   const darkMode = theme === 'dark' || theme === 'pro-dark';
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.15 } } };
   const item = { hidden: { opacity: 0 }, show: { opacity: 1 } };
@@ -107,8 +109,18 @@ const SettingsView = ({ theme, setTheme, profile }: SettingsViewProps) => {
           </a>
         ))}
       </motion.div>
+      <motion.div variants={item} className="pt-2">
+        <button
+          onClick={() => setIsDeleteModalOpen(true)}
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold text-red-500 border border-red-200 hover:bg-red-50 active:scale-[0.98] transition-all"
+        >
+          <Trash2 size={15} />
+          Elimina account
+        </button>
+      </motion.div>
     </motion.div>
     <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} darkMode={darkMode} />
+    <DeleteAccountModal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} darkMode={darkMode} />
     </>
   );
 };
