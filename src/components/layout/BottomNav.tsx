@@ -36,7 +36,7 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
 
   return (
     <div style={containerStyle}>
-      <nav style={isPro ? undefined : { width: '100%', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }} className={navClass}>
+      <nav role="navigation" aria-label="Navigazione principale" style={isPro ? undefined : { width: '100%', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }} className={navClass}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -44,6 +44,8 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
+              aria-label={tab.label}
+              aria-current={isActive ? 'page' : undefined}
               className={`relative flex-1 flex flex-col items-center gap-0.5 py-1.5 transition-all active:scale-95 ${
                 isActive ? 'text-primary' : (darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600')
               }`}

@@ -33,8 +33,8 @@ import ProfileView from './views/ProfileView';
 const SettingsView = lazy(() => import('./views/SettingsView'));
 const AccountantView = lazy(() => import('./views/AccountantView'));
 const MediaLibraryView = lazy(() => import('./views/MediaLibraryView'));
-import MenuView from './views/MenuView';
-import OnboardingView from './views/OnboardingView';
+const MenuView = lazy(() => import('./views/MenuView'));
+const OnboardingView = lazy(() => import('./views/OnboardingView'));
 
 function AppInner() {
   const [activeTab, setActiveTab] = useState('home');
