@@ -11,6 +11,7 @@ export interface Profile {
   avatar: string;
   address?: string;
   piva?: string;
+  nie?: string;
   codiceFiscale?: string;
   regime?: 'forfettario' | 'ordinario' | 'autonomo';
   coefficiente?: number;

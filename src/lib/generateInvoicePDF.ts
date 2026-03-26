@@ -142,7 +142,9 @@ export function buildInvoicePDF(doc: Document, profile: Profile): jsPDF {
   const rivalsaAmount = rivalsaInps ? doc.amount * INPS_RATE : 0;
   const totaleImponibile = doc.amount + rivalsaAmount;
   const ivaAmount = isOrdinario ? totaleImponibile * (ivaRate / 100) : 0;
-  const ritenutaAmount = ritenuta ? doc.amount * RITENUTA_RATE : 0;
+  // Forfettario: ritenuta sempre 0 (art. 1, co. 67, L. 190/2014)
+  const ritenutaApplicata = ritenuta && (isOrdinario || isSpain);
+  const ritenutaAmount = ritenutaApplicata ? doc.amount * RITENUTA_RATE : 0;
   const totale = totaleImponibile + ivaAmount + (marcaBollo ? MARCA_BOLLO_AMOUNT : 0) - ritenutaAmount;
 
   autoTable(pdf, {
@@ -179,14 +181,14 @@ export function buildInvoicePDF(doc: Document, profile: Profile): jsPDF {
     ? [
         ['Base imponible', fmt(doc.amount), false],
         ...(isOrdinario ? [[`Cuota IVA ${ivaRate}%`, `+ ${fmt(ivaAmount)}`, false] as [string, string, boolean]] : []),
-        ...(ritenuta ? [['Retención IRPF (15%)', `- ${fmt(ritenutaAmount)}`, false] as [string, string, boolean]] : []),
+        ...(ritenutaApplicata ? [['Retención IRPF (15%)', `- ${fmt(ritenutaAmount)}`, false] as [string, string, boolean]] : []),
       ]
     : [
         ['Imponibile', fmt(doc.amount), false],
         ...(rivalsaInps ? [[`Rivalsa INPS (4%)`, `+ ${fmt(rivalsaAmount)}`, false] as [string, string, boolean]] : []),
         ...(isOrdinario ? [[`IVA ${ivaRate}%`, `+ ${fmt(ivaAmount)}`, false] as [string, string, boolean]] : []),
         ...(marcaBollo ? [['Marca da bollo', `+ ${fmt(MARCA_BOLLO_AMOUNT)}`, false] as [string, string, boolean]] : []),
-        ...(ritenuta ? [["Ritenuta d'acconto (20%)", `- ${fmt(ritenutaAmount)}`, false] as [string, string, boolean]] : []),
+        ...(ritenutaApplicata ? [["Ritenuta d'acconto (20%)", `- ${fmt(ritenutaAmount)}`, false] as [string, string, boolean]] : []),
       ];
 
   summaryRows.forEach(([label, value]) => {

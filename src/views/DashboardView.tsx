@@ -123,7 +123,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
       const redditoImponibile = Math.max(0, base - expenses); // reddito netto approssimato
       const irpef = calcIRPEF(redditoImponibile);
       const addizionali = redditoImponibile * 0.023;
-      const inps = base * INPS_ORDINARIO;
+      const inps = redditoImponibile * INPS_ORDINARIO;
       const totaleImposta = irpef + addizionali;
       const netto = base - totaleImposta - inps - expenses;
 
@@ -146,8 +146,15 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
       .sort((a, b) => b.amount - a.amount);
   }, [documents]);
 
-  const isForfettario = tasse.regime === 'forfettario';
-  const totaleTasse = tasse.imposta + tasse.inps;
+  const isSpainProfile = profile.country === 'Spain';
+  const isForfettario = !isSpainProfile && tasse.regime === 'forfettario';
+  const totaleTasse = useMemo(() => {
+    if (isSpainProfile) {
+      const sp = calculateSpanishTaxes(income, false, false, profile.annoInizioAttivita, displayYear);
+      return sp.irpf + sp.reta;
+    }
+    return tasse.imposta + tasse.inps;
+  }, [isSpainProfile, income, profile.annoInizioAttivita, displayYear, tasse]);
   const barImposta = income > 0 ? (tasse.imposta / income) * 100 : 0;
   const barInps = income > 0 ? (tasse.inps / income) * 100 : 0;
   const barNetto = income > 0 ? (Math.max(0, tasse.netto) / income) * 100 : 0;

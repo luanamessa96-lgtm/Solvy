@@ -81,7 +81,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [taxIdType, setTaxIdType] = useState<'nif' | 'nie'>(() =>
-    profileStorage.get(`nie_${activeProfile.id}`) ? 'nie' : 'nif'
+    activeProfile.nie ? 'nie' : 'nif'
   );
   const [editData, setEditData] = useState({
     name: activeProfile.name,
@@ -96,7 +96,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     regime: activeProfile.regime || 'forfettario' as 'forfettario' | 'ordinario',
     coefficiente: activeProfile.coefficiente?.toString() || '',
     annoInizioAttivita: activeProfile.annoInizioAttivita?.toString() || '',
-    nie: profileStorage.get(`nie_${activeProfile.id}`) || '',
+    nie: activeProfile.nie || '',
     retaMensile: profileStorage.get(`reta_${activeProfile.id}`) || '500',
   });
 
@@ -121,16 +121,12 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     if (hasErrors) return;
     setIsSaving(true);
     try {
-      // Save localStorage-only fields separately (not in Supabase schema)
-      if (isSpain) {
-        if (editData.retaMensile) profileStorage.set(`reta_${activeProfile.id}`, editData.retaMensile);
-        if (taxIdType === 'nie' && editData.nie) {
-          profileStorage.set(`nie_${activeProfile.id}`, editData.nie);
-        } else {
-          // Se si salva con NIF, pulisci il NIE dal localStorage
-          localStorage.removeItem(`nie_${activeProfile.id}`);
-        }
+      // Save localStorage-only fields (RETA — no DB column)
+      if (isSpain && editData.retaMensile) {
+        profileStorage.set(`reta_${activeProfile.id}`, editData.retaMensile);
       }
+      // Migrate any old NIE from localStorage to DB
+      localStorage.removeItem(`nie_${activeProfile.id}`);
 
       // Build a clean profile object with only valid DB fields (no nie, no retaMensile)
       const updatedProfile: Profile = {
@@ -142,6 +138,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
         currency: editData.currency,
         address: editData.address || undefined,
         piva: isSpain ? (taxIdType === 'nif' ? editData.piva || undefined : undefined) : editData.piva || undefined,
+        nie: isSpain && taxIdType === 'nie' ? editData.nie || undefined : undefined,
         codiceFiscale: editData.codiceFiscale || undefined,
         iban: editData.iban || undefined,
         regime: editData.regime,
@@ -406,7 +403,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
           </div>
           <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
             {[
-              { icon: Receipt, label: activeProfile.country === 'Spain' ? (taxIdType === 'nie' ? 'NIE' : 'NIF') : 'Partita IVA', value: activeProfile.country === 'Spain' ? (taxIdType === 'nie' ? (profileStorage.get(`nie_${activeProfile.id}`) || '—') : (activeProfile.piva || '—')) : (activeProfile.piva || '—') },
+              { icon: Receipt, label: activeProfile.country === 'Spain' ? (taxIdType === 'nie' ? 'NIE' : 'NIF') : 'Partita IVA', value: activeProfile.country === 'Spain' ? (taxIdType === 'nie' ? (activeProfile.nie || '—') : (activeProfile.piva || '—')) : (activeProfile.piva || '—') },
               ...(activeProfile.country !== 'Spain' ? [{ icon: User, label: 'Codice Fiscale', value: activeProfile.codiceFiscale || '—' }] : []),
               { icon: MapPin, label: 'Indirizzo', value: activeProfile.address || '—' },
               { icon: CreditCard, label: 'IBAN', value: activeProfile.iban || '—' },
