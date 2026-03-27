@@ -49,6 +49,8 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
   const [retaMensile, setRetaMensile] = useState('500');
   const [annoInizioSpagna, setAnnoInizioSpagna] = useState('');
   const [addressSpagna, setAddressSpagna] = useState('');
+  const [regimenFiscal, setRegimenFiscal] = useState<'simplificada' | 'normal' | 'modulos'>('simplificada');
+  const [ivaHabitual, setIvaHabitual] = useState<'21' | '10' | '4'>('21');
 
   const goNext = (nextStep: OnboardingStep) => { setDirection(1); setStep(nextStep); };
   const goBack = (prevStep: OnboardingStep) => { setDirection(-1); setStep(prevStep); };
@@ -69,6 +71,8 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
         coefficiente: undefined,
         annoInizioAttivita: annoInizioSpagna ? parseInt(annoInizioSpagna) : undefined,
         address: addressSpagna || undefined,
+        regimenFiscal,
+        ivaHabitual: parseInt(ivaHabitual) as 21 | 10 | 4,
       } : {
         regime,
         coefficiente,
@@ -350,6 +354,23 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                       <HelpText text="X/Y/Z + 7 cifre + lettera. Per stranieri residenti in Spagna." />
                     </div>
                   )}
+                </div>
+                <div className="space-y-1.5">
+                  <label className={lc}>Régimen fiscal</label>
+                  <select value={regimenFiscal} onChange={e => setRegimenFiscal(e.target.value as typeof regimenFiscal)} className={ic}>
+                    <option value="simplificada">Estimación Directa Simplificada</option>
+                    <option value="normal">Estimación Directa Normal</option>
+                    <option value="modulos">Estimación Objetiva / Módulos</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className={lc}>Tipo IVA habitual</label>
+                  <select value={ivaHabitual} onChange={e => setIvaHabitual(e.target.value as typeof ivaHabitual)} className={ic}>
+                    <option value="21">21%</option>
+                    <option value="10">10%</option>
+                    <option value="4">4%</option>
+                  </select>
+                  <HelpText text="La retención IRPF se calcula automáticamente: 7% los primeros 3 años, 15% a partir del 4º." />
                 </div>
                 <div className="space-y-1.5">
                   <label className={lc}>Cuota RETA mensual</label>

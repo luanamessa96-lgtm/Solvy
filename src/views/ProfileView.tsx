@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 const DB_PROFILE_FIELDS: (keyof Profile)[] = [
   'id', 'name', 'email', 'jobType', 'country', 'currency', 'avatar',
   'address', 'piva', 'nie', 'codiceFiscale', 'iban', 'regime', 'coefficiente',
-  'annoInizioAttivita', 'isPro',
+  'annoInizioAttivita', 'isPro', 'regimenFiscal', 'ivaHabitual',
 ];
 
 interface ProfileViewProps {
@@ -100,6 +100,8 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     annoInizioAttivita: activeProfile.annoInizioAttivita?.toString() || '',
     nie: activeProfile.nie || '',
     retaMensile: profileStorage.get(`reta_${activeProfile.id}`) || '500',
+    regimenFiscal: activeProfile.regimenFiscal || 'simplificada',
+    ivaHabitual: activeProfile.ivaHabitual?.toString() || '21',
   });
 
   const isSpain = editData.country === 'Spain';
@@ -143,9 +145,11 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
         nie: isSpain && taxIdType === 'nie' ? editData.nie || undefined : undefined,
         codiceFiscale: editData.codiceFiscale || undefined,
         iban: editData.iban || undefined,
-        regime: editData.regime,
+        regime: isSpain ? undefined : editData.regime,
         coefficiente: editData.coefficiente ? parseFloat(editData.coefficiente) : undefined,
         annoInizioAttivita: editData.annoInizioAttivita ? parseInt(editData.annoInizioAttivita) : undefined,
+        regimenFiscal: isSpain ? (editData.regimenFiscal as 'simplificada' | 'normal' | 'modulos') : undefined,
+        ivaHabitual: isSpain && editData.ivaHabitual ? parseInt(editData.ivaHabitual) as 21 | 10 | 4 : undefined,
       };
 
       // Safety: ensure no non-DB keys sneak in
@@ -272,9 +276,19 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Régimen Fiscal</label>
-                        <div className={`px-4 py-3 border rounded-xl text-sm ${darkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-600'}`}>
-                          Estimación directa simplificada
-                        </div>
+                        <select value={editData.regimenFiscal} onChange={e => setEditData({ ...editData, regimenFiscal: e.target.value })} className={inputClass()}>
+                          <option value="simplificada">Estimación Directa Simplificada</option>
+                          <option value="normal">Estimación Directa Normal</option>
+                          <option value="modulos">Estimación Objetiva / Módulos</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Tipo IVA habitual</label>
+                        <select value={editData.ivaHabitual} onChange={e => setEditData({ ...editData, ivaHabitual: e.target.value })} className={inputClass()}>
+                          <option value="21">21%</option>
+                          <option value="10">10%</option>
+                          <option value="4">4%</option>
+                        </select>
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Cuota RETA mensual</label>
@@ -409,8 +423,10 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
               ...(activeProfile.country !== 'Spain' ? [{ icon: User, label: t('profile.label_cf'), value: activeProfile.codiceFiscale || '—' }] : []),
               { icon: MapPin, label: t('profile.label_address'), value: activeProfile.address || '—' },
               { icon: CreditCard, label: 'IBAN', value: activeProfile.iban || '—' },
-              { icon: Briefcase, label: t('profile.label_regime'), value: activeProfile.country === 'Spain' ? 'Estimación directa simplificada' : (activeProfile.regime ? activeProfile.regime.charAt(0).toUpperCase() + activeProfile.regime.slice(1) : 'Forfettario') },
+              { icon: Briefcase, label: t('profile.label_regime'), value: activeProfile.country === 'Spain' ? ({ simplificada: 'Est. Directa Simplificada', normal: 'Est. Directa Normal', modulos: 'Est. Objetiva / Módulos' }[activeProfile.regimenFiscal || 'simplificada']) : (activeProfile.regime ? activeProfile.regime.charAt(0).toUpperCase() + activeProfile.regime.slice(1) : 'Forfettario') },
               ...(activeProfile.country !== 'Spain' && activeProfile.coefficiente ? [{ icon: Receipt, label: t('profile.label_category'), value: `${CATEGORIE_COEFFICIENTE[activeProfile.coefficiente] || activeProfile.coefficiente + '%'} (${activeProfile.coefficiente}%)` }] : []),
+              ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'IVA habitual', value: `${activeProfile.ivaHabitual ?? 21}%` }] : []),
+              ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'Ret. IRPF (auto)', value: (() => { const y = activeProfile.annoInizioAttivita ? new Date().getFullYear() - activeProfile.annoInizioAttivita : 10; return `${y <= 3 ? 7 : 15}%`; })() }] : []),
               ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'RETA mensual', value: `€${profileStorage.get(`reta_${activeProfile.id}`) || '500'}/mes` }] : []),
             ].map(({ icon: Icon, label, value }, i, arr) => (
               <div key={label} className={`w-full p-4 flex items-center justify-between ${i < arr.length - 1 ? (darkMode ? 'border-b border-slate-800' : 'border-b border-slate-50') : ''}`}>

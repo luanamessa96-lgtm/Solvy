@@ -269,6 +269,150 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     const grey: [number, number, number] = [100, 116, 139];
     const lightGrey: [number, number, number] = [226, 232, 240];
 
+    // ── Spain invoice helper ─────────────────────────────────────────────────
+    const drawInvoicePageSpain = (inv: AppDoc, isFirst: boolean) => {
+      if (!isFirst) pdf.addPage();
+      const M = margin;
+      const R = rightCol;
+
+      const taxId = profile.nie || profile.piva || '';
+      const ivaRate = profile.ivaHabitual ?? 21;
+      const currentYr = new Date().getFullYear();
+      const yearsActive = profile.annoInizioAttivita ? currentYr - profile.annoInizioAttivita : 10;
+      const retencionRate = yearsActive <= 3 ? 7 : 15;
+
+      // Title
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(22);
+      pdf.setTextColor(...black);
+      pdf.text('FACTURA', M, 18);
+
+      // Nº + Fecha (right)
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(11);
+      pdf.setTextColor(...grey);
+      pdf.text(`Nº ${inv.invoiceNumber || '—'}`, R, 14, { align: 'right' });
+      pdf.setFontSize(9);
+      pdf.text(new Date(inv.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }), R, 20, { align: 'right' });
+
+      // Divider
+      pdf.setDrawColor(...lightGrey);
+      pdf.setLineWidth(0.4);
+      pdf.line(M, 26, R, 26);
+
+      let y = 33;
+      const colW = (R - M - 8) / 2;
+      const col2 = M + colW + 8;
+
+      // Column headers
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(7);
+      pdf.setTextColor(...grey);
+      pdf.text('PROVEEDOR', M, y);
+      pdf.text('CLIENTE', col2, y);
+      y += 6;
+
+      // Names
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(10);
+      pdf.setTextColor(...black);
+      pdf.text(profile.name, M, y);
+      pdf.text(inv.client || 'Cliente no especificado', col2, y, { maxWidth: colW });
+      y += 5;
+
+      // Details
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(8.5);
+      pdf.setTextColor(...grey);
+
+      const proveedorLines: string[] = [];
+      if (profile.address) proveedorLines.push(profile.address);
+      if (taxId) proveedorLines.push(`NIF/NIE: ${taxId}`);
+      if (profile.email) proveedorLines.push(profile.email);
+      if (profile.iban) proveedorLines.push(`IBAN: ${profile.iban}`);
+
+      const clientNifText = inv.clientPiva && inv.clientPiva !== 'Privato' ? `NIF/CIF: ${inv.clientPiva}` : '';
+      const clienteLines: string[] = [];
+      if (inv.clientAddress) clienteLines.push(inv.clientAddress);
+      if (clientNifText) clienteLines.push(clientNifText);
+
+      const maxLines = Math.max(proveedorLines.length, clienteLines.length);
+      for (let i = 0; i < maxLines; i++) {
+        if (proveedorLines[i]) pdf.text(proveedorLines[i], M, y, { maxWidth: colW });
+        if (clienteLines[i]) pdf.text(clienteLines[i], col2, y, { maxWidth: colW });
+        y += 5;
+      }
+      y += 4;
+
+      // Divider
+      pdf.setDrawColor(...lightGrey);
+      pdf.line(M, y, R, y);
+      y += 8;
+
+      // Line items table
+      autoTable(pdf, {
+        startY: y,
+        head: [['Descripción', 'Importe']],
+        body: [[inv.title || 'Servicio no especificado', `€ ${inv.amount.toFixed(2)}`]],
+        styles: { fontSize: 9, cellPadding: { top: 5, bottom: 5, left: 3, right: 3 }, textColor: black },
+        headStyles: { fillColor: [248, 250, 252], textColor: grey, fontStyle: 'bold', fontSize: 8, lineColor: lightGrey, lineWidth: 0.3 },
+        bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+        columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 38, halign: 'right', fontStyle: 'bold', textColor: black } },
+        margin: { left: M, right: M },
+        tableLineColor: lightGrey,
+        tableLineWidth: 0.3,
+      });
+
+      y = (pdf.lastAutoTable?.finalY ?? y + 20) + 6;
+
+      // Summary
+      const summaryX = W - M - 72;
+      const summaryW = 72;
+      const ivaAmount = inv.amount * (ivaRate / 100);
+      const retencionAmount = inv.amount * (retencionRate / 100);
+      const totalACobrar = inv.amount + ivaAmount - retencionAmount;
+
+      const summaryRows: [string, string][] = [
+        ['Base imponible', `€ ${inv.amount.toFixed(2)}`],
+        [`IVA ${ivaRate}%`, `+ € ${ivaAmount.toFixed(2)}`],
+        [`Ret. IRPF ${retencionRate}%`, `- € ${retencionAmount.toFixed(2)}`],
+      ];
+
+      summaryRows.forEach(([label, value]) => {
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(8.5);
+        pdf.setTextColor(...grey);
+        pdf.text(label, summaryX, y + 4);
+        pdf.setTextColor(...black);
+        pdf.text(value, summaryX + summaryW, y + 4, { align: 'right' });
+        pdf.setDrawColor(...lightGrey);
+        pdf.line(summaryX, y + 7, summaryX + summaryW, y + 7);
+        y += 9;
+      });
+
+      y += 2;
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(10);
+      pdf.setTextColor(...black);
+      pdf.text('TOTAL A COBRAR', summaryX, y + 5);
+      pdf.setFontSize(11);
+      pdf.setTextColor(...primary);
+      pdf.text(`€ ${totalACobrar.toFixed(2)}`, summaryX + summaryW, y + 5, { align: 'right' });
+
+      // Footer
+      pdf.setDrawColor(...lightGrey);
+      pdf.setLineWidth(0.4);
+      pdf.line(M, 280, R, 280);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(...grey);
+      const footerParts: string[] = [];
+      if (profile.email) footerParts.push(profile.email);
+      if (profile.iban) footerParts.push(`IBAN: ${profile.iban}`);
+      pdf.text(footerParts.join('   |   '), M, 285);
+      pdf.text('Pág. 1 de 1', R, 285, { align: 'right' });
+    };
+
     const drawInvoicePage = (inv: AppDoc, isFirst: boolean) => {
       if (!isFirst) pdf.addPage();
       const M = margin;
@@ -439,7 +583,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     const expenses = filteredDocs.filter(d => d.type === 'expense');
 
     // Una pagina per ogni fattura
-    invoices.forEach((inv, i) => drawInvoicePage(inv, i === 0));
+    invoices.forEach((inv, i) => isSpain ? drawInvoicePageSpain(inv, i === 0) : drawInvoicePage(inv, i === 0));
 
     // Pagina riepilogo spese
     if (expenses.length > 0) {
@@ -451,7 +595,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(22);
       pdf.setTextColor(...black);
-      pdf.text('RIEPILOGO SPESE', M, 18);
+      pdf.text(isSpain ? 'GASTOS' : 'RIEPILOGO SPESE', M, 18);
 
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(9);
@@ -466,9 +610,9 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
       autoTable(pdf, {
         startY: 36,
-        head: [['Data', 'Categoria', 'Descrizione', 'Importo']],
+        head: [isSpain ? ['Fecha', 'Categoría', 'Descripción', 'Importe'] : ['Data', 'Categoria', 'Descrizione', 'Importo']],
         body: expenses.map(d => [
-          new Date(d.date).toLocaleDateString('it-IT'),
+          new Date(d.date).toLocaleDateString(isSpain ? 'es-ES' : 'it-IT'),
           d.category || '—',
           d.title,
           `€ ${d.amount.toFixed(2)}`,
@@ -502,7 +646,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       pdf.setFontSize(7.5);
       pdf.setTextColor(...grey);
       pdf.text(profile.email || '', M, 285);
-      pdf.text(`Generato il ${new Date().toLocaleDateString('it-IT')}`, R, 285, { align: 'right' });
+      pdf.text(isSpain ? `Generado el ${new Date().toLocaleDateString('es-ES')}` : `Generato il ${new Date().toLocaleDateString('it-IT')}`, R, 285, { align: 'right' });
     }
 
     const blob = pdf.output('blob');
