@@ -8,26 +8,33 @@ import './index.css';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(registration => {
     function notifyUpdate() {
-      // Store on window so App.tsx can pick it up even if it mounts after this fires
       (window as { __swPendingReg?: ServiceWorkerRegistration }).__swPendingReg = registration;
       window.dispatchEvent(new CustomEvent('swUpdateReady', { detail: { registration } }));
     }
 
-    // Case 1: new SW already waiting when page loads (most common on PWA reopen)
-    if (registration.waiting && navigator.serviceWorker.controller) {
+    function trackWorker(sw: ServiceWorker) {
+      sw.addEventListener('statechange', () => {
+        if (sw.state === 'installed') notifyUpdate();
+      });
+    }
+
+    // Case 1: new SW already waiting (PWA reopen after deploy)
+    if (registration.waiting) {
       notifyUpdate();
     }
 
-    // Case 2: new SW found while page is open
+    // Case 2: new SW currently installing (page opened mid-update)
+    if (registration.installing) {
+      trackWorker(registration.installing);
+    }
+
+    // Case 3: new SW found while app is open
     registration.addEventListener('updatefound', () => {
-      const newWorker = registration.installing;
-      if (!newWorker) return;
-      newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          notifyUpdate();
-        }
-      });
+      if (registration.installing) trackWorker(registration.installing);
     });
+
+    // Force update check every 60s as fallback
+    setInterval(() => registration.update(), 60_000);
   });
 }
 
