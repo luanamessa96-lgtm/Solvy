@@ -45,8 +45,8 @@ function getQuarterRange(quarter: 1 | 2 | 3 | 4, year: number): { start: Date; e
   const sm = startMonths[quarter - 1];
   const em = endMonths[quarter - 1];
   return {
-    start: new Date(year, sm, 1),
-    end:   new Date(year, em + 1, 0), // last day of end month
+    start: new Date(year, sm, 1, 0, 0, 0, 0),
+    end:   new Date(year, em + 1, 0, 23, 59, 59, 999), // last day of end month, end of day
   };
 }
 
@@ -63,7 +63,10 @@ export function calcularTrimestre(
 ): ResumenTrimestral {
   const { start, end } = getQuarterRange(quarter, year);
   const inRange = (d: Document) => {
-    const date = new Date(d.date);
+    // Parse date-only strings (YYYY-MM-DD) as local time, not UTC.
+    // new Date("2025-03-15") is UTC midnight; new Date(y, m-1, d) is local midnight.
+    const parts = d.date.split('T')[0].split('-').map(Number);
+    const date = new Date(parts[0], parts[1] - 1, parts[2]);
     return date >= start && date <= end;
   };
 
