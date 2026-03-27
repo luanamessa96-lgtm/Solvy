@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Mail, Camera, ChevronRight, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus, Download, Copy, AlertTriangle, FileCode, Lock } from 'lucide-react';
+import { Search, Mail, Camera, ChevronRight, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus, Download, Copy, AlertTriangle, FileCode, Lock, BarChart3 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { Document, Accountant, Profile } from '../types';
@@ -8,6 +8,7 @@ import CreateInvoiceModal from '../components/modals/CreateInvoiceModal';
 import CreateExpenseModal from '../components/modals/CreateExpenseModal';
 import SearchOverlay from '../components/modals/SearchOverlay';
 import ExportModal from '../components/modals/ExportModal';
+import ResumenTrimestralModal from '../components/modals/ResumenTrimestralModal';
 import { generateInvoicePDF } from '../lib/generateInvoicePDF';
 import { downloadFatturaPA, getMissingProfileFields } from '../services/fatturaPA';
 import { useToast } from '../components/ui/Toast';
@@ -33,6 +34,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const { showToast } = useToast();
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
+  const [isResumenOpen, setIsResumenOpen] = useState(false);
   const isPro = useProStatus(profile);
   const [isChoiceOpen, setIsChoiceOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -119,6 +121,23 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
         </div>
         <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${darkMode ? 'bg-slate-800 text-slate-600 group-hover:bg-primary/20 group-hover:text-primary' : 'bg-slate-50 text-slate-300 group-hover:bg-primary/10 group-hover:text-primary'}`}><ChevronRight size={20} /></div>
       </motion.button>
+
+      {profile.country === 'Spain' && (
+        <motion.button
+          variants={item}
+          onClick={() => { if (!isPro) { setIsPaywallOpen(true); return; } setIsResumenOpen(true); }}
+          className={`w-full p-5 border rounded-3xl flex items-center gap-4 transition-all group active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5'} ${!isPro ? 'opacity-50' : ''}`}
+        >
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${darkMode ? 'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white' : 'bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white'}`}>
+            <BarChart3 size={22} />
+          </div>
+          <div className="text-left flex-1">
+            <p className={`text-sm font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>Resumen Trimestral</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Modelos 130 + 303 en PDF</p>
+          </div>
+          {!isPro ? <Lock size={14} className="text-slate-400" /> : <ChevronRight size={18} className={`text-slate-400 transition-colors ${darkMode ? 'group-hover:text-primary' : 'group-hover:text-primary'}`} />}
+        </motion.button>
+      )}
 
       <motion.div variants={item} className="space-y-3">
         <div className="flex items-center justify-between px-2">
@@ -521,6 +540,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
 
       <ExportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} documents={documents} selectedYear={selectedYear} profile={profile} accountant={accountant} darkMode={darkMode} />
       <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} darkMode={darkMode} />
+      <ResumenTrimestralModal isOpen={isResumenOpen} onClose={() => setIsResumenOpen(false)} documents={documents} profile={profile} darkMode={darkMode} onNavigateToProfile={onNavigateToProfile} />
 
     </motion.div>
   );
