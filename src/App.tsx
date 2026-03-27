@@ -25,7 +25,7 @@ function dbError(err: unknown): string {
 }
 import Header from './components/layout/Header';
 import BottomNav from './components/layout/BottomNav';
-import NotificationsPanel from './components/layout/NotificationsPanel';
+const NotificationsPanel = lazy(() => import('./components/layout/NotificationsPanel'));
 import { UpdateBanner } from './components/ui/UpdateBanner';
 
 const DashboardView = lazy(() => import('./views/DashboardView'));
@@ -623,7 +623,9 @@ function AppInner() {
         darkMode={darkMode}
       />
 
-      <NotificationsPanel isOpen={isNotificationsOpen} deadlines={deadlines} onClose={() => setIsNotificationsOpen(false)} onUpdateDeadline={handleUpdateDeadline} darkMode={darkMode} />
+      <Suspense fallback={null}>
+        <NotificationsPanel isOpen={isNotificationsOpen} deadlines={deadlines} onClose={() => setIsNotificationsOpen(false)} onUpdateDeadline={handleUpdateDeadline} darkMode={darkMode} />
+      </Suspense>
 
       <main className={`flex-1 overflow-y-auto ${darkMode ? 'bg-slate-950' : ''}`}>
         <Suspense fallback={<div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>}>

@@ -28,7 +28,6 @@ export default defineConfig(({mode}) => {
             'charts': ['recharts'],
             'motion': ['motion'],
             'i18n': ['i18next', 'react-i18next'],
-            'lucide': ['lucide-react'],
           },
         },
       },
