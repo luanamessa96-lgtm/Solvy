@@ -62,16 +62,25 @@ export function calcularTrimestre(
   year: number
 ): ResumenTrimestral {
   const { start, end } = getQuarterRange(quarter, year);
+
+  console.group(`[calcularTrimestre] T${quarter} ${year}`);
+  console.log('Range:', start.toISOString(), '→', end.toISOString());
+  console.log('Total documents received:', documents.length);
+
   const inRange = (d: Document) => {
-    // Parse date-only strings (YYYY-MM-DD) as local time, not UTC.
-    // new Date("2025-03-15") is UTC midnight; new Date(y, m-1, d) is local midnight.
     const parts = d.date.split('T')[0].split('-').map(Number);
     const date = new Date(parts[0], parts[1] - 1, parts[2]);
-    return date >= start && date <= end;
+    const ok = date >= start && date <= end;
+    console.log(
+      `  [${d.type}] raw="${d.date}" parsed=${date.toISOString()} → ${ok ? '✅ IN' : '❌ OUT'}`
+    );
+    return ok;
   };
 
   const invoices = documents.filter(d => d.type === 'invoice' && inRange(d));
   const expenses = documents.filter(d => d.type === 'expense' && inRange(d));
+  console.log(`Result: ${invoices.length} invoice(s), ${expenses.length} expense(s)`);
+  console.groupEnd();
 
   const totalIngresos = invoices.reduce((sum, d) => sum + d.amount, 0);
   const totalGastos   = expenses.reduce((sum, d) => sum + d.amount, 0);
