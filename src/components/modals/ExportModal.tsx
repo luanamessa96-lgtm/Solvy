@@ -103,6 +103,11 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const resumenYear = year;
   const hasTaxIdSpain = !!(profile.nie || profile.piva);
 
+  const resumenPreview = useMemo(() =>
+    calcularTrimestre(documents, resumenQuarter, resumenYear),
+    [documents, resumenQuarter, resumenYear]
+  );
+
   const toggleMonth = (m: number) => {
     setSelectedMonths(prev => {
       const next = new Set(prev.size === 0 ? availableMonths : prev);
@@ -146,7 +151,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     if (months.length === 12) return `Anno ${year}`;
     if (months.length === 1) return `${MONTH_NAMES[months[0]]} ${year}`;
     return `${MONTH_NAMES[months[0]]} – ${MONTH_NAMES[months[months.length - 1]]} ${year}`;
-  }, [syncedMonths, selectedYear]);
+  }, [syncedMonths, year]);
 
   const handleExport = async () => {
     if (filteredDocs.length === 0) return;
@@ -861,6 +866,22 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                             </button>
                           ))}
                         </div>
+                        {hasTaxIdSpain && (
+                          <div className={`mt-3 pt-3 border-t space-y-1.5 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+                            <div className="flex justify-between items-center">
+                              <span className="text-[11px] text-slate-400">Ingresos</span>
+                              <span className="text-[11px] font-bold text-emerald-500">{formatAmount(resumenPreview.totalIngresos)}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-[11px] text-slate-400">Gastos</span>
+                              <span className="text-[11px] font-bold text-red-500">{formatAmount(resumenPreview.totalGastos)}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-[11px] font-semibold text-slate-500">IRPF 20%</span>
+                              <span className="text-[11px] font-bold text-primary">{formatAmount(resumenPreview.cuotaIRPF)}</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
