@@ -13,6 +13,8 @@ if ('serviceWorker' in navigator) {
     }
 
     function trackWorker(sw: ServiceWorker) {
+      // Check current state first — worker may already be installed before listener attaches
+      if (sw.state === 'installed') { notifyUpdate(); return; }
       sw.addEventListener('statechange', () => {
         if (sw.state === 'installed') notifyUpdate();
       });

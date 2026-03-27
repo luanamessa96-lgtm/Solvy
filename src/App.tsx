@@ -662,6 +662,7 @@ function AppInner() {
     <AnimatePresence>
       {swRegistration && (
         <UpdateBanner
+          key="update-banner"
           darkMode={darkMode}
           onUpdate={() => {
             swRegistration.waiting?.postMessage({ type: 'SKIP_WAITING' });
@@ -671,6 +672,14 @@ function AppInner() {
         />
       )}
     </AnimatePresence>
+    {import.meta.env.DEV && (
+      <button
+        onClick={() => window.dispatchEvent(new CustomEvent('swUpdateReady', { detail: { registration: { waiting: { postMessage: () => {} } } } }))}
+        className="fixed bottom-4 right-4 z-[999] text-[10px] font-bold bg-yellow-400 text-black px-2 py-1 rounded opacity-60 hover:opacity-100"
+      >
+        TEST SW
+      </button>
+    )}
     </>
   );
 }
