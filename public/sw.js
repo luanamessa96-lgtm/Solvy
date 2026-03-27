@@ -1,7 +1,11 @@
-const VERSION = 'v3';
+const VERSION = 'v4';
 const CACHE = `freelance-${VERSION}`;
 
-self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('install', () => { /* wait for SKIP_WAITING message */ });
+
+self.addEventListener('message', event => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+});
 
 self.addEventListener('activate', event => {
   event.waitUntil(

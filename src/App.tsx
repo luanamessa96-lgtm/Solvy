@@ -26,6 +26,7 @@ function dbError(err: unknown): string {
 import Header from './components/layout/Header';
 import BottomNav from './components/layout/BottomNav';
 import NotificationsPanel from './components/layout/NotificationsPanel';
+import { UpdateBanner } from './components/ui/UpdateBanner';
 
 const DashboardView = lazy(() => import('./views/DashboardView'));
 const DocumentsView = lazy(() => import('./views/DocumentsView'));
@@ -70,6 +71,7 @@ function AppInner() {
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
   const activeProfileRef = useRef(activeProfile);
   const profileCache = useRef<Record<string, { documents: Document[], deadlines: Deadline[], accountant: Accountant | null }>>({});
   const { showToast } = useToast();
@@ -96,6 +98,13 @@ function AppInner() {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  // PWA update detection
+  useEffect(() => {
+    const handler = (e: Event) => setSwRegistration((e as CustomEvent).detail.registration);
+    window.addEventListener('swUpdateReady', handler);
+    return () => window.removeEventListener('swUpdateReady', handler);
   }, []);
 
   // Stato connessione — al rientro online, risincronizza i dati
@@ -646,6 +655,18 @@ function AppInner() {
 
     </div>
     <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} theme={theme} />
+    <AnimatePresence>
+      {swRegistration && (
+        <UpdateBanner
+          darkMode={darkMode}
+          onUpdate={() => {
+            swRegistration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+            window.location.reload();
+          }}
+          onDismiss={() => setSwRegistration(null)}
+        />
+      )}
+    </AnimatePresence>
     </>
   );
 }

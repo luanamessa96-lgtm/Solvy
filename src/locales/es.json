@@ -274,6 +274,11 @@
     "error_forgot_send": "Error al enviar. Comprueba el email.",
     "error_reset_save": "Error al guardar. Inténtalo de nuevo."
   },
+  "pwa": {
+    "update_available": "Hay una nueva versión de Solvy disponible",
+    "update_btn": "Actualizar",
+    "dismiss_btn": "Ignorar"
+  },
   "common": {
     "save": "Guardar",
     "cancel": "Cancelar",
