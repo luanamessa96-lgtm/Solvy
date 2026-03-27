@@ -888,31 +888,33 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                 </div>
               )}
 
-              {/* Riepilogo */}
-              <div className={`rounded-2xl p-4 space-y-2 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
-                <div className="flex justify-between items-center">
-                  <span className={`text-sm font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Documenti selezionati</span>
-                  <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{filteredDocs.length}</span>
+              {/* Riepilogo — nascosto per Spain con resumen attivo (sostituito dalle card Ingresos/Gastos/IRPF) */}
+              {!(isSpain && includeResumen) && (
+                <div className={`rounded-2xl p-4 space-y-2 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                  <div className="flex justify-between items-center">
+                    <span className={`text-sm font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Documenti selezionati</span>
+                    <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{filteredDocs.length}</span>
+                  </div>
+                  {docFilter !== 'expense' && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-semibold text-emerald-500">Entrate</span>
+                      <span className="text-sm font-bold text-emerald-500">{formatAmount(totals.income)}</span>
+                    </div>
+                  )}
+                  {docFilter !== 'invoice' && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-semibold text-red-500">Uscite</span>
+                      <span className="text-sm font-bold text-red-500">{formatAmount(totals.expenses)}</span>
+                    </div>
+                  )}
+                  {docFilter === 'all' && (
+                    <div className={`flex justify-between items-center pt-1 border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+                      <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Netto</span>
+                      <span className={`text-sm font-bold ${totals.income - totals.expenses >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{formatAmount(totals.income - totals.expenses)}</span>
+                    </div>
+                  )}
                 </div>
-                {docFilter !== 'expense' && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-semibold text-emerald-500">Entrate</span>
-                    <span className="text-sm font-bold text-emerald-500">{formatAmount(totals.income)}</span>
-                  </div>
-                )}
-                {docFilter !== 'invoice' && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-semibold text-red-500">Uscite</span>
-                    <span className="text-sm font-bold text-red-500">{formatAmount(totals.expenses)}</span>
-                  </div>
-                )}
-                {docFilter === 'all' && (
-                  <div className={`flex justify-between items-center pt-1 border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
-                    <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Netto</span>
-                    <span className={`text-sm font-bold ${totals.income - totals.expenses >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{formatAmount(totals.income - totals.expenses)}</span>
-                  </div>
-                )}
-              </div>
+              )}
 
               {/* Warning fatture incomplete */}
               {incompleteInvoices.length > 0 && !readyBlob && (
