@@ -37,7 +37,7 @@ const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountant
       <motion.button variants={item} onClick={onProfileClick} className={`w-full p-6 rounded-[32px] border flex items-center gap-5 active:scale-[0.98] transition-all shadow-sm hover:shadow-xl ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}>
         <div className="relative">
           <div className={`w-16 h-16 rounded-full flex items-center justify-center overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-[#E8D5C4]'}`}>
-            <img src={activeProfile.avatar} alt={activeProfile.name} className={`w-full h-full object-cover ${darkMode ? 'opacity-90' : 'mix-blend-multiply opacity-80'}`} />
+            <img src={activeProfile.avatar} alt={activeProfile.name} width="64" height="64" className={`w-full h-full object-cover ${darkMode ? 'opacity-90' : 'mix-blend-multiply opacity-80'}`} />
           </div>
           <div className={`absolute inset-0 rounded-full border-2 ${darkMode ? 'border-slate-700/50' : 'border-white/50'}`} />
         </div>

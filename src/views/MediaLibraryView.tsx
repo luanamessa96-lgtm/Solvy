@@ -116,6 +116,7 @@ function FileThumbnail({ doc, darkMode }: { doc: Document; darkMode?: boolean })
       <img
         src={doc.imageData}
         alt={doc.title}
+        loading="lazy"
         className="w-full h-full object-cover"
       />
     );

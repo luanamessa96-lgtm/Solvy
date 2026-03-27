@@ -17,17 +17,25 @@ export default defineConfig(({mode}) => {
       },
     },
     build: {
+      target: 'esnext',
+      cssCodeSplit: true,
       rollupOptions: {
         output: {
           manualChunks: {
+            'react-vendor': ['react', 'react-dom'],
             'supabase': ['@supabase/supabase-js'],
             'jspdf': ['jspdf', 'jspdf-autotable'],
             'charts': ['recharts'],
             'motion': ['motion'],
             'i18n': ['i18next', 'react-i18next'],
+            'lucide': ['lucide-react'],
           },
         },
       },
+    },
+    esbuild: {
+      drop: mode === 'production' ? ['console', 'debugger'] : [],
+      legalComments: 'none',
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
