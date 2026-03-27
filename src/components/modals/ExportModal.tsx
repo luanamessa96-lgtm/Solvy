@@ -6,6 +6,7 @@ import autoTable from 'jspdf-autotable';
 import { Document as AppDoc, Profile, Accountant } from '../../types';
 import { useProStatus } from '../../hooks/useProStatus';
 import { generateFatturaPA, getMissingProfileFields } from '../../services/fatturaPA';
+import { calcularTrimestre, generateResumenPDF, getCurrentQuarter, QUARTER_LABELS } from '../../services/modelosES';
 
 interface jsPDFWithAutoTable extends jsPDF {
   lastAutoTable: { finalY: number };
@@ -30,15 +31,19 @@ function formatAmount(n: number) {
 export default function ExportModal({ isOpen, onClose, documents, selectedYear, profile, accountant, darkMode }: ExportModalProps) {
   const isPro = useProStatus(profile);
   const isItaly = profile.country === 'Italy';
+  const isSpain = profile.country === 'Spain';
 
   const [docFilter, setDocFilter] = useState<'all' | 'invoice' | 'expense'>('all');
   const [format, setFormat] = useState<'pdf' | 'csv'>('pdf');
   const [exporting, setExporting] = useState(false);
   const [selectedMonths, setSelectedMonths] = useState<Set<number>>(new Set());
   const [includeFatturaPA, setIncludeFatturaPA] = useState(true);
+  const [includeResumen, setIncludeResumen] = useState(true);
+  const [overrideQuarter, setOverrideQuarter] = useState<1 | 2 | 3 | 4 | null>(null);
   const [readyBlob, setReadyBlob] = useState<{
     blob: Blob; fileName: string;
     xmlFiles?: { blob: Blob; fileName: string }[];
+    resumenFile?: { blob: Blob; fileName: string };
   } | null>(null);
   const [year, setYear] = useState(selectedYear);
 
@@ -48,6 +53,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       setSelectedMonths(new Set());
       setReadyBlob(null);
       setIncludeFatturaPA(true);
+      setIncludeResumen(true);
+      setOverrideQuarter(null);
     }
   }, [isOpen, selectedYear]);
 
@@ -78,6 +85,23 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     if (synced.size === 0 && availableMonths.length > 0) return new Set(availableMonths);
     return synced;
   }, [availableMonths, selectedMonths]);
+
+  // Derive quarter from selected months; reset manual override when months/year change
+  const derivedQuarter = useMemo((): 1 | 2 | 3 | 4 => {
+    const months = [...syncedMonths].sort((a, b) => a - b);
+    if (months.length === 0) return getCurrentQuarter();
+    const mid = months[Math.floor(months.length / 2)];
+    if (mid < 3) return 1;
+    if (mid < 6) return 2;
+    if (mid < 9) return 3;
+    return 4;
+  }, [syncedMonths]);
+
+  useEffect(() => { setOverrideQuarter(null); }, [syncedMonths, year]);
+
+  const resumenQuarter = overrideQuarter ?? derivedQuarter;
+  const resumenYear = year;
+  const hasTaxIdSpain = !!(profile.nie || profile.piva);
 
   const toggleMonth = (m: number) => {
     setSelectedMonths(prev => {
@@ -143,7 +167,10 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     const { blob, fileName, xmlFiles } = readyBlob;
     const primaryFile = new File([blob], fileName, { type: blob.type });
     const xmlFileObjs = (xmlFiles || []).map(f => new File([f.blob], f.fileName, { type: 'application/xml' }));
-    const allFiles = [primaryFile, ...xmlFileObjs];
+    const resumenFileObj = readyBlob.resumenFile
+      ? new File([readyBlob.resumenFile.blob], readyBlob.resumenFile.fileName, { type: 'application/pdf' })
+      : null;
+    const allFiles = [primaryFile, ...xmlFileObjs, ...(resumenFileObj ? [resumenFileObj] : [])];
 
     if (navigator.share && navigator.canShare?.({ files: allFiles })) {
       await navigator.share({ files: allFiles, title: fileName });
@@ -156,6 +183,12 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
         const u = URL.createObjectURL(f.blob);
         const ax = window.document.createElement('a');
         ax.href = u; ax.download = f.fileName; ax.click();
+        URL.revokeObjectURL(u);
+      }
+      if (readyBlob.resumenFile) {
+        const u = URL.createObjectURL(readyBlob.resumenFile.blob);
+        const ar = window.document.createElement('a');
+        ar.href = u; ar.download = readyBlob.resumenFile.fileName; ar.click();
         URL.revokeObjectURL(u);
       }
     }
@@ -173,15 +206,26 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       a.href = u; a.download = f.fileName; a.click();
       URL.revokeObjectURL(u);
     }
+    // Download resumen PDF if present
+    if (readyBlob?.resumenFile) {
+      const u = URL.createObjectURL(readyBlob.resumenFile.blob);
+      const ar = window.document.createElement('a');
+      ar.href = u; ar.download = readyBlob.resumenFile.fileName; ar.click();
+      URL.revokeObjectURL(u);
+    }
+
     const hasXmls = xmlFiles.length > 0;
+    const hasResumen = !!readyBlob?.resumenFile;
     const subject = encodeURIComponent(`Documenti ${periodLabel} — Solvy`);
     const body = encodeURIComponent(
       `Ciao ${accountant.firstName},\n\n` +
       `ti invio i documenti relativi al periodo: ${periodLabel}.\n` +
       `In allegato trovi il file ${format.toUpperCase()}` +
       (hasXmls ? ` e gli XML FatturaPA di ${xmlFiles.length} fattur${xmlFiles.length === 1 ? 'a' : 'e'}` : '') +
+      (hasResumen ? ` e il Resumen Trimestral ${QUARTER_LABELS[resumenQuarter].split(' ')[0]} ${resumenYear}` : '') +
       `.\n` +
       (hasXmls ? `\nGli XML FatturaPA sono stati salvati nella cartella Download — allegali manualmente all'email.\n` : '') +
+      (hasResumen ? `\nIl PDF Resumen Trimestral è stato salvato nella cartella Download — allegalo manualmente all'email.\n` : '') +
       `\nGrazie`
     );
     window.location.href = `mailto:${accountant.email}?subject=${subject}&body=${body}`;
@@ -479,7 +523,17 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
           });
         }
       }
-      setReadyBlob({ blob, fileName, xmlFiles });
+      // Generate Resumen Trimestral PDF if toggle is on (Spain)
+      let resumenFile: { blob: Blob; fileName: string } | undefined;
+      if (includeResumen && isSpain && isPro && hasTaxIdSpain) {
+        const resumen = calcularTrimestre(documents, resumenQuarter, resumenYear);
+        const resumenPdf = generateResumenPDF(resumen, profile);
+        const nif = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
+        const resumenFileName = `ES_${nif}_resumen_T${resumenQuarter}_${resumenYear}.pdf`;
+        resumenFile = { blob: resumenPdf.output('blob'), fileName: resumenFileName };
+      }
+
+      setReadyBlob({ blob, fileName, xmlFiles, resumenFile });
       return;
     }
     const file = new File([blob], fileName, { type: mimeType });
@@ -621,6 +675,51 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                       </p>
                     </div>
                   </button>
+                </div>
+              )}
+
+              {/* Toggle Resumen Trimestral — solo Spain Pro con commercialista */}
+              {isSpain && isPro && accountant && (
+                <div className="space-y-2">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Opzioni</p>
+                  <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'border-slate-700' : 'border-slate-100'}`}>
+                    <button
+                      onClick={() => setIncludeResumen(prev => !prev)}
+                      className={`w-full flex items-center gap-3 p-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}
+                    >
+                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeResumen ? 'bg-primary border-primary' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
+                        {includeResumen && <Check size={12} strokeWidth={3} className="text-white" />}
+                      </div>
+                      <div className="text-left flex-1">
+                        <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Includi Resumen Trimestral</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">
+                          {!hasTaxIdSpain
+                            ? '⚠ Añade NIF o NIE en el perfil para incluir el resumen'
+                            : `T${resumenQuarter} ${resumenYear} — ${QUARTER_LABELS[resumenQuarter]}`}
+                        </p>
+                      </div>
+                    </button>
+                    {includeResumen && (
+                      <div className={`px-4 pb-4 pt-3 border-t ${darkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-100 bg-slate-50'}`}>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Trimestre</p>
+                        <div className="grid grid-cols-4 gap-2">
+                          {([1, 2, 3, 4] as const).map(q => (
+                            <button
+                              key={q}
+                              onClick={() => setOverrideQuarter(q)}
+                              className={`py-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                                resumenQuarter === q
+                                  ? 'bg-primary text-white shadow-md shadow-primary/30'
+                                  : darkMode ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-200'
+                              }`}
+                            >
+                              T{q}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
