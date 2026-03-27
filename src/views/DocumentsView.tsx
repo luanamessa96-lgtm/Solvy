@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Mail, Camera, ChevronRight, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus, Download, Copy, AlertTriangle } from 'lucide-react';
+import { Search, Mail, Camera, ChevronRight, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus, Download, Copy, AlertTriangle, FileCode, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { Document, Accountant, Profile } from '../types';
@@ -9,6 +9,8 @@ import CreateExpenseModal from '../components/modals/CreateExpenseModal';
 import SearchOverlay from '../components/modals/SearchOverlay';
 import ExportModal from '../components/modals/ExportModal';
 import { generateInvoicePDF } from '../lib/generateInvoicePDF';
+import { downloadFatturaPA, getMissingProfileFields } from '../services/fatturaPA';
+import { useToast } from '../components/ui/Toast';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
 
@@ -23,10 +25,12 @@ interface DocumentsViewProps {
   darkMode?: boolean;
   key?: string;
   onMediaLibraryClick?: () => void;
+  onNavigateToProfile?: () => void;
 }
 
-const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, onUpdateProfile, accountant, profile, darkMode, onMediaLibraryClick }: DocumentsViewProps) => {
+const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, onUpdateProfile, accountant, profile, darkMode, onMediaLibraryClick, onNavigateToProfile }: DocumentsViewProps) => {
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const isPro = useProStatus(profile);
@@ -303,6 +307,30 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary text-white"><Download size={18} /></div>
                     <span className="font-bold text-primary">Scarica PDF Fattura</span>
                     {!isPro && <span className="ml-auto text-[10px] font-bold text-primary/60 uppercase tracking-wide">Pro</span>}
+                  </button>
+                )}
+                {selectedDoc.type === 'invoice' && profile.country === 'Italy' && (
+                  <button
+                    onClick={() => {
+                      if (!isPro) { setIsPaywallOpen(true); return; }
+                      const missing = getMissingProfileFields(profile);
+                      if (missing.length > 0) {
+                        showToast(
+                          `Dati mancanti nel profilo: ${missing.map(f => f.label).join(', ')}`,
+                          'error',
+                          onNavigateToProfile ? { label: 'Vai al profilo', onClick: () => { setSelectedDoc(null); onNavigateToProfile(); } } : undefined
+                        );
+                        return;
+                      }
+                      downloadFatturaPA(selectedDoc, profile);
+                      showToast(`XML scaricato`, 'success');
+                      setSelectedDoc(null);
+                    }}
+                    className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} ${!isPro ? 'opacity-50' : ''}`}
+                  >
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${darkMode ? 'bg-slate-700 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}><FileCode size={18} /></div>
+                    <span className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Scarica FatturaPA XML</span>
+                    {!isPro && <Lock size={11} className="ml-auto text-slate-400" />}
                   </button>
                 )}
                 {selectedDoc.type === 'invoice' && (

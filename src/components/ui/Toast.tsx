@@ -4,14 +4,20 @@ import { CheckCircle2, XCircle, Info, X } from 'lucide-react';
 
 type ToastType = 'success' | 'error' | 'info';
 
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface Toast {
   id: string;
   message: string;
   type: ToastType;
+  action?: ToastAction;
 }
 
 interface ToastContextValue {
-  showToast: (message: string, type?: ToastType) => void;
+  showToast: (message: string, type?: ToastType, action?: ToastAction) => void;
 }
 
 const ToastContext = createContext<ToastContextValue>({ showToast: () => {} });
@@ -30,10 +36,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     delete timers.current[id];
   }, []);
 
-  const showToast = useCallback((message: string, type: ToastType = 'success') => {
+  const showToast = useCallback((message: string, type: ToastType = 'success', action?: ToastAction) => {
     const id = Math.random().toString(36).substr(2, 9);
-    setToasts(prev => [...prev.slice(-2), { id, message, type }]);
-    timers.current[id] = setTimeout(() => removeToast(id), 3000);
+    setToasts(prev => [...prev.slice(-2), { id, message, type, action }]);
+    timers.current[id] = setTimeout(() => removeToast(id), 4000);
   }, [removeToast]);
 
   const icons = { success: CheckCircle2, error: XCircle, info: Info };
@@ -61,6 +67,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               >
                 <Icon size={18} className="shrink-0" />
                 <p className="text-sm font-semibold flex-1">{toast.message}</p>
+                {toast.action && (
+                  <button
+                    onClick={() => { toast.action!.onClick(); removeToast(toast.id); }}
+                    className="text-xs font-bold underline underline-offset-2 opacity-90 hover:opacity-100 active:scale-90 transition-all shrink-0"
+                  >
+                    {toast.action.label}
+                  </button>
+                )}
                 <button onClick={() => removeToast(toast.id)} className="opacity-70 hover:opacity-100 active:scale-90 transition-all">
                   <X size={16} />
                 </button>
