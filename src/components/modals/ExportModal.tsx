@@ -4,6 +4,8 @@ import { X, Download, Check, Mail, Share2, Eye, AlertTriangle } from 'lucide-rea
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Document as AppDoc, Profile, Accountant } from '../../types';
+import { useProStatus } from '../../hooks/useProStatus';
+import { generateFatturaPA, getMissingProfileFields } from '../../services/fatturaPA';
 
 interface jsPDFWithAutoTable extends jsPDF {
   lastAutoTable: { finalY: number };
@@ -26,11 +28,18 @@ function formatAmount(n: number) {
 }
 
 export default function ExportModal({ isOpen, onClose, documents, selectedYear, profile, accountant, darkMode }: ExportModalProps) {
+  const isPro = useProStatus(profile);
+  const isItaly = profile.country === 'Italy';
+
   const [docFilter, setDocFilter] = useState<'all' | 'invoice' | 'expense'>('all');
   const [format, setFormat] = useState<'pdf' | 'csv'>('pdf');
   const [exporting, setExporting] = useState(false);
   const [selectedMonths, setSelectedMonths] = useState<Set<number>>(new Set());
-  const [readyBlob, setReadyBlob] = useState<{ blob: Blob; fileName: string } | null>(null);
+  const [includeFatturaPA, setIncludeFatturaPA] = useState(true);
+  const [readyBlob, setReadyBlob] = useState<{
+    blob: Blob; fileName: string;
+    xmlFiles?: { blob: Blob; fileName: string }[];
+  } | null>(null);
   const [year, setYear] = useState(selectedYear);
 
   useEffect(() => {
@@ -38,8 +47,11 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       setYear(selectedYear);
       setSelectedMonths(new Set());
       setReadyBlob(null);
+      setIncludeFatturaPA(true);
     }
   }, [isOpen, selectedYear]);
+
+  const missingProfileFields = useMemo(() => getMissingProfileFields(profile), [profile]);
 
   const availableYears = useMemo(() => {
     const currentYear = new Date().getFullYear();
@@ -128,15 +140,24 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
   const handleShareFile = async () => {
     if (!readyBlob) return;
-    const { blob, fileName } = readyBlob;
-    const file = new File([blob], fileName, { type: blob.type });
-    if (navigator.share && navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: fileName });
+    const { blob, fileName, xmlFiles } = readyBlob;
+    const primaryFile = new File([blob], fileName, { type: blob.type });
+    const xmlFileObjs = (xmlFiles || []).map(f => new File([f.blob], f.fileName, { type: 'application/xml' }));
+    const allFiles = [primaryFile, ...xmlFileObjs];
+
+    if (navigator.share && navigator.canShare?.({ files: allFiles })) {
+      await navigator.share({ files: allFiles, title: fileName });
     } else {
       const url = URL.createObjectURL(blob);
       const a = window.document.createElement('a');
       a.href = url; a.download = fileName; a.click();
       URL.revokeObjectURL(url);
+      for (const f of xmlFiles || []) {
+        const u = URL.createObjectURL(f.blob);
+        const ax = window.document.createElement('a');
+        ax.href = u; ax.download = f.fileName; ax.click();
+        URL.revokeObjectURL(u);
+      }
     }
     setReadyBlob(null);
     onClose();
@@ -144,8 +165,25 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
   const handleOpenMail = () => {
     if (!accountant) return;
-    const subject = encodeURIComponent(`Documenti ${periodLabel}`);
-    const body = encodeURIComponent(`Ciao ${accountant.firstName},\n\nti invio i documenti relativi al periodo: ${periodLabel}.\nIn allegato trovi il file ${format.toUpperCase()}.\n\nGrazie`);
+    const xmlFiles = readyBlob?.xmlFiles || [];
+    // Download XMLs so they land in the Downloads folder for manual attachment
+    for (const f of xmlFiles) {
+      const u = URL.createObjectURL(f.blob);
+      const a = window.document.createElement('a');
+      a.href = u; a.download = f.fileName; a.click();
+      URL.revokeObjectURL(u);
+    }
+    const hasXmls = xmlFiles.length > 0;
+    const subject = encodeURIComponent(`Documenti ${periodLabel} — Solvy`);
+    const body = encodeURIComponent(
+      `Ciao ${accountant.firstName},\n\n` +
+      `ti invio i documenti relativi al periodo: ${periodLabel}.\n` +
+      `In allegato trovi il file ${format.toUpperCase()}` +
+      (hasXmls ? ` e gli XML FatturaPA di ${xmlFiles.length} fattur${xmlFiles.length === 1 ? 'a' : 'e'}` : '') +
+      `.\n` +
+      (hasXmls ? `\nGli XML FatturaPA sono stati salvati nella cartella Download — allegali manualmente all'email.\n` : '') +
+      `\nGrazie`
+    );
     window.location.href = `mailto:${accountant.email}?subject=${subject}&body=${body}`;
   };
 
@@ -430,8 +468,18 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
   const shareOrDownload = async (blob: Blob, fileName: string, mimeType: string) => {
     if (accountant) {
-      // Mostra step 2 con opzioni: condividi file + apri mail
-      setReadyBlob({ blob, fileName });
+      // Generate FatturaPA XMLs if toggle is on
+      let xmlFiles: { blob: Blob; fileName: string }[] | undefined;
+      if (includeFatturaPA && isItaly && isPro && missingProfileFields.length === 0) {
+        const invoices = filteredDocs.filter(d => d.type === 'invoice');
+        if (invoices.length > 0) {
+          xmlFiles = invoices.map(inv => {
+            const { xml, filename } = generateFatturaPA(inv, profile);
+            return { blob: new Blob([xml], { type: 'application/xml' }), fileName: filename };
+          });
+        }
+      }
+      setReadyBlob({ blob, fileName, xmlFiles });
       return;
     }
     const file = new File([blob], fileName, { type: mimeType });
@@ -553,6 +601,29 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                 </div>
               </div>
 
+              {/* Toggle FatturaPA XML — solo Italy Pro con commercialista */}
+              {isItaly && isPro && accountant && docFilter !== 'expense' && (
+                <div className="space-y-2">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Opzioni</p>
+                  <button
+                    onClick={() => setIncludeFatturaPA(prev => !prev)}
+                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
+                  >
+                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeFatturaPA ? 'bg-primary border-primary' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
+                      {includeFatturaPA && <Check size={12} strokeWidth={3} className="text-white" />}
+                    </div>
+                    <div className="text-left flex-1">
+                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Includi FatturaPA XML</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        {missingProfileFields.length > 0
+                          ? `⚠ Completa il profilo (${missingProfileFields.map(f => f.label).join(', ')}) per XML corretti`
+                          : `${filteredDocs.filter(d => d.type === 'invoice').length} XML allegati all'email`}
+                      </p>
+                    </div>
+                  </button>
+                </div>
+              )}
+
               {/* Riepilogo */}
               <div className={`rounded-2xl p-4 space-y-2 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
                 <div className="flex justify-between items-center">
@@ -608,6 +679,9 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                     <div className="min-w-0 flex-1 text-left">
                       <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>File pronto</p>
                       <p className="text-xs text-slate-400 truncate">{readyBlob.fileName}</p>
+                      {(readyBlob.xmlFiles?.length ?? 0) > 0 && (
+                        <p className="text-[10px] text-primary mt-0.5">+ {readyBlob.xmlFiles!.length} XML FatturaPA</p>
+                      )}
                     </div>
                     <div className="flex items-center gap-1.5 text-primary shrink-0">
                       <Eye size={16} />
