@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../lib/supabase';
+import { getClient } from '../lib/supabase';
 
 type Screen = 'login' | 'register' | 'forgot' | 'forgot-sent' | 'reset' | 'register-sent';
 
@@ -30,7 +30,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
   const handleLogin = async () => {
     setLoading(true);
     clearError();
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+    const { error } = await getClient().auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
     setLoading(false);
     if (error) {
       if (error.message.includes('Invalid login') || error.message.includes('invalid_grant') || error.message.includes('Invalid credentials')) setError(t('auth.error_invalid_credentials'));
@@ -49,7 +49,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     if (password.length < 8) { setError(t('auth.error_password_length')); return; }
     setLoading(true);
     clearError();
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await getClient().auth.signUp({ email, password });
     setLoading(false);
     if (error) {
       if (error.message.includes('already registered')) setError(t('auth.error_already_registered'));
@@ -62,7 +62,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
   const handleForgot = async () => {
     setLoading(true);
     clearError();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await getClient().auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin,
     });
     setLoading(false);
@@ -74,7 +74,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     if (newPassword.length < 8) { setError(t('auth.error_password_length')); return; }
     setLoading(true);
     clearError();
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    const { error } = await getClient().auth.updateUser({ password: newPassword });
     setLoading(false);
     if (error) { setError(t('auth.error_reset_save')); return; }
     onResetPassword?.();

@@ -1,10 +1,6 @@
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { Document, Profile } from '../types';
 
-interface jsPDFWithAutoTable extends jsPDF {
-  lastAutoTable: { finalY: number };
-}
+type jsPDFWithAutoTable = import('jspdf').jsPDF & { lastAutoTable: { finalY: number } };
 
 const FORFETTARIO_NOTE =
   "Operazione effettuata in regime forfettario ai sensi dell'art. 1, commi 54-89, L. n. 190/2014. " +
@@ -23,7 +19,11 @@ function fmt(n: number) {
   return `€ ${n.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-export function buildInvoicePDF(doc: Document, profile: Profile): jsPDF {
+export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<import('jspdf').jsPDF> {
+  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ]);
   const isSpain = profile.country === 'Spain';
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
   const W = 210;
@@ -258,7 +258,7 @@ export function buildInvoicePDF(doc: Document, profile: Profile): jsPDF {
 }
 
 export async function generateInvoicePDF(doc: Document, profile: Profile): Promise<void> {
-  const pdf = buildInvoicePDF(doc, profile);
+  const pdf = await buildInvoicePDF(doc, profile);
   const _isSpain = profile.country === 'Spain';
   const fileName = _isSpain
     ? `factura_${doc.invoiceNumber?.replace('/', '-') || doc.id}_${profile.name.replace(/\s+/g, '_')}.pdf`

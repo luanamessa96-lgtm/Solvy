@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AlertTriangle, X, Loader2, Trash2 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { getClient } from '../../lib/supabase';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const CONFIRM_WORD = 'ELIMINA';
@@ -25,7 +25,7 @@ export default function DeleteAccountModal({ isOpen, onClose, darkMode }: Delete
     setError(null);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await getClient().auth.getSession();
       if (!session) {
         setError('Sessione scaduta. Rieffettua il login e riprova.');
         return;
@@ -45,7 +45,7 @@ export default function DeleteAccountModal({ isOpen, onClose, darkMode }: Delete
       }
 
       // Cancellazione riuscita: pulisci sessione locale e ricarica
-      await supabase.auth.signOut().catch(() => {});
+      await getClient().auth.signOut().catch(() => {});
       localStorage.clear();
       document.cookie.split(';').forEach(c => {
         const key = c.trim().split('=')[0];

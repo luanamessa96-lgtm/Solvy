@@ -1,10 +1,6 @@
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { Document, Profile } from '../types';
 
-interface jsPDFWithAutoTable extends jsPDF {
-  lastAutoTable: { finalY: number };
-}
+type jsPDFWithAutoTable = import('jspdf').jsPDF & { lastAutoTable: { finalY: number } };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -93,7 +89,11 @@ export function calcularTrimestre(
 
 // ─── PDF Generation ───────────────────────────────────────────────────────────
 
-export function generateResumenPDF(resumen: ResumenTrimestral, profile: Profile): jsPDF {
+export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Profile): Promise<import('jspdf').jsPDF> {
+  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ]);
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
 
   const W = 210, M = 16, R = W - M;
@@ -358,7 +358,7 @@ export async function downloadResumenTrimestral(
   year: number
 ): Promise<void> {
   const resumen = calcularTrimestre(documents, quarter, year);
-  const pdf = generateResumenPDF(resumen, profile);
+  const pdf = await generateResumenPDF(resumen, profile);
   const nif = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
   const filename = `ES_${nif}_resumen_T${quarter}_${year}.pdf`;
   const blob = pdf.output('blob');

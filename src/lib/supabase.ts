@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL!;
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY!;
@@ -60,11 +60,23 @@ export const profileStorage = {
   },
 };
 
-export const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    storage: hybridStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-  },
-});
+let _client: SupabaseClient | null = null;
+
+export const supabaseReady: Promise<SupabaseClient> = import('@supabase/supabase-js').then(
+  ({ createClient }) => {
+    _client = createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        storage: hybridStorage,
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    });
+    return _client;
+  }
+);
+
+export function getClient(): SupabaseClient {
+  if (!_client) throw new Error('[supabase] getClient() called before init resolved');
+  return _client;
+}

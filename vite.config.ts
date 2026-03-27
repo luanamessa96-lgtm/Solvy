@@ -23,9 +23,6 @@ export default defineConfig(({mode}) => {
         output: {
           manualChunks: {
             'react-vendor': ['react', 'react-dom'],
-            'supabase': ['@supabase/supabase-js'],
-            'jspdf': ['jspdf', 'jspdf-autotable'],
-            'charts': ['recharts'],
             'motion': ['motion'],
             'i18n': ['i18next', 'react-i18next'],
           },

@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { getClient } from './supabase';
 import { Document, Deadline, Profile, Accountant } from '../types';
 
 export async function uploadFile(dataUrl: string, fileName: string): Promise<string> {
@@ -7,18 +7,18 @@ export async function uploadFile(dataUrl: string, fileName: string): Promise<str
   const byteArray = new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0)));
   const blob = new Blob([byteArray], { type: mimeType });
   const path = `${Date.now()}_${fileName.replace(/\s+/g, '_')}`;
-  const { data, error } = await supabase.storage.from('uploads').upload(path, blob, { contentType: mimeType });
+  const { data, error } = await getClient().storage.from('uploads').upload(path, blob, { contentType: mimeType });
   if (error) throw error;
-  return supabase.storage.from('uploads').getPublicUrl(data.path).data.publicUrl;
+  return getClient().storage.from('uploads').getPublicUrl(data.path).data.publicUrl;
 }
 
 export async function deleteFile(url: string): Promise<void> {
   const path = url.split('/uploads/')[1];
-  if (path) await supabase.storage.from('uploads').remove([path]);
+  if (path) await getClient().storage.from('uploads').remove([path]);
 }
 
 export async function getDocuments(profileId: string): Promise<Document[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from('documents')
     .select('*')
     .eq('profile_id', profileId)
@@ -42,7 +42,7 @@ export async function getDocuments(profileId: string): Promise<Document[]> {
 }
 
 export async function addDocument(doc: Document, profileId: string): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getClient()
     .from('documents')
     .upsert([{
       id: doc.id,
@@ -72,7 +72,7 @@ export async function addDocument(doc: Document, profileId: string): Promise<voi
 }
 
 export async function updateDocument(doc: Document): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getClient()
     .from('documents')
     .update({
       title: doc.title,
@@ -100,7 +100,7 @@ export async function updateDocument(doc: Document): Promise<void> {
 }
 
 export async function deleteDocument(id: string): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getClient()
     .from('documents')
     .delete()
     .eq('id', id);
@@ -109,7 +109,7 @@ export async function deleteDocument(id: string): Promise<void> {
 }
 
 export async function getProfiles(userId: string, userEmail?: string): Promise<Profile[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from('profiles')
     .select('*')
     .eq('user_id', userId)
@@ -132,8 +132,8 @@ export async function getProfiles(userId: string, userEmail?: string): Promise<P
 }
 
 export async function createProfile(profile: Profile): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  const { error } = await supabase
+  const { data: { user } } = await getClient().auth.getUser();
+  const { error } = await getClient()
     .from('profiles')
     .insert({
       id: profile.id,
@@ -161,8 +161,8 @@ export async function createProfile(profile: Profile): Promise<void> {
 }
 
 export async function updateProfile(profile: Profile): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  const { error } = await supabase
+  const { data: { user } } = await getClient().auth.getUser();
+  const { error } = await getClient()
     .from('profiles')
     .upsert({
       id: profile.id,
@@ -189,7 +189,7 @@ export async function updateProfile(profile: Profile): Promise<void> {
 }
 
 export async function getAccountant(profileId: string): Promise<Accountant | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from('accountant')
     .select('*')
     .eq('profile_id', profileId)
@@ -208,7 +208,7 @@ export async function getAccountant(profileId: string): Promise<Accountant | nul
 }
 
 export async function updateAccountant(a: Accountant, profileId: string): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getClient()
     .from('accountant')
     .upsert({
       profile_id: profileId,
@@ -225,7 +225,7 @@ export async function updateAccountant(a: Accountant, profileId: string): Promis
 }
 
 export async function getDeadlines(profileId: string): Promise<Deadline[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from('deadlines')
     .select('*')
     .eq('profile_id', profileId)
@@ -236,7 +236,7 @@ export async function getDeadlines(profileId: string): Promise<Deadline[]> {
 }
 
 export async function addDeadline(deadline: Deadline, profileId: string): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getClient()
     .from('deadlines')
     .upsert([{ ...deadline, profile_id: profileId, updated_at: new Date().toISOString() }], { onConflict: 'id' });
 
@@ -244,7 +244,7 @@ export async function addDeadline(deadline: Deadline, profileId: string): Promis
 }
 
 export async function updateDeadline(deadline: Deadline): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getClient()
     .from('deadlines')
     .update({
       title: deadline.title,
@@ -260,7 +260,7 @@ export async function updateDeadline(deadline: Deadline): Promise<void> {
 }
 
 export async function deleteDeadline(id: string): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getClient()
     .from('deadlines')
     .delete()
     .eq('id', id);

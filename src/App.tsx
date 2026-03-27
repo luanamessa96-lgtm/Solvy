@@ -7,7 +7,7 @@ import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { MOCK_PROFILES, MOCK_DOCUMENTS, MOCK_DEADLINES, MOCK_ACCOUNTANT } from './constants';
 import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, addDeadline, updateDeadline, deleteDeadline, getProfiles, createProfile, updateProfile, getAccountant, updateAccountant, uploadFile } from './lib/db';
-import { supabase } from './lib/supabase';
+import { supabaseReady, getClient } from './lib/supabase';
 import { Profile, Document, Deadline, Accountant } from './types';
 import { setLanguageByCountry } from './lib/i18n';
 import AuthView from './views/AuthView';
@@ -78,26 +78,30 @@ function AppInner() {
 
   // Auth: controlla sessione e ascolta eventi
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session);
-      // Rimuovi splash screen quando la sessione è nota
-      const splash = document.getElementById('splash');
-      if (splash) { splash.classList.add('hide'); setTimeout(() => splash.remove(), 280); }
+    let subscription: { unsubscribe: () => void } | null = null;
+    supabaseReady.then(sb => {
+      sb.auth.getSession().then(({ data: { session } }) => {
+        setIsAuthenticated(!!session);
+        // Rimuovi splash screen quando la sessione è nota
+        const splash = document.getElementById('splash');
+        if (splash) { splash.classList.add('hide'); setTimeout(() => splash.remove(), 280); }
+      });
+
+      const { data } = sb.auth.onAuthStateChange((event, session) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          setIsPasswordRecovery(true);
+          setIsAuthenticated(true);
+        } else if (event === 'SIGNED_IN') {
+          setIsPasswordRecovery(false);
+          setIsAuthenticated(true);
+        } else if (event === 'SIGNED_OUT') {
+          setIsAuthenticated(false);
+        }
+      });
+      subscription = data.subscription;
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setIsPasswordRecovery(true);
-        setIsAuthenticated(true);
-      } else if (event === 'SIGNED_IN') {
-        setIsPasswordRecovery(false);
-        setIsAuthenticated(true);
-      } else if (event === 'SIGNED_OUT') {
-        setIsAuthenticated(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    return () => { subscription?.unsubscribe(); };
   }, []);
 
   // PWA update detection
@@ -134,7 +138,7 @@ function AppInner() {
   useEffect(() => {
     if (!isAuthenticated) return;
     setIsLoading(true);
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
+    getClient().auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
       setUserId(user.id);
       const data = await getProfiles(user.id, user.email ?? undefined).catch(() => null);
@@ -227,7 +231,8 @@ function AppInner() {
       docRegime: d.doc_regime as 'forfettario' | 'ordinario' | undefined,
     });
 
-    const docsChannel = supabase
+    const sb = getClient();
+    const docsChannel = sb
       .channel(`docs-${pid}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'documents', filter: `profile_id=eq.${pid}` }, payload => {
         if (payload.eventType === 'INSERT') {
@@ -242,7 +247,7 @@ function AppInner() {
       })
       .subscribe();
 
-    const deadlinesChannel = supabase
+    const deadlinesChannel = sb
       .channel(`deadlines-${pid}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'deadlines', filter: `profile_id=eq.${pid}` }, payload => {
         if (payload.eventType === 'INSERT') {
@@ -258,8 +263,8 @@ function AppInner() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(docsChannel);
-      supabase.removeChannel(deadlinesChannel);
+      sb.removeChannel(docsChannel);
+      sb.removeChannel(deadlinesChannel);
     };
   }, [isAuthenticated, activeProfile.id]);
 
@@ -268,7 +273,8 @@ function AppInner() {
   useEffect(() => {
     if (!isAuthenticated || !userId) return;
 
-    const profilesChannel = supabase
+    const sb = getClient();
+    const profilesChannel = sb
       .channel(`profiles-${userId}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${userId}` }, payload => {
         const updated = payload.new as Record<string, unknown>;
@@ -278,7 +284,7 @@ function AppInner() {
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(profilesChannel); };
+    return () => { sb.removeChannel(profilesChannel); };
   }, [isAuthenticated, userId]);
 
   // Mostra feedback dopo redirect Stripe
@@ -461,7 +467,7 @@ function AppInner() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut().catch(() => {});
+    await getClient().auth.signOut().catch(() => {});
     localStorage.removeItem('onboardingComplete');
     localStorage.removeItem('activeProfileId');
     window.location.reload();
@@ -475,7 +481,7 @@ function AppInner() {
     setActiveProfile(normalized);
     setProfiles(prev => prev.map(x => x.id === normalized.id ? normalized : x));
     // Refresh session before saving — previene 401 se la sessione è scaduta durante l'onboarding
-    await supabase.auth.refreshSession().catch(() => {});
+    await getClient().auth.refreshSession().catch(() => {});
     try {
       await updateProfile(normalized);
     } catch (e) {

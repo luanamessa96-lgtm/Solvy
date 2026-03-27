@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Check, Sparkles, Loader2 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { getClient } from '../../lib/supabase';
 
 interface PaywallModalProps {
   isOpen: boolean;
@@ -37,7 +37,7 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
     setError(null);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await getClient().auth.getSession();
       if (!session) {
         setError('Devi essere autenticato per procedere.');
         return;

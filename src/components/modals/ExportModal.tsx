@@ -1,16 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { X, Download, Check, Mail, Share2, Eye, AlertTriangle } from 'lucide-react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { Document as AppDoc, Profile, Accountant } from '../../types';
 import { useProStatus } from '../../hooks/useProStatus';
 import { generateFatturaPA, getMissingProfileFields } from '../../services/fatturaPA';
 import { calcularTrimestre, generateResumenPDF, getCurrentQuarter, QUARTER_LABELS } from '../../services/modelosES';
 
-interface jsPDFWithAutoTable extends jsPDF {
-  lastAutoTable: { finalY: number };
-}
+type jsPDFWithAutoTable = import('jspdf').jsPDF & { lastAutoTable: { finalY: number } };
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -254,6 +250,10 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   };
 
   const exportPDF = async () => {
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
     const W = 210;
     const margin = 14;
@@ -676,7 +676,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       let resumenFile: { blob: Blob; fileName: string } | undefined;
       if (includeResumen && isSpain && isPro && hasTaxIdSpain) {
         const resumen = calcularTrimestre(documents, resumenQuarter, resumenYear);
-        const resumenPdf = generateResumenPDF(resumen, profile);
+        const resumenPdf = await generateResumenPDF(resumen, profile);
         const nif = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
         const resumenFileName = `ES_${nif}_resumen_T${resumenQuarter}_${resumenYear}.pdf`;
         resumenFile = { blob: resumenPdf.output('blob'), fileName: resumenFileName };

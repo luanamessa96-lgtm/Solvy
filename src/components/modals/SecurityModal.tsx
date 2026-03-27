@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, ScanFace, Lock, ShieldCheck, ChevronRight } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { getClient } from '../../lib/supabase';
 
 interface SecurityModalProps {
   isOpen: boolean;
@@ -24,9 +24,9 @@ const SecurityModal = ({ isOpen, onClose, darkMode, profileId, userEmail }: Secu
   };
 
   const handlePasswordReset = async () => {
-    const email = userEmail ?? (await supabase.auth.getUser()).data.user?.email;
+    const email = userEmail ?? (await getClient().auth.getUser()).data.user?.email;
     if (!email) return;
-    await supabase.auth.resetPasswordForEmail(email, {
+    await getClient().auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/`,
     });
     onClose();
