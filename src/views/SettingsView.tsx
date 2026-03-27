@@ -91,7 +91,7 @@ const SettingsView = ({ theme, setTheme, profile }: SettingsViewProps) => {
 
       <motion.div variants={item} className={`p-6 rounded-3xl space-y-2 transition-colors ${darkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
         <p className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('settings.app_version')}</p>
-        <p className="text-xs text-slate-500">v2.4.0 (Build 2026.03)</p>
+        <p className="text-xs text-slate-500">v2.5.0 (Build 2026.03)</p>
         <div className="pt-4 flex gap-4">
           <button className="text-[10px] font-bold text-primary uppercase tracking-wider active:scale-90 transition-all hover:drop-shadow-[0_0_4px_rgba(59,130,246,0.3)]">{t('settings.release_notes')}</button>
           <button className="text-[10px] font-bold text-primary uppercase tracking-wider active:scale-90 transition-all hover:drop-shadow-[0_0_4px_rgba(59,130,246,0.3)]">{t('settings.support')}</button>
