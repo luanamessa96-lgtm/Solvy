@@ -13,6 +13,7 @@ import { setLanguageByCountry } from './lib/i18n';
 import AuthView from './views/AuthView';
 
 import { ToastProvider, useToast } from './components/ui/Toast';
+import DashboardSkeleton from './components/DashboardSkeleton';
 
 function dbError(err: unknown): string {
   if (!navigator.onLine) return 'Nessuna connessione internet';
@@ -160,17 +161,23 @@ function AppInner() {
         setLanguageByCountry(profile.country);
         const profileTheme = localStorage.getItem(`theme_${profile.id}`) || localStorage.getItem('theme') || 'light';
         setProfileTheme(profileTheme, profile.id);
-        Promise.all([
-          getDocuments(profile.id).catch(() => MOCK_DOCUMENTS),
-          getDeadlines(profile.id).catch(() => MOCK_DEADLINES),
-          getAccountant(profile.id).catch(() => null),
-        ]).then(([docs, deadlines, acc]) => {
+        // Carica subito solo i documenti (critici per il Dashboard)
+        getDocuments(profile.id).catch(() => MOCK_DOCUMENTS).then(docs => {
           const freshDocs = markOverdue(docs);
           setDocuments(freshDocs);
-          setDeadlines(deadlines);
-          if (acc) setAccountant(acc);
-          profileCache.current[profile.id] = { documents: freshDocs, deadlines, accountant: acc };
-          setIsLoading(false);
+          profileCache.current[profile.id] = { documents: freshDocs, deadlines: [], accountant: null };
+          setIsLoading(false); // ← Dashboard visibile appena arrivano i documenti
+
+          // Background: scadenze e commercialista (non bloccano il Dashboard)
+          getDeadlines(profile.id).catch(() => MOCK_DEADLINES).then(dl => {
+            setDeadlines(dl);
+            profileCache.current[profile.id].deadlines = dl;
+          });
+          getAccountant(profile.id).catch(() => null).then(acc => {
+            if (acc) setAccountant(acc);
+            profileCache.current[profile.id].accountant = acc;
+          });
+
           // Pre-fetch degli altri profili in background per cache istantanea al switch
           completeProfiles.filter(p => p.id !== profile.id).forEach(p => {
             Promise.all([
@@ -555,16 +562,33 @@ function AppInner() {
     return <AuthView darkMode={darkMode} initialScreen="reset" onResetPassword={() => setIsPasswordRecovery(false)} />;
   }
 
+  const proGradient = theme === 'pro-light'
+    ? 'linear-gradient(135deg, #EEF6FF 0%, #D5E8FF 100%)'
+    : theme === 'pro-dark'
+    ? 'linear-gradient(135deg, #0A1628 0%, #0D2137 55%, #061020 100%)'
+    : undefined;
+
   if (isLoading) {
     return (
-      <div className={`max-w-md mx-auto min-h-screen flex flex-col items-center justify-center gap-4 ${darkMode ? 'bg-slate-950' : 'bg-slate-50'}`}>
-        <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-xl shadow-primary/30">
-          <svg className="animate-spin w-6 h-6 text-white" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-          </svg>
-        </div>
-        <p className={`text-sm font-semibold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Caricamento in corso…</p>
+      <div
+        data-theme={theme}
+        style={proGradient ? { background: proGradient } : undefined}
+        className={`max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative overflow-hidden ${darkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}
+      >
+        <Header
+          title="Dashboard"
+          activeProfile={activeProfile}
+          onProfileClick={handleProfileClick}
+          onBellClick={() => {}}
+          notificationCount={0}
+          showBack={false}
+          onBack={() => {}}
+          darkMode={darkMode}
+        />
+        <main className={`flex-1 overflow-y-auto ${darkMode ? 'bg-slate-950' : ''}`}>
+          <DashboardSkeleton darkMode={darkMode} />
+        </main>
+        <BottomNav activeTab="home" setActiveTab={() => {}} darkMode={darkMode} theme={theme} />
       </div>
     );
   }
@@ -576,12 +600,6 @@ function AppInner() {
   if (isAddingProfile && newProfileShell) {
     return <OnboardingView profile={newProfileShell} onComplete={handleNewProfileComplete} darkMode={darkMode} onCancel={() => { setIsAddingProfile(false); setNewProfileShell(null); }} />;
   }
-
-  const proGradient = theme === 'pro-light'
-    ? 'linear-gradient(135deg, #EEF6FF 0%, #D5E8FF 100%)'
-    : theme === 'pro-dark'
-    ? 'linear-gradient(135deg, #0A1628 0%, #0D2137 55%, #061020 100%)'
-    : undefined;
 
   return (
     <>
