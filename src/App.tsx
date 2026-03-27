@@ -102,6 +102,10 @@ function AppInner() {
 
   // PWA update detection
   useEffect(() => {
+    // Pick up registration if event fired before React mounted (race condition on PWA reopen)
+    const pending = (window as { __swPendingReg?: ServiceWorkerRegistration }).__swPendingReg;
+    if (pending) setSwRegistration(pending);
+
     const handler = (e: Event) => setSwRegistration((e as CustomEvent).detail.registration);
     window.addEventListener('swUpdateReady', handler);
     return () => window.removeEventListener('swUpdateReady', handler);
