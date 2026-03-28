@@ -169,33 +169,37 @@ function AppInner() {
         const profileTheme = migrateTheme(localStorage.getItem(`theme_${profile.id}`) || localStorage.getItem('theme'));
         setProfileTheme(profileTheme, profile.id);
         // Carica subito solo i documenti (critici per il Dashboard)
-        getDocuments(profile.id).catch(() => MOCK_DOCUMENTS).then(docs => {
-          const freshDocs = markOverdue(docs);
-          setDocuments(freshDocs);
-          profileCache.current[profile.id] = { documents: freshDocs, deadlines: [], accountant: null };
-          setIsLoading(false); // ← Dashboard visibile appena arrivano i documenti
+        getDocuments(profile.id)
+          .catch(() => MOCK_DOCUMENTS)
+          .then(docs => {
+            const freshDocs = markOverdue(docs ?? []);
+            setDocuments(freshDocs);
+            profileCache.current[profile.id] = { documents: freshDocs, deadlines: [], accountant: null };
 
-          // Background: scadenze e commercialista (non bloccano il Dashboard)
-          getDeadlines(profile.id).catch(() => MOCK_DEADLINES).then(dl => {
-            setDeadlines(dl);
-            profileCache.current[profile.id].deadlines = dl;
-          });
-          getAccountant(profile.id).catch(() => null).then(acc => {
-            if (acc) setAccountant(acc);
-            profileCache.current[profile.id].accountant = acc;
-          });
-
-          // Pre-fetch degli altri profili in background per cache istantanea al switch
-          completeProfiles.filter(p => p.id !== profile.id).forEach(p => {
-            Promise.all([
-              getDocuments(p.id).catch(() => []),
-              getDeadlines(p.id).catch(() => []),
-              getAccountant(p.id).catch(() => null),
-            ]).then(([d, dl, a]) => {
-              profileCache.current[p.id] = { documents: markOverdue(d), deadlines: dl, accountant: a };
+            // Background: scadenze e commercialista (non bloccano il Dashboard)
+            getDeadlines(profile.id).catch(() => MOCK_DEADLINES).then(dl => {
+              setDeadlines(dl);
+              profileCache.current[profile.id].deadlines = dl;
             });
+            getAccountant(profile.id).catch(() => null).then(acc => {
+              if (acc) setAccountant(acc);
+              profileCache.current[profile.id].accountant = acc;
+            });
+
+            // Pre-fetch degli altri profili in background per cache istantanea al switch
+            completeProfiles.filter(p => p.id !== profile.id).forEach(p => {
+              Promise.all([
+                getDocuments(p.id).catch(() => []),
+                getDeadlines(p.id).catch(() => []),
+                getAccountant(p.id).catch(() => null),
+              ]).then(([d, dl, a]) => {
+                profileCache.current[p.id] = { documents: markOverdue(d), deadlines: dl, accountant: a };
+              });
+            });
+          })
+          .finally(() => {
+            setIsLoading(false); // ← Dashboard visibile appena arrivano i documenti (o in caso di errore)
           });
-        });
       } else if (data !== null) {
         // Nuovo utente: trigger ha creato profilo con country=NULL (o trigger fallito).
         // Non scrivere nulla nel DB — sarà handleOnboardingComplete a farlo dopo la scelta paese.
