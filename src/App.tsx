@@ -67,6 +67,12 @@ function AppInner() {
     if (id) localStorage.setItem(`theme_${id}`, newTheme);
   };
   const darkMode = theme === 'dark' || theme === 'pro-dark';
+
+  // Sync data-theme on <html> for CSS variable theming (themes.css)
+  useEffect(() => {
+    const rootTheme = theme === 'light' ? 'free-light' : theme === 'dark' ? 'free-dark' : theme;
+    document.documentElement.setAttribute('data-theme', rootTheme);
+  }, [theme]);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(() => !localStorage.getItem('onboardingComplete'));
   const [isAddingProfile, setIsAddingProfile] = useState(false);
   const [newProfileShell, setNewProfileShell] = useState<Profile | null>(null);

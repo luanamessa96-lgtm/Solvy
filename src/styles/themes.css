@@ -1,0 +1,60 @@
+/* ─── Centralized Theme Variables ───────────────────────────────────────────
+   Applied via data-theme on <html> (set by App.tsx on theme change).
+   Usage: var(--color-primary), var(--color-positive), etc.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+:root[data-theme="free-light"] {
+  --color-bg: #f8fafc;
+  --color-card: #ffffff;
+  --color-primary: #1e3a8a;
+  --color-accent: #3b82f6;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-positive: #10b981;
+  --color-nav-bg: #ffffff;
+  --color-nav-icon: #4A7FD4;
+  --color-nav-icon-bg: #E8F0FE;
+  --color-border: #f1f5f9;
+}
+
+:root[data-theme="free-dark"] {
+  --color-bg: #020617;
+  --color-card: rgba(15, 23, 42, 1);
+  --color-primary: #3b82f6;
+  --color-accent: #3b82f6;
+  --color-text: #ffffff;
+  --color-text-muted: #94a3b8;
+  --color-positive: #10b981;
+  --color-nav-bg: #0f172a;
+  --color-nav-icon: #00B4FF;
+  --color-nav-icon-bg: rgba(0, 180, 255, 0.15);
+  --color-border: rgba(255, 255, 255, 0.08);
+}
+
+:root[data-theme="pro-light"] {
+  --color-bg: linear-gradient(160deg, #ede9fe 0%, #dbeafe 60%, #e0f2fe 100%);
+  --color-card: rgba(255, 255, 255, 0.75);
+  --color-primary: #c855f7;
+  --color-accent: #2dd4bf;
+  --color-text: #0a0a0f;
+  --color-text-muted: #6b7280;
+  --color-positive: #2dd4bf;
+  --color-nav-bg: #ffffff;
+  --color-nav-icon: #c855f7;
+  --color-nav-icon-bg: #f3e8ff;
+  --color-border: rgba(200, 85, 247, 0.12);
+}
+
+:root[data-theme="pro-dark"] {
+  --color-bg: #0a0a0f;
+  --color-card: rgba(255, 255, 255, 0.06);
+  --color-primary: #a855f7;
+  --color-accent: #2dd4bf;
+  --color-text: #ffffff;
+  --color-text-muted: #9ca3af;
+  --color-positive: #2dd4bf;
+  --color-nav-bg: #0d1117;
+  --color-nav-icon: #a855f7;
+  --color-nav-icon-bg: rgba(168, 85, 247, 0.15);
+  --color-border: rgba(255, 255, 255, 0.08);
+}
