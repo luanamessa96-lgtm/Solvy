@@ -256,14 +256,15 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
           {monthKeys.map(month => (
             <div key={month}>
               <h2 className={`text-xl font-bold capitalize px-5 pb-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>{month}</h2>
-              <div className={`mx-4 rounded-2xl overflow-hidden border ${darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
+              <div className="mx-4 rounded-2xl overflow-hidden border" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
                 {groups[month].map((item, i) => (
                   <motion.button
                     key={item.id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     onClick={() => setSelectedItem(item)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 active:opacity-60 transition-opacity text-left ${i < groups[month].length - 1 ? (darkMode ? 'border-b border-slate-800' : 'border-b border-slate-100') : ''}`}
+                    className={`w-full flex items-center gap-3 px-4 py-3 active:opacity-60 transition-opacity text-left ${i < groups[month].length - 1 ? 'border-b' : ''}`}
+                    style={i < groups[month].length - 1 ? { borderColor: 'var(--color-border)' } : undefined}
                   >
                     {/* Thumbnail */}
                     <div className={`w-12 h-12 rounded-lg overflow-hidden shrink-0 border ${darkMode ? 'border-slate-700' : 'border-slate-100'}`}>
@@ -303,7 +304,7 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
         {isAdding && (
           <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={reset} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
-            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className={`relative w-full max-w-md rounded-t-[32px] shadow-2xl ${darkMode ? 'bg-slate-900' : 'bg-white'}`}>
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="relative w-full max-w-md rounded-t-[32px] shadow-2xl" style={{ backgroundColor: 'var(--color-card)' }}>
               <div className="overflow-y-auto max-h-[92vh] p-8 space-y-5">
                 <div className="flex justify-between items-center">
                   <div>
@@ -338,7 +339,7 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
                       <button onClick={() => { setPreview(null); setFileName(''); }} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center text-white"><X size={16} /></button>
                     </div>
 
-                    <div className={`p-1 rounded-2xl flex ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                    <div className="p-1 rounded-2xl flex" style={{ backgroundColor: 'var(--color-card-bg)' }}>
                       <button onClick={() => setDocType('invoice')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${docType === 'invoice' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>Fattura</button>
                       <button onClick={() => setDocType('expense')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${docType === 'expense' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>Spesa</button>
                     </div>
@@ -415,7 +416,7 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
                 )}
               </div>
               {/* Info panel */}
-              <div className={`rounded-t-[32px] p-6 space-y-4 ${darkMode ? 'bg-slate-900' : 'bg-white'}`}>
+              <div className="rounded-t-[32px] p-6 space-y-4" style={{ backgroundColor: 'var(--color-card)' }}>
                 <div className="flex justify-between items-start">
                   <div className="flex-1 min-w-0 pr-4">
                     <p className={`text-lg font-bold truncate ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedItem.title}</p>
@@ -426,7 +427,7 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
                     {selectedItem.type === 'expense' ? '-' : '+'}€{selectedItem.amount.toLocaleString()}
                   </p>
                 </div>
-                <div className={`rounded-2xl p-3 grid grid-cols-2 gap-2 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                <div className="rounded-2xl p-3 grid grid-cols-2 gap-2" style={{ backgroundColor: 'var(--color-card-bg)' }}>
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Data</p>
                     <p className={`text-sm font-semibold mt-0.5 ${darkMode ? 'text-white' : 'text-slate-800'}`}>{new Date(selectedItem.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
@@ -464,7 +465,7 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
         {editItem && (
           <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setEditItem(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
-            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className={`relative w-full max-w-md rounded-t-[32px] shadow-2xl ${darkMode ? 'bg-slate-900' : 'bg-white'}`}>
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="relative w-full max-w-md rounded-t-[32px] shadow-2xl" style={{ backgroundColor: 'var(--color-card)' }}>
               <div className="overflow-y-auto max-h-[90vh] p-8 space-y-5">
                 <div className="flex justify-between items-center">
                   <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Modifica</h2>
