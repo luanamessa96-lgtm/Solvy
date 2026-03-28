@@ -39,6 +39,13 @@ const MediaLibraryView = lazy(() => import('./views/MediaLibraryView'));
 const MenuView = lazy(() => import('./views/MenuView'));
 const OnboardingView = lazy(() => import('./views/OnboardingView'));
 
+// Migra i temi base al loro equivalente Pro (T31: Free ottiene la UI Pro)
+function migrateTheme(t: string | null | undefined): string {
+  if (!t || t === 'light') return 'pro-light';
+  if (t === 'dark') return 'pro-dark';
+  return t;
+}
+
 function AppInner() {
   const [activeTab, setActiveTab] = useState('home');
   const [activeProfile, setActiveProfile] = useState<Profile>(MOCK_PROFILES[0]);
@@ -49,8 +56,8 @@ function AppInner() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [theme, setTheme] = useState<string>(() => {
     const saved = localStorage.getItem('theme');
-    if (saved) return saved;
-    return JSON.parse(localStorage.getItem('darkMode') || 'false') ? 'dark' : 'light';
+    const base = saved || (JSON.parse(localStorage.getItem('darkMode') || 'false') ? 'dark' : null);
+    return migrateTheme(base);
   });
 
   const setProfileTheme = (newTheme: string, profileId?: string) => {
@@ -159,7 +166,7 @@ function AppInner() {
         const profile = completeProfiles.find(p => p.id === savedId) || completeProfiles[0];
         setActiveProfile(profile);
         setLanguageByCountry(profile.country);
-        const profileTheme = localStorage.getItem(`theme_${profile.id}`) || localStorage.getItem('theme') || 'light';
+        const profileTheme = migrateTheme(localStorage.getItem(`theme_${profile.id}`) || localStorage.getItem('theme'));
         setProfileTheme(profileTheme, profile.id);
         // Carica subito solo i documenti (critici per il Dashboard)
         getDocuments(profile.id).catch(() => MOCK_DOCUMENTS).then(docs => {
@@ -441,7 +448,7 @@ function AppInner() {
     setAccountant(cached?.accountant || MOCK_ACCOUNTANT);
     resetSubPages();
     setActiveTab('home');
-    const profileTheme = localStorage.getItem(`theme_${p.id}`) || localStorage.getItem('theme') || 'light';
+    const profileTheme = migrateTheme(localStorage.getItem(`theme_${p.id}`) || localStorage.getItem('theme'));
     setTheme(profileTheme);
     localStorage.setItem('theme', profileTheme);
     localStorage.setItem(`theme_${p.id}`, profileTheme);

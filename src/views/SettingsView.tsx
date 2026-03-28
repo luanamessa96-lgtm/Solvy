@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Sun, Moon, Sparkles, Lock, Languages, Trash2, RotateCcw, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Sun, Moon, Languages, Trash2, RotateCcw, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getClient } from '../lib/supabase';
 import PaywallModal from '../components/modals/PaywallModal';
@@ -68,10 +68,8 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1 }: SettingsV
   const item = { hidden: { opacity: 0 }, show: { opacity: 1 } };
 
   const themes = [
-    { id: 'light', label: 'Light', icon: Sun, pro: false },
-    { id: 'dark', label: 'Dark', icon: Moon, pro: false },
-    { id: 'pro-light', label: 'Pro Light', icon: Sparkles, pro: true },
-    { id: 'pro-dark', label: 'Pro Dark', icon: Sparkles, pro: true },
+    { id: 'pro-light', label: 'Light', icon: Sun },
+    { id: 'pro-dark', label: 'Dark', icon: Moon },
   ];
 
   const legalItems = [
@@ -89,20 +87,15 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1 }: SettingsV
           {themes.map(themeItem => {
             const Icon = themeItem.icon;
             const isActive = theme === themeItem.id;
-            const locked = themeItem.pro && !isPro;
             return (
               <button
                 key={themeItem.id}
-                onClick={() => { if (locked) { setIsPaywallOpen(true); return; } setTheme(themeItem.id); }}
-                className={`relative flex items-center justify-center gap-2 py-3 rounded-2xl transition-all active:scale-95 ${
+                onClick={() => setTheme(themeItem.id)}
+                className={`flex items-center justify-center gap-2 py-3 rounded-2xl transition-all active:scale-95 ${
                   isActive
-                    ? themeItem.pro
-                      ? 'bg-primary/10 text-primary border border-primary/20'
-                      : darkMode
+                    ? darkMode
                       ? 'bg-slate-700 text-white shadow-lg shadow-slate-900/40'
                       : 'bg-white text-slate-900 shadow-lg shadow-slate-200'
-                    : locked
-                    ? 'opacity-50 cursor-not-allowed'
                     : darkMode
                     ? 'text-slate-500 hover:text-slate-300'
                     : 'text-slate-400 hover:text-slate-600'
@@ -110,16 +103,10 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1 }: SettingsV
               >
                 <Icon size={16} />
                 <span className="text-sm font-bold">{themeItem.label}</span>
-                {locked && <Lock size={11} className="absolute top-2 right-2 text-slate-400" />}
               </button>
             );
           })}
         </div>
-        {!isPro && (
-          <p className="text-xs text-slate-400 text-center ml-1">
-            {t('settings.pro_themes_hint')}<span className="text-primary font-semibold">FreelanceApp Pro</span>
-          </p>
-        )}
       </motion.div>
 
       <motion.div variants={item} className="space-y-4">
