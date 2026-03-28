@@ -593,7 +593,7 @@ function AppInner() {
   }
 
   const proGradient = theme === 'pro-light'
-    ? 'linear-gradient(135deg, #EEF6FF 0%, #D5E8FF 100%)'
+    ? 'linear-gradient(160deg, #ede9fe 0%, #dbeafe 60%, #e0f2fe 100%)'
     : theme === 'pro-dark'
     ? 'linear-gradient(135deg, #0A1628 0%, #0D2137 55%, #061020 100%)'
     : undefined;
@@ -656,6 +656,31 @@ function AppInner() {
         }
         [data-theme="pro-light"] main .border-slate-100 {
           border-color: rgba(0,100,255,0.12) !important;
+        }
+        [data-theme="pro-light"] main .bg-\\[#c855f7\\],
+        [data-theme="pro-light"] main .bg-purple-500,
+        [data-theme="pro-light"] main .bg-violet-500 {
+          background: linear-gradient(135deg, #c855f7 0%, #ec4899 100%) !important;
+          box-shadow: 0 4px 20px rgba(200,85,247,0.35);
+        }
+        [data-theme="pro-light"] main button.rounded-full,
+        [data-theme="pro-light"] main a.rounded-full {
+          background: linear-gradient(135deg, #c855f7 0%, #ec4899 100%) !important;
+          box-shadow: 0 4px 24px rgba(200,85,247,0.40);
+        }
+        [data-theme="pro-light"] main .bg-purple-100,
+        [data-theme="pro-light"] main .bg-violet-100 {
+          background: rgba(200,85,247,0.15) !important;
+          border: 1px solid rgba(200,85,247,0.30);
+        }
+        [data-theme="pro-light"] .bg-\\[#4A7FD4\\] {
+          background-color: #c855f7 !important;
+        }
+        [data-theme="pro-light"] .text-\\[#4A7FD4\\] {
+          color: #c855f7 !important;
+        }
+        [data-theme="pro-light"] .bg-\\[#E8F0FE\\] {
+          background-color: #f3e8ff !important;
         }
         [data-theme="pro-dark"] main .bg-slate-900 {
           background: rgba(255,255,255,0.06) !important;
