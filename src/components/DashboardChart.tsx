@@ -4,13 +4,9 @@ import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 interface DashboardChartProps {
   data: { name: string; income: number; expenses: number }[];
   darkMode?: boolean;
-  theme?: string;
 }
 
-export default function DashboardChart({ data, darkMode, theme }: DashboardChartProps) {
-  const isProLight = theme === 'pro-light';
-  const incomeColor = isProLight ? '#2dd4bf' : '#10b981';
-  const expensesColor = isProLight ? '#c084fc' : '#6366f1';
+export default function DashboardChart({ data, darkMode }: DashboardChartProps) {
   const { t } = useTranslation();
 
   return (
@@ -18,10 +14,10 @@ export default function DashboardChart({ data, darkMode, theme }: DashboardChart
       <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={incomeColor} stopOpacity={0.3} /><stop offset="95%" stopColor={incomeColor} stopOpacity={0} />
+            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} /><stop offset="95%" stopColor="#10b981" stopOpacity={0} />
           </linearGradient>
           <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={expensesColor} stopOpacity={0.3} /><stop offset="95%" stopColor={expensesColor} stopOpacity={0} />
+            <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} /><stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
           </linearGradient>
         </defs>
         <Tooltip content={({ active, payload }) => {
@@ -33,7 +29,7 @@ export default function DashboardChart({ data, darkMode, theme }: DashboardChart
                   {payload.map((entry: { name: string; value: number }, i: number) => (
                     <div key={i} className="flex items-center justify-between gap-4">
                       <span className="text-[10px] font-bold text-slate-400 uppercase">{entry.name === 'income' ? t('dashboard.chart_income') : t('dashboard.chart_outflows')}</span>
-                      <span className="text-[10px] font-black" style={{ color: entry.name === 'income' ? incomeColor : expensesColor }}>€{Math.round(entry.value).toLocaleString()}</span>
+                      <span className={`text-[10px] font-black ${entry.name === 'income' ? 'text-emerald-500' : 'text-indigo-500'}`}>€{Math.round(entry.value).toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
@@ -42,8 +38,8 @@ export default function DashboardChart({ data, darkMode, theme }: DashboardChart
           }
           return null;
         }} />
-        <Area type="monotone" dataKey="income" stroke={incomeColor} strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
-        <Area type="monotone" dataKey="expenses" stroke={expensesColor} strokeWidth={3} fillOpacity={1} fill="url(#colorExpenses)" />
+        <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
+        <Area type="monotone" dataKey="expenses" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorExpenses)" />
         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#94a3b8' }} dy={10} />
       </AreaChart>
     </ResponsiveContainer>

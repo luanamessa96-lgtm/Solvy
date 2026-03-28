@@ -593,7 +593,7 @@ function AppInner() {
   }
 
   const proGradient = theme === 'pro-light'
-    ? undefined
+    ? 'linear-gradient(135deg, #EEF6FF 0%, #D5E8FF 100%)'
     : theme === 'pro-dark'
     ? 'linear-gradient(135deg, #0A1628 0%, #0D2137 55%, #061020 100%)'
     : undefined;
@@ -649,65 +649,13 @@ function AppInner() {
     <>
     {(theme === 'pro-light' || theme === 'pro-dark') && (
       <style>{`
-        html[data-pro-light],
-        html[data-pro-light] body {
-          background: linear-gradient(135deg, #e8d5ff 0%, #c8d8ff 40%, #a8e8f0 100%) fixed !important;
-          min-height: 100vh;
-        }
-        html[data-pro-light] body::before {
-          content: '';
-          position: fixed;
-          inset: 0;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
-          background-size: 200px 200px;
-          pointer-events: none;
-          z-index: 0;
-        }
-        html[data-pro-light] #root > div,
-        html[data-pro-light] .max-w-md {
-          background: transparent !important;
-        }
-        html[data-pro-light] [class*="bg-white"] {
-          background: rgba(255,255,255,0.62) !important;
-          backdrop-filter: blur(20px) !important;
-          -webkit-backdrop-filter: blur(20px) !important;
+        [data-theme="pro-light"] main .bg-white {
+          background: rgba(255,255,255,0.68) !important;
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
         }
         [data-theme="pro-light"] main .border-slate-100 {
           border-color: rgba(0,100,255,0.12) !important;
-        }
-        [data-theme="pro-light"] main .bg-\\[#c855f7\\],
-        [data-theme="pro-light"] main .bg-purple-500,
-        [data-theme="pro-light"] main .bg-violet-500 {
-          background: linear-gradient(135deg, #c855f7 0%, #ec4899 100%) !important;
-          box-shadow: 0 4px 20px rgba(200,85,247,0.35);
-        }
-        [data-theme="pro-light"] main button.rounded-full,
-        [data-theme="pro-light"] main a.rounded-full {
-          background: linear-gradient(135deg, #c855f7 0%, #ec4899 100%) !important;
-          box-shadow: 0 4px 24px rgba(200,85,247,0.40);
-        }
-        html[data-pro-light] button[class*="rounded-full"],
-        html[data-pro-light] [class*="bg-purple"][class*="rounded-full"] {
-          background: linear-gradient(135deg, #a855f7 0%, #2dd4bf 100%) !important;
-          box-shadow: 0 4px 24px rgba(168,85,247,0.45) !important;
-        }
-        [data-theme="pro-light"] main .bg-purple-100,
-        [data-theme="pro-light"] main .bg-violet-100 {
-          background: rgba(200,85,247,0.15) !important;
-          border: 1px solid rgba(200,85,247,0.30);
-        }
-        [data-theme="pro-light"] .bg-\\[#4A7FD4\\] {
-          background-color: #c855f7 !important;
-        }
-        [data-theme="pro-light"] .text-\\[#4A7FD4\\] {
-          color: #c855f7 !important;
-        }
-        [data-theme="pro-light"] .bg-\\[#E8F0FE\\] {
-          background-color: #f3e8ff !important;
-        }
-        [data-theme="pro-light"] .bg-primary {
-          background: linear-gradient(135deg, #a855f7 0%, #2dd4bf 100%) !important;
-          box-shadow: 0 4px 24px rgba(168,85,247,0.45) !important;
         }
         [data-theme="pro-dark"] main .bg-slate-900 {
           background: rgba(255,255,255,0.06) !important;
@@ -770,7 +718,7 @@ function AppInner() {
             <MediaLibraryView documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} darkMode={darkMode} />
           ) : (
             <>
-              <div style={{ display: activeTab === 'home' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><DashboardView profile={activeProfile} onProfileClick={handleProfileClick} onAddDocumentClick={() => handleTabChange('docs')} income={totalIncome} expenses={totalExpenses} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} theme={theme} /></Suspense></div>
+              <div style={{ display: activeTab === 'home' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><DashboardView profile={activeProfile} onProfileClick={handleProfileClick} onAddDocumentClick={() => handleTabChange('docs')} income={totalIncome} expenses={totalExpenses} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} /></Suspense></div>
               <div style={{ display: activeTab === 'docs' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><DocumentsView documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} onUpdateProfile={handleUpdateProfile} accountant={accountant} profile={activeProfile} darkMode={darkMode} onMediaLibraryClick={handleMediaLibraryClick} onNavigateToProfile={handleProfileClick} /></Suspense></div>
               <div style={{ display: activeTab === 'calendar' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><CalendarView deadlines={deadlines} onAddDeadline={handleAddDeadline} onUpdateDeadline={handleUpdateDeadline} onDeleteDeadline={handleDeleteDeadline} darkMode={darkMode} profile={activeProfile} /></Suspense></div>
               <div style={{ display: activeTab === 'menu' ? 'block' : 'none' }}><Suspense fallback={null}><MenuView activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} onLogout={handleLogout} darkMode={darkMode} /></Suspense></div>

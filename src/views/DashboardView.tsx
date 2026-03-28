@@ -1,4 +1,4 @@
-import { useMemo, useState, lazy, Suspense, useEffect } from 'react';
+import { useMemo, useState, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TrendingUp, AlertTriangle, AlertCircle, Info, FileText, Receipt } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -20,7 +20,6 @@ interface DashboardViewProps {
   paidPercentage: number;
   documents: Document[];
   darkMode?: boolean;
-  theme?: string;
   key?: string;
 }
 
@@ -66,22 +65,12 @@ function fmt(n: number) {
 
 type DashTab = 'overview' | 'taxes' | 'expenses';
 
-const DashboardView = ({ profile, income, expenses, paidPercentage, documents, darkMode, theme, onProfileClick, onAddDocumentClick }: DashboardViewProps) => {
+const DashboardView = ({ profile, income, expenses, paidPercentage, documents, darkMode, onProfileClick, onAddDocumentClick }: DashboardViewProps) => {
   const { t } = useTranslation();
   const displayYear = new Date().getFullYear();
   const [activeTab, setActiveTab] = useState<DashTab>('overview');
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const isPro = useProStatus(profile);
-
-  // Sync Pro Light theme marker on <html> for CSS-variable overrides
-  useEffect(() => {
-    if (isPro && !darkMode) {
-      document.documentElement.dataset.proLight = 'true';
-    } else {
-      delete document.documentElement.dataset.proLight;
-    }
-    return () => { delete document.documentElement.dataset.proLight; };
-  }, [isPro, darkMode]);
 
   const container = {
     hidden: { opacity: 0 },
@@ -291,7 +280,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
               </div>
               <div className="h-48 w-full">
                 <Suspense fallback={<div className="h-full w-full" />}>
-                  <DashboardChart data={chartData} darkMode={darkMode} theme={theme} />
+                  <DashboardChart data={chartData} darkMode={darkMode} />
                 </Suspense>
               </div>
               <div className="flex gap-4 pt-2">
