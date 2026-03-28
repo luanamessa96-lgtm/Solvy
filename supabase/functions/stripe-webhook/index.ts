@@ -34,13 +34,25 @@ Deno.serve(async (req) => {
         const userId = session.metadata?.user_id;
         if (!userId) break;
 
-        // Attiva Pro su tutti i profili dell'utente
+        // Controlla se subscription_started_at è già impostato (rinnovo vs primo acquisto)
+        const { data: existing } = await supabaseAdmin
+          .from('profiles')
+          .select('subscription_started_at')
+          .eq('user_id', userId)
+          .limit(1);
+
+        const isFirstSubscription = !existing?.[0]?.subscription_started_at;
+
+        // Attiva Pro e salva data primo pagamento (solo al primo acquisto, non ai rinnovi)
         await supabaseAdmin
           .from('profiles')
-          .update({ is_pro: true })
+          .update({
+            is_pro: true,
+            ...(isFirstSubscription ? { subscription_started_at: new Date().toISOString() } : {}),
+          })
           .eq('user_id', userId);
 
-        console.log(`Pro attivato per user_id: ${userId}`);
+        console.log(`Pro attivato per user_id: ${userId}, primo acquisto: ${isFirstSubscription}`);
         break;
       }
 
@@ -80,7 +92,7 @@ Deno.serve(async (req) => {
         if (profiles?.[0]?.user_id) {
           await supabaseAdmin
             .from('profiles')
-            .update({ is_pro: false })
+            .update({ is_pro: false, subscription_started_at: null })
             .eq('user_id', profiles[0].user_id);
 
           console.log(`Pro revocato per customer: ${customerId}`);

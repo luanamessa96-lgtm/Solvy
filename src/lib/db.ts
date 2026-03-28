@@ -126,6 +126,7 @@ export async function getProfiles(userId: string, userEmail?: string): Promise<P
     annoInizioAttivita: p.anno_inizio_attivita,
     iban: p.iban,
     isPro: p.is_pro ?? false,
+    subscriptionStartedAt: p.subscription_started_at ?? undefined,
     regimenFiscal: p.regimen_fiscal ?? undefined,
     ivaHabitual: p.iva_habitual ?? undefined,
   }));

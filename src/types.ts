@@ -18,6 +18,7 @@ export interface Profile {
   annoInizioAttivita?: number;
   iban?: string;
   isPro?: boolean;
+  subscriptionStartedAt?: string;
   regimenFiscal?: 'simplificada' | 'normal' | 'modulos';
   ivaHabitual?: 21 | 10 | 4;
 }

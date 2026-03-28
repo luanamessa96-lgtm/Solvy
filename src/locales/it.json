@@ -220,6 +220,16 @@
     "privacy_policy": "Privacy Policy",
     "terms_of_service": "Termini di Servizio",
     "cookie_policy": "Cookie Policy",
+    "subscription_management": "Gestione abbonamento",
+    "subscription_active": "Piano Pro attivo",
+    "subscription_refund_eligible": "Hai {{days}} giorni rimasti per richiedere il rimborso (diritto di recesso)",
+    "subscription_refund_btn": "Richiedi rimborso — diritto di recesso",
+    "subscription_refund_confirm_title": "Conferma rimborso",
+    "subscription_refund_confirm_text": "Annullerai l'abbonamento Pro e riceverai un rimborso completo entro 5–10 giorni lavorativi. Perderai immediatamente l'accesso alle funzionalità Pro.",
+    "subscription_refund_confirm_btn": "Sì, rimborsa e cancella",
+    "subscription_refund_cancel_btn": "Annulla",
+    "subscription_refund_success": "Rimborso elaborato con successo. Il tuo account è stato ripristinato al piano Free.",
+    "subscription_refund_error": "Errore durante il rimborso. Contatta support@solvyapp.com.",
     "delete_account": "Elimina account"
   },
   "menu": {

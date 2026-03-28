@@ -220,6 +220,16 @@
     "privacy_policy": "Privacy Policy",
     "terms_of_service": "Términos de Servicio",
     "cookie_policy": "Política de Cookies",
+    "subscription_management": "Gestión de suscripción",
+    "subscription_active": "Plan Pro activo",
+    "subscription_refund_eligible": "Tienes {{days}} días restantes para solicitar el reembolso (derecho de desistimiento)",
+    "subscription_refund_btn": "Solicitar reembolso — derecho de desistimiento",
+    "subscription_refund_confirm_title": "Confirmar reembolso",
+    "subscription_refund_confirm_text": "Cancelarás la suscripción Pro y recibirás un reembolso completo en 5–10 días hábiles. Perderás inmediatamente el acceso a las funciones Pro.",
+    "subscription_refund_confirm_btn": "Sí, reembolsar y cancelar",
+    "subscription_refund_cancel_btn": "Cancelar",
+    "subscription_refund_success": "Reembolso procesado correctamente. Tu cuenta ha sido revertida al plan Free.",
+    "subscription_refund_error": "Error al procesar el reembolso. Contacta support@solvyapp.com.",
     "delete_account": "Eliminar cuenta"
   },
   "menu": {

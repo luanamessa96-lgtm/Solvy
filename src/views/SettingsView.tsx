@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Sun, Moon, Sparkles, Lock, Languages, Trash2 } from 'lucide-react';
+import { Sun, Moon, Sparkles, Lock, Languages, Trash2, RotateCcw, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { getClient } from '../lib/supabase';
 import PaywallModal from '../components/modals/PaywallModal';
 import DeleteAccountModal from '../components/modals/DeleteAccountModal';
 import { useProStatus } from '../hooks/useProStatus';
 import { Profile } from '../types';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
 interface SettingsViewProps {
   theme: string;
@@ -20,6 +23,45 @@ const SettingsView = ({ theme, setTheme, profile }: SettingsViewProps) => {
   const darkMode = theme === 'dark' || theme === 'pro-dark';
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // Refund flow state: idle → confirming → loading → success | error
+  type RefundStep = 'idle' | 'confirming' | 'loading' | 'success' | 'error';
+  const [refundStep, setRefundStep] = useState<RefundStep>('idle');
+  const [refundError, setRefundError] = useState('');
+
+  // Calcola giorni rimasti nel periodo di recesso
+  const daysLeft = (() => {
+    if (!profile.subscriptionStartedAt) return null;
+    const started = new Date(profile.subscriptionStartedAt).getTime();
+    const elapsed = (Date.now() - started) / (1000 * 60 * 60 * 24);
+    const remaining = 14 - elapsed;
+    return remaining > 0 ? Math.ceil(remaining) : null;
+  })();
+
+  const handleRefund = async () => {
+    setRefundStep('loading');
+    setRefundError('');
+    try {
+      const { data: { session } } = await getClient().auth.getSession();
+      if (!session) throw new Error('Sessione non trovata');
+
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/cancel-subscription`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? t('settings.subscription_refund_error'));
+
+      setRefundStep('success');
+    } catch (err) {
+      setRefundError((err as Error).message);
+      setRefundStep('error');
+    }
+  };
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.15 } } };
   const item = { hidden: { opacity: 0 }, show: { opacity: 1 } };
@@ -89,6 +131,70 @@ const SettingsView = ({ theme, setTheme, profile }: SettingsViewProps) => {
           </div>
         </div>
       </motion.div>
+
+      {isPro && (
+        <motion.div variants={item} className={`rounded-3xl border overflow-hidden transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+          <div className="px-5 pt-5 pb-3 flex items-center justify-between">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('settings.subscription_management')}</p>
+            <span className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-1 rounded-full border border-primary/20">{t('settings.subscription_active')}</span>
+          </div>
+
+          <div className="px-5 pb-5 space-y-3">
+            {refundStep === 'success' ? (
+              <div className={`flex items-start gap-3 p-4 rounded-2xl ${darkMode ? 'bg-green-900/20 border border-green-800' : 'bg-green-50 border border-green-200'}`}>
+                <CheckCircle2 size={18} className="text-green-500 shrink-0 mt-0.5" />
+                <p className={`text-sm font-medium ${darkMode ? 'text-green-300' : 'text-green-800'}`}>{t('settings.subscription_refund_success')}</p>
+              </div>
+            ) : refundStep === 'error' ? (
+              <div className={`flex items-start gap-3 p-4 rounded-2xl ${darkMode ? 'bg-red-900/20 border border-red-800' : 'bg-red-50 border border-red-200'}`}>
+                <AlertCircle size={18} className="text-red-500 shrink-0 mt-0.5" />
+                <p className={`text-sm font-medium ${darkMode ? 'text-red-300' : 'text-red-800'}`}>{refundError || t('settings.subscription_refund_error')}</p>
+              </div>
+            ) : daysLeft !== null ? (
+              <>
+                <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                  {t('settings.subscription_refund_eligible', { days: daysLeft })}
+                </p>
+
+                {refundStep === 'confirming' ? (
+                  <div className={`p-4 rounded-2xl space-y-3 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                    <p className={`text-xs font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('settings.subscription_refund_confirm_title')}</p>
+                    <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{t('settings.subscription_refund_confirm_text')}</p>
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        onClick={handleRefund}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold text-white bg-red-500 active:scale-95 transition-all"
+                      >
+                        <RotateCcw size={12} />
+                        {t('settings.subscription_refund_confirm_btn')}
+                      </button>
+                      <button
+                        onClick={() => setRefundStep('idle')}
+                        className={`flex-1 py-2.5 rounded-xl text-xs font-bold active:scale-95 transition-all ${darkMode ? 'bg-slate-700 text-slate-200' : 'bg-white text-slate-600 border border-slate-200'}`}
+                      >
+                        {t('settings.subscription_refund_cancel_btn')}
+                      </button>
+                    </div>
+                  </div>
+                ) : refundStep === 'loading' ? (
+                  <div className="flex items-center justify-center gap-2 py-3">
+                    <Loader2 size={16} className="text-primary animate-spin" />
+                    <span className="text-sm text-slate-500">Elaborazione rimborso…</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setRefundStep('confirming')}
+                    className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold text-red-500 border active:scale-[0.98] transition-all ${darkMode ? 'border-red-900 hover:bg-red-900/20' : 'border-red-200 hover:bg-red-50'}`}
+                  >
+                    <RotateCcw size={14} />
+                    {t('settings.subscription_refund_btn')}
+                  </button>
+                )}
+              </>
+            ) : null}
+          </div>
+        </motion.div>
+      )}
 
       <motion.div variants={item} className={`p-6 rounded-3xl space-y-2 transition-colors ${darkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
         <p className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('settings.app_version')}</p>
