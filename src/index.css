@@ -31,3 +31,56 @@ input, select, textarea {
   width: 0px;
 }
 
+/* ─── Pro Light Theme ─────────────────────────────────────────────────────────
+   Applied only when isPro === true && theme === 'pro-light'.
+   DashboardView sets [data-pro-light] on <html>; these rules scope all overrides
+   to [data-theme="pro-light"] so dark mode is never affected.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+html[data-pro-light] [data-theme="pro-light"] {
+  /* Primary accent: purple/magenta */
+  --color-primary: #c855f7;
+
+  /* App background: lavender → azure gradient */
+  background: linear-gradient(to bottom, #e8e0f5, #dde8f5, #d4e8f0) !important;
+}
+
+/* Positive monetary values & chart bars: emerald → teal #2dd4bf */
+html[data-pro-light] [data-theme="pro-light"] .text-emerald-500,
+html[data-pro-light] [data-theme="pro-light"] .text-emerald-400 {
+  color: #2dd4bf !important;
+}
+html[data-pro-light] [data-theme="pro-light"] .text-emerald-600 {
+  color: #0d9488 !important;
+}
+html[data-pro-light] [data-theme="pro-light"] .bg-emerald-500 {
+  background-color: #2dd4bf !important;
+}
+html[data-pro-light] [data-theme="pro-light"] .bg-emerald-400 {
+  background-color: #2dd4bf !important;
+}
+html[data-pro-light] [data-theme="pro-light"] .bg-emerald-50 {
+  background-color: #f0fdfa !important;
+}
+
+/* Bottom nav active icon box: blue → purple */
+html[data-pro-light] [data-theme="pro-light"] .bg-\[\#E8F0FE\] {
+  background-color: #f3e8ff !important;
+}
+html[data-pro-light] [data-theme="pro-light"] .text-\[\#4A7FD4\] {
+  color: #c855f7 !important;
+}
+html[data-pro-light] [data-theme="pro-light"] .bg-\[\#4A7FD4\] {
+  background-color: #c855f7 !important;
+}
+
+/* Bottom nav active dot: blue glow → purple glow */
+html[data-pro-light] [data-theme="pro-light"] .shadow-\[0_0_10px_rgba\(59\,130\,246\,0\.8\)\] {
+  box-shadow: 0 0 10px rgba(200, 85, 247, 0.8) !important;
+}
+
+/* Bottom nav container shadow: blue tint → purple tint */
+html[data-pro-light] [data-theme="pro-light"] .shadow-\[0_8px_32px_rgba\(0\,100\,255\,0\.12\)\] {
+  box-shadow: 0 8px 32px rgba(168, 85, 247, 0.15) !important;
+}
+

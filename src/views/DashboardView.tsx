@@ -1,4 +1,4 @@
-import { useMemo, useState, lazy, Suspense } from 'react';
+import { useMemo, useState, lazy, Suspense, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TrendingUp, AlertTriangle, AlertCircle, Info, FileText, Receipt } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -71,6 +71,16 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
   const [activeTab, setActiveTab] = useState<DashTab>('overview');
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const isPro = useProStatus(profile);
+
+  // Sync Pro Light theme marker on <html> for CSS-variable overrides
+  useEffect(() => {
+    if (isPro && !darkMode) {
+      document.documentElement.dataset.proLight = 'true';
+    } else {
+      delete document.documentElement.dataset.proLight;
+    }
+    return () => { delete document.documentElement.dataset.proLight; };
+  }, [isPro, darkMode]);
 
   const container = {
     hidden: { opacity: 0 },
