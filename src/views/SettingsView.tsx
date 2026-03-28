@@ -85,7 +85,7 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1 }: SettingsV
     <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-8 pb-40">
       <motion.div variants={item} className="space-y-4">
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('settings.appearance')}</p>
-        <div className={`rounded-3xl p-2 border grid grid-cols-2 gap-2 transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+        <div className="rounded-3xl p-2 border grid grid-cols-2 gap-2 transition-colors" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
           {themes.map(themeItem => {
             const Icon = themeItem.icon;
             const isActive = theme === themeItem.id;
@@ -116,7 +116,7 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1 }: SettingsV
 
       <motion.div variants={item} className="space-y-4">
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('settings.language')}</p>
-        <div className={`p-4 rounded-3xl border flex items-center gap-4 transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+        <div className="p-4 rounded-3xl border flex items-center gap-4 transition-colors" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Languages size={20} /></div>
           <div>
             <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('settings.language_current')}</p>
@@ -126,7 +126,7 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1 }: SettingsV
       </motion.div>
 
       {isPro && (
-        <motion.div variants={item} className={`rounded-3xl border overflow-hidden transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+        <motion.div variants={item} className="rounded-3xl border overflow-hidden transition-colors" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
           <div className="px-5 pt-5 pb-3 flex items-center justify-between">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('settings.subscription_management')}</p>
             <span className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-1 rounded-full border border-primary/20">{t('settings.subscription_active')}</span>
@@ -189,7 +189,7 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1 }: SettingsV
         </motion.div>
       )}
 
-      <motion.div variants={item} className={`p-6 rounded-3xl space-y-2 transition-colors ${darkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
+      <motion.div variants={item} className="p-6 rounded-3xl space-y-2 transition-colors" style={{ backgroundColor: 'var(--color-card-bg)' }}>
         <p className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('settings.app_version')}</p>
         <p className="text-xs text-slate-500">v2.5.0 (Build 2026.03)</p>
         <div className="pt-4 flex gap-4">
@@ -198,7 +198,7 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1 }: SettingsV
         </div>
       </motion.div>
 
-      <motion.div variants={item} className={`rounded-3xl border overflow-hidden transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+      <motion.div variants={item} className="rounded-3xl border overflow-hidden transition-colors" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-5 pt-5 pb-3">{t('settings.legal')}</p>
         {legalItems.map(({ label, href }, i, arr) => (
           <a
