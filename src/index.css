@@ -42,8 +42,6 @@ html[data-pro-light] [data-theme="pro-light"] {
   --color-primary: #c855f7;
   --color-primary-gradient: linear-gradient(135deg, #a855f7 0%, #2dd4bf 100%);
 
-  /* App background: lavender → azure gradient */
-  background: linear-gradient(to bottom, #e8e0f5, #dde8f5, #d4e8f0) !important;
 }
 
 html[data-pro-light] .bg-primary {
