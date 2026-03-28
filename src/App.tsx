@@ -593,7 +593,7 @@ function AppInner() {
   }
 
   const proGradient = theme === 'pro-light'
-    ? 'linear-gradient(160deg, #ede9fe 0%, #dbeafe 60%, #e0f2fe 100%)'
+    ? undefined
     : theme === 'pro-dark'
     ? 'linear-gradient(135deg, #0A1628 0%, #0D2137 55%, #061020 100%)'
     : undefined;
@@ -649,10 +649,29 @@ function AppInner() {
     <>
     {(theme === 'pro-light' || theme === 'pro-dark') && (
       <style>{`
+        html[data-pro-light] {
+          background: linear-gradient(160deg, #ede9fe 0%, #dbeafe 60%, #e0f2fe 100%) !important;
+          background-attachment: fixed !important;
+          min-height: 100vh;
+        }
+        html[data-pro-light] body {
+          background: transparent !important;
+        }
+        html[data-pro-light] #root {
+          background: transparent !important;
+        }
+        html[data-pro-light] [data-theme="pro-light"] {
+          background: transparent !important;
+        }
         [data-theme="pro-light"] main .bg-white {
           background: rgba(255,255,255,0.68) !important;
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
+        }
+        html[data-pro-light] [data-theme="pro-light"] main [class*="bg-white"] {
+          background: rgba(255,255,255,0.65) !important;
+          backdrop-filter: blur(20px) !important;
+          -webkit-backdrop-filter: blur(20px) !important;
         }
         [data-theme="pro-light"] main .border-slate-100 {
           border-color: rgba(0,100,255,0.12) !important;
@@ -667,6 +686,11 @@ function AppInner() {
         [data-theme="pro-light"] main a.rounded-full {
           background: linear-gradient(135deg, #c855f7 0%, #ec4899 100%) !important;
           box-shadow: 0 4px 24px rgba(200,85,247,0.40);
+        }
+        html[data-pro-light] button[class*="rounded-full"],
+        html[data-pro-light] [class*="bg-purple"][class*="rounded-full"] {
+          background: linear-gradient(135deg, #c855f7 0%, #ec4899 100%) !important;
+          box-shadow: 0 4px 24px rgba(200,85,247,0.45) !important;
         }
         [data-theme="pro-light"] main .bg-purple-100,
         [data-theme="pro-light"] main .bg-violet-100 {
