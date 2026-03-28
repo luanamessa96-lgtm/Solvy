@@ -705,6 +705,10 @@ function AppInner() {
         [data-theme="pro-light"] .bg-\\[#E8F0FE\\] {
           background-color: #f3e8ff !important;
         }
+        [data-theme="pro-light"] .bg-primary {
+          background: linear-gradient(135deg, #a855f7 0%, #2dd4bf 100%) !important;
+          box-shadow: 0 4px 24px rgba(168,85,247,0.45) !important;
+        }
         [data-theme="pro-dark"] main .bg-slate-900 {
           background: rgba(255,255,255,0.06) !important;
           backdrop-filter: blur(20px);
