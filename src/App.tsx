@@ -653,29 +653,6 @@ function AppInner() {
 
   return (
     <>
-    {(theme === 'pro-light' || theme === 'pro-dark') && (
-      <style>{`
-        [data-theme="pro-light"] main .bg-white {
-          background: rgba(255,255,255,0.68) !important;
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-        }
-        [data-theme="pro-light"] main .border-slate-100 {
-          border-color: rgba(0,100,255,0.12) !important;
-        }
-        [data-theme="pro-dark"] main .bg-slate-900 {
-          background: rgba(255,255,255,0.06) !important;
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-        }
-        [data-theme="pro-dark"] main .border-slate-800 {
-          border-color: rgba(255,255,255,0.08) !important;
-        }
-        [data-theme="pro-dark"] main .bg-slate-950 {
-          background: transparent !important;
-        }
-      `}</style>
-    )}
     <div
       data-theme={theme}
       style={proGradient ? { background: proGradient } : undefined}
@@ -724,7 +701,7 @@ function AppInner() {
             <MediaLibraryView documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} darkMode={darkMode} />
           ) : (
             <>
-              <div style={{ display: activeTab === 'home' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><DashboardView profile={activeProfile} onProfileClick={handleProfileClick} onAddDocumentClick={() => handleTabChange('docs')} income={totalIncome} expenses={totalExpenses} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} /></Suspense></div>
+              <div style={{ display: activeTab === 'home' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><DashboardView profile={activeProfile} onProfileClick={handleProfileClick} onAddDocumentClick={() => handleTabChange('docs')} income={totalIncome} expenses={totalExpenses} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} theme={theme} /></Suspense></div>
               <div style={{ display: activeTab === 'docs' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><DocumentsView documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} onUpdateProfile={handleUpdateProfile} accountant={accountant} profile={activeProfile} darkMode={darkMode} onMediaLibraryClick={handleMediaLibraryClick} onNavigateToProfile={handleProfileClick} /></Suspense></div>
               <div style={{ display: activeTab === 'calendar' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><CalendarView deadlines={deadlines} onAddDeadline={handleAddDeadline} onUpdateDeadline={handleUpdateDeadline} onDeleteDeadline={handleDeleteDeadline} darkMode={darkMode} profile={activeProfile} /></Suspense></div>
               <div style={{ display: activeTab === 'menu' ? 'block' : 'none' }}><Suspense fallback={null}><MenuView activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} onLogout={handleLogout} darkMode={darkMode} /></Suspense></div>

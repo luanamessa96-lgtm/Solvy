@@ -58,3 +58,47 @@
   --color-nav-icon-bg: rgba(168, 85, 247, 0.15);
   --color-border: rgba(255, 255, 255, 0.08);
 }
+
+/* ─── Pro themes: card glassmorphism ──────────────────────────────────────── */
+
+:root[data-theme="pro-light"] main .bg-white {
+  background: rgba(255, 255, 255, 0.68) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+:root[data-theme="pro-light"] main .border-slate-100 {
+  border-color: var(--color-border) !important;
+}
+
+:root[data-theme="pro-dark"] main .bg-slate-900 {
+  background: var(--color-card) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+:root[data-theme="pro-dark"] main .border-slate-800 {
+  border-color: var(--color-border) !important;
+}
+:root[data-theme="pro-dark"] main .bg-slate-950 {
+  background: transparent !important;
+}
+
+/* ─── Pro themes: positive monetary values → var(--color-positive) ─────────── */
+
+:root[data-theme="pro-light"] .text-emerald-500,
+:root[data-theme="pro-light"] .text-emerald-400,
+:root[data-theme="pro-dark"] .text-emerald-500,
+:root[data-theme="pro-dark"] .text-emerald-400 {
+  color: var(--color-positive) !important;
+}
+:root[data-theme="pro-light"] .text-emerald-600,
+:root[data-theme="pro-dark"] .text-emerald-600 {
+  color: color-mix(in srgb, var(--color-positive) 80%, black) !important;
+}
+:root[data-theme="pro-light"] .bg-emerald-500,
+:root[data-theme="pro-dark"] .bg-emerald-500 {
+  background-color: var(--color-positive) !important;
+}
+:root[data-theme="pro-light"] .bg-emerald-50,
+:root[data-theme="pro-dark"] .bg-emerald-50 {
+  background-color: color-mix(in srgb, var(--color-positive) 10%, white) !important;
+}

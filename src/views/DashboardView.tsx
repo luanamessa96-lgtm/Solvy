@@ -20,6 +20,7 @@ interface DashboardViewProps {
   paidPercentage: number;
   documents: Document[];
   darkMode?: boolean;
+  theme?: string;
   key?: string;
 }
 
@@ -65,7 +66,7 @@ function fmt(n: number) {
 
 type DashTab = 'overview' | 'taxes' | 'expenses';
 
-const DashboardView = ({ profile, income, expenses, paidPercentage, documents, darkMode, onProfileClick, onAddDocumentClick }: DashboardViewProps) => {
+const DashboardView = ({ profile, income, expenses, paidPercentage, documents, darkMode, theme, onProfileClick, onAddDocumentClick }: DashboardViewProps) => {
   const { t } = useTranslation();
   const displayYear = new Date().getFullYear();
   const [activeTab, setActiveTab] = useState<DashTab>('overview');
@@ -280,7 +281,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
               </div>
               <div className="h-48 w-full">
                 <Suspense fallback={<div className="h-full w-full" />}>
-                  <DashboardChart data={chartData} darkMode={darkMode} />
+                  <DashboardChart data={chartData} darkMode={darkMode} theme={theme} />
                 </Suspense>
               </div>
               <div className="flex gap-4 pt-2">
