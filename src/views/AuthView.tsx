@@ -89,7 +89,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
   const btnPrimary = `w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-60`;
 
   return (
-    <div className={`max-w-md mx-auto min-h-screen flex flex-col ${darkMode ? 'bg-slate-950' : 'bg-slate-50'}`}>
+    <div className="max-w-md mx-auto min-h-screen flex flex-col" style={{ backgroundColor: 'var(--color-card-bg)' }}>
       <div className="flex-1 flex flex-col justify-center px-8 py-12">
 
         {/* Logo / Brand */}
@@ -183,12 +183,12 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
               </button>
 
               <div className="flex items-center gap-3 py-1">
-                <div className={`flex-1 h-px ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
+                <div className="flex-1 h-px" style={{ backgroundColor: 'var(--color-border)' }} />
                 <span className="text-xs text-slate-500 font-medium">{t('auth.or')}</span>
-                <div className={`flex-1 h-px ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
+                <div className="flex-1 h-px" style={{ backgroundColor: 'var(--color-border)' }} />
               </div>
 
-              <button type="button" onClick={() => { clearError(); setScreen('register'); }} className={`w-full py-4 rounded-2xl font-bold transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 text-white' : 'bg-white text-slate-900 border-2 border-slate-200'}`}>
+              <button type="button" onClick={() => { clearError(); setScreen('register'); }} className="w-full py-4 rounded-2xl font-bold transition-all active:scale-[0.98] border-2" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}>
                 {t('auth.create_account_btn')}
               </button>
             </motion.div>
@@ -263,7 +263,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
           {/* REGISTER SENT */}
           {screen === 'register-sent' && (
             <motion.div key="register-sent-form" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
-              <div className={`p-6 rounded-3xl text-center space-y-3 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
+              <div className="p-6 rounded-3xl text-center space-y-3" style={{ backgroundColor: 'var(--color-card)' }}>
                 <CheckCircle2 size={40} className="text-emerald-500 mx-auto" />
                 <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
                   {t('auth.register_sent_body')}<span className="text-primary">{email}</span>
@@ -279,7 +279,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
           {/* EMAIL SENT */}
           {screen === 'forgot-sent' && (
             <motion.div key="sent-form" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
-              <div className={`p-6 rounded-3xl text-center space-y-3 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
+              <div className="p-6 rounded-3xl text-center space-y-3" style={{ backgroundColor: 'var(--color-card)' }}>
                 <CheckCircle2 size={40} className="text-emerald-500 mx-auto" />
                 <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
                   {t('auth.forgot_sent_body')}<span className="text-primary">{email}</span>
