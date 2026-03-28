@@ -194,7 +194,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
         {isEditing && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsEditing(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className={`relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl" style={{ backgroundColor: 'var(--color-card)' }}>
               <div className="overflow-y-auto max-h-[90vh] p-8 space-y-5">
                 <div className="flex justify-between items-start">
                   <div>
@@ -253,7 +253,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                     <>
                       <div className="space-y-2">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Documento fiscal</label>
-                        <div className={`flex rounded-xl p-1 gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                        <div className="flex rounded-xl p-1 gap-1" style={{ backgroundColor: 'var(--color-card-bg)' }}>
                           <button type="button" onClick={() => { setTaxIdType('nif'); setEditData({ ...editData, nie: '' }); }} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${taxIdType === 'nif' ? 'bg-primary text-white shadow' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>NIF</button>
                           <button type="button" onClick={() => { setTaxIdType('nie'); setEditData({ ...editData, piva: '' }); }} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${taxIdType === 'nie' ? 'bg-primary text-white shadow' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>NIE</button>
                         </div>
@@ -330,7 +330,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('profile.regime_label')}</label>
-                        <div className={`p-1 rounded-2xl flex gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                        <div className="p-1 rounded-2xl flex gap-1" style={{ backgroundColor: 'var(--color-card-bg)' }}>
                           {(['forfettario', 'ordinario'] as const).map(r => (
                             <button key={r} type="button" onClick={() => setEditData({ ...editData, regime: r })} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all capitalize ${editData.regime === r ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
                               {r.charAt(0).toUpperCase() + r.slice(1)}
@@ -392,15 +392,15 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
 
         <motion.div variants={item} className="space-y-4">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-2">{t('profile.profile_settings')}</h3>
-          <div className={`rounded-2xl border overflow-hidden transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+          <div className="rounded-2xl border overflow-hidden transition-colors" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
             {[
               { icon: Globe, label: t('profile.label_country'), value: activeProfile.country },
               { icon: CreditCard, label: t('profile.label_currency'), value: activeProfile.currency },
               { icon: Briefcase, label: t('profile.label_job_type'), value: activeProfile.jobType },
             ].map(({ icon: Icon, label, value }, i, arr) => (
-              <div key={label} className={`w-full p-4 flex items-center justify-between ${i < arr.length - 1 ? (darkMode ? 'border-b border-slate-800' : 'border-b border-slate-50') : ''}`}>
+              <div key={label} className={`w-full p-4 flex items-center justify-between ${i < arr.length - 1 ? 'border-b' : ''}`} style={i < arr.length - 1 ? { borderColor: 'var(--color-border)' } : undefined}>
                 <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}><Icon size={18} /></div>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400" style={{ backgroundColor: 'var(--color-card-bg)' }}><Icon size={18} /></div>
                   <span className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-900'}`}>{label}</span>
                 </div>
                 <span className="text-sm text-slate-400">{value}</span>
@@ -417,7 +417,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
               <button onClick={() => setIsEditing(true)} className="text-xs font-bold text-primary uppercase tracking-wider">{t('profile.add_fiscal')}</button>
             )}
           </div>
-          <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+          <div className="rounded-2xl border overflow-hidden" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
             {[
               { icon: Receipt, label: activeProfile.country === 'Spain' ? (taxIdType === 'nie' ? 'NIE' : 'NIF') : t('profile.piva_label'), value: activeProfile.country === 'Spain' ? (taxIdType === 'nie' ? (activeProfile.nie || '—') : (activeProfile.piva || '—')) : (activeProfile.piva || '—') },
               ...(activeProfile.country !== 'Spain' ? [{ icon: User, label: t('profile.label_cf'), value: activeProfile.codiceFiscale || '—' }] : []),
@@ -429,9 +429,9 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
               ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'Ret. IRPF (auto)', value: (() => { const y = activeProfile.annoInizioAttivita ? new Date().getFullYear() - activeProfile.annoInizioAttivita : 10; return `${y <= 3 ? 7 : 15}%`; })() }] : []),
               ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'RETA mensual', value: `€${profileStorage.get(`reta_${activeProfile.id}`) || '500'}/mes` }] : []),
             ].map(({ icon: Icon, label, value }, i, arr) => (
-              <div key={label} className={`w-full p-4 flex items-center justify-between ${i < arr.length - 1 ? (darkMode ? 'border-b border-slate-800' : 'border-b border-slate-50') : ''}`}>
+              <div key={label} className={`w-full p-4 flex items-center justify-between ${i < arr.length - 1 ? 'border-b' : ''}`} style={i < arr.length - 1 ? { borderColor: 'var(--color-border)' } : undefined}>
                 <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}><Icon size={18} /></div>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400" style={{ backgroundColor: 'var(--color-card-bg)' }}><Icon size={18} /></div>
                   <span className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-900'}`}>{label}</span>
                 </div>
                 <span className={`text-sm ${value === '—' ? 'text-slate-300' : 'text-slate-400'}`}>{value}</span>
