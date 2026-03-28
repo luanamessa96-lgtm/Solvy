@@ -1,6 +1,25 @@
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+async function sendEmail(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  payload: { type: string; email: string; name: string; lang: 'it' | 'es'; amount?: string }
+): Promise<void> {
+  try {
+    await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${serviceRoleKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.error('send-email call failed:', err);
+  }
+}
+
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
   apiVersion: '2024-06-20',
 });
@@ -49,7 +68,7 @@ Deno.serve(async (req) => {
     // Recupera profilo con stripe_customer_id e subscription_started_at
     const { data: profiles, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('id, stripe_customer_id, subscription_started_at, is_pro')
+      .select('id, stripe_customer_id, subscription_started_at, is_pro, name, email, country')
       .eq('user_id', user.id)
       .limit(1);
 
@@ -97,6 +116,9 @@ Deno.serve(async (req) => {
       });
     }
 
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+
     // Recupera la sottoscrizione attiva da Stripe
     const subscriptions = await stripe.subscriptions.list({
       customer: profile.stripe_customer_id,
@@ -138,6 +160,18 @@ Deno.serve(async (req) => {
       .from('profiles')
       .update({ is_pro: false, subscription_started_at: null })
       .eq('user_id', user.id);
+
+    // Invia email rimborso (fire-and-forget)
+    if (profile.email) {
+      const lang = profile.country === 'Spain' ? 'es' : 'it';
+      sendEmail(supabaseUrl, serviceRoleKey, {
+        type: 'refund',
+        email: profile.email,
+        name: profile.name ?? 'utente',
+        lang,
+        amount: (refundedAmount / 100).toFixed(2),
+      });
+    }
 
     return new Response(JSON.stringify({
       success: true,

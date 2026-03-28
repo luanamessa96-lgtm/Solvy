@@ -7,6 +7,31 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
 
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') ?? '';
 
+// Chiama la edge function send-email in modo fire-and-forget (non blocca il webhook)
+async function sendEmail(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  payload: { type: string; email: string; name: string; lang: 'it' | 'es'; amount?: string }
+): Promise<void> {
+  try {
+    await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${serviceRoleKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    // Non blocca il webhook su errore email
+    console.error('send-email call failed:', err);
+  }
+}
+
+function langFromCountry(country: string | null | undefined): 'it' | 'es' {
+  return country === 'Spain' ? 'es' : 'it';
+}
+
 Deno.serve(async (req) => {
   const signature = req.headers.get('stripe-signature');
   if (!signature) {
@@ -22,10 +47,10 @@ Deno.serve(async (req) => {
     return new Response(`Webhook Error: ${(err as Error).message}`, { status: 400 });
   }
 
-  const supabaseAdmin = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-  );
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+
+  const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
   try {
     switch (event.type) {
@@ -37,7 +62,7 @@ Deno.serve(async (req) => {
         // Controlla se subscription_started_at è già impostato (rinnovo vs primo acquisto)
         const { data: existing } = await supabaseAdmin
           .from('profiles')
-          .select('subscription_started_at')
+          .select('subscription_started_at, name, email, country')
           .eq('user_id', userId)
           .limit(1);
 
@@ -53,6 +78,16 @@ Deno.serve(async (req) => {
           .eq('user_id', userId);
 
         console.log(`Pro attivato per user_id: ${userId}, primo acquisto: ${isFirstSubscription}`);
+
+        // Invia email upgrade_pro (fire-and-forget)
+        if (existing?.[0]?.email) {
+          sendEmail(supabaseUrl, serviceRoleKey, {
+            type: 'upgrade_pro',
+            email: existing[0].email,
+            name: existing[0].name ?? 'utente',
+            lang: langFromCountry(existing[0].country),
+          });
+        }
         break;
       }
 
@@ -76,12 +111,42 @@ Deno.serve(async (req) => {
         break;
       }
 
-      case 'customer.subscription.deleted':
+      case 'customer.subscription.deleted': {
+        // Subscription cancellata → revoca Pro + email cancellazione
+        const sub = event.data.object as Stripe.Subscription;
+        const customerId = sub.customer as string;
+
+        const { data: profiles } = await supabaseAdmin
+          .from('profiles')
+          .select('user_id, name, email, country')
+          .eq('stripe_customer_id', customerId)
+          .limit(1);
+
+        if (profiles?.[0]?.user_id) {
+          await supabaseAdmin
+            .from('profiles')
+            .update({ is_pro: false, subscription_started_at: null })
+            .eq('user_id', profiles[0].user_id);
+
+          console.log(`Pro revocato per customer: ${customerId}`);
+
+          // Invia email cancellazione (fire-and-forget)
+          if (profiles[0].email) {
+            sendEmail(supabaseUrl, serviceRoleKey, {
+              type: 'cancellation',
+              email: profiles[0].email,
+              name: profiles[0].name ?? 'utente',
+              lang: langFromCountry(profiles[0].country),
+            });
+          }
+        }
+        break;
+      }
+
       case 'invoice.payment_failed': {
-        // Subscription cancellata o pagamento fallito → revoca Pro
-        const obj = event.data.object as Stripe.Subscription | Stripe.Invoice;
-        const customerId = (obj as Stripe.Subscription).customer as string
-          ?? (obj as Stripe.Invoice).customer as string;
+        // Pagamento fallito → revoca Pro (senza email cancellazione)
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as string;
 
         const { data: profiles } = await supabaseAdmin
           .from('profiles')
@@ -95,7 +160,7 @@ Deno.serve(async (req) => {
             .update({ is_pro: false, subscription_started_at: null })
             .eq('user_id', profiles[0].user_id);
 
-          console.log(`Pro revocato per customer: ${customerId}`);
+          console.log(`Pro revocato per pagamento fallito, customer: ${customerId}`);
         }
         break;
       }
