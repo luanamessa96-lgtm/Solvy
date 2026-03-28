@@ -678,18 +678,18 @@ function AppInner() {
         [data-theme="pro-light"] main .bg-\\[#c855f7\\],
         [data-theme="pro-light"] main .bg-purple-500,
         [data-theme="pro-light"] main .bg-violet-500 {
-          background: linear-gradient(135deg, #c084fc 0%, #2dd4bf 100%) !important;
-          box-shadow: 0 4px 20px rgba(168,85,247,0.35);
+          background: linear-gradient(135deg, #c855f7 0%, #ec4899 100%) !important;
+          box-shadow: 0 4px 20px rgba(200,85,247,0.35);
         }
         [data-theme="pro-light"] main button.rounded-full,
         [data-theme="pro-light"] main a.rounded-full {
-          background: linear-gradient(135deg, #c084fc 0%, #2dd4bf 100%) !important;
-          box-shadow: 0 0 0 3px white, 0 4px 24px rgba(168,85,247,0.40);
+          background: linear-gradient(135deg, #c855f7 0%, #ec4899 100%) !important;
+          box-shadow: 0 4px 24px rgba(200,85,247,0.40);
         }
         html[data-pro-light] button[class*="rounded-full"],
         html[data-pro-light] [class*="bg-purple"][class*="rounded-full"] {
-          background: linear-gradient(135deg, #c084fc 0%, #2dd4bf 100%) !important;
-          box-shadow: 0 0 0 3px white, 0 4px 24px rgba(168,85,247,0.45) !important;
+          background: linear-gradient(135deg, #c855f7 0%, #ec4899 100%) !important;
+          box-shadow: 0 4px 24px rgba(200,85,247,0.45) !important;
         }
         [data-theme="pro-light"] main .bg-purple-100,
         [data-theme="pro-light"] main .bg-violet-100 {
