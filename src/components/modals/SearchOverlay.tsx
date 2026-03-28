@@ -30,8 +30,8 @@ const SearchOverlay = ({ documents, onClose, onSelectDoc, darkMode }: SearchOver
   }, [documents, query]);
 
   return (
-    <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 24 }} transition={{ type: 'spring', stiffness: 320, damping: 30 }} className={`fixed inset-0 z-[60] flex flex-col ${darkMode ? 'bg-slate-950' : 'bg-slate-50'}`}>
-      <div className={`flex items-center gap-3 px-4 pt-14 pb-3 border-b ${darkMode ? 'border-slate-800' : 'border-slate-100'}`}>
+    <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 24 }} transition={{ type: 'spring', stiffness: 320, damping: 30 }} className="fixed inset-0 z-[60] flex flex-col" style={{ backgroundColor: 'var(--color-card-bg)' }}>
+      <div className="flex items-center gap-3 px-4 pt-14 pb-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
         <button type="button" onClick={onClose} className={`p-2 rounded-full transition-all active:scale-90 shrink-0 ${darkMode ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-100'}`}>
           <ArrowLeft size={22} />
         </button>
@@ -55,7 +55,7 @@ const SearchOverlay = ({ documents, onClose, onSelectDoc, darkMode }: SearchOver
           <>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 pb-1">{results.length} risultat{results.length === 1 ? 'o' : 'i'}</p>
             {results.map(doc => (
-              <button key={doc.id} type="button" onClick={() => onSelectDoc(doc)} className={`w-full p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] text-left ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-md'}`}>
+              <button key={doc.id} type="button" onClick={() => onSelectDoc(doc)} className="w-full p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] text-left hover:border-primary/30 hover:shadow-md" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${doc.type === 'invoice' ? (darkMode ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600') : (darkMode ? 'bg-red-500/10 text-red-500' : 'bg-red-50 text-red-600')}`}>
                   {doc.type === 'invoice' ? <FileText size={18} /> : <FileEdit size={18} />}
                 </div>

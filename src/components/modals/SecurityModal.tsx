@@ -41,7 +41,7 @@ const SecurityModal = ({ isOpen, onClose, darkMode, profileId, userEmail }: Secu
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className={`relative w-full max-w-sm rounded-[32px] p-6 shadow-2xl space-y-6 overflow-hidden transition-colors ${darkMode ? 'bg-slate-900' : 'bg-white'}`}>
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="relative w-full max-w-sm rounded-[32px] p-6 shadow-2xl space-y-6 overflow-hidden transition-colors" style={{ backgroundColor: 'var(--color-card)' }}>
             <div className="flex items-center justify-between">
               <h3 className={`text-xl font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>Sicurezza</h3>
               <button onClick={onClose} className={`p-2 rounded-xl transition-all active:scale-90 hover:shadow-lg ${darkMode ? 'bg-slate-800 text-slate-400 hover:shadow-primary/10' : 'bg-slate-50 text-slate-400 hover:shadow-slate-200'}`}>

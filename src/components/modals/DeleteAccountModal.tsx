@@ -94,7 +94,8 @@ export default function DeleteAccountModal({ isOpen, onClose, darkMode, profile,
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className={`relative w-full max-w-sm rounded-[28px] overflow-hidden shadow-2xl ${darkMode ? 'bg-slate-900' : 'bg-white'}`}
+            className="relative w-full max-w-sm rounded-[28px] overflow-hidden shadow-2xl"
+            style={{ backgroundColor: 'var(--color-card)' }}
           >
             <div className="p-7 space-y-5">
               {/* Header */}

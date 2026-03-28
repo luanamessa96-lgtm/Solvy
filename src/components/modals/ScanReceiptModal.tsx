@@ -64,7 +64,7 @@ const ScanReceiptModal = ({ isOpen, onClose, onSave, darkMode }: ScanReceiptModa
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={handleClose} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
-          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className={`relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] shadow-2xl backdrop-blur-xl" style={{ backgroundColor: 'var(--color-card)' }}>
             <div className="overflow-y-auto max-h-[85vh] p-8 space-y-6">
               <div className="flex justify-between items-start">
                 <div className="space-y-1">

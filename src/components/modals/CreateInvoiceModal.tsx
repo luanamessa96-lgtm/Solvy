@@ -135,7 +135,8 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
             drag="y" dragControls={dragControls} dragListener={false}
             dragConstraints={{ top: 0 }} dragElastic={0.1}
             onDragEnd={(_, info) => { if (info.offset.y > 80) onClose(); }}
-            className={`relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+            className="relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl"
+            style={{ backgroundColor: 'var(--color-card)' }}>
             <div onPointerDown={e => dragControls.start(e)} className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing touch-none">
               <div className={`w-10 h-1 rounded-full ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
             </div>

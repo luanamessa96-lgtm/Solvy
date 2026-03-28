@@ -99,7 +99,8 @@ const ImportDocumentModal = ({ isOpen, onClose, onSave, darkMode }: ImportDocume
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className={`relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}
+            className="relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] shadow-2xl backdrop-blur-xl"
+            style={{ backgroundColor: 'var(--color-card)' }}
           >
             {/* Hidden file inputs */}
             <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileChange} />

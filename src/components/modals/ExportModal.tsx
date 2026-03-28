@@ -713,7 +713,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
             drag="y" dragControls={dragControls} dragListener={false}
             dragConstraints={{ top: 0 }} dragElastic={0.1}
             onDragEnd={(_, info) => { if (info.offset.y > 80) onClose(); }}
-            className={`relative w-full max-w-md rounded-t-[32px] shadow-2xl ${darkMode ? 'bg-slate-900' : 'bg-white'}`}
+            className="relative w-full max-w-md rounded-t-[32px] shadow-2xl"
+            style={{ backgroundColor: 'var(--color-card)' }}
           >
             <div onPointerDown={e => dragControls.start(e)} className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing touch-none">
               <div className={`w-10 h-1 rounded-full ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />

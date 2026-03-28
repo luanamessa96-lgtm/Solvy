@@ -87,7 +87,8 @@ export default function ResumenTrimestralModal({
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className={`relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl ${dm ? 'bg-slate-900' : 'bg-white'}`}
+            className="relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl"
+            style={{ backgroundColor: 'var(--color-card)' }}
           >
             {/* Header */}
             <div className={`flex items-start justify-between p-6 pb-4 ${dm ? 'border-b border-slate-800' : 'border-b border-slate-100'}`}>
