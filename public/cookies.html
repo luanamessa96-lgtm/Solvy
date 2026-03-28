@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cookie Policy — Solvy</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #3b82f6;
+      --primary-light: #eff6ff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --bg: #f8fafc;
+      --white: #ffffff;
+      --green: #dcfce7;
+      --green-border: #86efac;
+      --green-text: #166534;
+      --radius: 12px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 15px; }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .header { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 780px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; color: var(--text); text-decoration: none; }
+    .logo-icon { width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .logo-icon svg { width: 18px; height: 18px; }
+    .badge { font-size: 11px; font-weight: 700; background: var(--primary-light); color: var(--primary); padding: 4px 10px; border-radius: 20px; border: 1px solid #bfdbfe; letter-spacing: 0.3px; }
+    .back-link { font-size: 13px; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .back-link::before { content: '←'; }
+
+    .container { max-width: 780px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    .hero { margin-bottom: 48px; }
+    .hero h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 12px; }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .meta-item { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+    .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--border); }
+
+    .toc { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 48px; }
+    .toc h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 14px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { padding: 4px 0; font-size: 14px; }
+    .toc li a { color: var(--text); font-weight: 500; }
+    .toc li a:hover { color: var(--primary); }
+
+    .section { margin-bottom: 48px; scroll-margin-top: 80px; }
+    .section h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--primary); display: flex; align-items: center; gap: 10px; }
+    .section-num { width: 28px; height: 28px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+    .section h3 { font-size: 15px; font-weight: 700; margin: 24px 0 10px; color: var(--text); }
+    .section p { margin-bottom: 14px; color: #334155; }
+    .section ul { padding-left: 22px; margin-bottom: 14px; }
+    .section li { padding: 3px 0; color: #334155; }
+
+    .infobox { background: var(--primary-light); border: 1px solid #bfdbfe; border-radius: var(--radius); padding: 16px 20px; margin: 16px 0; font-size: 14px; color: #1e40af; }
+    .infobox strong { display: block; margin-bottom: 4px; }
+
+    .greenbox { background: var(--green); border: 1px solid var(--green-border); border-radius: var(--radius); padding: 16px 20px; margin: 16px 0; font-size: 14px; color: var(--green-text); }
+    .greenbox strong { display: block; margin-bottom: 4px; }
+
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+    th { background: var(--bg); font-weight: 700; text-align: left; padding: 10px 14px; border: 1px solid var(--border); color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 10px 14px; border: 1px solid var(--border); vertical-align: top; color: #334155; }
+    tr:hover td { background: #f8fafc; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+    .tag-necessary { background: var(--green); color: var(--green-text); border: 1px solid var(--green-border); }
+
+    .footer { border-top: 1px solid var(--border); padding: 32px 24px; text-align: center; font-size: 13px; color: var(--muted); max-width: 780px; margin: 0 auto; }
+    .footer a { color: var(--primary); font-weight: 600; }
+    .lang-switch { display: flex; justify-content: center; gap: 12px; margin-bottom: 32px; }
+    .lang-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); font-size: 13px; font-weight: 600; cursor: pointer; background: var(--white); color: var(--text); }
+    .lang-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .es-content { display: none; }
+
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 26px; }
+      .container { padding: 28px 16px 60px; }
+      .header-inner { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+      </div>
+      Solvy
+    </a>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span class="badge">Cookie Policy</span>
+      <a href="/" class="back-link">App</a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="lang-switch">
+    <button class="lang-btn active" onclick="setLang('it')">🇮🇹 Italiano</button>
+    <button class="lang-btn" onclick="setLang('es')">🇪🇸 Español</button>
+  </div>
+
+  <!-- ITALIAN CONTENT -->
+  <div id="it-content">
+
+    <div class="hero">
+      <h1>Cookie Policy</h1>
+      <div class="hero-meta">
+        <span class="meta-item">📅 Aggiornata: 28 marzo 2026</span>
+        <span class="dot"></span>
+        <span class="meta-item">⚖️ Conforme alla Direttiva ePrivacy 2002/58/CE</span>
+        <span class="dot"></span>
+        <span class="meta-item">🌍 Applicabile in Italia e Spagna</span>
+      </div>
+    </div>
+
+    <div class="toc">
+      <h2>Sommario</h2>
+      <ol>
+        <li><a href="#cosa-sono">Cosa sono i cookie</a></li>
+        <li><a href="#cookie-usati">Cookie utilizzati da Solvy</a></li>
+        <li><a href="#nessun-tracking">Cosa NON facciamo</a></li>
+        <li><a href="#gestione">Gestione e disabilitazione</a></li>
+        <li><a href="#terze-parti">Cookie di terze parti</a></li>
+        <li><a href="#contatti-cookie">Contatti</a></li>
+      </ol>
+    </div>
+
+    <div class="greenbox">
+      <strong>Nessun banner di consenso necessario</strong>
+      Solvy utilizza esclusivamente cookie tecnici strettamente necessari al funzionamento del servizio. Ai sensi dell'art. 122, co. 1, D.Lgs. 196/2003 e del Considerando 25 della Direttiva 2002/58/CE (ePrivacy), i cookie tecnici necessari sono esenti dall'obbligo di consenso preventivo.
+    </div>
+
+    <!-- 1 -->
+    <section class="section" id="cosa-sono">
+      <h2><span class="section-num">1</span> Cosa sono i cookie</h2>
+      <p>I cookie sono piccoli file di testo che un sito web salva sul browser dell'utente quando visita il sito. Vengono utilizzati per fare funzionare i siti in modo efficiente e per fornire informazioni ai titolari del sito.</p>
+      <p>Solvy è una <strong>Progressive Web App (PWA)</strong>: oltre ai cookie tradizionali, utilizza il <code>localStorage</code> del browser per conservare dati di sessione. Entrambi i meccanismi sono trattati con le stesse garanzie di protezione descritte in questa policy.</p>
+    </section>
+
+    <!-- 2 -->
+    <section class="section" id="cookie-usati">
+      <h2><span class="section-num">2</span> Cookie e storage utilizzati da Solvy</h2>
+      <p>Solvy utilizza <strong>esclusivamente cookie tecnici necessari</strong>. Non sono presenti cookie di profilazione, analytics o marketing di alcun tipo.</p>
+
+      <table>
+        <tr>
+          <th>Nome / Chiave</th>
+          <th>Fornitore</th>
+          <th>Tipo</th>
+          <th>Durata</th>
+          <th>Finalità</th>
+        </tr>
+        <tr>
+          <td><code>sb-[project]-auth-token</code></td>
+          <td>Supabase</td>
+          <td><span class="tag tag-necessary">Necessario</span></td>
+          <td>Sessione / max 12 mesi</td>
+          <td>Token di autenticazione JWT. Mantiene la sessione dell'utente attiva tra una visita e l'altra. Senza questo cookie non è possibile rimanere autenticati.</td>
+        </tr>
+        <tr>
+          <td><code>sb-[project]-auth-token-code-verifier</code></td>
+          <td>Supabase</td>
+          <td><span class="tag tag-necessary">Necessario</span></td>
+          <td>Sessione</td>
+          <td>Codice PKCE (Proof Key for Code Exchange) usato durante il flusso di autenticazione OAuth. Cancellato automaticamente al termine del login.</td>
+        </tr>
+        <tr>
+          <td><code>supabase.auth.token</code> (localStorage)</td>
+          <td>Supabase</td>
+          <td><span class="tag tag-necessary">Necessario</span></td>
+          <td>Max 12 mesi (refresh token)</td>
+          <td>Archiviazione ibrida del token di sessione in localStorage per garantire la persistenza su iOS PWA (Safari non supporta i cookie di terze parti in modalità standalone). Contiene access token e refresh token cifrati.</td>
+        </tr>
+        <tr>
+          <td>Cookie Stripe (<code>__stripe_mid</code>, <code>__stripe_sid</code>)</td>
+          <td>Stripe Inc.</td>
+          <td><span class="tag tag-necessary">Necessario</span></td>
+          <td><code>__stripe_mid</code>: 1 anno — <code>__stripe_sid</code>: 30 min</td>
+          <td>Cookie tecnici di Stripe necessari per la prevenzione delle frodi (machine ID e session ID) durante l'elaborazione dei pagamenti. Presenti solo quando si accede alla sezione abbonamento Pro. Non utilizzati per tracciamento pubblicitario.</td>
+        </tr>
+      </table>
+
+      <div class="infobox">
+        <strong>Nota sulla PWA e iOS Safari</strong>
+        Su iOS Safari in modalità PWA (app aggiunta alla schermata home), i cookie di terze parti sono bloccati dal browser. Solvy utilizza un meccanismo ibrido cookie + localStorage per garantire la persistenza della sessione su tutti i dispositivi, nel pieno rispetto del GDPR e della normativa ePrivacy.
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="section" id="nessun-tracking">
+      <h2><span class="section-num">3</span> Cosa NON facciamo</h2>
+      <p>Solvy <strong>non utilizza</strong> e <strong>non installerà mai</strong> senza consenso esplicito:</p>
+      <ul>
+        <li>Cookie di analytics (Google Analytics, Mixpanel, Amplitude, ecc.)</li>
+        <li>Cookie di profilazione o retargeting pubblicitario (Facebook Pixel, Google Ads, ecc.)</li>
+        <li>Cookie di social media (pulsanti Like/Share con tracciamento)</li>
+        <li>Pixel di tracciamento o web beacon</li>
+        <li>Fingerprinting del browser o tecniche di tracciamento alternative ai cookie</li>
+        <li>Cookie di terze parti per finalità diverse dal pagamento e dall'autenticazione</li>
+      </ul>
+    </section>
+
+    <!-- 4 -->
+    <section class="section" id="gestione">
+      <h2><span class="section-num">4</span> Gestione e disabilitazione dei cookie</h2>
+      <p>Poiché Solvy utilizza esclusivamente cookie tecnici necessari, la disabilitazione dei cookie comporta l'impossibilità di utilizzare il servizio (non sarà possibile autenticarsi o completare pagamenti).</p>
+      <p>È comunque possibile gestire i cookie tramite le impostazioni del browser:</p>
+      <ul>
+        <li><strong>Chrome:</strong> Impostazioni → Privacy e sicurezza → Cookie e altri dati dei siti</li>
+        <li><strong>Safari (iOS/macOS):</strong> Impostazioni → Safari → Privacy e sicurezza</li>
+        <li><strong>Firefox:</strong> Impostazioni → Privacy e sicurezza → Cookie e dati dei siti</li>
+        <li><strong>Edge:</strong> Impostazioni → Cookie e autorizzazioni sito → Cookie e dati archiviati</li>
+      </ul>
+      <p>Per cancellare i dati di sessione Solvy dal localStorage, è possibile utilizzare la funzione "Cancella dati sito" del browser oppure contattare il supporto a <a href="mailto:support@solvyapp.com">support@solvyapp.com</a>.</p>
+    </section>
+
+    <!-- 5 -->
+    <section class="section" id="terze-parti">
+      <h2><span class="section-num">5</span> Cookie di terze parti</h2>
+
+      <h3>Supabase</h3>
+      <p>Supabase Inc. fornisce i servizi di autenticazione e database. I cookie di sessione Supabase sono tecnici e necessari. Supabase è conforme al GDPR e i dati sono archiviati nell'UE (AWS eu-west-3, Parigi). Privacy policy: <a href="https://supabase.com/privacy" target="_blank">supabase.com/privacy</a></p>
+
+      <h3>Stripe</h3>
+      <p>Stripe Inc. fornisce il servizio di elaborazione dei pagamenti. I cookie Stripe (<code>__stripe_mid</code> e <code>__stripe_sid</code>) sono tecnici e necessari per la prevenzione delle frodi durante le transazioni. Stripe è certificato PCI DSS Level 1. Privacy policy: <a href="https://stripe.com/privacy" target="_blank">stripe.com/privacy</a> — Cookie policy: <a href="https://stripe.com/cookie-settings" target="_blank">stripe.com/cookie-settings</a></p>
+
+      <p>Nessun altro fornitore terzo installa cookie tramite Solvy.</p>
+    </section>
+
+    <!-- 6 -->
+    <section class="section" id="contatti-cookie">
+      <h2><span class="section-num">6</span> Contatti</h2>
+      <p>Per qualsiasi domanda relativa all'uso dei cookie da parte di Solvy:</p>
+      <ul>
+        <li><strong>Email:</strong> <a href="mailto:privacy@solvyapp.com">privacy@solvyapp.com</a></li>
+        <li><strong>Titolare:</strong> Luana Messa, autónoma — Madrid, Spagna</li>
+      </ul>
+      <p style="margin-top:24px;padding:16px;background:#f1f5f9;border-radius:8px;font-size:13px;color:#64748b;">
+        Questa Cookie Policy è conforme alla Direttiva 2002/58/CE (ePrivacy), al Regolamento (UE) 2016/679 (GDPR), al D.Lgs. 196/2003 (IT) e alla Ley 34/2002 LSSI (ES). Aggiornata al 28 marzo 2026.
+      </p>
+    </section>
+
+  </div><!-- /it-content -->
+
+  <!-- SPANISH CONTENT -->
+  <div id="es-content" class="es-content">
+
+    <div class="hero">
+      <h1>Política de Cookies</h1>
+      <div class="hero-meta">
+        <span class="meta-item">📅 Actualizada: 28 de marzo de 2026</span>
+        <span class="dot"></span>
+        <span class="meta-item">⚖️ Conforme a la LSSI (Ley 34/2002) y al RGPD</span>
+      </div>
+    </div>
+
+    <div class="greenbox">
+      <strong>No se requiere banner de consentimiento</strong>
+      Solvy utiliza únicamente cookies técnicas estrictamente necesarias para el funcionamiento del servicio. De acuerdo con el art. 22.2 de la Ley 34/2002 (LSSI) y la Directiva ePrivacy 2002/58/CE, las cookies técnicas necesarias están exentas del requisito de consentimiento previo.
+    </div>
+
+    <div class="section">
+      <h2><span class="section-num">1</span> Cookies utilizadas por Solvy</h2>
+      <p>Solvy utiliza <strong>exclusivamente cookies técnicas necesarias</strong>. No existen cookies de análisis, publicidad ni perfilado.</p>
+      <table>
+        <tr>
+          <th>Nombre / Clave</th>
+          <th>Proveedor</th>
+          <th>Tipo</th>
+          <th>Duración</th>
+          <th>Finalidad</th>
+        </tr>
+        <tr>
+          <td><code>sb-[project]-auth-token</code></td>
+          <td>Supabase</td>
+          <td><span class="tag tag-necessary">Necesaria</span></td>
+          <td>Sesión / máx. 12 meses</td>
+          <td>Token JWT de autenticación. Mantiene la sesión activa entre visitas.</td>
+        </tr>
+        <tr>
+          <td><code>supabase.auth.token</code> (localStorage)</td>
+          <td>Supabase</td>
+          <td><span class="tag tag-necessary">Necesaria</span></td>
+          <td>Máx. 12 meses</td>
+          <td>Almacenamiento híbrido del token para garantizar la persistencia en iOS PWA.</td>
+        </tr>
+        <tr>
+          <td><code>__stripe_mid</code>, <code>__stripe_sid</code></td>
+          <td>Stripe Inc.</td>
+          <td><span class="tag tag-necessary">Necesaria</span></td>
+          <td>1 año / 30 min</td>
+          <td>Prevención de fraude durante el procesamiento de pagos. Solo presentes en la sección de suscripción Pro.</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2><span class="section-num">2</span> Lo que NO hacemos</h2>
+      <p>Solvy <strong>no utiliza</strong> cookies de analytics (Google Analytics, etc.), publicidad (Facebook Pixel, etc.), redes sociales con seguimiento, ni ninguna técnica de rastreo alternativa a las cookies (fingerprinting, píxeles, etc.).</p>
+    </div>
+
+    <div class="section">
+      <h2><span class="section-num">3</span> Gestión de cookies</h2>
+      <p>Dado que Solvy solo usa cookies técnicas necesarias, desactivarlas impide el uso del servicio (autenticación y pagos). Puede gestionar las cookies desde la configuración de su navegador. Para eliminar los datos de sesión, utilice la función "borrar datos del sitio" o contacte a <a href="mailto:support@solvyapp.com">support@solvyapp.com</a>.</p>
+    </div>
+
+    <div class="section">
+      <h2><span class="section-num">4</span> Contacto</h2>
+      <p>Para cualquier consulta: <a href="mailto:privacy@solvyapp.com">privacy@solvyapp.com</a> — Luana Messa, autónoma, Madrid (España).</p>
+      <p style="margin-top:16px;padding:14px;background:#f1f5f9;border-radius:8px;font-size:13px;color:#64748b;">
+        Política conforme a la Ley 34/2002 (LSSI), la Directiva 2002/58/CE (ePrivacy) y el Reglamento (UE) 2016/679 (RGPD). Actualizada el 28 de marzo de 2026.
+      </p>
+    </div>
+
+  </div><!-- /es-content -->
+
+</div><!-- /container -->
+
+<div class="footer">
+  <p><a href="/">← Torna all'app</a> &nbsp;·&nbsp; <a href="/privacy">Privacy Policy</a> &nbsp;·&nbsp; <a href="/terms">Termini di Servizio</a> &nbsp;·&nbsp; <a href="mailto:privacy@solvyapp.com">privacy@solvyapp.com</a></p>
+  <p style="margin-top:8px;">© <span id="year"></span> Solvy. Tutti i diritti riservati.</p>
+</div>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  function setLang(lang) {
+    document.getElementById('it-content').style.display = lang === 'it' ? 'block' : 'none';
+    document.getElementById('es-content').style.display = lang === 'es' ? 'block' : 'none';
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.onclick.toString().includes("'" + lang + "'")));
+  }
+</script>
+</body>
+</html>

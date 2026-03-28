@@ -34,6 +34,7 @@ const SettingsView = ({ theme, setTheme, profile }: SettingsViewProps) => {
   const legalItems = [
     { label: t('settings.privacy_policy'), href: '/privacy' },
     { label: t('settings.terms_of_service'), href: '/terms' },
+    { label: t('settings.cookie_policy'), href: '/cookies' },
   ];
 
   return (
