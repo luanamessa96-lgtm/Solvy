@@ -106,7 +106,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
         </div>
       </motion.div>
 
-      <motion.div variants={item} className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all ${searchQuery ? (darkMode ? 'border-primary/40 bg-slate-900' : 'border-primary/30 bg-white') : (darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100')}`}>
+      <motion.div variants={item} className="flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all" style={{ backgroundColor: 'var(--color-card)', borderColor: searchQuery ? undefined : 'var(--color-border)' }}>
         <Search size={16} className={searchQuery ? 'text-primary' : 'text-slate-400'} />
         <input
           type="text"
@@ -247,7 +247,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
         {isAddOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAddOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className={`relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl" style={{ backgroundColor: 'var(--color-card)' }}>
               <div className="p-8 space-y-5">
                 <div className="flex justify-between items-start">
                   <div><h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('calendar.add_modal_title')}</h2><p className="text-sm text-slate-500">{t('calendar.add_modal_subtitle')}</p></div>
@@ -290,7 +290,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
         {selectedDeadline && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedDeadline(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className={`relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl" style={{ backgroundColor: 'var(--color-card)' }}>
               <div className="p-6 space-y-4">
                 <div className={`p-4 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
                   <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedDeadline.title}</p>
@@ -319,7 +319,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
         {deadlineToEdit && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDeadlineToEdit(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className={`relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl" style={{ backgroundColor: 'var(--color-card)' }}>
               <div className="p-8 space-y-5">
                 <div className="flex justify-between items-start">
                   <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('calendar.edit_deadline_title')}</h2>
@@ -352,7 +352,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
         {isPreloadOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPreloadOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className={`relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl" style={{ backgroundColor: 'var(--color-card)' }}>
               <div className="p-8 space-y-5">
                 <div className="flex justify-between items-start">
                   <div>
@@ -393,7 +393,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
         {deadlineToDelete && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDeadlineToDelete(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className={`relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-slate-900/90' : 'bg-white/90'}`}>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl" style={{ backgroundColor: 'var(--color-card)' }}>
               <div className="p-8 space-y-5">
                 <div className="flex flex-col items-center text-center space-y-3">
                   <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center text-red-500"><Trash2 size={24} /></div>
