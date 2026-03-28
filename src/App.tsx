@@ -588,6 +588,20 @@ function AppInner() {
     : undefined;
 
   if (isLoading) {
+    // Se sappiamo già che andremo all'onboarding (nuovo utente o localStorage cleared),
+    // mostriamo uno spinner neutro invece dello skeleton dashboard per evitare il flash
+    if (showOnboarding) {
+      return (
+        <div className={`max-w-md mx-auto min-h-screen flex items-center justify-center ${darkMode ? 'bg-slate-950' : 'bg-white'}`}>
+          <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-xl shadow-primary/30">
+            <svg className="animate-spin w-6 h-6 text-white" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+          </div>
+        </div>
+      );
+    }
     return (
       <div
         data-theme={theme}
@@ -682,7 +696,7 @@ function AppInner() {
               darkMode={darkMode}
             />
           ) : isSettingsPage ? (
-            <SettingsView theme={theme} setTheme={(t) => setProfileTheme(t, activeProfile.id)} profile={activeProfile} />
+            <SettingsView theme={theme} setTheme={(t) => setProfileTheme(t, activeProfile.id)} profile={activeProfile} profilesCount={profiles.length} />
           ) : isAccountantPage ? (
             <AccountantView
               accountant={accountant}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AlertTriangle, X, Loader2, Trash2 } from 'lucide-react';
 import { getClient } from '../../lib/supabase';
+import { Profile } from '../../types';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const CONFIRM_WORD = 'ELIMINA';
@@ -10,14 +11,18 @@ interface DeleteAccountModalProps {
   isOpen: boolean;
   onClose: () => void;
   darkMode?: boolean;
+  profile: Profile;
+  profilesCount: number;
 }
 
-export default function DeleteAccountModal({ isOpen, onClose, darkMode }: DeleteAccountModalProps) {
+export default function DeleteAccountModal({ isOpen, onClose, darkMode, profile, profilesCount }: DeleteAccountModalProps) {
   const [confirmText, setConfirmText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isConfirmed = confirmText === CONFIRM_WORD;
+  // If the user has multiple profiles, delete only this profile — keep auth account and other profiles
+  const isProfileOnly = profilesCount > 1;
 
   const handleDelete = async () => {
     if (!isConfirmed) return;
@@ -28,6 +33,7 @@ export default function DeleteAccountModal({ isOpen, onClose, darkMode }: Delete
       const { data: { session } } = await getClient().auth.getSession();
       if (!session) {
         setError('Sessione scaduta. Rieffettua il login e riprova.');
+        setLoading(false);
         return;
       }
 
@@ -37,21 +43,27 @@ export default function DeleteAccountModal({ isOpen, onClose, darkMode }: Delete
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
+        body: JSON.stringify(isProfileOnly ? { profileId: profile.id } : {}),
       });
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error ?? 'Errore durante la cancellazione dell\'account.');
+        throw new Error(data.error ?? 'Errore durante la cancellazione.');
       }
 
-      // Cancellazione riuscita: pulisci sessione locale e ricarica
-      await getClient().auth.signOut().catch(() => {});
-      localStorage.clear();
-      document.cookie.split(';').forEach(c => {
-        const key = c.trim().split('=')[0];
-        document.cookie = `${key}=;max-age=0;path=/;SameSite=Lax`;
-      });
-      window.location.reload();
+      if (isProfileOnly) {
+        // Solo il profilo: l'account auth rimane intatto, ricarica senza hash URL
+        window.location.replace(window.location.origin);
+      } else {
+        // Account completo: disconnetti e ricarica senza hash URL
+        await getClient().auth.signOut().catch(() => {});
+        localStorage.clear();
+        document.cookie.split(';').forEach(c => {
+          const key = c.trim().split('=')[0];
+          document.cookie = `${key}=;max-age=0;path=/;SameSite=Lax`;
+        });
+        window.location.replace(window.location.origin);
+      }
 
     } catch (err) {
       setError((err as Error).message);
@@ -102,7 +114,7 @@ export default function DeleteAccountModal({ isOpen, onClose, darkMode }: Delete
               {/* Title */}
               <div>
                 <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                  Elimina account
+                  {isProfileOnly ? 'Elimina profilo' : 'Elimina account'}
                 </h2>
                 <p className={`text-sm mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                   Questa operazione è <strong>irreversibile</strong> e non può essere annullata.
@@ -115,20 +127,30 @@ export default function DeleteAccountModal({ isOpen, onClose, darkMode }: Delete
                   Verrà cancellato permanentemente:
                 </p>
                 <ul className={`text-sm space-y-1 ${darkMode ? 'text-slate-300' : 'text-red-800'}`}>
-                  {[
+                  {(isProfileOnly ? [
+                    `Il profilo "${profile.name}"`,
+                    'Tutte le fatture e le spese del profilo',
+                    'Tutte le scadenze del profilo',
+                    'I dati del commercialista del profilo',
+                  ] : [
                     'Il tuo account e le credenziali di accesso',
                     'Tutti i profili fiscali',
                     'Tutte le fatture e le spese',
                     'Tutte le scadenze',
                     'I dati del commercialista',
                     'L\'abbonamento Pro (se attivo)',
-                  ].map(item => (
+                  ]).map(item => (
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-0.5 shrink-0 text-red-500">✕</span>
                       {item}
                     </li>
                   ))}
                 </ul>
+                {isProfileOnly && (
+                  <p className={`text-xs mt-2 pt-2 border-t ${darkMode ? 'border-slate-700 text-slate-400' : 'border-red-100 text-red-600'}`}>
+                    Gli altri profili e il tuo account rimarranno intatti.
+                  </p>
+                )}
               </div>
 
               {/* Confirmation input */}
@@ -178,7 +200,7 @@ export default function DeleteAccountModal({ isOpen, onClose, darkMode }: Delete
                   ) : (
                     <>
                       <Trash2 size={15} />
-                      Elimina definitivamente
+                      {isProfileOnly ? 'Elimina profilo' : 'Elimina definitivamente'}
                     </>
                   )}
                 </button>

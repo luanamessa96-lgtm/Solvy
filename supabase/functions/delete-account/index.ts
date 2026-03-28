@@ -43,6 +43,43 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // Controlla se il body contiene un profileId (cancellazione singolo profilo)
+    let profileIdOnly: string | undefined;
+    try {
+      const body = await req.json();
+      if (body.profileId) profileIdOnly = body.profileId as string;
+    } catch { /* body vuoto o non JSON — cancellazione account completo */ }
+
+    if (profileIdOnly) {
+      // Cancellazione singolo profilo: verifica che appartenga all'utente autenticato
+      const { data: profileData } = await supabaseAdmin
+        .from('profiles')
+        .select('id')
+        .eq('id', profileIdOnly)
+        .eq('user_id', userId)
+        .single();
+
+      if (!profileData) {
+        return new Response(JSON.stringify({ error: 'Profilo non trovato o non autorizzato.' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Cancella solo i dati di questo profilo (non tocca auth user né altri profili)
+      await Promise.all([
+        supabaseAdmin.from('documents').delete().eq('profile_id', profileIdOnly),
+        supabaseAdmin.from('deadlines').delete().eq('profile_id', profileIdOnly),
+        supabaseAdmin.from('accountant').delete().eq('profile_id', profileIdOnly),
+      ]);
+      await supabaseAdmin.from('profiles').delete().eq('id', profileIdOnly).eq('user_id', userId);
+
+      console.log(`Profile deleted: profile_id=${profileIdOnly} user_id=${userId}`);
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // 1. Recupera tutti i profili per trovare stripe_customer_id e profile IDs
     const { data: profiles } = await supabaseAdmin
       .from('profiles')

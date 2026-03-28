@@ -14,13 +14,20 @@ i18n
     interpolation: { escapeValue: false },
   });
 
+// Counter to cancel stale async language changes (race condition: Spain import
+// resolves after a subsequent Italy call, overwriting the correct language)
+let _langReqId = 0;
+
 export async function setLanguageByCountry(country: string) {
+  const reqId = ++_langReqId;
   if (country === 'Spain') {
     if (!i18n.hasResourceBundle('es', 'translation')) {
       const { default: es } = await import('../locales/es.json');
       i18n.addResourceBundle('es', 'translation', es);
     }
-    i18n.changeLanguage('es');
+    if (reqId === _langReqId) {
+      i18n.changeLanguage('es');
+    }
   } else {
     i18n.changeLanguage('it');
   }

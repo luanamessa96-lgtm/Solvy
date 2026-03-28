@@ -314,6 +314,14 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                     )}
                   </div>
                 )}
+
+                {regime === 'ordinario' && (
+                  <div className="space-y-1.5">
+                    <label className={lc}>Anno Inizio Attività</label>
+                    <input type="number" min="2000" max={currentYear} value={annoInizioAttivita} onChange={e => setAnnoInizioAttivita(e.target.value)} placeholder={`Es. ${currentYear - 2}`} className={ic} />
+                    <HelpText text="Usato per tracciare l'anzianità della tua attività e calcolare correttamente le imposte." />
+                  </div>
+                )}
               </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={() => goBack(1)} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>

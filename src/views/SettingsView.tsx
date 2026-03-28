@@ -14,10 +14,11 @@ interface SettingsViewProps {
   theme: string;
   setTheme: (t: string) => void;
   profile: Profile;
+  profilesCount?: number;
   key?: string;
 }
 
-const SettingsView = ({ theme, setTheme, profile }: SettingsViewProps) => {
+const SettingsView = ({ theme, setTheme, profile, profilesCount = 1 }: SettingsViewProps) => {
   const { t } = useTranslation();
   const isPro = useProStatus(profile);
   const darkMode = theme === 'dark' || theme === 'pro-dark';
@@ -231,7 +232,7 @@ const SettingsView = ({ theme, setTheme, profile }: SettingsViewProps) => {
       </motion.div>
     </motion.div>
     <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} darkMode={darkMode} />
-    <DeleteAccountModal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} darkMode={darkMode} />
+    <DeleteAccountModal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} darkMode={darkMode} profile={profile} profilesCount={profilesCount} />
     </>
   );
 };
