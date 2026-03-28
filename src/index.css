@@ -40,9 +40,15 @@ input, select, textarea {
 html[data-pro-light] [data-theme="pro-light"] {
   /* Primary accent: purple/magenta */
   --color-primary: #c855f7;
+  --color-primary-gradient: linear-gradient(135deg, #a855f7 0%, #2dd4bf 100%);
 
   /* App background: lavender → azure gradient */
   background: linear-gradient(to bottom, #e8e0f5, #dde8f5, #d4e8f0) !important;
+}
+
+html[data-pro-light] .bg-primary {
+  background: linear-gradient(135deg, #a855f7 0%, #2dd4bf 100%) !important;
+  box-shadow: 0 4px 24px rgba(168,85,247,0.45) !important;
 }
 
 /* Positive monetary values & chart bars: emerald → teal #2dd4bf */
