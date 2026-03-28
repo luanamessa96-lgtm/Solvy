@@ -649,27 +649,26 @@ function AppInner() {
     <>
     {(theme === 'pro-light' || theme === 'pro-dark') && (
       <style>{`
-        html[data-pro-light] {
-          background: linear-gradient(160deg, #ede9fe 0%, #dbeafe 60%, #e0f2fe 100%) !important;
-          background-attachment: fixed !important;
+        html[data-pro-light],
+        html[data-pro-light] body {
+          background: linear-gradient(135deg, #e8d5ff 0%, #c8d8ff 40%, #a8e8f0 100%) fixed !important;
           min-height: 100vh;
         }
-        html[data-pro-light] body {
+        html[data-pro-light] body::before {
+          content: '';
+          position: fixed;
+          inset: 0;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+          background-size: 200px 200px;
+          pointer-events: none;
+          z-index: 0;
+        }
+        html[data-pro-light] #root > div,
+        html[data-pro-light] .max-w-md {
           background: transparent !important;
         }
-        html[data-pro-light] #root {
-          background: transparent !important;
-        }
-        html[data-pro-light] [data-theme="pro-light"] {
-          background: transparent !important;
-        }
-        [data-theme="pro-light"] main .bg-white {
-          background: rgba(255,255,255,0.68) !important;
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-        }
-        html[data-pro-light] [data-theme="pro-light"] main [class*="bg-white"] {
-          background: rgba(255,255,255,0.65) !important;
+        html[data-pro-light] [class*="bg-white"] {
+          background: rgba(255,255,255,0.62) !important;
           backdrop-filter: blur(20px) !important;
           -webkit-backdrop-filter: blur(20px) !important;
         }
