@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Sun, Moon, Languages, Trash2, RotateCcw, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Sun, Moon, Languages, Trash2, RotateCcw, Loader2, CheckCircle2, AlertCircle, Sparkles, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getClient } from '../lib/supabase';
 import PaywallModal from '../components/modals/PaywallModal';
@@ -68,8 +68,10 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1 }: SettingsV
   const item = { hidden: { opacity: 0 }, show: { opacity: 1 } };
 
   const themes = [
-    { id: 'pro-light', label: 'Light', icon: Sun },
-    { id: 'pro-dark', label: 'Dark', icon: Moon },
+    { id: 'light', label: 'Light', icon: Sun, locked: false },
+    { id: 'dark', label: 'Dark', icon: Moon, locked: false },
+    { id: 'pro-light', label: 'Pro Light', icon: Sun, locked: !isPro },
+    { id: 'pro-dark', label: 'Pro Dark', icon: Moon, locked: !isPro },
   ];
 
   const legalItems = [
@@ -90,8 +92,8 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1 }: SettingsV
             return (
               <button
                 key={themeItem.id}
-                onClick={() => setTheme(themeItem.id)}
-                className={`flex items-center justify-center gap-2 py-3 rounded-2xl transition-all active:scale-95 ${
+                onClick={() => { if (themeItem.locked) { setIsPaywallOpen(true); return; } setTheme(themeItem.id); }}
+                className={`relative flex items-center justify-center gap-2 py-3 rounded-2xl transition-all active:scale-95 ${
                   isActive
                     ? darkMode
                       ? 'bg-slate-700 text-white shadow-lg shadow-slate-900/40'
@@ -99,14 +101,17 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1 }: SettingsV
                     : darkMode
                     ? 'text-slate-500 hover:text-slate-300'
                     : 'text-slate-400 hover:text-slate-600'
-                }`}
+                } ${themeItem.locked ? 'opacity-60' : ''}`}
               >
                 <Icon size={16} />
                 <span className="text-sm font-bold">{themeItem.label}</span>
+                {themeItem.locked && <Lock size={10} className="absolute top-1.5 right-2 text-slate-400" />}
+                {!themeItem.locked && themeItem.id.startsWith('pro') && <Sparkles size={10} className="absolute top-1.5 right-2 text-primary" />}
               </button>
             );
           })}
         </div>
+        {!isPro && <p className="text-[10px] text-slate-400 text-center">{t('settings.pro_themes_hint')}</p>}
       </motion.div>
 
       <motion.div variants={item} className="space-y-4">
