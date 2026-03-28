@@ -10,7 +10,7 @@ interface DashboardChartProps {
 export default function DashboardChart({ data, darkMode, theme }: DashboardChartProps) {
   const isProLight = theme === 'pro-light';
   const incomeColor = isProLight ? '#2dd4bf' : '#10b981';
-  const expensesColor = isProLight ? '#F43F5E' : '#6366f1';
+  const expensesColor = isProLight ? '#c084fc' : '#6366f1';
   const { t } = useTranslation();
 
   return (
