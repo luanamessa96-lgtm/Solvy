@@ -131,7 +131,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
   const progressInfo = getProgressInfo();
 
   return (
-    <div className={`fixed inset-0 z-[200] flex flex-col max-w-md mx-auto transition-colors ${darkMode ? 'bg-slate-950' : 'bg-white'}`}>
+    <div className="fixed inset-0 z-[200] flex flex-col max-w-md mx-auto transition-colors" style={{ backgroundColor: 'var(--color-card)' }}>
 
       {/* Progress bar */}
       {progressInfo && (
@@ -191,7 +191,8 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
               <div className="w-full space-y-4">
                 <button
                   onClick={() => { setSelectedCountry('Italy'); goNext(1); }}
-                  className={`w-full p-6 rounded-3xl border-2 flex items-center gap-5 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-primary' : 'bg-white border-slate-100 hover:border-primary shadow-sm hover:shadow-lg hover:shadow-primary/10'}`}
+                  className="w-full p-6 rounded-3xl border-2 flex items-center gap-5 transition-all active:scale-[0.98] hover:border-primary shadow-sm hover:shadow-lg hover:shadow-primary/10"
+                  style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
                 >
                   <span className="text-4xl">🇮🇹</span>
                   <div className="text-left">
@@ -202,7 +203,8 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                 </button>
                 <button
                   onClick={() => { setSelectedCountry('Spain'); goNext(1); }}
-                  className={`w-full p-6 rounded-3xl border-2 flex items-center gap-5 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-primary' : 'bg-white border-slate-100 hover:border-primary shadow-sm hover:shadow-lg hover:shadow-primary/10'}`}
+                  className="w-full p-6 rounded-3xl border-2 flex items-center gap-5 transition-all active:scale-[0.98] hover:border-primary shadow-sm hover:shadow-lg hover:shadow-primary/10"
+                  style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
                 >
                   <span className="text-4xl">🇪🇸</span>
                   <div className="text-left">
@@ -248,7 +250,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                 </div>
               </div>
               <div className="flex gap-3">
-                <button onClick={() => goBack('country')} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                <button onClick={() => goBack('country')} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 text-slate-400`} style={{ backgroundColor: 'var(--color-card-bg)' }}>
                   <ChevronLeft size={20} />
                 </button>
                 <button onClick={() => goNext(2)} disabled={!name.trim()} className="flex-1 bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed">
@@ -267,7 +269,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
               </div>
               <div className="space-y-4 flex-1">
                 {/* Toggle */}
-                <div className={`p-1 rounded-2xl flex gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                <div className={`p-1 rounded-2xl flex gap-1 `} style={{ backgroundColor: 'var(--color-card-bg)' }}>
                   {(['forfettario', 'ordinario'] as const).map(r => (
                     <button key={r} onClick={() => setRegime(r)} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all capitalize ${regime === r ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
                       {r.charAt(0).toUpperCase() + r.slice(1)}
@@ -276,7 +278,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                 </div>
 
                 {/* Spiegazione regime */}
-                <div className={`p-4 rounded-2xl border space-y-1 ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                <div className="p-4 rounded-2xl border space-y-1" style={{ backgroundColor: 'var(--color-card-bg)', borderColor: 'var(--color-border)' }}>
                   {regime === 'forfettario' ? (
                     <>
                       <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Regime Forfettario</p>
@@ -324,7 +326,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                 )}
               </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={() => goBack(1)} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                <button onClick={() => goBack(1)} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 text-slate-400`} style={{ backgroundColor: 'var(--color-card-bg)' }}>
                   <ChevronLeft size={20} />
                 </button>
                 <button onClick={() => goNext(3)} className="flex-1 bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">
@@ -347,7 +349,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
               <div className="space-y-4 flex-1">
                 <div className="space-y-2">
                   <label className={lc}>Tipo documento fiscale</label>
-                  <div className={`flex rounded-xl p-1 gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                  <div className={`flex rounded-xl p-1 gap-1 `} style={{ backgroundColor: 'var(--color-card-bg)' }}>
                     <button type="button" onClick={() => setTaxIdType('nif')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${taxIdType === 'nif' ? 'bg-primary text-white shadow' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>NIF</button>
                     <button type="button" onClick={() => setTaxIdType('nie')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${taxIdType === 'nie' ? 'bg-primary text-white shadow' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>NIE</button>
                   </div>
@@ -407,7 +409,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
               </div>
               <div className="space-y-2">
                 <div className="flex gap-3">
-                  <button onClick={() => goBack(1)} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                  <button onClick={() => goBack(1)} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 text-slate-400`} style={{ backgroundColor: 'var(--color-card-bg)' }}>
                     <ChevronLeft size={20} />
                   </button>
                   <button onClick={() => goNext('done')} className="flex-1 bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">
@@ -450,7 +452,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
               </div>
               <div className="space-y-2">
                 <div className="flex gap-3">
-                  <button onClick={() => goBack(2)} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                  <button onClick={() => goBack(2)} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 text-slate-400`} style={{ backgroundColor: 'var(--color-card-bg)' }}>
                     <ChevronLeft size={20} />
                   </button>
                   <button onClick={() => goNext('done')} className="flex-1 bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">
