@@ -688,8 +688,8 @@ function AppInner() {
         }
         html[data-pro-light] button[class*="rounded-full"],
         html[data-pro-light] [class*="bg-purple"][class*="rounded-full"] {
-          background: linear-gradient(135deg, #c855f7 0%, #ec4899 100%) !important;
-          box-shadow: 0 4px 24px rgba(200,85,247,0.45) !important;
+          background: linear-gradient(135deg, #a855f7 0%, #2dd4bf 100%) !important;
+          box-shadow: 0 4px 24px rgba(168,85,247,0.45) !important;
         }
         [data-theme="pro-light"] main .bg-purple-100,
         [data-theme="pro-light"] main .bg-violet-100 {
