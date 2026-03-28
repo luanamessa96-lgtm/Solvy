@@ -73,14 +73,15 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
   const isPro = useProStatus(profile);
 
   // Sync Pro Light theme marker on <html> for CSS-variable overrides
+  const [devForceProLight, setDevForceProLight] = useState(false);
   useEffect(() => {
-    if (isPro && !darkMode) {
+    if ((isPro || devForceProLight) && !darkMode) {
       document.documentElement.dataset.proLight = 'true';
     } else {
       delete document.documentElement.dataset.proLight;
     }
     return () => { delete document.documentElement.dataset.proLight; };
-  }, [isPro, darkMode]);
+  }, [isPro, darkMode, devForceProLight]);
 
   const container = {
     hidden: { opacity: 0 },
@@ -560,6 +561,14 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
         )}
       </AnimatePresence>
       <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} darkMode={darkMode} />
+      {import.meta.env.DEV && (
+        <button
+          onClick={() => setDevForceProLight(v => !v)}
+          style={{ position: 'fixed', bottom: 80, right: 12, zIndex: 9999, fontSize: 10, padding: '4px 8px', borderRadius: 8, border: '1px solid #c855f7', background: devForceProLight ? '#c855f7' : 'white', color: devForceProLight ? 'white' : '#c855f7', fontWeight: 700, cursor: 'pointer' }}
+        >
+          {devForceProLight ? '◉ PRO-L' : '○ PRO-L'}
+        </button>
+      )}
     </motion.div>
   );
 };
