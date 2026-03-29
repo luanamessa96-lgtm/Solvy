@@ -62,7 +62,8 @@
   --color-positive: #2dd4bf;
   --color-nav-bg: #0d0d18;
   --color-nav-icon: #c855f7;
-  --color-icon-bg-purple: rgba(160, 50, 200, 0.2);
+  --color-nav-icon-bg: rgba(200, 85, 247, 0.12);
+  --color-icon-bg-purple: rgba(160, 50, 200, 0.22);
   --color-icon-bg-teal: rgba(45, 212, 191, 0.12);
   --color-header-bg: rgba(13, 13, 24, 0.9);
   --color-border: rgba(255, 255, 255, 0.06);
@@ -80,12 +81,13 @@
 }
 
 :root[data-theme="pro-dark"] main .bg-slate-900 {
-  background: var(--color-card) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.03) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.04) inset !important;
 }
 :root[data-theme="pro-dark"] main .border-slate-800 {
-  border-color: var(--color-border) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
 }
 :root[data-theme="pro-dark"] main .bg-slate-950 {
   background: transparent !important;

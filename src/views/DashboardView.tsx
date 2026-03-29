@@ -72,6 +72,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
   const [activeTab, setActiveTab] = useState<DashTab>('overview');
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const isPro = useProStatus(profile);
+  const isProDark = theme === 'pro-dark';
 
   const container = {
     hidden: { opacity: 0 },
@@ -190,7 +191,8 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                 if (tab.id === 'taxes' && !isPro) { setIsPaywallOpen(true); return; }
                 setActiveTab(tab.id);
               }}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all relative ${activeTab === tab.id ? (darkMode ? 'bg-slate-800 text-white shadow-sm' : 'bg-white text-slate-900 shadow-sm') : 'text-slate-400'}`}
+              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all relative ${activeTab === tab.id ? (isProDark ? 'text-white' : darkMode ? 'bg-slate-800 text-white shadow-sm' : 'bg-white text-slate-900 shadow-sm') : 'text-slate-400'}`}
+              style={isProDark && activeTab === tab.id ? { background: 'rgba(200, 85, 247, 0.12)', borderRadius: '12px' } : undefined}
             >
               {tab.label}
               {tab.id === 'taxes' && !isPro && <span className="absolute top-0.5 right-1 text-[8px] font-black text-primary/60 uppercase">Pro</span>}
@@ -277,7 +279,10 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   <h3 className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('dashboard.monthly_trend')}</h3>
                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{displayYear}</p>
                 </div>
-                <div className={`p-2 rounded-xl ${darkMode ? 'bg-slate-800 text-primary' : 'bg-slate-50 text-primary'}`}><TrendingUp size={18} /></div>
+                <div
+                  className={`p-2 rounded-xl ${isProDark ? 'text-primary' : darkMode ? 'bg-slate-800 text-primary' : 'bg-slate-50 text-primary'}`}
+                  style={isProDark ? { background: 'rgba(160, 50, 200, 0.22)', borderRadius: '12px', padding: '10px' } : undefined}
+                ><TrendingUp size={18} /></div>
               </div>
               <div className="h-48 w-full">
                 <Suspense fallback={<div className="h-full w-full" />}>
@@ -504,7 +509,10 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('dashboard.expenses_by_category')}</p>
                     <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{expenses.toLocaleString()}</p>
                   </div>
-                  <div className={`p-2 rounded-xl ${darkMode ? 'bg-slate-800 text-red-400' : 'bg-red-50 text-red-500'}`}><Receipt size={18} /></div>
+                  <div
+                    className={`p-2 rounded-xl ${isProDark ? '' : darkMode ? 'bg-slate-800 text-red-400' : 'bg-red-50 text-red-500'}`}
+                    style={isProDark ? { background: 'rgba(45, 212, 191, 0.12)', borderRadius: '12px', padding: '10px', color: 'var(--color-accent)' } : undefined}
+                  ><Receipt size={18} /></div>
                 </div>
                 <div className="px-6 py-4 space-y-3">
                   {spesePerCategoria.map(({ name, amount }, index) => {
