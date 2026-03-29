@@ -61,6 +61,7 @@
   --color-text-muted: #8e8e93;
   --color-text-label: #636366;
   --color-positive: #2dd4bf;
+  --color-negative: #c855f7;
   --color-nav-bg: #141414;
   --color-nav-icon: #c855f7;
   --color-nav-icon-bg: rgba(200, 85, 247, 0.12);
@@ -127,4 +128,19 @@
 :root[data-theme="pro-light"] .bg-emerald-50,
 :root[data-theme="pro-dark"] .bg-emerald-50 {
   background-color: color-mix(in srgb, var(--color-positive) 10%, white) !important;
+}
+
+/* ─── Pro dark: negative monetary values → var(--color-negative) ────────── */
+
+:root[data-theme="pro-dark"] .text-red-500,
+:root[data-theme="pro-dark"] .text-red-400,
+:root[data-theme="pro-dark"] .text-rose-500,
+:root[data-theme="pro-dark"] .text-rose-400 {
+  color: var(--color-negative) !important;
+}
+:root[data-theme="pro-dark"] .bg-red-500\/10 {
+  background-color: rgba(200, 85, 247, 0.1) !important;
+}
+:root[data-theme="pro-dark"] .bg-emerald-500\/10 {
+  background-color: rgba(45, 212, 191, 0.1) !important;
 }
