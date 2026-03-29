@@ -53,19 +53,19 @@
 
 :root[data-theme="pro-dark"] {
   --color-bg: #08080f;
-  --color-card: #13131f;
+  --color-card: #1c1c1e;
   --color-card-border: rgba(255, 255, 255, 0.06);
   --color-primary: #c855f7;
   --color-accent: #2dd4bf;
   --color-text: #ffffff;
   --color-text-muted: #555568;
   --color-positive: #2dd4bf;
-  --color-nav-bg: rgba(15, 10, 30, 0.9);
+  --color-nav-bg: #141414;
   --color-nav-icon: #c855f7;
   --color-nav-icon-bg: rgba(200, 85, 247, 0.12);
   --color-icon-bg-purple: rgba(160, 50, 200, 0.22);
   --color-icon-bg-teal: rgba(45, 212, 191, 0.12);
-  --color-header-bg: rgba(13, 13, 24, 0.9);
+  --color-header-bg: #0f0f0f;
   --color-border: rgba(255, 255, 255, 0.06);
 }
 
@@ -81,11 +81,11 @@
 }
 
 :root[data-theme="pro-dark"] main .bg-slate-900 {
-  background: rgba(30, 20, 50, 0.6) !important;
+  background: #1c1c1e !important;
   overflow: visible !important;
 }
 :root[data-theme="pro-dark"] main .border-slate-800 {
-  border-color: rgba(200, 85, 247, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 :root[data-theme="pro-dark"] main .bg-slate-950 {
   background: transparent !important;
