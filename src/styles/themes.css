@@ -58,7 +58,8 @@
   --color-primary: #c855f7;
   --color-accent: #2dd4bf;
   --color-text: #ffffff;
-  --color-text-muted: #555568;
+  --color-text-muted: #8e8e93;
+  --color-text-label: #636366;
   --color-positive: #2dd4bf;
   --color-nav-bg: #141414;
   --color-nav-icon: #c855f7;
@@ -89,6 +90,22 @@
 }
 :root[data-theme="pro-dark"] main .bg-slate-950 {
   background: transparent !important;
+}
+
+/* ─── Pro dark: testo tipografico ────────────────────────────────────────── */
+
+/* Testo secondario (date, note): grigio chiaro */
+:root[data-theme="pro-dark"] .text-slate-400 {
+  color: var(--color-text-muted) !important;
+}
+/* Label uppercase (categorie, etichette): grigio medio */
+:root[data-theme="pro-dark"] .text-slate-500 {
+  color: var(--color-text-label) !important;
+}
+/* Valori numerici secondari (slate-200/300): bianco attenuato */
+:root[data-theme="pro-dark"] .text-slate-200,
+:root[data-theme="pro-dark"] .text-slate-300 {
+  color: var(--color-text) !important;
 }
 
 /* ─── Pro themes: positive monetary values → var(--color-positive) ─────────── */
