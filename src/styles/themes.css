@@ -52,18 +52,20 @@
 }
 
 :root[data-theme="pro-dark"] {
-  --color-bg: transparent;
-  --color-card: rgba(255, 255, 255, 0.06);
-  --color-card-border: rgba(255, 255, 255, 0.08);
+  --color-bg: #08080f;
+  --color-card: #13131f;
+  --color-card-border: rgba(255, 255, 255, 0.06);
   --color-primary: #c855f7;
   --color-accent: #2dd4bf;
   --color-text: #ffffff;
-  --color-text-muted: #6b7280;
+  --color-text-muted: #555568;
   --color-positive: #2dd4bf;
-  --color-nav-bg: rgba(20, 20, 30, 0.95);
+  --color-nav-bg: #0d0d18;
   --color-nav-icon: #c855f7;
-  --color-icon-bg-purple: rgba(160, 50, 200, 0.25);
-  --color-icon-bg-teal: rgba(45, 212, 191, 0.15);
+  --color-icon-bg-purple: rgba(160, 50, 200, 0.2);
+  --color-icon-bg-teal: rgba(45, 212, 191, 0.12);
+  --color-header-bg: rgba(13, 13, 24, 0.9);
+  --color-border: rgba(255, 255, 255, 0.06);
 }
 
 /* ─── Pro themes: card glassmorphism ──────────────────────────────────────── */

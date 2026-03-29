@@ -600,8 +600,11 @@ function AppInner() {
 
   const proGradient = theme === 'pro-light'
     ? 'linear-gradient(135deg, #EEF6FF 0%, #D5E8FF 100%)'
-    : theme === 'pro-dark'
-    ? 'linear-gradient(135deg, #0A1628 0%, #0D2137 55%, #061020 100%)'
+    : undefined;
+  const proBgStyle = theme === 'pro-dark'
+    ? { backgroundColor: '#08080f' }
+    : proGradient
+    ? { background: proGradient }
     : undefined;
 
   if (isLoading) {
@@ -622,7 +625,7 @@ function AppInner() {
     return (
       <div
         data-theme={theme}
-        style={proGradient ? { background: proGradient } : undefined}
+        style={proBgStyle}
         className={`max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative overflow-hidden ${darkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}
       >
         <Header
@@ -655,7 +658,7 @@ function AppInner() {
     <>
     <div
       data-theme={theme}
-      style={proGradient ? { background: proGradient } : undefined}
+      style={proBgStyle}
       className={`max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative overflow-hidden transition-colors duration-500 ${darkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}
     >
       {isOffline && (

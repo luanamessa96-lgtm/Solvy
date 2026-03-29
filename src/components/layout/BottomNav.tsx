@@ -25,18 +25,21 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
   const navClass = isPro
     ? `pointer-events-auto border px-2 py-2 flex items-center justify-around overflow-hidden backdrop-blur-xl transition-all duration-500 rounded-[20px] shadow-2xl ${
         darkMode
-          ? 'bg-slate-800/70 border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
+          ? 'border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
           : 'bg-white/80 border-white/60 shadow-[0_8px_32px_rgba(0,100,255,0.12)]'
       }`
     : `pointer-events-auto border px-0 py-3 flex items-center justify-evenly backdrop-blur-xl transition-all duration-500 ${
         darkMode
-          ? 'bg-slate-900/90 border-slate-800 shadow-[0_20px_50px_rgba(59,130,246,0.15)]'
+          ? 'border-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.3)]'
           : 'bg-white/90 border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)]'
       }`;
 
   return (
     <div style={containerStyle}>
-      <nav role="navigation" aria-label="Navigazione principale" style={isPro ? undefined : { width: '100%', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }} className={navClass}>
+      <nav role="navigation" aria-label="Navigazione principale" style={isPro
+          ? (darkMode ? { backgroundColor: 'var(--color-nav-bg)' } : undefined)
+          : { width: '100%', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))', ...(darkMode ? { backgroundColor: 'var(--color-nav-bg)' } : {}) }
+        } className={navClass}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
