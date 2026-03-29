@@ -24,12 +24,14 @@ interface DocumentsViewProps {
   accountant: Accountant;
   profile: Profile;
   darkMode?: boolean;
+  theme?: string;
   key?: string;
   onMediaLibraryClick?: () => void;
   onNavigateToProfile?: () => void;
 }
 
-const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, onUpdateProfile, accountant, profile, darkMode, onMediaLibraryClick, onNavigateToProfile }: DocumentsViewProps) => {
+const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, onUpdateProfile, accountant, profile, darkMode, theme, onMediaLibraryClick, onNavigateToProfile }: DocumentsViewProps) => {
+  const isProDark = theme === 'pro-dark';
   const { t } = useTranslation();
   const { showToast } = useToast();
   const [isExportOpen, setIsExportOpen] = useState(false);
@@ -168,12 +170,20 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Filtra per Categoria</span>
         </div>
         <div className="grid grid-cols-3 gap-3">
-          <button onClick={() => setFilter('income')} className={`p-4 rounded-3xl border transition-all text-left space-y-2 active:scale-[0.95] ${filter === 'income' ? 'bg-emerald-600 border-emerald-600 text-white shadow-xl shadow-emerald-500/40' : (darkMode ? 'bg-slate-900 border-slate-800 text-emerald-500 hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/10' : 'bg-white border-slate-100 text-emerald-600 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5')}`}>
-            <p className={`text-[9px] font-bold uppercase tracking-wider ${filter === 'income' ? 'text-white/60' : (darkMode ? 'text-emerald-500/60' : 'text-emerald-600/60')}`}>Entrate</p>
+          <button
+            onClick={() => setFilter('income')}
+            className={`p-4 rounded-3xl border transition-all text-left space-y-2 active:scale-[0.95] ${filter === 'income' ? (isProDark ? 'shadow-xl' : 'bg-emerald-600 border-emerald-600 text-white shadow-xl shadow-emerald-500/40') : (darkMode ? 'bg-slate-900 border-slate-800 text-emerald-500 hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/10' : 'bg-white border-slate-100 text-emerald-600 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5')}`}
+            style={filter === 'income' && isProDark ? { background: 'rgba(45, 212, 191, 0.15)', border: '1px solid rgba(45, 212, 191, 0.35)', color: '#2dd4bf' } : undefined}
+          >
+            <p className={`text-[9px] font-bold uppercase tracking-wider ${filter === 'income' ? (isProDark ? 'opacity-60' : 'text-white/60') : (darkMode ? 'text-emerald-500/60' : 'text-emerald-600/60')}`}>Entrate</p>
             <p className="text-sm font-bold">€{totals.income.toLocaleString()}</p>
           </button>
-          <button onClick={() => setFilter('expense')} className={`p-4 rounded-3xl border transition-all text-left space-y-2 active:scale-[0.95] ${filter === 'expense' ? 'bg-red-600 border-red-600 text-white shadow-xl shadow-red-500/40' : (darkMode ? 'bg-slate-900 border-slate-800 text-red-500 hover:border-red-500/40 hover:shadow-lg hover:shadow-red-500/10' : 'bg-white border-slate-100 text-red-600 hover:border-red-500/20 hover:shadow-lg hover:shadow-red-500/5')}`}>
-            <p className={`text-[9px] font-bold uppercase tracking-wider ${filter === 'expense' ? 'text-white/60' : (darkMode ? 'text-red-500/60' : 'text-red-600/60')}`}>Uscite</p>
+          <button
+            onClick={() => setFilter('expense')}
+            className={`p-4 rounded-3xl border transition-all text-left space-y-2 active:scale-[0.95] ${filter === 'expense' ? (isProDark ? 'shadow-xl' : 'bg-red-600 border-red-600 text-white shadow-xl shadow-red-500/40') : (darkMode ? 'bg-slate-900 border-slate-800 text-red-500 hover:border-red-500/40 hover:shadow-lg hover:shadow-red-500/10' : 'bg-white border-slate-100 text-red-600 hover:border-red-500/20 hover:shadow-lg hover:shadow-red-500/5')}`}
+            style={filter === 'expense' && isProDark ? { background: 'rgba(200, 85, 247, 0.15)', border: '1px solid rgba(200, 85, 247, 0.35)', color: '#c855f7' } : undefined}
+          >
+            <p className={`text-[9px] font-bold uppercase tracking-wider ${filter === 'expense' ? (isProDark ? 'opacity-60' : 'text-white/60') : (darkMode ? 'text-red-500/60' : 'text-red-600/60')}`}>Uscite</p>
             <p className="text-sm font-bold">€{totals.expenses.toLocaleString()}</p>
           </button>
           <button onClick={() => setFilter('all')} className={`p-4 rounded-3xl border transition-all text-left space-y-2 active:scale-[0.95] ${filter === 'all' ? (darkMode ? 'bg-white border-white text-slate-900 shadow-xl shadow-white/20' : 'bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-900/40') : (darkMode ? 'bg-slate-900 border-slate-800 text-slate-400 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10' : 'bg-white border-slate-100 text-slate-600 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5')}`}>
