@@ -141,6 +141,12 @@
 :root[data-theme="pro-dark"] .bg-red-500\/10 {
   background-color: rgba(200, 85, 247, 0.1) !important;
 }
+:root[data-theme="pro-dark"] .bg-rose-400 {
+  background-color: var(--color-negative) !important;
+}
+:root[data-theme="pro-dark"] .text-red-500\/60 {
+  color: rgba(200, 85, 247, 0.6) !important;
+}
 :root[data-theme="pro-dark"] .bg-emerald-500\/10 {
   background-color: rgba(45, 212, 191, 0.1) !important;
 }

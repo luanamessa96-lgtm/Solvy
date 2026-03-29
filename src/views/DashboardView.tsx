@@ -518,10 +518,10 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   {spesePerCategoria.map(({ name, amount }, index) => {
                     const pct = expenses > 0 ? (amount / expenses) * 100 : 0;
                     const colors = [
-                      { bar: '#6366f1', bg: 'bg-indigo-500' },
+                      { bar: isProDark ? '#2dd4bf' : '#6366f1', bg: 'bg-indigo-500' },
                       { bar: '#f59e0b', bg: 'bg-amber-400' },
                       { bar: '#10b981', bg: 'bg-emerald-500' },
-                      { bar: '#3b82f6', bg: 'bg-blue-500' },
+                      { bar: isProDark ? '#c855f7' : '#3b82f6', bg: 'bg-blue-500' },
                       { bar: '#ec4899', bg: 'bg-pink-500' },
                       { bar: '#f97316', bg: 'bg-orange-500' },
                       { bar: '#8b5cf6', bg: 'bg-violet-500' },
