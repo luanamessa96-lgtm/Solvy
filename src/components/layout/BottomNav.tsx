@@ -30,7 +30,7 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
           ? 'border-transparent'
           : darkMode
           ? 'border-white/10 backdrop-blur-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
-          : 'bg-white/80 border-white/60 backdrop-blur-xl overflow-hidden shadow-[0_8px_32px_rgba(0,100,255,0.12)]'
+          : 'border-white/40 overflow-hidden shadow-[0_8px_32px_rgba(200,85,247,0.12)]'
       }`
     : `pointer-events-auto border px-0 py-3 flex items-center justify-evenly backdrop-blur-xl transition-all duration-500 ${
         darkMode
@@ -43,7 +43,7 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
       <nav role="navigation" aria-label="Navigazione principale" style={isPro
           ? (isProDark
             ? { background: 'rgba(15, 10, 30, 0.9)', border: '1px solid rgba(200, 85, 247, 0.12)', borderRadius: '20px' }
-            : undefined)
+            : { backgroundColor: 'var(--color-nav-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' })
           : { width: '100%', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))', ...(darkMode ? { backgroundColor: 'var(--color-nav-bg)' } : {}) }
         } className={navClass}>
         {tabs.map((tab) => {

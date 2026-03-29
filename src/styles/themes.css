@@ -36,19 +36,23 @@
 }
 
 :root[data-theme="pro-light"] {
-  --color-bg: linear-gradient(160deg, #ede9fe 0%, #dbeafe 60%, #e0f2fe 100%);
-  --color-card: rgba(255, 255, 255, 0.75);
-  --color-card-bg: rgba(255, 255, 255, 0.6);
+  --color-bg: transparent;
+  --color-card: rgba(255, 255, 255, 0.72);
+  --color-card-border: rgba(255, 255, 255, 0.7);
   --color-primary: #c855f7;
   --color-accent: #2dd4bf;
-  --color-text: #0a0a0f;
+  --color-text: #1a1a2e;
   --color-text-muted: #6b7280;
+  --color-text-label: #9ca3af;
   --color-positive: #2dd4bf;
-  --color-nav-bg: #ffffff;
+  --color-negative: #c855f7;
+  --color-nav-bg: rgba(255, 255, 255, 0.85);
   --color-nav-icon: #c855f7;
-  --color-nav-icon-bg: #f3e8ff;
+  --color-nav-icon-bg: rgba(200, 85, 247, 0.15);
+  --color-header-bg: rgba(255, 255, 255, 0.6);
+  --color-icon-bg-purple: rgba(200, 85, 247, 0.15);
+  --color-icon-bg-teal: rgba(45, 212, 191, 0.15);
   --color-border: rgba(200, 85, 247, 0.12);
-  --color-header-bg: rgba(255, 255, 255, 0.8);
 }
 
 :root[data-theme="pro-dark"] {
@@ -74,9 +78,10 @@
 /* ─── Pro themes: card style ─────────────────────────────────────────────── */
 
 :root[data-theme="pro-light"] main .bg-white {
-  background: rgba(255, 255, 255, 0.68) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: var(--color-card) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow: 0 4px 24px rgba(200, 85, 247, 0.08) !important;
 }
 :root[data-theme="pro-light"] main .border-slate-100 {
   border-color: var(--color-border) !important;
@@ -108,6 +113,37 @@
 :root[data-theme="pro-dark"] .text-slate-200,
 :root[data-theme="pro-dark"] .text-slate-300 {
   color: var(--color-text) !important;
+}
+
+/* ─── Pro light: testo tipografico ───────────────────────────────────────── */
+
+:root[data-theme="pro-light"] .text-slate-900,
+:root[data-theme="pro-light"] .text-slate-800 {
+  color: var(--color-text) !important;
+}
+:root[data-theme="pro-light"] .text-slate-400 {
+  color: var(--color-text-label) !important;
+}
+:root[data-theme="pro-light"] .text-slate-500 {
+  color: var(--color-text-muted) !important;
+}
+
+/* ─── Pro light: valori negativi → var(--color-negative) ─────────────────── */
+
+:root[data-theme="pro-light"] .text-red-500,
+:root[data-theme="pro-light"] .text-red-400,
+:root[data-theme="pro-light"] .text-rose-500,
+:root[data-theme="pro-light"] .text-rose-400 {
+  color: var(--color-negative) !important;
+}
+:root[data-theme="pro-light"] .bg-rose-400 {
+  background-color: var(--color-negative) !important;
+}
+
+/* ─── Pro light: hero card bg-primary → gradient viola ───────────────────── */
+
+:root[data-theme="pro-light"] main .bg-primary {
+  background: linear-gradient(135deg, #c855f7 0%, #a855f7 50%, #7c3aed 100%) !important;
 }
 
 /* ─── Pro themes: positive monetary values → var(--color-positive) ─────────── */

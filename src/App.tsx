@@ -599,7 +599,7 @@ function AppInner() {
   }
 
   const proGradient = theme === 'pro-light'
-    ? 'linear-gradient(135deg, #EEF6FF 0%, #D5E8FF 100%)'
+    ? 'linear-gradient(160deg, #ddd6fe 0%, #c7d2fe 40%, #bae6fd 100%)'
     : undefined;
   const proBgStyle = theme === 'pro-dark'
     ? { backgroundColor: '#08080f' }
