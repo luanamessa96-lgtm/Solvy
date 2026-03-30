@@ -1,14 +1,15 @@
 import { motion } from 'motion/react';
-import { LayoutDashboard, FileText, Calendar, Settings } from 'lucide-react';
+import { LayoutDashboard, FileText, Calendar, Settings, Plus } from 'lucide-react';
 
 interface BottomNavProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   darkMode?: boolean;
   theme?: string;
+  onAddClick?: () => void;
 }
 
-const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps) => {
+const BottomNav = ({ activeTab, setActiveTab, darkMode, theme, onAddClick }: BottomNavProps) => {
   const isPro = theme === 'pro-light' || theme === 'pro-dark';
   const isProLight = theme === 'pro-light';
   const isProDark = theme === 'pro-dark';
@@ -20,20 +21,12 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
     { id: 'menu', label: 'Menù', icon: Settings },
   ];
 
-  const containerStyle: import('react').CSSProperties = isProLight
+  const containerStyle: import('react').CSSProperties = isPro
     ? { position: 'fixed', bottom: '16px', left: '16px', right: '16px', width: 'auto', zIndex: 30, pointerEvents: 'none' }
-    : isPro
-    ? { position: 'fixed', bottom: 12, left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 24px)', maxWidth: 'calc(448px - 24px)', zIndex: 30, pointerEvents: 'none' }
     : { position: 'fixed', bottom: 0, left: 0, right: 0, width: '100vw', padding: 0, zIndex: 30, pointerEvents: 'none' };
 
   const navClass = isPro
-    ? `flex items-center justify-around transition-all duration-500 ${
-        isProDark
-          ? 'border border-transparent rounded-[20px] shadow-2xl'
-          : darkMode
-          ? 'border border-white/10 rounded-[20px] backdrop-blur-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
-          : ''
-      }`
+    ? 'flex items-center justify-around transition-all duration-500'
     : `pointer-events-auto border px-0 py-3 flex items-center justify-evenly backdrop-blur-xl transition-all duration-500 ${
         darkMode
           ? 'border-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.3)]'
@@ -52,13 +45,46 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
         pointerEvents: 'auto',
       }
     : isProDark
-    ? { background: 'rgba(15, 10, 30, 0.9)', border: '1px solid rgba(200, 85, 247, 0.12)', borderRadius: '20px', pointerEvents: 'auto' }
-    : isPro
-    ? { backgroundColor: 'var(--color-nav-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', pointerEvents: 'auto' }
+    ? {
+        background: 'rgba(20, 20, 30, 0.85)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderRadius: '28px',
+        border: '1px solid rgba(200, 85, 247, 0.15)',
+        boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
+        padding: '12px 24px',
+        pointerEvents: 'auto',
+      }
     : { width: '100%', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))', ...(darkMode ? { backgroundColor: 'var(--color-nav-bg)' } : {}) };
 
   return (
     <div style={containerStyle}>
+      {isPro && (
+        <button
+          onClick={onAddClick}
+          aria-label="Aggiungi"
+          style={{
+            position: 'absolute',
+            top: '-28px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'linear-gradient(135deg, #c855f7, #2dd4bf)',
+            borderRadius: '50%',
+            width: '56px',
+            height: '56px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 16px rgba(200, 85, 247, 0.4)',
+            border: 'none',
+            cursor: 'pointer',
+            pointerEvents: 'auto',
+            zIndex: 1,
+          }}
+        >
+          <Plus size={24} color="white" strokeWidth={2.5} />
+        </button>
+      )}
       <nav role="navigation" aria-label="Navigazione principale" style={navStyle} className={navClass}>
         {tabs.map((tab) => {
           const Icon = tab.icon;

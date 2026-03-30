@@ -714,7 +714,7 @@ function AppInner() {
       </main>
 
     </div>
-    <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} theme={theme} />
+    <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} theme={theme} onAddClick={() => handleTabChange('docs')} />
     <AnimatePresence>
       {swRegistration && (
         <UpdateBanner
