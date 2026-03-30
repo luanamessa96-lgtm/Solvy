@@ -9,6 +9,7 @@ interface BottomNavProps {
 }
 
 const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps) => {
+  console.log('THEME RICEVUTO:', theme);
   const isPro = theme === 'pro-light' || theme === 'pro-dark';
 
   const tabs = [
