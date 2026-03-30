@@ -9,7 +9,13 @@ import { Profile, Document } from '../types';
 const DashboardChart = lazy(() => import('../components/DashboardChart'));
 import { calculateSpanishTaxes } from '../lib/countries/es';
 import { getSpanishDeadlines } from '../data/deadlines-es';
-import { CountryBadge } from '../components/CountryBadge';
+function getCountryFlag(country: string): string {
+  const flags: Record<string, string> = {
+    'Italy': '🇮🇹',
+    'Spain': '🇪🇸',
+  };
+  return flags[country] ?? '';
+}
 
 interface DashboardViewProps {
   profile: Profile;
@@ -175,11 +181,9 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
       {/* Header */}
       <div className="px-6 pt-6 pb-4 space-y-4">
         <motion.div variants={item} className="space-y-1">
-          <h2 className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('dashboard.hello', { name: (profile.name || '').split(' ')[0] || 'utente' })}</h2>
-          <div className="flex items-center gap-2">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{profile.country}</p>
-            <CountryBadge country={profile.country} size="sm" />
-          </div>
+          <h2 className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+            {t('dashboard.hello', { name: (profile.name || '').split(' ')[0] || 'utente' })}{profile.country ? ` ${getCountryFlag(profile.country)}` : ''}
+          </h2>
         </motion.div>
 
         {/* Tab bar */}
