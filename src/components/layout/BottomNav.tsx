@@ -18,19 +18,23 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
     { id: 'menu', label: 'Menù', icon: Settings },
   ];
 
+  const isProLight = theme === 'pro-light';
+
   const containerStyle: import('react').CSSProperties = isPro
-    ? { position: 'fixed', bottom: 12, left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 24px)', maxWidth: 'calc(448px - 24px)', zIndex: 30, pointerEvents: 'none' }
+    ? (isProLight
+      ? { position: 'fixed', bottom: 16, left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 32px)', maxWidth: 'calc(448px - 32px)', zIndex: 30, pointerEvents: 'none' }
+      : { position: 'fixed', bottom: 12, left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 24px)', maxWidth: 'calc(448px - 24px)', zIndex: 30, pointerEvents: 'none' })
     : { position: 'fixed', bottom: 0, left: 0, right: 0, width: '100vw', padding: 0, zIndex: 30, pointerEvents: 'none' };
 
   const isProDark = theme === 'pro-dark';
 
   const navClass = isPro
-    ? `pointer-events-auto border px-2 py-2 flex items-center justify-around transition-all duration-500 rounded-[20px] shadow-2xl ${
+    ? `pointer-events-auto flex items-center justify-around transition-all duration-500 ${
         isProDark
-          ? 'border-transparent'
+          ? 'border border-transparent rounded-[20px] shadow-2xl'
           : darkMode
-          ? 'border-white/10 backdrop-blur-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
-          : 'border-white/40 overflow-hidden shadow-[0_8px_32px_rgba(200,85,247,0.12)]'
+          ? 'border border-white/10 rounded-[20px] backdrop-blur-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
+          : ''
       }`
     : `pointer-events-auto border px-0 py-3 flex items-center justify-evenly backdrop-blur-xl transition-all duration-500 ${
         darkMode
@@ -43,6 +47,16 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
       <nav role="navigation" aria-label="Navigazione principale" style={isPro
           ? (isProDark
             ? { background: 'rgba(15, 10, 30, 0.9)', border: '1px solid rgba(200, 85, 247, 0.12)', borderRadius: '20px' }
+            : isProLight
+            ? {
+                background: 'rgba(255, 255, 255, 0.85)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                borderRadius: '28px',
+                border: '1px solid rgba(255, 255, 255, 0.9)',
+                boxShadow: '0 4px 24px rgba(180, 160, 220, 0.15)',
+                padding: '12px 24px',
+              }
             : { backgroundColor: 'var(--color-nav-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' })
           : { width: '100%', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))', ...(darkMode ? { backgroundColor: 'var(--color-nav-bg)' } : {}) }
         } className={navClass}>
@@ -56,9 +70,9 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
               aria-label={tab.label}
               aria-current={isActive ? 'page' : undefined}
               className={`relative flex-1 flex flex-col items-center gap-0.5 py-1.5 transition-all active:scale-95 ${
-                isActive ? '' : (darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600')
+                isActive ? '' : (isProLight ? '' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600')
               }`}
-              style={isActive ? { color: 'var(--color-nav-icon)' } : undefined}
+              style={isActive ? { color: 'var(--color-nav-icon)' } : (isProLight ? { color: '#9ca3af' } : undefined)}
             >
               {isPro && isActive ? (
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-0.5" style={{ backgroundColor: 'var(--color-nav-icon-bg)' }}>
