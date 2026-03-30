@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, Mail, Camera, ChevronRight, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus, Download, Copy, AlertTriangle, FileCode, Lock, BarChart3 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -28,9 +28,10 @@ interface DocumentsViewProps {
   key?: string;
   onMediaLibraryClick?: () => void;
   onNavigateToProfile?: () => void;
+  openChoiceTrigger?: number;
 }
 
-const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, onUpdateProfile, accountant, profile, darkMode, theme, onMediaLibraryClick, onNavigateToProfile }: DocumentsViewProps) => {
+const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, onUpdateProfile, accountant, profile, darkMode, theme, onMediaLibraryClick, onNavigateToProfile, openChoiceTrigger }: DocumentsViewProps) => {
   const isProDark = theme === 'pro-dark';
   const { t } = useTranslation();
   const { showToast } = useToast();
@@ -39,6 +40,8 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const [isResumenOpen, setIsResumenOpen] = useState(false);
   const isPro = useProStatus(profile);
   const [isChoiceOpen, setIsChoiceOpen] = useState(false);
+
+  useEffect(() => { if (openChoiceTrigger) setIsChoiceOpen(true); }, [openChoiceTrigger]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isExpenseOpen, setIsExpenseOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
@@ -272,13 +275,6 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
         </div>
       </motion.div>
 
-      <motion.div variants={item} className="fixed bottom-24 left-0 right-0 px-6 py-4 pointer-events-none">
-        <div className="max-w-md mx-auto flex justify-end">
-          <button onClick={() => { setSelectedDoc(null); setIsChoiceOpen(true); }} className="w-14 h-14 bg-primary rounded-full shadow-xl shadow-primary/30 flex items-center justify-center text-white active:scale-90 transition-all pointer-events-auto">
-            <Plus size={28} strokeWidth={2.5} />
-          </button>
-        </div>
-      </motion.div>
 
       <AnimatePresence>
         {isChoiceOpen && (

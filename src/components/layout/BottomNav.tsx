@@ -6,10 +6,10 @@ interface BottomNavProps {
   setActiveTab: (tab: string) => void;
   darkMode?: boolean;
   theme?: string;
-  onAddClick?: () => void;
+  onPlusPress?: () => void;
 }
 
-const BottomNav = ({ activeTab, setActiveTab, darkMode, theme, onAddClick }: BottomNavProps) => {
+const BottomNav = ({ activeTab, setActiveTab, darkMode, theme, onPlusPress }: BottomNavProps) => {
   const isPro = theme === 'pro-light' || theme === 'pro-dark';
   const isProLight = theme === 'pro-light';
   const isProDark = theme === 'pro-dark';
@@ -61,7 +61,7 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme, onAddClick }: Bot
     <div style={containerStyle}>
       {isPro && (
         <button
-          onClick={onAddClick}
+          onClick={onPlusPress}
           aria-label="Aggiungi"
           style={{
             position: 'absolute',

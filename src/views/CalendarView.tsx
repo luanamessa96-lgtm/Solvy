@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft, Search, X } from 'lucide-react';
 import { Deadline, Profile } from '../types';
@@ -26,9 +26,10 @@ interface CalendarViewProps {
   darkMode?: boolean;
   key?: string;
   profile?: Profile;
+  openAddTrigger?: number;
 }
 
-const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDeadline, darkMode, profile }: CalendarViewProps) => {
+const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDeadline, darkMode, profile, openAddTrigger }: CalendarViewProps) => {
   const { t, i18n } = useTranslation();
   const isSpain = profile?.country === 'Spain';
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -37,6 +38,8 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   const [deadlineToEdit, setDeadlineToEdit] = useState<Deadline | null>(null);
   const [deadlineToDelete, setDeadlineToDelete] = useState<Deadline | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
+
+  useEffect(() => { if (openAddTrigger) setIsAddOpen(true); }, [openAddTrigger]);
   const [isPreloadOpen, setIsPreloadOpen] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const isPro = useProStatus(profile);
@@ -235,13 +238,6 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
         </>
       )}
 
-      <div className="fixed bottom-24 left-0 right-0 px-6 py-4 pointer-events-none">
-        <div className="max-w-md mx-auto flex justify-end">
-          <button onClick={() => setIsAddOpen(true)} className="w-14 h-14 bg-primary rounded-full shadow-xl shadow-primary/30 flex items-center justify-center text-white active:scale-90 transition-all pointer-events-auto">
-            <Plus size={28} strokeWidth={2.5} />
-          </button>
-        </div>
-      </div>
 
       <AnimatePresence>
         {isAddOpen && (

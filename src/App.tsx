@@ -48,6 +48,8 @@ function migrateTheme(t: string | null | undefined): string {
 
 function AppInner() {
   const [activeTab, setActiveTab] = useState('home');
+  const [docChoiceTrigger, setDocChoiceTrigger] = useState(0);
+  const [calAddTrigger, setCalAddTrigger] = useState(0);
   const [activeProfile, setActiveProfile] = useState<Profile>(MOCK_PROFILES[0]);
   const [isProfilePage, setIsProfilePage] = useState(false);
   const [isSettingsPage, setIsSettingsPage] = useState(false);
@@ -448,6 +450,11 @@ function AppInner() {
   const handleAccountantClick = () => { resetSubPages(); setIsAccountantPage(true); setActiveTab('menu'); };
   const handleMediaLibraryClick = () => { resetSubPages(); setIsMediaLibraryPage(true); setActiveTab('docs'); };
   const handleTabChange = (tab: string) => { resetSubPages(); setActiveTab(tab); };
+
+  const handlePlusPress = () => {
+    if (activeTab === 'docs') setDocChoiceTrigger(n => n + 1);
+    else if (activeTab === 'calendar') setCalAddTrigger(n => n + 1);
+  };
   const handleSwitchProfile = (p: Profile) => {
     // Mostra dati dalla cache se disponibili, altrimenti vuoto
     const cached = profileCache.current[p.id];
@@ -705,8 +712,8 @@ function AppInner() {
           ) : (
             <>
               <div style={{ display: activeTab === 'home' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><DashboardView profile={activeProfile} onProfileClick={handleProfileClick} onAddDocumentClick={() => handleTabChange('docs')} income={totalIncome} expenses={totalExpenses} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} theme={theme} /></Suspense></div>
-              <div style={{ display: activeTab === 'docs' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><DocumentsView documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} onUpdateProfile={handleUpdateProfile} accountant={accountant} profile={activeProfile} darkMode={darkMode} theme={theme} onMediaLibraryClick={handleMediaLibraryClick} onNavigateToProfile={handleProfileClick} /></Suspense></div>
-              <div style={{ display: activeTab === 'calendar' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><CalendarView deadlines={deadlines} onAddDeadline={handleAddDeadline} onUpdateDeadline={handleUpdateDeadline} onDeleteDeadline={handleDeleteDeadline} darkMode={darkMode} profile={activeProfile} /></Suspense></div>
+              <div style={{ display: activeTab === 'docs' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><DocumentsView documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} onUpdateProfile={handleUpdateProfile} accountant={accountant} profile={activeProfile} darkMode={darkMode} theme={theme} onMediaLibraryClick={handleMediaLibraryClick} onNavigateToProfile={handleProfileClick} openChoiceTrigger={docChoiceTrigger} /></Suspense></div>
+              <div style={{ display: activeTab === 'calendar' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><CalendarView deadlines={deadlines} onAddDeadline={handleAddDeadline} onUpdateDeadline={handleUpdateDeadline} onDeleteDeadline={handleDeleteDeadline} darkMode={darkMode} profile={activeProfile} openAddTrigger={calAddTrigger} /></Suspense></div>
               <div style={{ display: activeTab === 'menu' ? 'block' : 'none' }}><Suspense fallback={null}><MenuView activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} onLogout={handleLogout} darkMode={darkMode} /></Suspense></div>
             </>
           )}
@@ -714,7 +721,7 @@ function AppInner() {
       </main>
 
     </div>
-    <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} theme={theme} onAddClick={() => handleTabChange('docs')} />
+    <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} theme={theme} onPlusPress={handlePlusPress} />
     <AnimatePresence>
       {swRegistration && (
         <UpdateBanner
