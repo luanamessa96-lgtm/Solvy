@@ -9,8 +9,9 @@ interface BottomNavProps {
 }
 
 const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps) => {
-  console.log('THEME RICEVUTO:', theme);
   const isPro = theme === 'pro-light' || theme === 'pro-dark';
+  const isProLight = theme === 'pro-light';
+  const isProDark = theme === 'pro-dark';
 
   const tabs = [
     { id: 'home', label: 'Home', icon: LayoutDashboard },
@@ -19,18 +20,14 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
     { id: 'menu', label: 'Menù', icon: Settings },
   ];
 
-  const isProLight = theme === 'pro-light';
-
-  const containerStyle: import('react').CSSProperties = isPro
-    ? (isProLight
-      ? { position: 'fixed', bottom: 16, left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 32px)', maxWidth: 'calc(448px - 32px)', zIndex: 30, pointerEvents: 'none' }
-      : { position: 'fixed', bottom: 12, left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 24px)', maxWidth: 'calc(448px - 24px)', zIndex: 30, pointerEvents: 'none' })
+  const containerStyle: import('react').CSSProperties = isProLight
+    ? { position: 'fixed', bottom: '16px', left: '16px', right: '16px', width: 'auto', zIndex: 30, pointerEvents: 'none' }
+    : isPro
+    ? { position: 'fixed', bottom: 12, left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 24px)', maxWidth: 'calc(448px - 24px)', zIndex: 30, pointerEvents: 'none' }
     : { position: 'fixed', bottom: 0, left: 0, right: 0, width: '100vw', padding: 0, zIndex: 30, pointerEvents: 'none' };
 
-  const isProDark = theme === 'pro-dark';
-
   const navClass = isPro
-    ? `pointer-events-auto flex items-center justify-around transition-all duration-500 ${
+    ? `flex items-center justify-around transition-all duration-500 ${
         isProDark
           ? 'border border-transparent rounded-[20px] shadow-2xl'
           : darkMode
@@ -43,39 +40,26 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
           : 'bg-white/90 border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)]'
       }`;
 
+  const navStyle: import('react').CSSProperties = isProLight
+    ? {
+        background: 'rgba(255, 255, 255, 0.85)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderRadius: '28px',
+        border: '1px solid rgba(255, 255, 255, 0.9)',
+        boxShadow: '0 4px 24px rgba(180, 160, 220, 0.25)',
+        padding: '12px 24px',
+        pointerEvents: 'auto',
+      }
+    : isProDark
+    ? { background: 'rgba(15, 10, 30, 0.9)', border: '1px solid rgba(200, 85, 247, 0.12)', borderRadius: '20px', pointerEvents: 'auto' }
+    : isPro
+    ? { backgroundColor: 'var(--color-nav-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', pointerEvents: 'auto' }
+    : { width: '100%', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))', ...(darkMode ? { backgroundColor: 'var(--color-nav-bg)' } : {}) };
+
   return (
-    <>
-    {isProLight && (
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        background: 'red',
-        color: 'white',
-        zIndex: 9999,
-        padding: '4px 8px',
-        fontSize: '12px'
-      }}>
-        PRO-LIGHT ATTIVO
-      </div>
-    )}
     <div style={containerStyle}>
-      <nav role="navigation" aria-label="Navigazione principale" style={isPro
-          ? (isProDark
-            ? { background: 'rgba(15, 10, 30, 0.9)', border: '1px solid rgba(200, 85, 247, 0.12)', borderRadius: '20px' }
-            : isProLight
-            ? {
-                background: 'rgba(255, 255, 255, 0.85)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                borderRadius: '28px',
-                border: '1px solid rgba(255, 255, 255, 0.9)',
-                boxShadow: '0 4px 24px rgba(180, 160, 220, 0.15)',
-                padding: '12px 24px',
-              }
-            : { backgroundColor: 'var(--color-nav-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' })
-          : { width: '100%', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))', ...(darkMode ? { backgroundColor: 'var(--color-nav-bg)' } : {}) }
-        } className={navClass}>
+      <nav role="navigation" aria-label="Navigazione principale" style={navStyle} className={navClass}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -111,7 +95,6 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
         })}
       </nav>
     </div>
-    </>
   );
 };
 
