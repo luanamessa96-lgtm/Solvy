@@ -98,7 +98,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
       marcaBollo,
       ivaRate: regime === 'ordinario' ? form.ivaRate : 0,
       rivalsaInps: regime === 'ordinario' && form.rivalsaInps,
-      docRegime: regime,
+      docRegime: (regime === 'ordinario' ? 'ordinario' : 'forfettario') as 'forfettario' | 'ordinario',
     });
     reset();
     onClose();
