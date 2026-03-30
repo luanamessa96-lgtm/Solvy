@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { LayoutDashboard, FileText, Calendar, Settings, Plus } from 'lucide-react';
 
@@ -15,29 +15,18 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme, onPlusPress }: Bo
   const isProLight = theme === 'pro-light';
   const isProDark = theme === 'pro-dark';
 
-  const [visible, setVisible] = useState(true);
-  const lastScrollY = useRef(0);
-  const ticking = useRef(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
-    if (!isPro) return;
-
     const handleScroll = () => {
-      if (ticking.current) return;
-      ticking.current = true;
-      requestAnimationFrame(() => {
-        const currentY = window.scrollY;
-        const delta = currentY - lastScrollY.current;
-        if (delta > 8) setVisible(false);
-        else if (delta < -8) setVisible(true);
-        lastScrollY.current = currentY;
-        ticking.current = false;
-      });
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      const maxScroll = 150;
+      const progress = Math.min(scrollY / maxScroll, 1);
+      setScrollProgress(progress);
     };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isPro]);
+  }, []);
 
   const tabs = [
     { id: 'home', label: 'Home', icon: LayoutDashboard },
@@ -47,18 +36,7 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme, onPlusPress }: Bo
   ];
 
   const containerStyle: import('react').CSSProperties = isPro
-    ? {
-        position: 'fixed',
-        bottom: '16px',
-        left: '16px',
-        right: '16px',
-        width: 'auto',
-        zIndex: 30,
-        pointerEvents: 'none',
-        transform: visible ? 'translateY(0)' : 'translateY(120%)',
-        opacity: visible ? 1 : 0,
-        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease',
-      }
+    ? { position: 'fixed', bottom: '16px', left: '16px', right: '16px', width: 'auto', zIndex: 30, pointerEvents: 'none' }
     : { position: 'fixed', bottom: 0, left: 0, right: 0, width: '100vw', padding: 0, zIndex: 30, pointerEvents: 'none' };
 
   const navClass = isPro
@@ -69,33 +47,29 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme, onPlusPress }: Bo
           : 'bg-white/90 border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)]'
       }`;
 
-  const glowShadow = isProLight
-    ? '0 4px 32px rgba(200, 85, 247, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.9)'
-    : '0 4px 32px rgba(200, 85, 247, 0.3), 0 0 0 1px rgba(200, 85, 247, 0.15)';
+  const p = scrollProgress;
 
   const navStyle: import('react').CSSProperties = isProLight
     ? {
-        background: 'rgba(255, 255, 255, 0.85)',
+        background: `rgba(255, 255, 255, ${0.72 + p * 0.2})`,
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         borderRadius: '28px',
         border: '1px solid rgba(255, 255, 255, 0.9)',
-        boxShadow: visible ? glowShadow : '0 4px 24px rgba(180, 160, 220, 0.25)',
+        boxShadow: `0 4px ${16 + p * 24}px rgba(200, 85, 247, ${0.08 + p * 0.22})`,
         padding: '12px 24px',
         pointerEvents: 'auto',
-        transition: 'box-shadow 0.3s ease',
       }
     : isProDark
     ? {
-        background: 'rgba(20, 20, 30, 0.85)',
+        background: `rgba(20, 20, 30, ${0.72 + p * 0.2})`,
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         borderRadius: '28px',
         border: '1px solid rgba(200, 85, 247, 0.15)',
-        boxShadow: visible ? glowShadow : '0 4px 24px rgba(0, 0, 0, 0.4)',
+        boxShadow: `0 4px ${16 + p * 24}px rgba(200, 85, 247, ${0.12 + p * 0.28})`,
         padding: '12px 24px',
         pointerEvents: 'auto',
-        transition: 'box-shadow 0.3s ease',
       }
     : { width: '100%', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))', ...(darkMode ? { backgroundColor: 'var(--color-nav-bg)' } : {}) };
 
