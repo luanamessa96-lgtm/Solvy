@@ -44,6 +44,21 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
       }`;
 
   return (
+    <>
+    {isProLight && (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        background: 'red',
+        color: 'white',
+        zIndex: 9999,
+        padding: '4px 8px',
+        fontSize: '12px'
+      }}>
+        PRO-LIGHT ATTIVO
+      </div>
+    )}
     <div style={containerStyle}>
       <nav role="navigation" aria-label="Navigazione principale" style={isPro
           ? (isProDark
@@ -96,6 +111,7 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme }: BottomNavProps)
         })}
       </nav>
     </div>
+    </>
   );
 };
 
