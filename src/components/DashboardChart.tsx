@@ -16,31 +16,49 @@ export default function DashboardChart({ data, darkMode, theme }: DashboardChart
   const expensesColor = isPro ? '#c855f7' : '#6366f1';
 
   const gridColor = isPro
-    ? (isProDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')
+    ? (isProDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)')
     : (darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)');
 
   const tickColor = '#9ca3af';
-
-  const incomeGlow = isPro ? 'drop-shadow(0 0 6px rgba(45, 212, 191, 0.7))' : undefined;
-  const expensesGlow = isPro ? 'drop-shadow(0 0 6px rgba(200, 85, 247, 0.7))' : undefined;
 
   return (
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={data} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
         <defs>
+          {/* Gradients */}
           <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={incomeColor} stopOpacity={isPro ? 0.35 : 0.3} />
-            <stop offset="95%" stopColor={incomeColor} stopOpacity={0} />
+            <stop offset="0%" stopColor={incomeColor} stopOpacity={isPro ? 0.4 : 0.3} />
+            <stop offset="100%" stopColor={incomeColor} stopOpacity={0} />
           </linearGradient>
           <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={expensesColor} stopOpacity={isPro ? 0.35 : 0.3} />
-            <stop offset="95%" stopColor={expensesColor} stopOpacity={0} />
+            <stop offset="0%" stopColor={expensesColor} stopOpacity={isPro ? 0.4 : 0.3} />
+            <stop offset="100%" stopColor={expensesColor} stopOpacity={0} />
           </linearGradient>
+
+          {/* Glow filters (SVG equivalent of ctx.shadowBlur) */}
+          {isPro && (
+            <>
+              <filter id="glow-income" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <filter id="glow-expenses" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </>
+          )}
         </defs>
 
         {isPro && (
           <CartesianGrid
-            strokeDasharray="4 4"
+            strokeDasharray="6 4"
             stroke={gridColor}
             vertical={false}
           />
@@ -86,22 +104,22 @@ export default function DashboardChart({ data, darkMode, theme }: DashboardChart
           type="monotone"
           dataKey="income"
           stroke={incomeColor}
-          strokeWidth={isPro ? 3 : 3}
+          strokeWidth={3}
           fillOpacity={1}
           fill="url(#colorIncome)"
           tension={isPro ? 0.5 : undefined}
-          style={incomeGlow ? { filter: incomeGlow } : undefined}
+          style={isPro ? { filter: 'url(#glow-income)' } : undefined}
           dot={false}
         />
         <Area
           type="monotone"
           dataKey="expenses"
           stroke={expensesColor}
-          strokeWidth={isPro ? 3 : 3}
+          strokeWidth={3}
           fillOpacity={1}
           fill="url(#colorExpenses)"
           tension={isPro ? 0.5 : undefined}
-          style={expensesGlow ? { filter: expensesGlow } : undefined}
+          style={isPro ? { filter: 'url(#glow-expenses)' } : undefined}
           dot={false}
         />
       </AreaChart>
