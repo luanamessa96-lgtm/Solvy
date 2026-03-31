@@ -77,13 +77,10 @@
 
 /* ─── Pro themes: card style ─────────────────────────────────────────────── */
 
-:root[data-theme="pro-light"] main .bg-white {
-  background: var(--color-card) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  box-shadow: 0 4px 24px rgba(200, 85, 247, 0.08) !important;
+:root[data-theme="pro-light"] .bg-white {
+  background-color: rgba(255, 255, 255, 0.88) !important;
 }
-:root[data-theme="pro-light"] main .border-slate-100 {
+:root[data-theme="pro-light"] .border-slate-100 {
   border-color: var(--color-border) !important;
 }
 

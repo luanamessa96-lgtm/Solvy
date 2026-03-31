@@ -606,13 +606,14 @@ function AppInner() {
   }
 
   const proGradient = theme === 'pro-light'
-    ? 'linear-gradient(135deg, #ede9fe 0%, #ddd6fe 20%, #c7d2fe 50%, #bae6fd 80%, #a5f3fc 100%)'
+    ? 'linear-gradient(135deg, #ddd6fe 0%, #bfdbfe 55%, #a5f3fc 100%)'
     : undefined;
   const proBgStyle = theme === 'pro-dark'
     ? { backgroundColor: '#08080f' }
     : proGradient
     ? { background: proGradient }
     : undefined;
+  const isProLight = theme === 'pro-light';
 
   if (isLoading) {
     // Se sappiamo già che andremo all'onboarding (nuovo utente o localStorage cleared),
@@ -668,6 +669,15 @@ function AppInner() {
       style={proBgStyle}
       className={`max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative overflow-hidden transition-colors duration-500 ${darkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}
     >
+      {isProLight && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'radial-gradient(ellipse at center, rgba(100, 80, 140, 0.15) 0%, transparent 70%)',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }} />
+      )}
       {isOffline && (
         <div className="bg-amber-500 text-white text-xs font-bold text-center py-2 px-4 flex items-center justify-center gap-2 z-50">
           <span>⚠️</span> Nessuna connessione — le modifiche verranno salvate quando torni online
