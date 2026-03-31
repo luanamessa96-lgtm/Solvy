@@ -82,6 +82,12 @@
   background-color: rgba(255, 255, 255, 0.88) !important;
   box-shadow: 0 4px 24px rgba(200, 85, 247, 0.08) !important;
 }
+:root[data-theme="pro-light"] .bg-slate-100 {
+  background-color: rgba(255, 255, 255, 0.60) !important;
+}
+:root[data-theme="pro-light"] .bg-slate-50 {
+  background-color: rgba(255, 255, 255, 0.50) !important;
+}
 :root[data-theme="pro-light"] .border-slate-100,
 :root[data-theme="pro-light"] .border-slate-200 {
   border-color: rgba(200, 85, 247, 0.12) !important;
