@@ -27,9 +27,20 @@ interface CalendarViewProps {
   key?: string;
   profile?: Profile;
   openAddTrigger?: number;
+  income?: number;
+  expenses?: number;
 }
 
-const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDeadline, darkMode, profile, openAddTrigger }: CalendarViewProps) => {
+const INPS_GS = 0.2607;
+const INPS_ORD = 0.24;
+function calcIRPEF_cal(imponibile: number): number {
+  if (imponibile <= 0) return 0;
+  if (imponibile <= 28000) return imponibile * 0.23;
+  if (imponibile <= 50000) return 28000 * 0.23 + (imponibile - 28000) * 0.35;
+  return 28000 * 0.23 + 22000 * 0.35 + (imponibile - 50000) * 0.43;
+}
+
+const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDeadline, darkMode, profile, openAddTrigger, income = 0, expenses = 0 }: CalendarViewProps) => {
   const { t, i18n } = useTranslation();
   const isSpain = profile?.country === 'Spain';
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -44,6 +55,35 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const isPro = useProStatus(profile);
   const [newDeadline, setNewDeadline] = useState({ title: '', date: new Date().toISOString().split('T')[0], type: 'tax' as Deadline['type'], amount: '' });
+
+  // IT-21 + IT-22: compute acconto/saldo amounts for IT fiscal deadlines
+  const fiscalAmounts = useMemo<Record<string, number>>(() => {
+    if (isSpain || income <= 0) return {};
+    const regime = profile?.regime || 'forfettario';
+    let imposta = 0;
+    let inps = 0;
+    if (regime === 'forfettario') {
+      const coeffRaw = profile?.coefficiente;
+      const coeff = (coeffRaw != null && coeffRaw > 0) ? coeffRaw / 100 : 0.78;
+      const redditoLordo = income * coeff;
+      inps = redditoLordo * INPS_GS;
+      const redditoImponibile = Math.max(0, redditoLordo - inps);
+      const annoInizio = profile?.annoInizioAttivita;
+      const isFivePercent = annoInizio != null && (currentYear - annoInizio) < 5;
+      imposta = redditoImponibile * (isFivePercent ? 0.05 : 0.15);
+    } else {
+      const redditoLordo = Math.max(0, income - expenses);
+      inps = redditoLordo * INPS_ORD;
+      const redditoImponibile = Math.max(0, redditoLordo - inps);
+      imposta = calcIRPEF_cal(redditoImponibile) + redditoImponibile * 0.023;
+    }
+    return {
+      'Saldo imposta sostitutiva + 1° acconto': Math.round(imposta * 0.40),
+      '1° acconto INPS gestione separata': Math.round(inps * 0.40),
+      '2° acconto imposta sostitutiva': Math.round(imposta * 0.60),
+      '2° acconto INPS gestione separata': Math.round(inps * 0.60),
+    };
+  }, [isSpain, income, expenses, profile, currentYear]);
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
@@ -358,21 +398,27 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   <button onClick={() => setIsPreloadOpen(false)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
                 </div>
                 <div className="space-y-2">
-                  {scadenzeFiscali.filter(s => !deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === new Date(s.date).getFullYear())).map((s, i) => (
-                    <div key={i} className={`flex items-center gap-3 p-3 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
-                      <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 text-red-500 ${darkMode ? 'bg-red-500/10' : 'bg-red-50'}`}>
-                        <span className="text-[9px] font-bold uppercase">{new Date(s.date).toLocaleDateString('it-IT', { month: 'short' })}</span>
-                        <span className="text-sm font-black leading-none">{new Date(s.date).getDate()}</span>
+                  {scadenzeFiscali.filter(s => !deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === new Date(s.date).getFullYear())).map((s, i) => {
+                    const amt = fiscalAmounts[s.title];
+                    return (
+                      <div key={i} className={`flex items-center gap-3 p-3 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                        <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 text-red-500 ${darkMode ? 'bg-red-500/10' : 'bg-red-50'}`}>
+                          <span className="text-[9px] font-bold uppercase">{new Date(s.date).toLocaleDateString('it-IT', { month: 'short' })}</span>
+                          <span className="text-sm font-black leading-none">{new Date(s.date).getDate()}</span>
+                        </div>
+                        <p className={`text-sm font-semibold flex-1 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{s.title}</p>
+                        {amt != null && amt > 0 && (
+                          <p className="text-sm font-bold text-red-500 shrink-0">~€{amt.toLocaleString('it-IT')}</p>
+                        )}
                       </div>
-                      <p className={`text-sm font-semibold flex-1 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{s.title}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 <button
                   onClick={() => {
                     scadenzeFiscali
                       .filter(s => !deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === new Date(s.date).getFullYear()))
-                      .forEach(s => onAddDeadline({ ...s, id: Math.random().toString(36).substr(2, 9) }));
+                      .forEach(s => onAddDeadline({ ...s, id: Math.random().toString(36).substr(2, 9), amount: fiscalAmounts[s.title] || undefined }));
                     setIsPreloadOpen(false);
                   }}
                   className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all"

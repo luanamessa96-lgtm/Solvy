@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Sun, Moon, Languages, Trash2, RotateCcw, Loader2, CheckCircle2, AlertCircle, Sparkles, Lock } from 'lucide-react';
+import { Sun, Moon, Languages, Trash2, RotateCcw, Loader2, CheckCircle2, AlertCircle, Sparkles, Lock, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getClient } from '../lib/supabase';
 import PaywallModal from '../components/modals/PaywallModal';
 import DeleteAccountModal from '../components/modals/DeleteAccountModal';
 import { useProStatus } from '../hooks/useProStatus';
-import { Profile } from '../types';
+import { Profile, Document, Deadline } from '../types';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
@@ -16,9 +16,11 @@ interface SettingsViewProps {
   profile: Profile;
   profilesCount?: number;
   key?: string;
+  documents?: Document[];
+  deadlines?: Deadline[];
 }
 
-const SettingsView = ({ theme, setTheme, profile, profilesCount = 1 }: SettingsViewProps) => {
+const SettingsView = ({ theme, setTheme, profile, profilesCount = 1, documents = [], deadlines = [] }: SettingsViewProps) => {
   const { t } = useTranslation();
   const isPro = useProStatus(profile);
   const darkMode = theme === 'dark' || theme === 'pro-dark';
@@ -73,6 +75,22 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1 }: SettingsV
     { id: 'pro-light', label: 'Pro Light', icon: Sun, locked: !isPro },
     { id: 'pro-dark', label: 'Pro Dark', icon: Moon, locked: !isPro },
   ];
+
+  const handleGdprExport = () => {
+    const payload = {
+      exportDate: new Date().toISOString(),
+      profile,
+      documents,
+      deadlines,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `solvy_dati_personali_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const legalItems = [
     { label: t('settings.privacy_policy'), href: '/privacy' },
@@ -197,6 +215,24 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1 }: SettingsV
           <button className="text-[10px] font-bold text-primary uppercase tracking-wider active:scale-90 transition-all hover:drop-shadow-[0_0_4px_rgba(59,130,246,0.3)]">{t('settings.support')}</button>
         </div>
       </motion.div>
+
+      {profile.country !== 'Spain' && (
+        <motion.div variants={item} className="space-y-3">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Privacy & GDPR</p>
+          <button
+            onClick={handleGdprExport}
+            className={`w-full flex items-center gap-4 p-4 rounded-3xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20'}`}
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${darkMode ? 'bg-slate-800 text-primary' : 'bg-primary/10 text-primary'}`}>
+              <Download size={18} />
+            </div>
+            <div className="text-left flex-1">
+              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Esporta dati personali</p>
+              <p className="text-xs text-slate-400">Scarica tutti i tuoi dati in formato JSON (art. 20 GDPR)</p>
+            </div>
+          </button>
+        </motion.div>
+      )}
 
       <motion.div variants={item} className="rounded-3xl border overflow-hidden transition-colors" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-5 pt-5 pb-3">{t('settings.legal')}</p>
