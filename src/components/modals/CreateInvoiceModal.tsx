@@ -335,12 +335,12 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 <input type="checkbox" checked={form.status === 'paid'} onChange={e => set('status', e.target.checked ? 'paid' : 'pending')} className="w-5 h-5 rounded-lg border-emerald-200 text-emerald-500 focus:ring-emerald-500" />
               </div>
 
-              {/* Disclaimer IT-18 */}
-              {profile.country !== 'Spain' && (
-                <p className="text-[10px] text-slate-400 leading-relaxed">
-                  I calcoli mostrati sono stime indicative basate sui dati inseriti e sulle aliquote fiscali standard. Non costituiscono consulenza fiscale professionale. Consulta sempre il tuo commercialista.
-                </p>
-              )}
+              {/* Disclaimer IT-18 / ES-12 */}
+              <p className="text-[10px] text-slate-400 leading-relaxed">
+                {profile.country === 'Spain'
+                  ? 'Los cálculos mostrados son estimaciones basadas en los datos introducidos y los tipos fiscales estándar. No constituyen asesoramiento fiscal profesional. Consulta siempre con tu gestor o asesor fiscal.'
+                  : 'I calcoli mostrati sono stime indicative basate sui dati inseriti e sulle aliquote fiscali standard. Non costituiscono consulenza fiscale professionale. Consulta sempre il tuo commercialista.'}
+              </p>
 
               {/* Azioni */}
               <div className="space-y-3 pb-2">

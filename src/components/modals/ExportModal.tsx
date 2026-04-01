@@ -983,12 +983,12 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                   {exporting ? 'Preparazione...' : accountant ? `Invia al Commercialista` : `Esporta ${format.toUpperCase()}`}
                 </button>
               )}
-              {/* Disclaimer IT-18 */}
-              {profile.country !== 'Spain' && (
-                <p className="text-[10px] text-slate-400 leading-relaxed pt-1">
-                  I calcoli mostrati sono stime indicative basate sui dati inseriti e sulle aliquote fiscali standard. Non costituiscono consulenza fiscale professionale. Consulta sempre il tuo commercialista.
-                </p>
-              )}
+              {/* Disclaimer IT-18 / ES-12 */}
+              <p className="text-[10px] text-slate-400 leading-relaxed pt-1">
+                {profile.country === 'Spain'
+                  ? 'Los cálculos mostrados son estimaciones basadas en los datos introducidos y los tipos fiscales estándar. No constituyen asesoramiento fiscal profesional. Consulta siempre con tu gestor o asesor fiscal.'
+                  : 'I calcoli mostrati sono stime indicative basate sui dati inseriti e sulle aliquote fiscali standard. Non costituiscono consulenza fiscale professionale. Consulta sempre il tuo commercialista.'}
+              </p>
             </div>
           </motion.div>
         </div>

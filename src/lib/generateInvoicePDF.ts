@@ -243,14 +243,15 @@ export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<
   pdf.setDrawColor(...lightGrey);
   pdf.setLineWidth(0.4);
 
-  if (!isSpain) {
-    pdf.setFont('helvetica', 'italic');
-    pdf.setFontSize(6);
-    pdf.setTextColor(...grey);
-    pdf.text('I calcoli mostrati sono stime indicative. Non costituiscono consulenza fiscale professionale. Consulta il tuo commercialista.', M, 275);
+  pdf.setFont('helvetica', 'italic');
+  pdf.setFontSize(6);
+  pdf.setTextColor(...grey);
+  if (isSpain) {
+    pdf.text('Los cálculos son estimaciones indicativas. No constituyen asesoramiento fiscal profesional. Consulta con tu gestor o asesor fiscal.', M, 275);
     pdf.line(M, 279, R, 279);
   } else {
-    pdf.line(M, 280, R, 280);
+    pdf.text('I calcoli mostrati sono stime indicative. Non costituiscono consulenza fiscale professionale. Consulta il tuo commercialista.', M, 275);
+    pdf.line(M, 279, R, 279);
   }
 
   pdf.setFont('helvetica', 'normal');
