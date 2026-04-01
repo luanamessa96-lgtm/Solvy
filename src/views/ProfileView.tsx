@@ -81,6 +81,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
   const [isEditing, setIsEditing] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isIT19Expanded, setIsIT19Expanded] = useState(false);
+  const [isES13Expanded, setIsES13Expanded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [taxIdType, setTaxIdType] = useState<'nif' | 'nie'>(() =>
@@ -463,6 +464,29 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                 <div className={`px-4 pb-4 border-t ${darkMode ? 'border-slate-800' : 'border-slate-100'}`}>
                   <p className="text-[10px] text-slate-400 leading-relaxed pt-3">
                     I calcoli di Solvy sono ottimizzati per i casi più comuni (forfettari e ordinari senza situazioni particolari). Se hai redditi da lavoro dipendente, immobili, investimenti o situazioni familiari complesse, i calcoli potrebbero non essere accurati. Consulta sempre il tuo commercialista per la dichiarazione definitiva.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ES-13 — Límites app */}
+          {activeProfile.country === 'Spain' && (
+            <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'border-slate-800' : 'border-slate-100'}`} style={{ backgroundColor: 'var(--color-card-bg)' }}>
+              <button
+                onClick={() => setIsES13Expanded(v => !v)}
+                className="w-full flex items-center justify-between gap-3 px-4 py-3"
+              >
+                <div className="flex items-center gap-2">
+                  <Info size={14} className="text-slate-400 shrink-0" />
+                  <span className="text-xs font-semibold text-slate-400">Límites de los cálculos de Solvy</span>
+                </div>
+                <ChevronDown size={14} className={`text-slate-400 transition-transform ${isES13Expanded ? 'rotate-180' : ''}`} />
+              </button>
+              {isES13Expanded && (
+                <div className={`px-4 pb-4 border-t ${darkMode ? 'border-slate-800' : 'border-slate-100'}`}>
+                  <p className="text-[10px] text-slate-400 leading-relaxed pt-3">
+                    Solvy calcula tus impuestos de forma automática basándose en los datos que introduces. Los cálculos están optimizados para los casos más comunes (autónomos en Estimación Directa sin situaciones especiales). Si tienes rentas del trabajo, inmuebles, inversiones o situaciones familiares complejas, los cálculos podrían no ser precisos. Consulta a tu gestor para una declaración exacta.
                   </p>
                 </div>
               )}

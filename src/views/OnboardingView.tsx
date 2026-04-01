@@ -416,6 +416,15 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                   <input type="text" value={addressSpagna} onChange={e => setAddressSpagna(e.target.value)} placeholder="Calle Gran Vía 1, 28013 Madrid" className={ic} />
                 </div>
               </div>
+
+              {/* ES-13 — Límites app */}
+              <div className={`flex gap-2 p-3 rounded-2xl ${darkMode ? 'bg-slate-800/60' : 'bg-slate-100'}`}>
+                <Info size={13} className="text-slate-400 shrink-0 mt-0.5" />
+                <p className="text-[10px] text-slate-400 leading-relaxed">
+                  Solvy calcula tus impuestos de forma automática basándose en los datos que introduces. Los cálculos están optimizados para los casos más comunes (autónomos en Estimación Directa sin situaciones especiales). Si tienes rentas del trabajo, inmuebles, inversiones o situaciones familiares complejas, los cálculos podrían no ser precisos. Consulta a tu gestor para una declaración exacta.
+                </p>
+              </div>
+
               <div className="space-y-2">
                 <div className="flex gap-3">
                   <button onClick={() => goBack(1)} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 text-slate-400`} style={{ backgroundColor: 'var(--color-card-bg)' }}>
