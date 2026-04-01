@@ -438,6 +438,12 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
               </div>
             ))}
           </div>
+          {/* Disclaimer IT-18 */}
+          {activeProfile.country !== 'Spain' && (
+            <p className="text-[10px] text-slate-400 leading-relaxed px-1">
+              I calcoli mostrati sono stime indicative basate sui dati inseriti e sulle aliquote fiscali standard. Non costituiscono consulenza fiscale professionale. Consulta sempre il tuo commercialista.
+            </p>
+          )}
         </motion.div>
 
         <motion.div variants={item} className="space-y-4">

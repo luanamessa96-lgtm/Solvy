@@ -976,6 +976,12 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                   {exporting ? 'Preparazione...' : accountant ? `Invia al Commercialista` : `Esporta ${format.toUpperCase()}`}
                 </button>
               )}
+              {/* Disclaimer IT-18 */}
+              {profile.country !== 'Spain' && (
+                <p className="text-[10px] text-slate-400 leading-relaxed pt-1">
+                  I calcoli mostrati sono stime indicative basate sui dati inseriti e sulle aliquote fiscali standard. Non costituiscono consulenza fiscale professionale. Consulta sempre il tuo commercialista.
+                </p>
+              )}
             </div>
           </motion.div>
         </div>

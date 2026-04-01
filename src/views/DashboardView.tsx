@@ -492,6 +492,11 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                     <p className="text-[11px] leading-relaxed">{t('dashboard.coeff_missing')}<button onClick={onProfileClick} className="text-primary font-bold">{t('dashboard.set_in_profile')}</button></p>
                   </div>
                 )}
+
+                {/* Disclaimer IT-18 */}
+                <p className="text-[10px] text-slate-400 leading-relaxed pt-2">
+                  I calcoli mostrati sono stime indicative basate sui dati inseriti e sulle aliquote fiscali standard. Non costituiscono consulenza fiscale professionale. Consulta sempre il tuo commercialista.
+                </p>
               </div>
             </div>
           </motion.div>

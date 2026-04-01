@@ -242,7 +242,16 @@ export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<
   // ─── Footer ───────────────────────────────────────────────────────────────
   pdf.setDrawColor(...lightGrey);
   pdf.setLineWidth(0.4);
-  pdf.line(M, 280, R, 280);
+
+  if (!isSpain) {
+    pdf.setFont('helvetica', 'italic');
+    pdf.setFontSize(6);
+    pdf.setTextColor(...grey);
+    pdf.text('I calcoli mostrati sono stime indicative. Non costituiscono consulenza fiscale professionale. Consulta il tuo commercialista.', M, 275);
+    pdf.line(M, 279, R, 279);
+  } else {
+    pdf.line(M, 280, R, 280);
+  }
 
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(7.5);
