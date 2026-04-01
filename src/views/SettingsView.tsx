@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import JSZip from 'jszip';
 import { motion } from 'motion/react';
 import { Sun, Moon, Languages, Trash2, RotateCcw, Loader2, CheckCircle2, AlertCircle, Sparkles, Lock, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +27,7 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1, documents =
   const darkMode = theme === 'dark' || theme === 'pro-dark';
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Refund flow state: idle → confirming → loading → success | error
   type RefundStep = 'idle' | 'confirming' | 'loading' | 'success' | 'error';
@@ -76,20 +78,52 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1, documents =
     { id: 'pro-dark', label: 'Pro Dark', icon: Moon, locked: !isPro },
   ];
 
-  const handleGdprExport = () => {
-    const payload = {
-      exportDate: new Date().toISOString(),
-      profile,
-      documents,
-      deadlines,
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const handleGdprExport = async () => {
+    setIsExporting(true);
+    const today = new Date().toISOString().split('T')[0];
+    const zip = new JSZip();
+
+    // profilo.json
+    zip.file('profilo.json', JSON.stringify(profile, null, 2));
+
+    // fatture.csv
+    const invoiceCsvRows = [
+      ['ID', 'Tipo', 'Numero', 'Data', 'Cliente', 'Importo', 'Stato', 'Categoria'],
+      ...documents.map(d => [
+        d.id,
+        d.type,
+        d.invoiceNumber ?? '',
+        d.date,
+        d.clientName ?? '',
+        d.amount.toString(),
+        d.status ?? '',
+        d.category ?? '',
+      ]),
+    ];
+    zip.file('fatture.csv', invoiceCsvRows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n'));
+
+    // scadenze.csv
+    const deadlineCsvRows = [
+      ['ID', 'Titolo', 'Data', 'Tipo', 'Importo', 'Completata'],
+      ...deadlines.map(d => [
+        d.id,
+        d.title,
+        d.date,
+        d.type,
+        d.amount != null ? d.amount.toString() : '',
+        d.completed ? 'sì' : 'no',
+      ]),
+    ];
+    zip.file('scadenze.csv', deadlineCsvRows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n'));
+
+    const blob = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `solvy_dati_personali_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `solvy_dati_personali_${today}.zip`;
     a.click();
     URL.revokeObjectURL(url);
+    setIsExporting(false);
   };
 
   const legalItems = [
@@ -221,14 +255,15 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1, documents =
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Privacy & GDPR</p>
           <button
             onClick={handleGdprExport}
-            className={`w-full flex items-center gap-4 p-4 rounded-3xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20'}`}
+            disabled={isExporting}
+            className={`w-full flex items-center gap-4 p-4 rounded-3xl border transition-all active:scale-[0.98] disabled:opacity-60 ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20'}`}
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${darkMode ? 'bg-slate-800 text-primary' : 'bg-primary/10 text-primary'}`}>
-              <Download size={18} />
+              {isExporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
             </div>
             <div className="text-left flex-1">
-              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Esporta dati personali</p>
-              <p className="text-xs text-slate-400">Scarica tutti i tuoi dati in formato JSON (art. 20 GDPR)</p>
+              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{isExporting ? 'Generazione ZIP…' : 'Esporta dati personali'}</p>
+              <p className="text-xs text-slate-400">profilo.json · fatture.csv · scadenze.csv (art. 20 GDPR)</p>
             </div>
           </button>
         </motion.div>
