@@ -325,6 +325,15 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                   </div>
                 )}
               </div>
+
+              {/* IT-19 — Limiti app */}
+              <div className={`flex gap-2 p-3 rounded-2xl ${darkMode ? 'bg-slate-800/60' : 'bg-slate-100'}`}>
+                <Info size={13} className="text-slate-400 shrink-0 mt-0.5" />
+                <p className="text-[10px] text-slate-400 leading-relaxed">
+                  I calcoli di Solvy sono ottimizzati per i casi più comuni (forfettari e ordinari senza situazioni particolari). Se hai redditi da lavoro dipendente, immobili, investimenti o situazioni familiari complesse, i calcoli potrebbero non essere accurati. Consulta sempre il tuo commercialista per la dichiarazione definitiva.
+                </p>
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <button onClick={() => goBack(1)} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 text-slate-400`} style={{ backgroundColor: 'var(--color-card-bg)' }}>
                   <ChevronLeft size={20} />

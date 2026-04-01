@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, Globe, CreditCard, Briefcase, FileEdit, CheckCircle2, MapPin, Receipt, User, Lock } from 'lucide-react';
+import { Plus, Globe, CreditCard, Briefcase, FileEdit, CheckCircle2, MapPin, Receipt, User, Lock, Info, ChevronDown } from 'lucide-react';
 import { Profile } from '../types';
 import PaywallModal from '../components/modals/PaywallModal';
 import { CountryBadge } from '../components/CountryBadge';
@@ -80,6 +80,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
+  const [isIT19Expanded, setIsIT19Expanded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [taxIdType, setTaxIdType] = useState<'nif' | 'nie'>(() =>
@@ -443,6 +444,29 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
             <p className="text-[10px] text-slate-400 leading-relaxed px-1">
               I calcoli mostrati sono stime indicative basate sui dati inseriti e sulle aliquote fiscali standard. Non costituiscono consulenza fiscale professionale. Consulta sempre il tuo commercialista.
             </p>
+          )}
+
+          {/* IT-19 — Limiti app */}
+          {activeProfile.country !== 'Spain' && (
+            <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'border-slate-800' : 'border-slate-100'}`} style={{ backgroundColor: 'var(--color-card-bg)' }}>
+              <button
+                onClick={() => setIsIT19Expanded(v => !v)}
+                className="w-full flex items-center justify-between gap-3 px-4 py-3"
+              >
+                <div className="flex items-center gap-2">
+                  <Info size={14} className="text-slate-400 shrink-0" />
+                  <span className="text-xs font-semibold text-slate-400">Limiti dei calcoli di Solvy</span>
+                </div>
+                <ChevronDown size={14} className={`text-slate-400 transition-transform ${isIT19Expanded ? 'rotate-180' : ''}`} />
+              </button>
+              {isIT19Expanded && (
+                <div className={`px-4 pb-4 border-t ${darkMode ? 'border-slate-800' : 'border-slate-100'}`}>
+                  <p className="text-[10px] text-slate-400 leading-relaxed pt-3">
+                    I calcoli di Solvy sono ottimizzati per i casi più comuni (forfettari e ordinari senza situazioni particolari). Se hai redditi da lavoro dipendente, immobili, investimenti o situazioni familiari complesse, i calcoli potrebbero non essere accurati. Consulta sempre il tuo commercialista per la dichiarazione definitiva.
+                  </p>
+                </div>
+              )}
+            </div>
           )}
         </motion.div>
 
