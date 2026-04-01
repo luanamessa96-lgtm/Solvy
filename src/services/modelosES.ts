@@ -72,7 +72,9 @@ export function calcularTrimestre(
   const totalGastos   = expenses.reduce((sum, d) => sum + d.amount, 0);
 
   const ivaRepercutida = invoices.reduce((sum, d) => sum + d.amount * ((d.ivaRate ?? 0) / 100), 0);
-  const ivaSoportada   = 0; // expenses don't track IVA breakdown
+  const ivaSoportada   = expenses
+    .filter(d => (d.ivaRate ?? 0) > 0)
+    .reduce((sum, d) => sum + d.amount * ((d.ivaRate ?? 0) / 100), 0);
 
   const baseImponible130 = Math.max(0, totalIngresos - totalGastos);
   const cuotaIRPF        = baseImponible130 * 0.20;
@@ -210,20 +212,26 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
   y += 4;
 
   const expenseRows = expenses.length > 0
-    ? expenses.map(d => [
-        d.title,
-        d.category || '—',
-        new Date(d.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-        fmtES(d.amount),
-      ])
-    : [['No hay gastos en este período', '', '', '']];
+    ? expenses.map(d => {
+        const rate = d.ivaRate ?? 0;
+        const ivaAmt = d.amount * (rate / 100);
+        return [
+          d.title,
+          d.category || '—',
+          new Date(d.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+          fmtES(d.amount),
+          rate > 0 ? `${rate}%` : '—',
+          rate > 0 ? fmtES(ivaAmt) : '—',
+        ];
+      })
+    : [['No hay gastos en este período', '', '', '', '', '']];
 
   autoTable(pdf, {
     startY: y,
-    head: [['Descripción', 'Categoría', 'Fecha', 'Importe']],
+    head: [['Descripción', 'Categoría', 'Fecha', 'Base', 'IVA', 'Cuota IVA']],
     body: expenseRows,
     ...(expenses.length > 0 ? {
-      foot: [['TOTAL GASTOS', '', '', fmtES(totalGastos)]],
+      foot: [['TOTAL GASTOS', '', '', fmtES(totalGastos), '', `- ${fmtES(ivaSoportada)}`]],
       footStyles: { fillColor: bgLight, textColor: black, fontStyle: 'bold', fontSize: 8 },
     } : {}),
     styles: { fontSize: 8, cellPadding: { top: 3, bottom: 3, left: 3, right: 3 }, textColor: black },
@@ -231,9 +239,11 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
     bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
     columnStyles: {
       0: { cellWidth: 'auto' },
-      1: { cellWidth: 35 },
-      2: { cellWidth: 22 },
-      3: { cellWidth: 28, halign: 'right', fontStyle: 'bold' },
+      1: { cellWidth: 28 },
+      2: { cellWidth: 20 },
+      3: { cellWidth: 24, halign: 'right', fontStyle: 'bold' },
+      4: { cellWidth: 12, halign: 'center' },
+      5: { cellWidth: 22, halign: 'right' },
     },
     margin: { left: M, right: M },
     tableLineColor: lightGrey,
@@ -329,11 +339,13 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
 
   y = Math.max(y130, y303) + 6;
 
-  // IVA note
-  pdf.setFont('helvetica', 'normal');
-  pdf.setFontSize(6.5);
-  pdf.setTextColor(...grey);
-  pdf.text('* Los gastos registrados no incluyen desglose de IVA soportado. Consulta tus facturas de proveedor para completar este dato.', M, y);
+  // IVA note — solo se ivaSoportada è zero avvisa l'utente
+  if (ivaSoportada === 0) {
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(6.5);
+    pdf.setTextColor(...grey);
+    pdf.text('* IVA soportada: €0,00. Añade el tipo de IVA al registrar los gastos para calcular la deducción correctamente.', M, y);
+  }
 
   // ── Footer ─────────────────────────────────────────────────────────────────
   const footerY = pdf.internal.pageSize.height - 14;

@@ -7,15 +7,20 @@ interface CreateExpenseModalProps {
   onClose: () => void;
   onSave: (doc: import('../../types').Document) => void;
   darkMode?: boolean;
+  profile?: import('../../types').Profile;
 }
 
-const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode }: CreateExpenseModalProps) => {
+const IVA_RATES = [0, 4, 10, 21] as const;
+
+const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: CreateExpenseModalProps) => {
+  const isSpain = profile?.country === 'Spain';
   const [formData, setFormData] = useState({
     title: '',
     amount: '',
     date: new Date().toISOString().split('T')[0],
     category: 'abbonamento',
   });
+  const [ivaRate, setIvaRate] = useState<number>(21);
 
   const dragControls = useDragControls();
   const [amountTouched, setAmountTouched] = useState(false);
@@ -32,9 +37,11 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode }: CreateExpense
       type: 'expense',
       status: 'paid',
       title: formData.title || formData.category,
+      ...(isSpain ? { ivaRate } : {}),
     });
     onClose();
     setFormData({ title: '', amount: '', date: new Date().toISOString().split('T')[0], category: 'abbonamento' });
+    setIvaRate(21);
     setAmountTouched(false);
   };
 
@@ -106,6 +113,26 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode }: CreateExpense
                     </div>
                   </div>
                 </div>
+              {isSpain && (
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">IVA Soportado</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {IVA_RATES.map(rate => (
+                      <button
+                        key={rate}
+                        onClick={() => setIvaRate(rate)}
+                        className={`py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-95 ${
+                          ivaRate === rate
+                            ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                            : darkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                        }`}
+                      >
+                        {rate}%
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               </div>
             </div>
             <div className="shrink-0 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 space-y-2.5">
