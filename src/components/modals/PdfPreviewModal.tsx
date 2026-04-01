@@ -1,4 +1,4 @@
-import { X, Share2 } from 'lucide-react';
+import { X, Share2, FileText } from 'lucide-react';
 
 interface PdfPreviewModalProps {
   isOpen: boolean;
@@ -47,13 +47,16 @@ export default function PdfPreviewModal({ isOpen, onClose, dataUrl, fileName, da
         <p className={`text-sm font-bold truncate flex-1 ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fileName}</p>
       </div>
 
-      {/* PDF viewer */}
-      <div className="flex-1 overflow-hidden">
-        <iframe
-          src={dataUrl}
-          className="w-full h-full border-0"
-          title={fileName}
-        />
+      {/* PDF placeholder */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-5 px-8">
+        <div className={`w-24 h-28 rounded-3xl flex flex-col items-center justify-center gap-1.5 shadow-lg ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
+          <FileText size={40} className="text-red-500" strokeWidth={1.5} />
+          <span className="text-xs font-black tracking-widest text-red-500">PDF</span>
+        </div>
+        <p className={`text-sm font-bold text-center ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fileName}</p>
+        <p className="text-xs text-slate-400 text-center leading-relaxed">
+          Anteprima non disponibile su iOS.{'\n'}Usa il bottone qui sotto per aprire o condividere il PDF.
+        </p>
       </div>
 
       {/* Footer */}
