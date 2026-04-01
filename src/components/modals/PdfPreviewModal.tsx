@@ -3,34 +3,25 @@ import { X, Share2, FileText } from 'lucide-react';
 interface PdfPreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  dataUrl: string;
+  blob: Blob;
   fileName: string;
   darkMode?: boolean;
 }
 
-export default function PdfPreviewModal({ isOpen, onClose, dataUrl, fileName, darkMode }: PdfPreviewModalProps) {
+export default function PdfPreviewModal({ isOpen, onClose, blob, fileName, darkMode }: PdfPreviewModalProps) {
   if (!isOpen) return null;
 
   const handleShare = async () => {
-    try {
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
-      const file = new File([blob], fileName, { type: 'application/pdf' });
-      if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: fileName });
-      } else {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-    } catch {
+    const file = new File([blob], fileName, { type: 'application/pdf' });
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ files: [file], title: fileName });
+    } else {
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = dataUrl;
+      a.href = url;
       a.download = fileName;
       a.click();
+      URL.revokeObjectURL(url);
     }
   };
 

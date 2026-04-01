@@ -9,7 +9,7 @@ import CreateExpenseModal from '../components/modals/CreateExpenseModal';
 import SearchOverlay from '../components/modals/SearchOverlay';
 import ExportModal from '../components/modals/ExportModal';
 import ResumenTrimestralModal from '../components/modals/ResumenTrimestralModal';
-import { buildInvoicePDFDataUrl } from '../lib/generateInvoicePDF';
+import { buildInvoicePDFBlob } from '../lib/generateInvoicePDF';
 import PdfPreviewModal from '../components/modals/PdfPreviewModal';
 import { downloadFatturaPA, getMissingProfileFields } from '../services/fatturaPA';
 import { useToast } from '../components/ui/Toast';
@@ -53,7 +53,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const [docToDelete, setDocToDelete] = useState<Document | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [docToEdit, setDocToEdit] = useState<Document | null>(null);
-  const [pdfPreview, setPdfPreview] = useState<{ dataUrl: string; fileName: string } | null>(null);
+  const [pdfPreview, setPdfPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
 
   const initializedRef = useRef(false);
   const prevLengthRef = useRef(0);
@@ -330,9 +330,9 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   </button>
                 )}
                 {selectedDoc.type === 'invoice' && (
-                  <button onClick={async () => { if (!isPro) { setIsPaywallOpen(true); return; } const result = await buildInvoicePDFDataUrl(selectedDoc, profile); setSelectedDoc(null); setPdfPreview(result); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-primary/10 border-primary/20' : 'bg-primary/5 border-primary/10'}`}>
+                  <button onClick={async () => { if (!isPro) { setIsPaywallOpen(true); return; } const result = await buildInvoicePDFBlob(selectedDoc, profile); setSelectedDoc(null); setPdfPreview(result); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-primary/10 border-primary/20' : 'bg-primary/5 border-primary/10'}`}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary text-white"><Download size={18} /></div>
-                    <span className="font-bold text-primary">Anteprima PDF Fattura</span>
+                    <span className="font-bold text-primary">Scarica PDF Fattura</span>
                     {!isPro && <span className="ml-auto text-[10px] font-bold text-primary/60 uppercase tracking-wide">Pro</span>}
                   </button>
                 )}
@@ -549,7 +549,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
       <ExportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} documents={documents} selectedYear={selectedYear} profile={profile} accountant={accountant} darkMode={darkMode} />
       <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} darkMode={darkMode} />
       <ResumenTrimestralModal isOpen={isResumenOpen} onClose={() => setIsResumenOpen(false)} documents={documents} profile={profile} darkMode={darkMode} onNavigateToProfile={onNavigateToProfile} />
-      <PdfPreviewModal isOpen={!!pdfPreview} onClose={() => setPdfPreview(null)} dataUrl={pdfPreview?.dataUrl ?? ''} fileName={pdfPreview?.fileName ?? ''} darkMode={darkMode} />
+      <PdfPreviewModal isOpen={!!pdfPreview} onClose={() => setPdfPreview(null)} blob={pdfPreview?.blob ?? new Blob()} fileName={pdfPreview?.fileName ?? ''} darkMode={darkMode} />
 
     </motion.div>
   );

@@ -351,17 +351,17 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
 
 // ─── Download ─────────────────────────────────────────────────────────────────
 
-export async function buildResumenPDFDataUrl(
+export async function buildResumenPDFBlob(
   documents: Document[],
   profile: Profile,
   quarter: 1 | 2 | 3 | 4,
   year: number
-): Promise<{ dataUrl: string; fileName: string }> {
+): Promise<{ blob: Blob; fileName: string }> {
   const resumen = calcularTrimestre(documents, quarter, year);
   const pdf = await generateResumenPDF(resumen, profile);
   const nif = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
   const fileName = `ES_${nif}_resumen_T${quarter}_${year}.pdf`;
-  return { dataUrl: pdf.output('datauristring'), fileName };
+  return { blob: pdf.output('blob'), fileName };
 }
 
 export async function downloadResumenTrimestral(
