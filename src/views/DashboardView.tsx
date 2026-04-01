@@ -9,6 +9,8 @@ import { Profile, Document } from '../types';
 const DashboardChart = lazy(() => import('../components/DashboardChart'));
 import { calculateSpanishTaxes } from '../lib/countries/es';
 import { getSpanishDeadlines } from '../data/deadlines-es';
+import { parseLocalDate, getLocalYear } from '../utils/date';
+import { parseLocalDate, getLocalYear } from '../utils/date';
 function getCountryFlag(country: string): string {
   const flags: Record<string, string> = {
     'Italy': '🇮🇹',
@@ -94,7 +96,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
     const month = String(i + 1).padStart(2, '0');
     const currentYear = new Date().getFullYear();
     const monthDocs = documents.filter(d => {
-      const date = new Date(d.date);
+      const date = parseLocalDate(d.date);
       return date.getFullYear() === currentYear && date.getMonth() === i;
     });
     const monthIncome = monthDocs.filter(d => d.type === 'invoice' && d.status === 'paid').reduce((s, d) => s + d.amount, 0);
@@ -151,7 +153,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
 
   const spesePerCategoria = useMemo(() => {
     const currentYear = new Date().getFullYear();
-    const yearExpenses = documents.filter(d => d.type === 'expense' && new Date(d.date).getFullYear() === currentYear);
+    const yearExpenses = documents.filter(d => d.type === 'expense' && getLocalYear(d.date) === currentYear);
     const map: Record<string, number> = {};
     yearExpenses.forEach(d => {
       const cat = d.category || 'Altro';

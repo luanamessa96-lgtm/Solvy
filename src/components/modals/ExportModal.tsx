@@ -4,6 +4,7 @@ import { X, Download, Check, Mail, Share2, Eye, AlertTriangle } from 'lucide-rea
 import { Document as AppDoc, Profile, Accountant } from '../../types';
 import { useProStatus } from '../../hooks/useProStatus';
 import { generateFatturaPA, getMissingProfileFields } from '../../services/fatturaPA';
+import { parseLocalDate, getLocalYear, getLocalMonth } from '../../utils/date';
 import { calcularTrimestre, generateResumenPDF, getCurrentQuarter, QUARTER_LABELS } from '../../services/modelosES';
 import PdfPreviewModal from './PdfPreviewModal';
 
@@ -60,19 +61,19 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
   const availableYears = useMemo(() => {
     const currentYear = new Date().getFullYear();
-    const years = new Set<number>(documents.map(d => new Date(d.date).getFullYear()));
+    const years = new Set<number>(documents.map(d => getLocalYear(d.date)));
     years.add(currentYear);
     years.add(currentYear + 1);
     return Array.from(years).sort((a, b) => b - a);
   }, [documents]);
 
   const yearDocs = useMemo(() =>
-    documents.filter(d => new Date(d.date).getFullYear() === year),
+    documents.filter(d => getLocalYear(d.date) === year),
     [documents, year]
   );
 
   const availableMonths = useMemo(() => {
-    const months = new Set<number>(yearDocs.map(d => new Date(d.date).getMonth()));
+    const months = new Set<number>(yearDocs.map(d => getLocalMonth(d.date)));
     return Array.from(months).sort((a, b) => a - b);
   }, [yearDocs]);
 
@@ -124,7 +125,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
   const filteredDocs = useMemo(() => {
     return yearDocs.filter(d => {
-      const month = new Date(d.date).getMonth();
+      const month = getLocalMonth(d.date);
       if (!syncedMonths.has(month)) return false;
       if (docFilter === 'invoice') return d.type === 'invoice';
       if (docFilter === 'expense') return d.type === 'expense';
@@ -237,7 +238,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const exportCSV = async () => {
     const header = ['Data', 'Tipo', 'Descrizione', 'Cliente', 'Importo (€)', 'Stato', 'Categoria'];
     const rows = filteredDocs.map(d => [
-      new Date(d.date).toLocaleDateString('it-IT'),
+      parseLocalDate(d.date).toLocaleDateString('it-IT'),
       d.type === 'invoice' ? 'Fattura' : 'Spesa',
       d.title,
       d.client || '',
@@ -619,7 +620,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
         startY: 36,
         head: [isSpain ? ['Fecha', 'Categoría', 'Descripción', 'Importe'] : ['Data', 'Categoria', 'Descrizione', 'Importo']],
         body: expenses.map(d => [
-          new Date(d.date).toLocaleDateString(isSpain ? 'es-ES' : 'it-IT'),
+          parseLocalDate(d.date).toLocaleDateString(isSpain ? 'es-ES' : 'it-IT'),
           d.category || '—',
           d.title,
           `€ ${d.amount.toFixed(2)}`,

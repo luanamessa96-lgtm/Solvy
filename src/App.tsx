@@ -10,6 +10,7 @@ import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines
 import { supabaseReady, getClient } from './lib/supabase';
 import { Profile, Document, Deadline, Accountant } from './types';
 import { setLanguageByCountry } from './lib/i18n';
+import { parseLocalDate, getLocalYear } from './utils/date';
 import AuthView from './views/AuthView';
 
 import { ToastProvider, useToast } from './components/ui/Toast';
@@ -337,7 +338,7 @@ function AppInner() {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     return docs.map(d => {
-      if (d.type === 'invoice' && d.status === 'pending' && new Date(d.date) < thirtyDaysAgo) {
+      if (d.type === 'invoice' && d.status === 'pending' && parseLocalDate(d.date) < thirtyDaysAgo) {
         const updated = { ...d, status: 'overdue' as const };
         updateDocument(updated).catch(() => {});
         return updated;
@@ -403,17 +404,17 @@ function AppInner() {
 
   const totalIncome = useMemo(() => {
     const currentYear = new Date().getFullYear();
-    return documents.filter(doc => doc.type === 'invoice' && doc.status === 'paid' && new Date(doc.date).getFullYear() === currentYear).reduce((sum, doc) => sum + doc.amount, 0);
+    return documents.filter(doc => doc.type === 'invoice' && doc.status === 'paid' && getLocalYear(doc.date) === currentYear).reduce((sum, doc) => sum + doc.amount, 0);
   }, [documents]);
 
   const totalExpenses = useMemo(() => {
     const currentYear = new Date().getFullYear();
-    return documents.filter(doc => doc.type === 'expense' && new Date(doc.date).getFullYear() === currentYear).reduce((sum, doc) => sum + doc.amount, 0);
+    return documents.filter(doc => doc.type === 'expense' && getLocalYear(doc.date) === currentYear).reduce((sum, doc) => sum + doc.amount, 0);
   }, [documents]);
 
   const paidPercentage = useMemo(() => {
     const currentYear = new Date().getFullYear();
-    const yearDocs = documents.filter(doc => doc.type === 'invoice' && new Date(doc.date).getFullYear() === currentYear);
+    const yearDocs = documents.filter(doc => doc.type === 'invoice' && getLocalYear(doc.date) === currentYear);
     if (yearDocs.length === 0) return 0;
     return Math.round((yearDocs.filter(doc => doc.status === 'paid').length / yearDocs.length) * 100);
   }, [documents]);
@@ -423,7 +424,7 @@ function AppInner() {
     today.setHours(0, 0, 0, 0);
     return deadlines.filter(d => {
       if (d.completed) return false;
-      const date = new Date(d.date);
+      const date = parseLocalDate(d.date);
       date.setHours(0, 0, 0, 0);
       const diff = Math.ceil((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
       return diff >= 0 && diff <= 30;

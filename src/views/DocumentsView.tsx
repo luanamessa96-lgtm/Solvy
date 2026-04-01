@@ -13,6 +13,7 @@ import { buildInvoicePDFBlob } from '../lib/generateInvoicePDF';
 import PdfPreviewModal from '../components/modals/PdfPreviewModal';
 import { downloadFatturaPA, getMissingProfileFields } from '../services/fatturaPA';
 import { useToast } from '../components/ui/Toast';
+import { parseLocalDate, getLocalYear } from '../utils/date';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
 
@@ -59,26 +60,26 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const prevLengthRef = useRef(0);
   useEffect(() => {
     if (documents.length > 0 && !initializedRef.current) {
-      const years = documents.map(d => new Date(d.date).getFullYear());
+      const years = documents.map(d => getLocalYear(d.date));
       setSelectedYear(Math.max(...years));
       initializedRef.current = true;
     } else if (documents.length > prevLengthRef.current && initializedRef.current) {
       // Nuovo documento aggiunto: switcha all'anno del documento appena salvato
       const newDoc = documents[0];
-      if (newDoc) setSelectedYear(new Date(newDoc.date).getFullYear());
+      if (newDoc) setSelectedYear(getLocalYear(newDoc.date));
     }
     prevLengthRef.current = documents.length;
   }, [documents]);
 
   const availableYears = useMemo(() => {
     const currentYear = new Date().getFullYear();
-    const years = new Set(documents.map(d => new Date(d.date).getFullYear()));
+    const years = new Set(documents.map(d => getLocalYear(d.date)));
     years.add(currentYear);
     years.add(currentYear + 1);
     return Array.from(years).sort((a, b) => b - a);
   }, [documents]);
 
-  const yearDocuments = useMemo(() => documents.filter(d => new Date(d.date).getFullYear() === selectedYear), [documents, selectedYear]);
+  const yearDocuments = useMemo(() => documents.filter(d => getLocalYear(d.date) === selectedYear), [documents, selectedYear]);
 
   const totals = useMemo(() => yearDocuments.reduce((acc, doc) => {
     if (doc.type === 'invoice' && doc.status === 'paid') acc.income += doc.amount;
@@ -97,9 +98,9 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       if (statusFilter === 'overdue') {
-        docs = docs.filter(d => d.status === 'overdue' || (d.type === 'invoice' && d.status === 'pending' && new Date(d.date) < thirtyDaysAgo));
+        docs = docs.filter(d => d.status === 'overdue' || (d.type === 'invoice' && d.status === 'pending' && parseLocalDate(d.date) < thirtyDaysAgo));
       } else if (statusFilter === 'pending') {
-        docs = docs.filter(d => d.status === 'pending' && new Date(d.date) >= thirtyDaysAgo);
+        docs = docs.filter(d => d.status === 'pending' && parseLocalDate(d.date) >= thirtyDaysAgo);
       } else {
         docs = docs.filter(d => d.status === statusFilter);
       }
@@ -364,7 +365,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                 {selectedDoc.type === 'invoice' && (
                   <button onClick={() => {
                     const year = new Date().getFullYear();
-                    const count = documents.filter(d => d.type === 'invoice' && new Date(d.date).getFullYear() === year).length + 1;
+                    const count = documents.filter(d => d.type === 'invoice' && getLocalYear(d.date) === year).length + 1;
                     const newDoc: Document = {
                       ...selectedDoc,
                       id: Math.random().toString(36).substr(2, 9),

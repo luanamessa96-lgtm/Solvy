@@ -10,6 +10,7 @@ import {
 } from '../../services/modelosES';
 import PdfPreviewModal from './PdfPreviewModal';
 import { useToast } from '../ui/Toast';
+import { getLocalYear } from '../../utils/date';
 import { useProStatus } from '../../hooks/useProStatus';
 
 interface ResumenTrimestralModalProps {
@@ -34,7 +35,7 @@ export default function ResumenTrimestralModal({
   const [pdfPreview, setPdfPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
 
   const availableYears = useMemo(() => {
-    const years = new Set(documents.map(d => new Date(d.date).getFullYear()));
+    const years = new Set(documents.map(d => getLocalYear(d.date)));
     years.add(currentYear);
     return Array.from(years).sort((a, b) => b - a);
   }, [documents, currentYear]);

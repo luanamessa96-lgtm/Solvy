@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft, Search, X } from 'lucide-react';
 import { Deadline, Profile } from '../types';
 import { getSpanishDeadlines } from '../data/deadlines-es';
+import { parseLocalDate, getLocalYear, getLocalMonth } from '../utils/date';
+import { parseLocalDate, getLocalYear, getLocalMonth } from '../utils/date';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
 import { useTranslation } from 'react-i18next';
@@ -94,7 +96,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     ? getSpanishDeadlines(selectedYear).map(s => ({ title: s.title, date: s.date, type: 'tax' as Deadline['type'] }))
     : getScadenzeFiscali(selectedYear);
   const scadenzeFiscali = scadenzeFiscaliRaw;
-  const addedCount = scadenzeFiscali.filter(s => deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === new Date(s.date).getFullYear())).length;
+  const addedCount = scadenzeFiscali.filter(s => deadlines.some(d => d.title === s.title && getLocalYear(d.date) === getLocalYear(s.date))).length;
   const hasFiscalDeadlines = addedCount === scadenzeFiscali.length;
   const partialFiscalDeadlines = addedCount > 0 && addedCount < scadenzeFiscali.length;
   const missingCount = scadenzeFiscali.length - addedCount;
@@ -116,19 +118,19 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
       // Template deadline: show if title+date matches this year's template exactly
       if (templateDate !== undefined) return templateDate === d.date;
       // User-created deadline: show by date year
-      return new Date(d.date).getFullYear() === selectedYear;
+      return getLocalYear(d.date) === selectedYear;
     });
   }, [deadlines, selectedYear, isSpain]);
 
   const filteredDeadlines = useMemo(() => {
-    let result = selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => new Date(d.date).getMonth() === selectedMonth);
+    let result = selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => getLocalMonth(d.date) === selectedMonth);
     if (searchQuery.trim()) result = result.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
     return result;
   }, [selectedMonth, yearDeadlines, searchQuery]);
 
   const nextDeadline = useMemo(() => {
     const today = new Date();
-    return deadlines.filter(d => new Date(d.date) >= today && !d.completed).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] || null;
+    return deadlines.filter(d => parseLocalDate(d.date) >= today && !d.completed).sort((a, b) => parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime())[0] || null;
   }, [deadlines]);
 
   const daysUntilNext = nextDeadline ? Math.ceil((new Date(nextDeadline.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
@@ -173,7 +175,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
           </motion.div>
           <div className="grid grid-cols-3 gap-3">
             {months.map((month, index) => {
-              const hasDeadlines = yearDeadlines.some(d => new Date(d.date).getMonth() === index);
+              const hasDeadlines = yearDeadlines.some(d => getLocalMonth(d.date) === index);
               const isSelected = selectedMonth === index;
               return (
                 <motion.button variants={item} key={month} onClick={() => { setSelectedMonth(isSelected ? null : index); setViewMode('list'); }} className={`relative p-4 rounded-3xl border transition-all text-center space-y-1 active:scale-[0.95] ${isSelected ? 'bg-primary border-primary text-white shadow-xl shadow-primary/40' : (darkMode ? 'bg-slate-900 border-slate-800 text-slate-400 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10' : 'bg-white border-slate-100 text-slate-600 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5')}`}>
@@ -399,7 +401,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   <button onClick={() => setIsPreloadOpen(false)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
                 </div>
                 <div className="space-y-2">
-                  {scadenzeFiscali.filter(s => !deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === new Date(s.date).getFullYear())).map((s, i) => {
+                  {scadenzeFiscali.filter(s => !deadlines.some(d => d.title === s.title && getLocalYear(d.date) === getLocalYear(s.date))).map((s, i) => {
                     const amt = fiscalAmounts[s.title];
                     return (
                       <div key={i} className={`flex items-center gap-3 p-3 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
@@ -418,7 +420,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                 <button
                   onClick={() => {
                     scadenzeFiscali
-                      .filter(s => !deadlines.some(d => d.title === s.title && new Date(d.date).getFullYear() === new Date(s.date).getFullYear()))
+                      .filter(s => !deadlines.some(d => d.title === s.title && getLocalYear(d.date) === getLocalYear(s.date)))
                       .forEach(s => {
                         const amt = fiscalAmounts[s.title];
                         onAddDeadline({ ...s, id: Math.random().toString(36).substr(2, 9), ...(amt != null && amt > 0 ? { amount: amt } : {}) });
