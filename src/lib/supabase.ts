@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL!;
-const supabaseKey = import.meta.env.VITE_SUPABASE_KEY!;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL_DEV ?? import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY_DEV ?? import.meta.env.VITE_SUPABASE_KEY;
 
 // Storage ibrido: localStorage + cookie di backup per iOS PWA
 // iOS Safari cancella localStorage quando la PWA è in background — il cookie persiste
