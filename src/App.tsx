@@ -710,7 +710,7 @@ function AppInner() {
               darkMode={darkMode}
             />
           ) : isSettingsPage ? (
-            <SettingsView theme={theme} setTheme={(t) => setProfileTheme(t, activeProfile.id)} profile={activeProfile} profilesCount={profiles.length} />
+            <SettingsView theme={theme} setTheme={(t) => setProfileTheme(t, activeProfile.id)} profile={activeProfile} profilesCount={profiles.length} documents={documents} deadlines={deadlines} />
           ) : isAccountantPage ? (
             <AccountantView
               accountant={accountant}
