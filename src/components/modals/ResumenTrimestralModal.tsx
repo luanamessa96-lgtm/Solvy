@@ -77,6 +77,7 @@ export default function ResumenTrimestralModal({
   const dm = darkMode;
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
@@ -220,5 +221,6 @@ export default function ResumenTrimestralModal({
       fileName={pdfPreview?.fileName ?? ''}
       darkMode={darkMode}
     />
+    </>
   );
 }

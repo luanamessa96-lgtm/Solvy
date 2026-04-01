@@ -705,6 +705,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const dragControls = useDragControls();
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
@@ -1002,5 +1003,6 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       fileName={pdfPreview?.fileName ?? ''}
       darkMode={darkMode}
     />
+    </>
   );
 }
