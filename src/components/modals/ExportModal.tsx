@@ -5,6 +5,7 @@ import { Document as AppDoc, Profile, Accountant } from '../../types';
 import { useProStatus } from '../../hooks/useProStatus';
 import { generateFatturaPA, getMissingProfileFields } from '../../services/fatturaPA';
 import { calcularTrimestre, generateResumenPDF, getCurrentQuarter, QUARTER_LABELS } from '../../services/modelosES';
+import PdfPreviewModal from './PdfPreviewModal';
 
 type jsPDFWithAutoTable = import('jspdf').jsPDF & { lastAutoTable: { finalY: number } };
 
@@ -36,6 +37,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const [includeFatturaPA, setIncludeFatturaPA] = useState(true);
   const [includeResumen, setIncludeResumen] = useState(true);
   const [overrideQuarter, setOverrideQuarter] = useState<1 | 2 | 3 | 4 | null>(null);
+  const [pdfPreview, setPdfPreview] = useState<{ dataUrl: string; fileName: string } | null>(null);
   const [readyBlob, setReadyBlob] = useState<{
     blob: Blob; fileName: string;
     xmlFiles?: { blob: Blob; fileName: string }[];
@@ -937,8 +939,14 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                 <div className="space-y-3">
                   <button
                     onClick={() => {
-                      const url = URL.createObjectURL(readyBlob.blob);
-                      window.open(url, '_blank');
+                      if (readyBlob.fileName.endsWith('.pdf')) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => setPdfPreview({ dataUrl: e.target?.result as string, fileName: readyBlob.fileName });
+                        reader.readAsDataURL(readyBlob.blob);
+                      } else {
+                        const url = URL.createObjectURL(readyBlob.blob);
+                        window.open(url, '_blank');
+                      }
                     }}
                     className={`w-full rounded-2xl p-4 flex items-center gap-3 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 hover:border-primary/40' : 'bg-slate-50 hover:bg-slate-100'}`}
                   >
@@ -987,5 +995,12 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
         </div>
       )}
     </AnimatePresence>
+    <PdfPreviewModal
+      isOpen={!!pdfPreview}
+      onClose={() => setPdfPreview(null)}
+      dataUrl={pdfPreview?.dataUrl ?? ''}
+      fileName={pdfPreview?.fileName ?? ''}
+      darkMode={darkMode}
+    />
   );
 }

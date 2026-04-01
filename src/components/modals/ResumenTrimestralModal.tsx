@@ -4,10 +4,11 @@ import { X, Download, Lock } from 'lucide-react';
 import { Document, Profile } from '../../types';
 import {
   calcularTrimestre,
-  downloadResumenTrimestral,
+  buildResumenPDFDataUrl,
   getCurrentQuarter,
   QUARTER_LABELS,
 } from '../../services/modelosES';
+import PdfPreviewModal from './PdfPreviewModal';
 import { useToast } from '../ui/Toast';
 import { useProStatus } from '../../hooks/useProStatus';
 
@@ -30,6 +31,7 @@ export default function ResumenTrimestralModal({
   const [quarter, setQuarter] = useState<1 | 2 | 3 | 4>(getCurrentQuarter());
   const [year, setYear] = useState<number>(currentYear);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [pdfPreview, setPdfPreview] = useState<{ dataUrl: string; fileName: string } | null>(null);
 
   const availableYears = useMemo(() => {
     const years = new Set(documents.map(d => new Date(d.date).getFullYear()));
@@ -60,9 +62,8 @@ export default function ResumenTrimestralModal({
 
     setIsGenerating(true);
     try {
-      await downloadResumenTrimestral(documents, profile, quarter, year);
-      showToast('PDF descargado', 'success');
-      onClose();
+      const result = await buildResumenPDFDataUrl(documents, profile, quarter, year);
+      setPdfPreview(result);
     } catch {
       showToast('Error al generar el PDF', 'error');
     } finally {
@@ -212,5 +213,12 @@ export default function ResumenTrimestralModal({
         </div>
       )}
     </AnimatePresence>
+    <PdfPreviewModal
+      isOpen={!!pdfPreview}
+      onClose={() => setPdfPreview(null)}
+      dataUrl={pdfPreview?.dataUrl ?? ''}
+      fileName={pdfPreview?.fileName ?? ''}
+      darkMode={darkMode}
+    />
   );
 }

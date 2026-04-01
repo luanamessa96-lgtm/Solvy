@@ -266,6 +266,15 @@ export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<
   return pdf;
 }
 
+export async function buildInvoicePDFDataUrl(doc: Document, profile: Profile): Promise<{ dataUrl: string; fileName: string }> {
+  const pdf = await buildInvoicePDF(doc, profile);
+  const isSpain = profile.country === 'Spain';
+  const fileName = isSpain
+    ? `factura_${doc.invoiceNumber?.replace('/', '-') || doc.id}_${profile.name.replace(/\s+/g, '_')}.pdf`
+    : `fattura_${doc.invoiceNumber?.replace('/', '-') || doc.id}_${profile.name.replace(/\s+/g, '_')}.pdf`;
+  return { dataUrl: pdf.output('datauristring'), fileName };
+}
+
 export async function generateInvoicePDF(doc: Document, profile: Profile): Promise<void> {
   const pdf = await buildInvoicePDF(doc, profile);
   const _isSpain = profile.country === 'Spain';
