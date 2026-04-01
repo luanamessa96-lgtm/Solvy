@@ -118,23 +118,28 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
     if (regime === 'forfettario') {
       const coeffRaw = profile.coefficiente;
       const coeff = (coeffRaw != null && coeffRaw > 0) ? coeffRaw / 100 : 0.78;
-      const redditoImponibile = base * coeff;
+      const redditoLordo = Math.max(0, base * coeff);
 
-      const annoInizio = profile.annoInizioAttivita;
-      const isFivePercent = annoInizio != null && (displayYear - annoInizio) < 5;
+      // INPS è deducibile al 100% dalla base imponibile IRPEF (IT-20)
+      const inps = redditoLordo * INPS_GESTIONE_SEPARATA;
+      const redditoImponibile = Math.max(0, redditoLordo - inps);
+
+      const annoInizio = profile.annoInizioAttivita ?? null;
+      const yearsActive = annoInizio != null ? displayYear - Number(annoInizio) : null;
+      const isFivePercent = yearsActive != null && Number.isFinite(yearsActive) && yearsActive < 5;
       const aliquota = isFivePercent ? 0.05 : 0.15;
 
       const imposta = redditoImponibile * aliquota;
-      const inps = redditoImponibile * INPS_GESTIONE_SEPARATA;
       const netto = base - imposta - inps;
 
       return { regime: 'forfettario', imposta, inps, netto, redditoImponibile, aliquota, isFivePercent, coeff };
     } else {
-      // Regime ordinario
-      const redditoImponibile = Math.max(0, base - expenses); // reddito netto approssimato
+      // Regime ordinario — INPS deducibile dalla base imponibile IRPEF (IT-20)
+      const redditoLordo = Math.max(0, base - expenses);
+      const inps = redditoLordo * INPS_ORDINARIO;
+      const redditoImponibile = Math.max(0, redditoLordo - inps);
       const irpef = calcIRPEF(redditoImponibile);
       const addizionali = redditoImponibile * 0.023;
-      const inps = redditoImponibile * INPS_ORDINARIO;
       const totaleImposta = irpef + addizionali;
       const netto = base - totaleImposta - inps - expenses;
 
