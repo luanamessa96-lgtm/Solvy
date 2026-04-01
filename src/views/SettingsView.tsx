@@ -78,6 +78,51 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1, documents =
     { id: 'pro-dark', label: 'Pro Dark', icon: Moon, locked: !isPro },
   ];
 
+  const handleGdprExportES = async () => {
+    setIsExporting(true);
+    const today = new Date().toISOString().split('T')[0];
+    const zip = new JSZip();
+
+    zip.file('perfil.json', JSON.stringify(profile, null, 2));
+
+    const facturasCsvRows = [
+      ['ID', 'Tipo', 'Número', 'Fecha', 'Cliente', 'Importe', 'Estado', 'Categoría'],
+      ...documents.map(d => [
+        d.id,
+        d.type,
+        d.invoiceNumber ?? '',
+        d.date,
+        d.clientName ?? '',
+        d.amount.toString(),
+        d.status ?? '',
+        d.category ?? '',
+      ]),
+    ];
+    zip.file('facturas.csv', facturasCsvRows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n'));
+
+    const plazosCsvRows = [
+      ['ID', 'Título', 'Fecha', 'Tipo', 'Importe', 'Completado'],
+      ...deadlines.map(d => [
+        d.id,
+        d.title,
+        d.date,
+        d.type,
+        d.amount != null ? d.amount.toString() : '',
+        d.completed ? 'sí' : 'no',
+      ]),
+    ];
+    zip.file('plazos.csv', plazosCsvRows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n'));
+
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `solvy_datos_personales_${today}.zip`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setIsExporting(false);
+  };
+
   const handleGdprExport = async () => {
     setIsExporting(true);
     const today = new Date().toISOString().split('T')[0];
@@ -250,7 +295,7 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1, documents =
         </div>
       </motion.div>
 
-      {profile.country !== 'Spain' && (
+      {profile.country !== 'Spain' ? (
         <motion.div variants={item} className="space-y-3">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Privacy & GDPR</p>
           <button
@@ -264,6 +309,23 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1, documents =
             <div className="text-left flex-1">
               <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{isExporting ? 'Generazione ZIP…' : 'Esporta dati personali'}</p>
               <p className="text-xs text-slate-400">profilo.json · fatture.csv · scadenze.csv (art. 20 GDPR)</p>
+            </div>
+          </button>
+        </motion.div>
+      ) : (
+        <motion.div variants={item} className="space-y-3">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Privacidad & GDPR</p>
+          <button
+            onClick={handleGdprExportES}
+            disabled={isExporting}
+            className={`w-full flex items-center gap-4 p-4 rounded-3xl border transition-all active:scale-[0.98] disabled:opacity-60 ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20'}`}
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${darkMode ? 'bg-slate-800 text-primary' : 'bg-primary/10 text-primary'}`}>
+              {isExporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+            </div>
+            <div className="text-left flex-1">
+              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{isExporting ? 'Generando ZIP…' : 'Descargar mis datos'}</p>
+              <p className="text-xs text-slate-400">perfil.json · facturas.csv · plazos.csv (art. 20 RGPD)</p>
             </div>
           </button>
         </motion.div>

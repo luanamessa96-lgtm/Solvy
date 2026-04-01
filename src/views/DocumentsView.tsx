@@ -35,7 +35,7 @@ interface DocumentsViewProps {
 
 const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, onUpdateProfile, accountant, profile, darkMode, theme, onMediaLibraryClick, onNavigateToProfile, openChoiceTrigger }: DocumentsViewProps) => {
   const isProDark = theme === 'pro-dark';
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { showToast } = useToast();
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
@@ -202,10 +202,10 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
       {filter === 'income' && (
         <motion.div variants={item} className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {([
-            { value: 'all', label: 'Tutte' },
-            { value: 'paid', label: 'Saldate' },
-            { value: 'pending', label: 'In attesa' },
-            { value: 'overdue', label: 'Scadute' },
+            { value: 'all', label: t('documents.status_all') },
+            { value: 'paid', label: t('documents.status_paid') },
+            { value: 'pending', label: t('documents.status_pending') },
+            { value: 'overdue', label: t('documents.status_overdue') },
           ] as const).map(s => (
             <button key={s.value} onClick={() => setStatusFilter(s.value)} className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 ${statusFilter === s.value ? (s.value === 'paid' ? 'bg-emerald-500 text-white' : s.value === 'overdue' ? 'bg-red-500 text-white' : s.value === 'pending' ? 'bg-amber-500 text-white' : 'bg-primary text-white') : (darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500')}`}>
               {s.label}
@@ -235,10 +235,10 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   <p className={`text-sm font-bold shrink-0 ${doc.type === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>{doc.type === 'expense' ? '-' : '+'}€{doc.amount.toLocaleString()}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-medium text-slate-400">{new Date(doc.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                  {doc.type === 'invoice' && doc.status === 'paid' && <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">· Saldato</span>}
-                  {doc.type === 'invoice' && doc.status === 'pending' && <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500">· In attesa</span>}
-                  {doc.type === 'invoice' && doc.status === 'overdue' && <span className="text-[10px] font-bold uppercase tracking-wider text-red-500">· Scaduta</span>}
+                  <span className="text-[10px] font-medium text-slate-400">{parseLocalDate(doc.date).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                  {doc.type === 'invoice' && doc.status === 'paid' && <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">· {t('documents.status_badge_paid')}</span>}
+                  {doc.type === 'invoice' && doc.status === 'pending' && <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500">· {t('documents.status_badge_pending')}</span>}
+                  {doc.type === 'invoice' && doc.status === 'overdue' && <span className="text-[10px] font-bold uppercase tracking-wider text-red-500">· {t('documents.status_badge_overdue')}</span>}
                   {doc.category && <span className="text-[10px] font-medium text-slate-400">· {doc.category}</span>}
                   {doc.type === 'expense' && (doc.ivaRate ?? 0) > 0 && <span className="text-[10px] font-bold text-primary">· {doc.ivaRate}% IVA</span>}
                   {doc.type === 'invoice' && (!doc.title || !doc.clientAddress || (!doc.clientPiva && doc.clientPiva !== 'Privato')) && (
