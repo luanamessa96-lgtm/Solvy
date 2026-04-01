@@ -380,6 +380,10 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                       <p className="text-[11px] leading-relaxed">Tipo efectivo: <span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{Math.round(spTaxes.effectiveRate * 100)}%</span></p>
                     </div>
                   )}
+                  {/* Disclaimer ES-12 */}
+                  <p className="text-[10px] text-slate-400 leading-relaxed pt-2">
+                    Los cálculos mostrados son estimaciones basadas en los datos introducidos y los tipos fiscales estándar. No constituyen asesoramiento fiscal profesional. Consulta siempre con tu gestor o asesor fiscal.
+                  </p>
                 </div>
               </div>
               {nextSpDeadline && (
@@ -498,11 +502,9 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   </div>
                 )}
 
-                {/* Disclaimer IT-18 / ES-12 */}
+                {/* Disclaimer IT-18 */}
                 <p className="text-[10px] text-slate-400 leading-relaxed pt-2">
-                  {profile.country === 'Spain'
-                    ? 'Los cálculos mostrados son estimaciones basadas en los datos introducidos y los tipos fiscales estándar. No constituyen asesoramiento fiscal profesional. Consulta siempre con tu gestor o asesor fiscal.'
-                    : 'I calcoli mostrati sono stime indicative basate sui dati inseriti e sulle aliquote fiscali standard. Non costituiscono consulenza fiscale professionale. Consulta sempre il tuo commercialista.'}
+                  I calcoli mostrati sono stime indicative basate sui dati inseriti e sulle aliquote fiscali standard. Non costituiscono consulenza fiscale professionale. Consulta sempre il tuo commercialista.
                 </p>
               </div>
             </div>
