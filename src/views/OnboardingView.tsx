@@ -405,7 +405,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                     <option value="390">€ 390/mes</option>
                     <option value="500">€ 500+/mes</option>
                   </select>
-                  <HelpText text="Quota mensile per il Régimen Especial de Trabajadores Autónomos." />
+                  <HelpText text="Cuota mensual del Régimen Especial de Trabajadores Autónomos." />
                 </div>
                 <div className="space-y-1.5">
                   <label className={lc}>Año inicio actividad</label>
@@ -435,7 +435,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                   </button>
                 </div>
                 <button onClick={() => goNext('done')} className="w-full py-3 text-sm font-semibold text-slate-400 active:scale-[0.98] transition-all">
-                  Salta per ora
+                  Omitir por ahora
                 </button>
               </div>
             </motion.div>
