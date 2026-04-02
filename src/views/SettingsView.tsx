@@ -9,6 +9,7 @@ import DeleteAccountModal from '../components/modals/DeleteAccountModal';
 import { useProStatus } from '../hooks/useProStatus';
 import { Profile, Document, Deadline } from '../types';
 import { IT_ADDIZIONALI_REGIONALI } from '../lib/it/addizionali';
+import AtecoSelector from '../components/AtecoSelector';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
@@ -298,6 +299,21 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
               </p>
             )}
           </div>
+
+          {/* Categoria ATECO — solo forfettario */}
+          {profile.regime === 'forfettario' && (
+            <div className={`p-4 rounded-3xl border space-y-3 transition-colors`} style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+              <div>
+                <p className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Categoria Attività (Codice ATECO)</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Determina il coefficiente di redditività</p>
+              </div>
+              <AtecoSelector
+                value={profile.coefficiente}
+                onChange={coeff => onUpdateProfile?.({ ...profile, coefficiente: coeff })}
+                darkMode={darkMode}
+              />
+            </div>
+          )}
 
           {/* INPS type warning */}
           {(profile.coefficiente === 67 || profile.coefficiente === 40) && (

@@ -5,6 +5,7 @@ import { IT_PROVINCE, getRegionFromProvince } from '../lib/it/province';
 import { useKeyboardPadding, scrollFieldIntoView } from '../hooks/useKeyboardPadding';
 import { Profile } from '../types';
 import { profileStorage } from '../lib/supabase';
+import AtecoSelector from '../components/AtecoSelector';
 
 interface OnboardingViewProps {
   profile: Profile;
@@ -13,13 +14,6 @@ interface OnboardingViewProps {
   darkMode?: boolean;
 }
 
-const CATEGORIE: { label: string; value: number }[] = [
-  { label: 'Professionisti (consulenti, designer, sviluppatori…)', value: 78 },
-  { label: 'Costruzioni e attività immobiliari', value: 86 },
-  { label: 'Artigiani e altri servizi', value: 67 },
-  { label: 'Intermediari del commercio', value: 62 },
-  { label: 'Commercio e ristorazione', value: 40 },
-];
 
 // Steps vary by country: 0=welcome, 'country'=country selection, 1-N=data steps, 'done'=done
 type OnboardingStep = 0 | 'country' | 1 | 2 | 3 | 'done';
@@ -311,14 +305,9 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                 {regime === 'forfettario' && (
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <label className={lc}>Categoria Attività</label>
-                      <select value={coefficiente ?? ''} onChange={e => setCoefficiente(e.target.value ? Number(e.target.value) : undefined)} className={ic}>
-                        <option value="">Seleziona categoria...</option>
-                        {CATEGORIE.map(c => (
-                          <option key={c.value} value={c.value}>{c.label} — {c.value}%</option>
-                        ))}
-                      </select>
-                      <HelpText text="Il coefficiente di redditività determina la base imponibile. Corrisponde al tuo codice ATECO. Non sai quale scegliere? Seleziona 'Professionisti' se sei designer, sviluppatore o consulente." />
+                      <label className={lc}>Categoria Attività (Codice ATECO)</label>
+                      <AtecoSelector value={coefficiente} onChange={setCoefficiente} darkMode={darkMode} />
+                      <HelpText text="Il coefficiente di redditività corrisponde al tuo codice ATECO. Non sai quale scegliere? Seleziona 'Professionisti' se sei designer, sviluppatore o consulente." />
                     </div>
                     <div className="space-y-1.5">
                       <label className={lc}>Anno Inizio Attività</label>
