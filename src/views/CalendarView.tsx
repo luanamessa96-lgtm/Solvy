@@ -54,9 +54,10 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   const [searchQuery, setSearchQuery] = useState('');
 
   // IT-33: primo anno e reddito N-1
+  // ORDINE DICHIARAZIONI: redditoN1 deve stare prima di isPrimoAnnoIT (evita TDZ crash)
   const annoInizio = profile?.annoInizioAttivita != null ? Number(profile.annoInizioAttivita) : null;
-  const isPrimoAnnoIT = !isSpain && annoInizio != null && annoInizio === selectedYear;
   const redditoN1 = profile?.redditoN1;
+  const isPrimoAnnoIT = !isSpain && annoInizio != null && annoInizio === selectedYear && !(redditoN1 != null && redditoN1 > 0);
 
   // IT-21 + IT-22: importi stimati per scadenze fiscali IT
   // NOTA: currentYear deve essere dichiarato prima di questo useMemo
