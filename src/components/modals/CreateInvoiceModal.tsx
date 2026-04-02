@@ -259,7 +259,8 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   </div>
                 )}
 
-                {/* Ritenuta — entrambi i regimi */}
+                {/* Ritenuta — entrambi i regimi, non su proforma */}
+                {!isProforma && (
                 <div className={`flex items-center gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
                   <div className="flex-1">
                     <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Ritenuta d'acconto 20%</p>
@@ -269,9 +270,10 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   </div>
                   <input type="checkbox" checked={form.ritenuta} onChange={e => set('ritenuta', e.target.checked)} className="w-5 h-5 rounded-lg text-primary focus:ring-primary" />
                 </div>
+                )}
 
-                {/* Marca da bollo — solo forfettario */}
-                {regime === 'forfettario' && amount > 0 && (
+                {/* Marca da bollo — solo forfettario, non su proforma */}
+                {!isProforma && regime === 'forfettario' && amount > 0 && (
                   <div className={`flex items-center gap-3 p-4 rounded-2xl border ${marcaBollo ? (darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-100') : (darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100')}`}>
                     <div className="flex-1">
                       <p className={`text-sm font-bold ${marcaBollo ? 'text-amber-500' : 'text-slate-400'}`}>Marca da bollo €2</p>
@@ -283,8 +285,8 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   </div>
                 )}
 
-                {/* Nota legale forfettario */}
-                {regime === 'forfettario' && (
+                {/* Nota legale forfettario — non su proforma */}
+                {!isProforma && regime === 'forfettario' && (
                   <div className={`p-4 rounded-2xl border ${darkMode ? 'bg-primary/5 border-primary/20' : 'bg-primary/5 border-primary/10'}`}>
                     <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">Nota legale automatica</p>
                     <p className="text-[10px] text-slate-400 leading-relaxed">{FORFETTARIO_NOTE}</p>
@@ -330,15 +332,15 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 </div>
               )}
 
-              {/* Stato pagamento */}
-              <div className={`flex items-center gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
+              {/* Stato pagamento — non su proforma */}
+              {!isProforma && <div className={`flex items-center gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
                 <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white"><CheckCircle2 size={20} /></div>
                 <div className="flex-1">
                   <p className={`text-xs font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-900'}`}>Segna come Pagata</p>
                   <p className={`text-[10px] ${darkMode ? 'text-emerald-500/60' : 'text-emerald-600'}`}>Aggiornerà le entrate in Home</p>
                 </div>
                 <input type="checkbox" checked={form.status === 'paid'} onChange={e => set('status', e.target.checked ? 'paid' : 'pending')} className="w-5 h-5 rounded-lg border-emerald-200 text-emerald-500 focus:ring-emerald-500" />
-              </div>
+              </div>}
 
               {/* Disclaimer IT-18 / ES-12 */}
               <p className="text-[10px] text-slate-400 leading-relaxed">
