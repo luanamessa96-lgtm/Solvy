@@ -67,9 +67,6 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   const annoInizio = profile?.annoInizioAttivita != null ? Number(profile.annoInizioAttivita) : null;
   const redditoN1 = profile?.redditoN1;
   const isPrimoAnnoIT = !isSpain && profile?.regime !== 'ordinario' && annoInizio != null && annoInizio === selectedYear && !(redditoN1 != null && redditoN1 > 0);
-  if (process.env.NODE_ENV === 'development') {
-    console.log('isPrimoAnnoIT:', isPrimoAnnoIT, 'regime:', profile?.regime, 'annoInizio:', annoInizio, 'selectedYear:', selectedYear, 'income:', income, 'expenses:', expenses);
-  }
 
   // IT-21 + IT-22: importi stimati per scadenze fiscali IT
   // NOTA: currentYear deve essere dichiarato prima di questo useMemo
@@ -279,12 +276,16 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start mb-0.5">
                       <h3 className={`text-sm font-bold truncate pr-2 transition-colors ${deadline.completed ? 'line-through text-slate-400' : (darkMode ? 'text-white' : 'text-slate-900')}`}>{deadline.title}</h3>
-                      {deadline.amount && (
-                        <div className="text-right shrink-0">
-                          <p className={`text-sm font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>~€{deadline.amount.toLocaleString()}</p>
-                          {isFiscalEstimate(deadline) && <p className="text-[9px] text-slate-400 leading-tight">stimato · può variare</p>}
-                        </div>
-                      )}
+                      {(() => {
+                        const liveAmt = FISCAL_ESTIMATE_TITLES.has(deadline.title) ? fiscalAmounts[deadline.title] : undefined;
+                        const displayAmt = liveAmt != null && liveAmt > 0 ? liveAmt : deadline.amount;
+                        return displayAmt ? (
+                          <div className="text-right shrink-0">
+                            <p className={`text-sm font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>~€{displayAmt.toLocaleString()}</p>
+                            {isFiscalEstimate(deadline) && <p className="text-[9px] text-slate-400 leading-tight">stimato · può variare</p>}
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
                     <div className="flex items-center gap-2">
                       {deadline.completed ? (
@@ -379,12 +380,16 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
               <div className="p-6 space-y-4">
                 <div className={`p-4 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
                   <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedDeadline.title}</p>
-                  {selectedDeadline.amount && (
-                    <>
-                      <p className="text-sm font-bold text-primary mt-0.5">~€{selectedDeadline.amount.toLocaleString()}</p>
-                      {isFiscalEstimate(selectedDeadline) && <p className="text-[10px] text-slate-400 mt-0.5">Stima basata sui dati attuali. L'importo reale dipende dalla dichiarazione definitiva. Consulta il tuo commercialista.</p>}
-                    </>
-                  )}
+                  {(() => {
+                    const liveAmt = FISCAL_ESTIMATE_TITLES.has(selectedDeadline.title) ? fiscalAmounts[selectedDeadline.title] : undefined;
+                    const displayAmt = liveAmt != null && liveAmt > 0 ? liveAmt : selectedDeadline.amount;
+                    return displayAmt ? (
+                      <>
+                        <p className="text-sm font-bold text-primary mt-0.5">~€{displayAmt.toLocaleString()}</p>
+                        {isFiscalEstimate(selectedDeadline) && <p className="text-[10px] text-slate-400 mt-0.5">Stima basata sui dati attuali. L'importo reale dipende dalla dichiarazione definitiva. Consulta il tuo commercialista.</p>}
+                      </>
+                    ) : null;
+                  })()}
                 </div>
                 <button onClick={() => { onUpdateDeadline({ ...selectedDeadline, completed: !selectedDeadline.completed }); setSelectedDeadline(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedDeadline.completed ? (darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400') : 'bg-emerald-50 text-emerald-500'}`}><CheckCircle2 size={18} /></div>
