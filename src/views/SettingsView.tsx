@@ -292,7 +292,7 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
                 {redditoN1Saved ? '✓' : 'Salva'}
               </button>
             </div>
-            {profile.annoInizioAttivita === new Date().getFullYear() && !redditoN1Input.trim() && (
+            {profile.annoInizioAttivita === new Date().getFullYear() && (
               <p className="text-[10px] text-blue-500 font-bold">
                 Primo anno — nessun acconto dovuto nel calendario
               </p>
