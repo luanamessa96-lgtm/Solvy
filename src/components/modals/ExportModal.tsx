@@ -472,12 +472,22 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       if (!isFirst) pdf.addPage();
       const M = margin;
       const R = rightCol;
+      const isCreditNote = inv.type === 'credit_note';
+      const redColor: [number, number, number] = [220, 38, 38];
 
-      // FATTURA title
+      // Titolo
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(22);
-      pdf.setTextColor(...black);
-      pdf.text('FATTURA', M, 18);
+      pdf.setTextColor(...(isCreditNote ? redColor : black));
+      pdf.text(isCreditNote ? 'NOTA DI CREDITO' : 'FATTURA', M, 18);
+
+      // Badge "Nota di Credito · rif. XXX" sotto il titolo
+      if (isCreditNote && inv.category) {
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(8);
+        pdf.setTextColor(...redColor);
+        pdf.text(`Nota di Credito · rif. ${inv.category}`, M, 24);
+      }
 
       // Numero + Data destra
       pdf.setFont('helvetica', 'normal');
@@ -549,12 +559,13 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const docRegime = inv.docRegime ?? profile.regime ?? 'forfettario';
       const isOrdinario = docRegime === 'ordinario';
       const ivaRate = inv.ivaRate ?? 0;
-      const rivalsaInps = inv.rivalsaInps ?? false;
-      const ritenuta = inv.ritenuta ?? false;
-      const marcaBollo = !isOrdinario && (inv.marcaBollo ?? (inv.amount > MARCA_BOLLO_THRESHOLD));
+      const rivalsaInps = !isCreditNote && (inv.rivalsaInps ?? false);
+      const ritenuta = !isCreditNote && (inv.ritenuta ?? false);
+      const marcaBollo = !isCreditNote && !isOrdinario && (inv.marcaBollo ?? (inv.amount > MARCA_BOLLO_THRESHOLD));
+      const displayAmount = isCreditNote ? -inv.amount : inv.amount;
       const rivalsaAmount = rivalsaInps ? inv.amount * INPS_RATE : 0;
-      const totaleImponibile = inv.amount + rivalsaAmount;
-      const ivaAmount = isOrdinario ? totaleImponibile * (ivaRate / 100) : 0;
+      const totaleImponibile = isCreditNote ? displayAmount : inv.amount + rivalsaAmount;
+      const ivaAmount = isOrdinario && !isCreditNote ? totaleImponibile * (ivaRate / 100) : 0;
       const ritenutaAmount = ritenuta ? inv.amount * RITENUTA_RATE : 0;
       const totale = totaleImponibile + ivaAmount + (marcaBollo ? MARCA_BOLLO_AMOUNT : 0) - ritenutaAmount;
 
@@ -562,11 +573,11 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       autoTable(pdf, {
         startY: y,
         head: [['Descrizione', 'Importo']],
-        body: [[inv.title || 'Servizio non specificato', `€ ${inv.amount.toFixed(2)}`]],
+        body: [[inv.title || (isCreditNote ? 'Nota di credito' : 'Servizio non specificato'), `${isCreditNote ? '– ' : ''}€ ${inv.amount.toFixed(2)}`]],
         styles: { fontSize: 9, cellPadding: { top: 5, bottom: 5, left: 3, right: 3 }, textColor: black },
         headStyles: { fillColor: [248, 250, 252], textColor: grey, fontStyle: 'bold', fontSize: 8, lineColor: lightGrey, lineWidth: 0.3 },
         bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
-        columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 38, halign: 'right', fontStyle: 'bold', textColor: black } },
+        columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 38, halign: 'right', fontStyle: 'bold', textColor: isCreditNote ? redColor : black } },
         margin: { left: M, right: M },
         tableLineColor: lightGrey,
         tableLineWidth: 0.3,
@@ -578,20 +589,22 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const summaryX = W - M - 72;
       const summaryW = 72;
 
-      const summaryRows: [string, string][] = [
-        ['Imponibile', `€ ${inv.amount.toFixed(2)}`],
-        ...(rivalsaInps ? [[`Rivalsa INPS (4%)`, `+ € ${rivalsaAmount.toFixed(2)}`] as [string, string]] : []),
-        ...(isOrdinario ? [[`IVA ${ivaRate}%`, `+ € ${ivaAmount.toFixed(2)}`] as [string, string]] : []),
-        ...(marcaBollo ? [['Marca da bollo', `+ € ${MARCA_BOLLO_AMOUNT.toFixed(2)}`] as [string, string]] : []),
-        ...(ritenuta ? [["Ritenuta d'acconto (20%)", `- € ${ritenutaAmount.toFixed(2)}`] as [string, string]] : []),
-      ];
+      const summaryRows: [string, string][] = isCreditNote
+        ? [['Imponibile stornato', `– € ${inv.amount.toFixed(2)}`]]
+        : [
+            ['Imponibile', `€ ${inv.amount.toFixed(2)}`],
+            ...(rivalsaInps ? [[`Rivalsa INPS (4%)`, `+ € ${rivalsaAmount.toFixed(2)}`] as [string, string]] : []),
+            ...(isOrdinario ? [[`IVA ${ivaRate}%`, `+ € ${ivaAmount.toFixed(2)}`] as [string, string]] : []),
+            ...(marcaBollo ? [['Marca da bollo', `+ € ${MARCA_BOLLO_AMOUNT.toFixed(2)}`] as [string, string]] : []),
+            ...(ritenuta ? [["Ritenuta d'acconto (20%)", `- € ${ritenutaAmount.toFixed(2)}`] as [string, string]] : []),
+          ];
 
       summaryRows.forEach(([label, value]) => {
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(8.5);
         pdf.setTextColor(...grey);
         pdf.text(label, summaryX, y + 4);
-        pdf.setTextColor(...black);
+        pdf.setTextColor(...(isCreditNote ? redColor : black));
         pdf.text(value, summaryX + summaryW, y + 4, { align: 'right' });
         pdf.setDrawColor(...lightGrey);
         pdf.line(summaryX, y + 7, summaryX + summaryW, y + 7);
@@ -602,14 +615,14 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(10);
       pdf.setTextColor(...black);
-      pdf.text('TOTALE DA RICEVERE', summaryX, y + 5);
+      pdf.text(isCreditNote ? 'TOTALE DA STORNARE' : 'TOTALE DA RICEVERE', summaryX, y + 5);
       pdf.setFontSize(11);
-      pdf.setTextColor(...primary);
-      pdf.text(`€ ${totale.toFixed(2)}`, summaryX + summaryW, y + 5, { align: 'right' });
+      pdf.setTextColor(...(isCreditNote ? redColor : primary));
+      pdf.text(`${isCreditNote ? '– ' : ''}€ ${Math.abs(totale).toFixed(2)}`, summaryX + summaryW, y + 5, { align: 'right' });
       y += 14;
 
-      // Nota legale
-      if (!isOrdinario) {
+      // Nota legale (solo fatture ordinarie/forfettarie, non note di credito)
+      if (!isOrdinario && !isCreditNote) {
         pdf.setDrawColor(...lightGrey);
         pdf.line(M, y, R, y);
         y += 5;
@@ -634,10 +647,10 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       pdf.text('Pag. 1 di 1', R, 285, { align: 'right' });
     };
 
-    const invoices = filteredDocs.filter(d => d.type === 'invoice');
+    const invoices = filteredDocs.filter(d => d.type === 'invoice' || d.type === 'credit_note');
     const expenses = filteredDocs.filter(d => d.type === 'expense');
 
-    // Una pagina per ogni fattura
+    // Una pagina per ogni fattura/nota di credito
     invoices.forEach((inv, i) => isSpain ? drawInvoicePageSpain(inv, i === 0) : drawInvoicePage(inv, i === 0));
 
     // Pagina riepilogo spese
