@@ -28,7 +28,6 @@ function formatAmount(n: number) {
 }
 
 export default function ExportModal({ isOpen, onClose, documents, selectedYear, profile, accountant, darkMode }: ExportModalProps) {
-  console.log('[EXPORT MODAL OPENED] profile:', profile?.regime, profile?.country);
   const isPro = useProStatus(profile);
   const isItaly = profile.country === 'Italy';
   const isSpain = profile.country === 'Spain';
@@ -768,7 +767,6 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const totCred = cNotes.reduce((s,d)=>s+d.amount,0);
       const totInc = totFatt-totCred;
       const totExpFull = expD.reduce((s,d)=>s+d.amount,0);
-      console.log('[DEBUG] profile.regime:', profile.regime, '| typeof:', typeof profile.regime, '| country:', profile.country);
       const regimeR = profile.regime||'forfettario';
       const isForf = regimeR!=='ordinario';
       const isItOrd = profile.country==='Italy' && !isForf;
@@ -792,15 +790,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const netto = isForf?totInc-imposta-inps:totInc-imposta-inps-totExpFull;
       const ritDocs = paidInv.filter(d=>d.ritenuta);
       const totRit = ritDocs.reduce((s,d)=>{const rA=d.rivalsaInps?d.amount*0.04:0; return s+(d.amount+rA)*0.20;},0);
-      console.log('[Riepilogo inline] profile.regime:', profile.regime, '| isItOrd:', isItOrd);
       const spCat: Record<string,number> = {};
-      expD.forEach(d=>{
-        const cat=d.category||'Altro';
-        const rate=isItOrd?getItDeductibilityRate(d.category):1;
-        const deductibleAmt=d.amount*rate;
-        console.log(`[Riepilogo inline] categoria="${cat}" raw=${d.amount} rate=${rate} deducibile=${deductibleAmt}`);
-        spCat[cat]=(spCat[cat]||0)+deductibleAmt;
-      });
+      expD.forEach(d=>{ const cat=d.category||'Altro'; spCat[cat]=(spCat[cat]||0)+d.amount*(isItOrd?getItDeductibilityRate(d.category):1); });
       const spRows = Object.entries(spCat).sort((a,b)=>b[1]-a[1]);
 
       // Header viola
@@ -1043,7 +1034,6 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const totalIncome = totalFatturato - totalCrediti;
       const totalExpensesAmt = expenseDocs.reduce((s, d) => s + d.amount, 0);
 
-      console.log('[DEBUG] profile.regime:', profile.regime, '| typeof:', typeof profile.regime, '| country:', profile.country);
       const regime = profile.regime || 'forfettario';
       const isForfettario = regime !== 'ordinario';
       const isItOrdinario = profile.country === 'Italy' && !isForfettario;
@@ -1074,15 +1064,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
         return s + (d.amount + rivalsaAmt) * 0.20;
       }, 0);
 
-      console.log('[Riepilogo PDF] profile.regime:', profile.regime, '| isItOrdinario:', isItOrdinario);
       const spesePerCat: Record<string, number> = {};
-      expenseDocs.forEach(d => {
-        const cat = d.category || 'Altro';
-        const rate = isItOrdinario ? getItDeductibilityRate(d.category) : 1;
-        const deductibleAmt = d.amount * rate;
-        console.log(`[Riepilogo PDF] categoria="${cat}" raw=${d.amount} rate=${rate} deducibile=${deductibleAmt}`);
-        spesePerCat[cat] = (spesePerCat[cat] || 0) + deductibleAmt;
-      });
+      expenseDocs.forEach(d => { const cat = d.category || 'Altro'; spesePerCat[cat] = (spesePerCat[cat] || 0) + d.amount * (isItOrdinario ? getItDeductibilityRate(d.category) : 1); });
       const speseRows = Object.entries(spesePerCat).sort((a, b) => b[1] - a[1]);
 
       // ── Header pagina ───────────────────────────────────────────────────────
@@ -1301,8 +1284,6 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
   const inputBase = `px-4 py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-95`;
   const dragControls = useDragControls();
-  console.log('[TEST] ExportModal rendering, profile.regime:', profile?.regime);
-
   return (
     <>
     <AnimatePresence>
