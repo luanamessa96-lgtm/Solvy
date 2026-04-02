@@ -938,10 +938,11 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                 </div>
               </div>
 
-              {/* Toggle FatturaPA XML — solo Italy Pro con commercialista */}
+              {/* Toggle FatturaPA XML + Registro Cronologico — solo Italy Pro con commercialista */}
               {isItaly && isPro && accountant && docFilter !== 'expense' && (
                 <div className="space-y-2">
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Opzioni</p>
+                  {/* FatturaPA XML */}
                   <button
                     onClick={() => setIncludeFatturaPA(prev => !prev)}
                     className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
@@ -949,27 +950,34 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                     <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeFatturaPA ? 'bg-primary border-primary' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
                       {includeFatturaPA && <Check size={12} strokeWidth={3} className="text-white" />}
                     </div>
-                    <div className="text-left flex-1">
-                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Includi FatturaPA XML</p>
+                    <span className="text-xl shrink-0">📄</span>
+                    <div className="text-left flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Includi FatturaPA XML</p>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-600 shrink-0">AdE</span>
+                      </div>
                       <p className="text-[10px] text-slate-400 mt-0.5">
                         {missingProfileFields.length > 0
                           ? `⚠ Completa il profilo (${missingProfileFields.map(f => f.label).join(', ')}) per XML corretti`
-                          : `${filteredDocs.filter(d => d.type === 'invoice').length} XML allegati all'email`}
+                          : 'File .xml per l\'Agenzia delle Entrate via SDI'}
                       </p>
                     </div>
                   </button>
+                  {/* Registro Cronologico */}
                   <button
                     onClick={() => setIncludeRegistro(prev => !prev)}
                     className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
                   >
-                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeRegistro ? 'bg-violet-500 border-violet-500' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
+                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeRegistro ? 'bg-emerald-500 border-emerald-500' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
                       {includeRegistro && <Check size={12} strokeWidth={3} className="text-white" />}
                     </div>
-                    <div className="text-left flex-1">
-                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>📋 Includi Registro Cronologico</p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">
-                        {`${yearDocs.filter(d => d.type === 'invoice' || d.type === 'credit_note').length} doc · ${format.toUpperCase()} con 12 campi Agenzia delle Entrate`}
-                      </p>
+                    <span className="text-xl shrink-0">📋</span>
+                    <div className="text-left flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Includi Registro Cronologico</p>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-600 shrink-0">Commercialista</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-0.5">Elenco fatture per il commercialista (CSV/PDF)</p>
                     </div>
                   </button>
                 </div>
