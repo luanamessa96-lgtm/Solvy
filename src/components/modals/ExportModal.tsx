@@ -1431,10 +1431,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                 <div className="space-y-3">
                   <button
                     onClick={() => {
-                      // Se il riepilogo è incluso ha priorità nell'anteprima
-                      if (readyBlob.riepilogoFile) {
-                        setPdfPreview({ blob: readyBlob.riepilogoFile.blob, fileName: readyBlob.riepilogoFile.fileName });
-                      } else if (readyBlob.fileName.endsWith('.pdf')) {
+                      if (readyBlob.fileName.endsWith('.pdf')) {
                         setPdfPreview({ blob: readyBlob.blob, fileName: readyBlob.fileName });
                       } else {
                         const url = URL.createObjectURL(readyBlob.blob);
@@ -1445,16 +1442,16 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                   >
                     <Check size={18} className="text-emerald-500 shrink-0" />
                     <div className="min-w-0 flex-1 text-left">
-                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>File pronto</p>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Documenti del periodo</p>
                       <p className="text-xs text-slate-400 truncate">{readyBlob.fileName}</p>
                       {(readyBlob.xmlFiles?.length ?? 0) > 0 && (
-                        <p className="text-[10px] text-primary mt-0.5">+ {readyBlob.xmlFiles!.length} XML FatturaPA</p>
+                        <p className="text-[10px] text-blue-500 mt-1.5">📎 {readyBlob.xmlFiles!.length} file XML FatturaPA allegati</p>
                       )}
                       {readyBlob.registroFile && (
-                        <p className="text-[10px] text-violet-500 mt-0.5">+ Registro Cronologico</p>
+                        <p className="text-[10px] text-emerald-600 mt-0.5">📋 Registro Cronologico allegato</p>
                       )}
                       {readyBlob.riepilogoFile && (
-                        <p className="text-[10px] text-violet-500 mt-0.5">+ Riepilogo Annuale</p>
+                        <p className="text-[10px] text-violet-500 mt-0.5">📊 Riepilogo Annuale allegato</p>
                       )}
                     </div>
                     <div className="flex items-center gap-1.5 text-primary shrink-0">
