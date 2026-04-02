@@ -151,7 +151,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-8 pb-24">
       <motion.div variants={item} className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <button onClick={() => { setSelectedYear(y => y - 1); setSelectedMonth(null); }} className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-90 ${darkMode ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-500'}`}><ChevronLeft size={16} /></button>
+          <button onClick={() => { setSelectedYear(y => y - 1); setSelectedMonth(null); }} disabled={selectedYear <= 2026} className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 ${darkMode ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-500'}`}><ChevronLeft size={16} /></button>
           <span className={`text-base font-bold min-w-[48px] text-center ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedYear}</span>
           <button onClick={() => { setSelectedYear(y => y + 1); setSelectedMonth(null); }} disabled={selectedYear >= currentYear + 1} className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 ${darkMode ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-500'}`}><ChevronRight size={16} /></button>
         </div>
