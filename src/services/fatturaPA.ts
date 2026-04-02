@@ -46,16 +46,18 @@ export function getMissingProfileFields(profile: Profile): MissingProfileField[]
 }
 
 export function generateFatturaPA(doc: Document, profile: Profile): { xml: string; filename: string } {
+  const isCreditNote = doc.type === 'credit_note';
   const isForfettario = (doc.docRegime ?? profile.regime ?? 'forfettario') !== 'ordinario';
   const ivaRate = isForfettario ? 0 : (doc.ivaRate ?? 22);
   const regimeFiscale = isForfettario ? 'RF19' : 'RF01';
+  const tipoDocumento = isCreditNote ? 'TD04' : 'TD01';
 
-  const baseAmount = doc.amount;
-  const rivalsaAmount = doc.rivalsaInps ? baseAmount * 0.04 : 0;
+  const baseAmount = isCreditNote ? -doc.amount : doc.amount;
+  const rivalsaAmount = (!isCreditNote && doc.rivalsaInps) ? baseAmount * 0.04 : 0;
   const imponibile = baseAmount + rivalsaAmount;
   const ivaAmount = isForfettario ? 0 : imponibile * (ivaRate / 100);
-  const bolloAmount = doc.marcaBollo ? 2 : 0;
-  const ritenutaAmount = doc.ritenuta ? imponibile * 0.20 : 0;
+  const bolloAmount = (!isCreditNote && doc.marcaBollo) ? 2 : 0;
+  const ritenutaAmount = (!isCreditNote && doc.ritenuta) ? imponibile * 0.20 : 0;
   const importoTotale = imponibile + ivaAmount + bolloAmount - ritenutaAmount;
 
   const profAddr = parseAddress(profile.address || '');
@@ -122,11 +124,12 @@ export function generateFatturaPA(doc: Document, profile: Profile): { xml: strin
   <FatturaElettronicaBody>
     <DatiGenerali>
       <DatiGeneraliDocumento>
-        <TipoDocumento>TD01</TipoDocumento>
+        <TipoDocumento>${tipoDocumento}</TipoDocumento>
         <Divisa>EUR</Divisa>
         <Data>${formatDate(doc.date)}</Data>
         <Numero>${escapeXml(invoiceNumber)}</Numero>
-        <ImportoTotaleDocumento>${formatAmount(importoTotale)}</ImportoTotaleDocumento>${doc.ritenuta ? `
+        <ImportoTotaleDocumento>${formatAmount(importoTotale)}</ImportoTotaleDocumento>${isCreditNote && doc.category ? `
+        <Causale>Nota di credito a storno fattura n. ${escapeXml(doc.category)}</Causale>` : ''}${doc.ritenuta && !isCreditNote ? `
         <DatiRitenuta>
           <TipoRitenuta>RT01</TipoRitenuta>
           <ImportoRitenuta>${formatAmount(ritenutaAmount)}</ImportoRitenuta>
@@ -136,7 +139,7 @@ export function generateFatturaPA(doc: Document, profile: Profile): { xml: strin
         <DatiBollo>
           <BolloVirtuale>SI</BolloVirtuale>
           <ImportoBollo>2.00</ImportoBollo>
-        </DatiBollo>` : ''}${isForfettario ? `
+        </DatiBollo>` : ''}${isForfettario && !isCreditNote ? `
         <Causale>Operazione effettuata ai sensi dell&apos;art. 1, commi 54-89, della Legge 190/2014 - Regime forfettario. Imposta non dovuta.</Causale>` : ''}
       </DatiGeneraliDocumento>
     </DatiGenerali>

@@ -25,7 +25,7 @@ export interface Profile {
 
 export interface Document {
   id: string;
-  type: 'invoice' | 'expense';
+  type: 'invoice' | 'expense' | 'credit_note';
   title: string;
   amount: number;
   date: string;

@@ -24,6 +24,7 @@ export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<
     import('jspdf'),
     import('jspdf-autotable'),
   ]);
+  const isCreditNote = doc.type === 'credit_note';
   const isSpain = profile.country === 'Spain';
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
   const W = 210;
@@ -39,7 +40,7 @@ export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(22);
   pdf.setTextColor(...black);
-  pdf.text(isSpain ? 'FACTURA' : 'FATTURA', M, 18);
+  pdf.text(isCreditNote ? 'NOTA DI CREDITO' : isSpain ? 'FACTURA' : 'FATTURA', M, 18);
 
   // Numero fattura top right
   pdf.setFont('helvetica', 'normal');
@@ -64,7 +65,10 @@ export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<
   // Regime
   pdf.setFontSize(8);
   pdf.setTextColor(...grey);
-  pdf.text(isSpain ? 'ESTIMACIÓN DIRECTA SIMPLIFICADA' : (profile.regime === 'ordinario' ? 'Regime Ordinario' : 'Regime Forfettario').toUpperCase(), M, 24);
+  const regimeLabel = isCreditNote
+    ? ((doc.docRegime ?? profile.regime ?? 'forfettario') === 'ordinario' ? 'REGIME ORDINARIO' : 'REGIME FORFETTARIO')
+    : isSpain ? 'ESTIMACIÓN DIRECTA SIMPLIFICADA' : (profile.regime === 'ordinario' ? 'Regime Ordinario' : 'Regime Forfettario').toUpperCase();
+  pdf.text(regimeLabel, M, 24);
 
   // Divider
   pdf.setDrawColor(...lightGrey);
@@ -130,27 +134,38 @@ export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<
   pdf.line(M, y, R, y);
   y += 8;
 
+  // ─── Riferimento fattura originale (solo nota di credito) ────────────────
+  if (isCreditNote && doc.category) {
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8.5);
+    pdf.setTextColor(...grey);
+    pdf.text(`Fattura originale: ${doc.category}`, M, y);
+    y += 7;
+  }
+
   // ─── Tabella voci ─────────────────────────────────────────────────────────
   const docRegime = doc.docRegime ?? (profile.regime ?? 'forfettario');
   const isOrdinario = docRegime === 'ordinario';
   const ivaRate = doc.ivaRate ?? 0;
-  const rivalsaInps = doc.rivalsaInps ?? false;
-  const ritenuta = doc.ritenuta ?? false;
-  // No marca da bollo for Spanish invoices
-  const marcaBollo = isSpain ? false : (!isOrdinario && (doc.marcaBollo ?? (doc.amount > MARCA_BOLLO_THRESHOLD)));
+  const rivalsaInps = isCreditNote ? false : (doc.rivalsaInps ?? false);
+  const ritenuta = isCreditNote ? false : (doc.ritenuta ?? false);
+  // No marca da bollo for Spanish invoices or credit notes
+  const marcaBollo = (isSpain || isCreditNote) ? false : (!isOrdinario && (doc.marcaBollo ?? (doc.amount > MARCA_BOLLO_THRESHOLD)));
 
   const rivalsaAmount = rivalsaInps ? doc.amount * INPS_RATE : 0;
   const totaleImponibile = doc.amount + rivalsaAmount;
-  const ivaAmount = isOrdinario ? totaleImponibile * (ivaRate / 100) : 0;
+  const ivaAmount = isOrdinario && !isCreditNote ? totaleImponibile * (ivaRate / 100) : 0;
   // Forfettario: ritenuta sempre 0 (art. 1, co. 67, L. 190/2014)
   const ritenutaApplicata = ritenuta && (isOrdinario || isSpain);
   const ritenutaAmount = ritenutaApplicata ? doc.amount * RITENUTA_RATE : 0;
   const totale = totaleImponibile + ivaAmount + (marcaBollo ? MARCA_BOLLO_AMOUNT : 0) - ritenutaAmount;
+  const displayAmount = isCreditNote ? -doc.amount : doc.amount;
+  const displayTotale = isCreditNote ? -totale : totale;
 
   autoTable(pdf, {
     startY: y,
     head: [['Descrizione', 'Importo']],
-    body: [[doc.title || 'Servizio non specificato', fmt(doc.amount)]],
+    body: [[doc.title || (isCreditNote ? 'Storno fattura' : 'Servizio non specificato'), fmt(displayAmount)]],
     styles: { fontSize: 9, cellPadding: { top: 5, bottom: 5, left: 3, right: 3 }, textColor: black },
     headStyles: {
       fillColor: [248, 250, 252],
@@ -177,7 +192,9 @@ export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<
   const summaryX = W - M - 72;
   const summaryW = 72;
 
-  const summaryRows: [string, string, boolean][] = isSpain
+  const summaryRows: [string, string, boolean][] = isCreditNote
+    ? [['Imponibile stornato', fmt(-doc.amount), false]]
+    : isSpain
     ? [
         ['Base imponible', fmt(doc.amount), false],
         ...(isOrdinario ? [[`Cuota IVA ${ivaRate}%`, `+ ${fmt(ivaAmount)}`, false] as [string, string, boolean]] : []),
@@ -209,10 +226,10 @@ export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(10);
   pdf.setTextColor(...black);
-  pdf.text(isSpain ? 'TOTAL A COBRAR' : 'TOTALE DA RICEVERE', summaryX, y + 5);
+  pdf.text(isCreditNote ? 'TOTALE DA STORNARE' : isSpain ? 'TOTAL A COBRAR' : 'TOTALE DA RICEVERE', summaryX, y + 5);
   pdf.setFontSize(11);
   pdf.setTextColor(...primary);
-  pdf.text(fmt(totale), summaryX + summaryW, y + 5, { align: 'right' });
+  pdf.text(fmt(displayTotale), summaryX + summaryW, y + 5, { align: 'right' });
 
   y += 14;
 
@@ -270,9 +287,13 @@ export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<
 export async function buildInvoicePDFBlob(doc: Document, profile: Profile): Promise<{ blob: Blob; fileName: string }> {
   const pdf = await buildInvoicePDF(doc, profile);
   const isSpain = profile.country === 'Spain';
-  const fileName = isSpain
-    ? `factura_${doc.invoiceNumber?.replace('/', '-') || doc.id}_${profile.name.replace(/\s+/g, '_')}.pdf`
-    : `fattura_${doc.invoiceNumber?.replace('/', '-') || doc.id}_${profile.name.replace(/\s+/g, '_')}.pdf`;
+  const numPart = doc.invoiceNumber?.replace('/', '-') || doc.id;
+  const namePart = profile.name.replace(/\s+/g, '_');
+  const fileName = doc.type === 'credit_note'
+    ? `nota_credito_${numPart}_${namePart}.pdf`
+    : isSpain
+    ? `factura_${numPart}_${namePart}.pdf`
+    : `fattura_${numPart}_${namePart}.pdf`;
   return { blob: pdf.output('blob'), fileName };
 }
 
