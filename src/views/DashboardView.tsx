@@ -163,7 +163,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
     } else {
       // Regime ordinario — INPS deducibile dalla base imponibile IRPEF (IT-20)
       const redditoLordo = Math.max(0, base - expenses);
-      const inps = calcInpsAmount(redditoLordo, INPS_ORDINARIO);
+      const inps = calcInpsAmount(redditoLordo, INPS_GESTIONE_SEPARATA);
       const redditoImponibile = Math.max(0, redditoLordo - inps);
       const irpef = calcIRPEF(redditoImponibile);
       const addizionali = redditoImponibile * getAddizionaliRate(profile.region);
@@ -518,7 +518,11 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                       </div>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-xs font-bold text-slate-400">{t('dashboard.surcharges')}</span>
+                      <span className="text-xs font-bold text-slate-400">
+                        {profile.region
+                          ? `Addizionali (${(getAddizionaliRate(profile.region) * 100).toFixed(2)}% — ${profile.region})`
+                          : t('dashboard.surcharges')}
+                      </span>
                       <span className="text-xs font-bold text-orange-500">{fmt(tasse.addizionali)}</span>
                     </div>
                   </>)}

@@ -526,6 +526,7 @@ function AppInner() {
       showToast(dbError(e), 'error');
       throw e;
     }
+    setLanguageByCountry(normalized.country);
     localStorage.setItem('onboardingComplete', 'true');
     setShowOnboarding(false);
 
@@ -578,6 +579,7 @@ function AppInner() {
       showToast(dbError(e), 'error');
       throw e; // Tieni l'utente nell'onboarding per riprovare
     }
+    setLanguageByCountry(normalized.country);
     setProfiles(prev => [...prev, normalized]);
     setActiveProfile(normalized);
     setDocuments([]);
