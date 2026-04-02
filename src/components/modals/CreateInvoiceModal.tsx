@@ -246,8 +246,8 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   </div>
                 )}
 
-                {/* Rivalsa INPS — solo ordinario */}
-                {regime === 'ordinario' && (
+                {/* Rivalsa INPS — solo ordinario, non su proforma */}
+                {regime === 'ordinario' && !isProforma && (
                   <div className={`flex items-center gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
                     <div className="flex-1">
                       <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Rivalsa INPS 4%</p>
