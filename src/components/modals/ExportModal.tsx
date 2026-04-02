@@ -833,6 +833,303 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     onClose();
   };
 
+  const [generatingRiepilogo, setGeneratingRiepilogo] = useState(false);
+
+  const handleRiepilogoPDF = async () => {
+    setGeneratingRiepilogo(true);
+    try {
+      const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable'),
+      ]);
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
+      const W = 210;
+      const M = 14;
+      const R = W - M;
+      const primary: [number, number, number] = [79, 70, 229];
+      const black: [number, number, number] = [15, 23, 42];
+      const grey: [number, number, number] = [100, 116, 139];
+      const lightGrey: [number, number, number] = [226, 232, 240];
+      const green: [number, number, number] = [16, 185, 129];
+      const red: [number, number, number] = [239, 68, 68];
+
+      const INPS_GESTIONE_SEPARATA = 0.2607;
+      const INPS_ORDINARIO = 0.24;
+      function calcIRPEFLocal(imp: number): number {
+        if (imp <= 0) return 0;
+        if (imp <= 28000) return imp * 0.23;
+        if (imp <= 50000) return 28000 * 0.23 + (imp - 28000) * 0.35;
+        return 28000 * 0.23 + 22000 * 0.35 + (imp - 50000) * 0.43;
+      }
+      const fmtEur = (n: number) => `€ ${Math.abs(n).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+      // ── Calcoli base ────────────────────────────────────────────────────────
+      const allYearDocs = documents.filter(d => getLocalYear(d.date) === year);
+      const paidInvoices = allYearDocs.filter(d => d.type === 'invoice' && d.status === 'paid');
+      const creditNotes = allYearDocs.filter(d => d.type === 'credit_note');
+      const expenseDocs = allYearDocs.filter(d => d.type === 'expense');
+
+      const totalFatturato = paidInvoices.reduce((s, d) => s + d.amount, 0);
+      const totalCrediti = creditNotes.reduce((s, d) => s + d.amount, 0);
+      const totalIncome = totalFatturato - totalCrediti;
+      const totalExpensesAmt = expenseDocs.reduce((s, d) => s + d.amount, 0);
+
+      const regime = profile.regime || 'forfettario';
+      const isForfettario = regime !== 'ordinario';
+      const coeff = (profile.coefficiente != null && profile.coefficiente > 0) ? profile.coefficiente / 100 : 0.78;
+      const redditoLordo = isForfettario ? Math.max(0, totalIncome * coeff) : Math.max(0, totalIncome - totalExpensesAmt);
+      const inpsRate = isForfettario ? INPS_GESTIONE_SEPARATA : INPS_ORDINARIO;
+      const inps = redditoLordo * inpsRate;
+      const redditoImponibile = Math.max(0, redditoLordo - inps);
+      const annoInizio = profile.annoInizioAttivita ?? null;
+      const yearsActive = annoInizio != null ? year - Number(annoInizio) : null;
+      const isFivePercent = isForfettario && yearsActive != null && Number.isFinite(yearsActive) && yearsActive < 5;
+      const aliquota = isForfettario ? (isFivePercent ? 0.05 : 0.15) : 0;
+      const impostaForFeit = redditoImponibile * aliquota;
+      const irpef = isForfettario ? 0 : calcIRPEFLocal(redditoImponibile);
+      const addizionali = isForfettario ? 0 : redditoImponibile * 0.023;
+      const imposta = isForfettario ? impostaForFeit : irpef + addizionali;
+      const accontoGiugno = imposta * 0.40;
+      const accontoNovembre = imposta * 0.60;
+      const saldo = imposta - accontoGiugno - accontoNovembre;
+      const netto = isForfettario ? totalIncome - imposta - inps : totalIncome - imposta - inps - totalExpensesAmt;
+
+      const ritenuteDocs = paidInvoices.filter(d => d.ritenuta);
+      const totalRitenute = ritenuteDocs.reduce((s, d) => {
+        const rivalsaAmt = d.rivalsaInps ? d.amount * 0.04 : 0;
+        return s + (d.amount + rivalsaAmt) * 0.20;
+      }, 0);
+
+      const spesePerCat: Record<string, number> = {};
+      expenseDocs.forEach(d => { const cat = d.category || 'Altro'; spesePerCat[cat] = (spesePerCat[cat] || 0) + d.amount; });
+      const speseRows = Object.entries(spesePerCat).sort((a, b) => b[1] - a[1]);
+
+      // ── Header pagina ───────────────────────────────────────────────────────
+      pdf.setFillColor(...primary);
+      pdf.rect(0, 0, W, 32, 'F');
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(18);
+      pdf.setTextColor(255, 255, 255);
+      pdf.text(`Riepilogo Annuale ${year}`, M, 14);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor(200, 200, 255);
+      pdf.text(profile.name, M, 22);
+      pdf.text(`Generato il ${new Date().toLocaleDateString('it-IT')}`, R, 22, { align: 'right' });
+      pdf.setTextColor(200, 200, 255);
+      pdf.setFontSize(9);
+      pdf.text(`Regime: ${isForfettario ? 'Forfettario' : 'Ordinario'}${isFivePercent ? ' · Aliquota agevolata 5%' : ''}`, R, 14, { align: 'right' });
+
+      let y = 42;
+
+      // ── Riepilogo fatturato ─────────────────────────────────────────────────
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(9);
+      pdf.setTextColor(...grey);
+      pdf.text('FATTURATO', M, y);
+      y += 4;
+      autoTable(pdf, {
+        startY: y,
+        head: [['Voce', 'Importo']],
+        body: [
+          ['Fatture emesse e incassate', fmtEur(totalFatturato)],
+          ...(totalCrediti > 0 ? [['Note di credito emesse', `– ${fmtEur(totalCrediti)}`]] : []),
+          ['Fatturato netto', fmtEur(totalIncome)],
+        ],
+        styles: { fontSize: 9, cellPadding: { top: 3, bottom: 3, left: 3, right: 3 }, textColor: black },
+        headStyles: { fillColor: [248, 250, 252], textColor: grey, fontStyle: 'bold', fontSize: 8, lineColor: lightGrey, lineWidth: 0.3 },
+        bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+        columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 45, halign: 'right', fontStyle: 'bold' } },
+        didParseCell: (data) => {
+          if (data.section === 'body' && data.row.index === (totalCrediti > 0 ? 2 : 1)) {
+            data.cell.styles.fontStyle = 'bold';
+            data.cell.styles.textColor = green;
+          }
+        },
+        margin: { left: M, right: M },
+      });
+      y = (pdf.lastAutoTable?.finalY ?? y + 20) + 8;
+
+      // ── Calcolo fiscale ─────────────────────────────────────────────────────
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(9);
+      pdf.setTextColor(...grey);
+      pdf.text('CALCOLO FISCALE STIMATO', M, y);
+      y += 4;
+      const fiscaleBody: string[][] = isForfettario
+        ? [
+            ['Coefficiente di redditività', `${(coeff * 100).toFixed(0)}%`],
+            ['Reddito lordo', fmtEur(redditoLordo)],
+            [`Contributi INPS (${(inpsRate * 100).toFixed(2)}%)`, fmtEur(inps)],
+            ['Reddito imponibile', fmtEur(redditoImponibile)],
+            [`Imposta sostitutiva (${(aliquota * 100).toFixed(0)}%)`, fmtEur(imposta)],
+            ['Acconto giugno (40%)', fmtEur(accontoGiugno)],
+            ['Acconto novembre (60%)', fmtEur(accontoNovembre)],
+            ['Saldo stimato', fmtEur(saldo)],
+          ]
+        : [
+            ['Reddito lordo (fatturato – spese)', fmtEur(redditoLordo)],
+            [`Contributi INPS (${(inpsRate * 100).toFixed(0)}%)`, fmtEur(inps)],
+            ['Reddito imponibile', fmtEur(redditoImponibile)],
+            ['IRPEF', fmtEur(irpef)],
+            ['Addizionali (~2.3%)', fmtEur(addizionali)],
+            ['Totale imposta', fmtEur(imposta)],
+            ['Acconto giugno (40%)', fmtEur(accontoGiugno)],
+            ['Acconto novembre (60%)', fmtEur(accontoNovembre)],
+            ['Saldo stimato', fmtEur(saldo)],
+          ];
+      autoTable(pdf, {
+        startY: y,
+        head: [['Calcolo', 'Importo stimato']],
+        body: fiscaleBody,
+        styles: { fontSize: 9, cellPadding: { top: 3, bottom: 3, left: 3, right: 3 }, textColor: black },
+        headStyles: { fillColor: [248, 250, 252], textColor: grey, fontStyle: 'bold', fontSize: 8, lineColor: lightGrey, lineWidth: 0.3 },
+        bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+        columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 45, halign: 'right' } },
+        margin: { left: M, right: M },
+      });
+      y = (pdf.lastAutoTable?.finalY ?? y + 30) + 8;
+
+      // ── Netto reale ─────────────────────────────────────────────────────────
+      autoTable(pdf, {
+        startY: y,
+        body: [['Netto reale stimato anno ' + year, fmtEur(netto)]],
+        styles: { fontSize: 11, fontStyle: 'bold', cellPadding: { top: 5, bottom: 5, left: 3, right: 3 } },
+        bodyStyles: { lineColor: primary, lineWidth: 0.4, textColor: primary },
+        columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 45, halign: 'right' } },
+        margin: { left: M, right: M },
+      });
+      y = (pdf.lastAutoTable?.finalY ?? y + 14) + 8;
+
+      // ── Spese per categoria (solo se ci sono) ───────────────────────────────
+      if (speseRows.length > 0) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(9);
+        pdf.setTextColor(...grey);
+        pdf.text('SPESE DEDUCIBILI PER CATEGORIA', M, y);
+        y += 4;
+        autoTable(pdf, {
+          startY: y,
+          head: [['Categoria', 'Totale']],
+          body: [...speseRows.map(([cat, amt]) => [cat, fmtEur(amt)]), ['Totale spese', fmtEur(totalExpensesAmt)]],
+          styles: { fontSize: 9, cellPadding: { top: 3, bottom: 3, left: 3, right: 3 }, textColor: black },
+          headStyles: { fillColor: [248, 250, 252], textColor: grey, fontStyle: 'bold', fontSize: 8, lineColor: lightGrey, lineWidth: 0.3 },
+          bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+          columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 45, halign: 'right' } },
+          didParseCell: (data) => {
+            if (data.section === 'body' && data.row.index === speseRows.length) {
+              data.cell.styles.fontStyle = 'bold';
+              data.cell.styles.textColor = red;
+            }
+          },
+          margin: { left: M, right: M },
+        });
+        y = (pdf.lastAutoTable?.finalY ?? y + 20) + 8;
+      }
+
+      // ── Ritenute d'acconto ──────────────────────────────────────────────────
+      if (ritenuteDocs.length > 0) {
+        if (y > 220) { pdf.addPage(); y = 20; }
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(9);
+        pdf.setTextColor(...grey);
+        pdf.text('RITENUTE D\'ACCONTO SUBITE', M, y);
+        y += 4;
+        autoTable(pdf, {
+          startY: y,
+          head: [['Fattura', 'Cliente', 'Importo fattura', 'Ritenuta 20%']],
+          body: [
+            ...ritenuteDocs.map(d => {
+              const rivAmt = d.rivalsaInps ? d.amount * 0.04 : 0;
+              const ritenuta = (d.amount + rivAmt) * 0.20;
+              return [d.invoiceNumber || d.id.slice(0, 8), d.client || '—', fmtEur(d.amount), fmtEur(ritenuta)];
+            }),
+            ['Totale ritenute subite', '', '', fmtEur(totalRitenute)],
+          ],
+          styles: { fontSize: 8, cellPadding: { top: 3, bottom: 3, left: 3, right: 3 }, textColor: black },
+          headStyles: { fillColor: [248, 250, 252], textColor: grey, fontStyle: 'bold', fontSize: 7.5, lineColor: lightGrey, lineWidth: 0.3 },
+          bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+          columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right', fontStyle: 'bold' } },
+          didParseCell: (data) => {
+            if (data.section === 'body' && data.row.index === ritenuteDocs.length) {
+              data.cell.styles.fontStyle = 'bold';
+            }
+          },
+          margin: { left: M, right: M },
+        });
+        y = (pdf.lastAutoTable?.finalY ?? y + 20) + 8;
+      }
+
+      // ── Lista fatture cronologica ────────────────────────────────────────────
+      pdf.addPage();
+      pdf.setFillColor(...primary);
+      pdf.rect(0, 0, W, 18, 'F');
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(11);
+      pdf.setTextColor(255, 255, 255);
+      pdf.text(`Lista Fatture e Documenti ${year}`, M, 12);
+      y = 26;
+
+      const allDocs = [...paidInvoices, ...allYearDocs.filter(d => d.type === 'invoice' && d.status !== 'paid'), ...creditNotes]
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      autoTable(pdf, {
+        startY: y,
+        head: [['N°', 'Data', 'Tipo', 'Cliente', 'P.IVA/CF', 'Importo', 'Stato']],
+        body: allDocs.map(d => [
+          d.invoiceNumber || '—',
+          new Date(d.date).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+          d.type === 'credit_note' ? 'Nota credito' : 'Fattura',
+          d.client || d.title || '—',
+          d.clientPiva || d.clientCf || '—',
+          d.type === 'credit_note' ? `– ${fmtEur(d.amount)}` : fmtEur(d.amount),
+          d.type === 'credit_note' ? 'Storno' : d.status === 'paid' ? 'Saldato' : d.status === 'overdue' ? 'Scaduta' : 'In attesa',
+        ]),
+        styles: { fontSize: 7.5, cellPadding: { top: 2.5, bottom: 2.5, left: 2, right: 2 }, textColor: black, overflow: 'ellipsize' },
+        headStyles: { fillColor: [248, 250, 252], textColor: grey, fontStyle: 'bold', fontSize: 7, lineColor: lightGrey, lineWidth: 0.3 },
+        bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+        columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 22 }, 2: { cellWidth: 22 }, 3: { cellWidth: 'auto' }, 4: { cellWidth: 28 }, 5: { cellWidth: 25, halign: 'right' }, 6: { cellWidth: 20 } },
+        didParseCell: (data) => {
+          if (data.section === 'body' && allDocs[data.row.index]?.type === 'credit_note') {
+            data.cell.styles.textColor = red;
+          }
+        },
+        margin: { left: M, right: M },
+      });
+
+      // ── Disclaimer ──────────────────────────────────────────────────────────
+      const pageCount = pdf.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i);
+        pdf.setDrawColor(...lightGrey);
+        pdf.setLineWidth(0.3);
+        pdf.line(M, 286, R, 286);
+        pdf.setFont('helvetica', 'italic');
+        pdf.setFontSize(6.5);
+        pdf.setTextColor(...grey);
+        pdf.text('Documento riepilogativo con dati stimati. Verificare con il commercialista per la dichiarazione definitiva.', M, 291);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Pag. ${i} di ${pageCount}`, R, 291, { align: 'right' });
+      }
+
+      const pdfBlob: Blob = pdf.output('blob');
+      const piva = (profile.piva || 'NOPIVA').replace(/\s/g, '');
+      const pdfFileName = `riepilogo_annuale_${year}_${piva}.pdf`;
+
+      const file = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: pdfFileName });
+      } else {
+        const url = URL.createObjectURL(pdfBlob);
+        const a = window.document.createElement('a');
+        a.href = url; a.download = pdfFileName; a.click();
+        URL.revokeObjectURL(url);
+      }
+    } finally {
+      setGeneratingRiepilogo(false);
+    }
+  };
+
   const inputBase = `px-4 py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-95`;
   const dragControls = useDragControls();
 
@@ -1044,6 +1341,29 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                     )}
                   </div>
                 </div>
+              )}
+
+              {/* Bottone Riepilogo Annuale PDF — solo Italy Pro */}
+              {isItaly && isPro && (
+                <button
+                  onClick={handleRiepilogoPDF}
+                  disabled={generatingRiepilogo}
+                  className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'} ${generatingRiepilogo ? 'opacity-60' : ''}`}
+                >
+                  <span className="text-xl shrink-0">📊</span>
+                  <div className="text-left flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                        {generatingRiepilogo ? 'Generazione in corso…' : 'Riepilogo Annuale PDF'}
+                      </p>
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-violet-100 text-violet-600 shrink-0">Pro</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Riepilogo completo per il commercialista · Anno {year}</p>
+                  </div>
+                  {!generatingRiepilogo && (
+                    <Download size={16} className="text-slate-400 shrink-0" />
+                  )}
+                </button>
               )}
 
               {/* Riepilogo — nascosto per Spain con resumen attivo (sostituito dalle card Ingresos/Gastos/IRPF) */}
