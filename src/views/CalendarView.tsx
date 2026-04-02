@@ -21,10 +21,12 @@ function isFiscalEstimate(deadline: Deadline): boolean {
 }
 
 const DEADLINE_TOOLTIPS: Record<string, string> = {
-  'Saldo imposta sostitutiva + 1° acconto': "Conguaglio finale delle tasse dovute + primo anticipo dell'anno in corso. Il saldo si paga a giugno dopo la dichiarazione; l'acconto copre il 40% dell'imposta stimata.",
-  '1° acconto INPS gestione separata': 'Contributi previdenziali obbligatori per professionisti autonomi. Si calcolano sul reddito imponibile e danno diritto alla pensione.',
-  '2° acconto imposta sostitutiva': 'Pagamento anticipato delle tasse dell\'anno in corso. Si versa in due rate: 40% a giugno e 60% a novembre.',
-  '2° acconto INPS gestione separata': 'Contributi previdenziali obbligatori per professionisti autonomi. Si calcolano sul reddito imponibile e danno diritto alla pensione.',
+  'Saldo imposta sostitutiva + 1° acconto': "Pagamento del saldo dell'anno precedente più il primo acconto dell'anno corrente (40%). Scade il 30 giugno.",
+  '1° acconto INPS gestione separata': 'Primo acconto dei contributi INPS (40% del totale annuo stimato). Scade il 16 giugno.',
+  '2° acconto imposta sostitutiva': 'Secondo acconto IRPEF/imposta sostitutiva (60% del totale annuo stimato). Scade il 30 novembre.',
+  '2° acconto INPS gestione separata': 'Secondo acconto INPS (60% del totale annuo stimato). Scade il 16 novembre.',
+  'Dichiarazione dei redditi (Modello Redditi)': 'Presentazione del Modello Redditi PF. Scade il 31 ottobre.',
+  'Acconto IVA dicembre': 'Acconto IVA annuale per regime ordinario. Scade il 16 dicembre.',
 };
 
 function getScadenzeFiscali(year: number): Omit<Deadline, 'id'>[] {
