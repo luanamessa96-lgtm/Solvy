@@ -81,7 +81,8 @@ export function generateFatturaPA(doc: Document, profile: Profile): { xml: strin
       </IdTrasmittente>
       <ProgressivoInvio>${escapeXml(progressivo)}</ProgressivoInvio>
       <FormatoTrasmissione>FPR12</FormatoTrasmissione>
-      <CodiceDestinatario>0000000</CodiceDestinatario>
+      <CodiceDestinatario>${escapeXml(doc.clientSdi || '0000000')}</CodiceDestinatario>${doc.clientPec ? `
+      <PECDestinatario>${escapeXml(doc.clientPec)}</PECDestinatario>` : ''}
     </DatiTrasmissione>
     <CedentePrestatore>
       <DatiAnagrafici>

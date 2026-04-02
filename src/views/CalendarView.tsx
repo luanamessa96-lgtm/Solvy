@@ -4,7 +4,6 @@ import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, Chevro
 import { Deadline, Profile } from '../types';
 import { getSpanishDeadlines } from '../data/deadlines-es';
 import { parseLocalDate, getLocalYear, getLocalMonth } from '../utils/date';
-import { parseLocalDate, getLocalYear, getLocalMonth } from '../utils/date';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
 import { useTranslation } from 'react-i18next';

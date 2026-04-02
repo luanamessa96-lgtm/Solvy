@@ -49,6 +49,8 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
     clientAddress: '',
     clientPiva: '',
     clientCf: '',
+    clientSdi: '',
+    clientPec: '',
     title: '',
     amount: '',
     ritenuta: false,
@@ -67,6 +69,8 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
       clientAddress: '',
       clientPiva: '',
       clientCf: '',
+      clientSdi: '',
+      clientPec: '',
       title: '',
       amount: '',
       ritenuta: false,
@@ -88,8 +92,9 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
   const totaleDaRicevere = totaleFattura - ritenutaAmount;
 
   const handleSubmit = () => {
-    setTouched({ client: true, title: true, amount: true });
+    setTouched({ client: true, title: true, amount: true, clientSdi: true });
     if (!form.client.trim() || !form.title.trim() || amount <= 0) return;
+    if (sdiValue.length > 0 && !/^[A-Z0-9]{7}$/.test(sdiValue)) return;
     // IT-35: increment counter on every new invoice (not proforma)
     if (!isProforma) {
       const year = new Date().getFullYear();
@@ -111,6 +116,8 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
       clientAddress: form.clientAddress,
       clientPiva: form.clientPiva,
       clientCf: form.clientCf,
+      clientSdi: form.clientPiva !== 'Privato' && profile.country === 'Italy' ? (sdiValue || '0000000') : undefined,
+      clientPec: form.clientPiva !== 'Privato' && profile.country === 'Italy' && form.clientPec.trim() ? form.clientPec.trim() : undefined,
       title: form.title,
       amount,
       ritenuta: form.ritenuta,
@@ -127,13 +134,16 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const touch = (key: string) => setTouched(t => ({ ...t, [key]: true }));
 
+  const sdiValue = form.clientSdi.trim().toUpperCase();
   const errors = {
     client: touched.client && !form.client.trim() ? 'Campo obbligatorio' : '',
     title: touched.title && !form.title.trim() ? 'Campo obbligatorio' : '',
     amount: touched.amount && (amount <= 0 || isNaN(amount)) ? 'Inserisci un importo valido' : '',
+    clientSdi: touched.clientSdi && sdiValue.length > 0 && !/^[A-Z0-9]{7}$/.test(sdiValue) ? '7 caratteri alfanumerici' : '',
   };
 
   const hasErrors = Object.values(errors).some(Boolean);
+  const isItaly = profile.country === 'Italy';
 
   const ic = (err?: string) => `w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all ${
     err
@@ -221,6 +231,36 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                     <input type="text" value={form.clientCf} onChange={e => set('clientCf', e.target.value.toUpperCase())} placeholder="RSSMRA80..." className={ic()} />
                   </div>
                 </div>
+
+                {/* SDI / PEC — solo IT + Azienda */}
+                {isItaly && !isProforma && form.clientPiva !== 'Privato' && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className={lc}>Codice SDI</label>
+                      <input
+                        type="text"
+                        value={form.clientSdi}
+                        onChange={e => set('clientSdi', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7))}
+                        onBlur={() => touch('clientSdi')}
+                        placeholder="0000000"
+                        maxLength={7}
+                        className={ic(errors.clientSdi)}
+                      />
+                      {errors.clientSdi ? errMsg(errors.clientSdi) : <p className="text-[10px] text-slate-400 ml-1">7 caratteri — default 0000000</p>}
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className={lc}>PEC destinatario</label>
+                      <input
+                        type="email"
+                        value={form.clientPec}
+                        onChange={e => set('clientPec', e.target.value)}
+                        placeholder="fatture@pec.it"
+                        className={ic()}
+                      />
+                      <p className="text-[10px] text-slate-400 ml-1">Alternativa al SDI</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Servizio */}

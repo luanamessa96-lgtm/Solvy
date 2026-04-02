@@ -51,6 +51,8 @@ export interface Document {
   ivaRate?: number;
   rivalsaInps?: boolean;
   docRegime?: 'forfettario' | 'ordinario';
+  clientSdi?: string;
+  clientPec?: string;
 }
 
 export interface Deadline {

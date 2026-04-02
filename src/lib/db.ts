@@ -38,6 +38,8 @@ export async function getDocuments(profileId: string): Promise<Document[]> {
     ivaRate: d.iva_rate,
     rivalsaInps: d.rivalsa_inps,
     docRegime: d.doc_regime,
+    clientSdi: d.client_sdi,
+    clientPec: d.client_pec,
   }));
 }
 
@@ -64,6 +66,8 @@ export async function addDocument(doc: Document, profileId: string): Promise<voi
       iva_rate: doc.ivaRate,
       rivalsa_inps: doc.rivalsaInps,
       doc_regime: doc.docRegime,
+      client_sdi: doc.clientSdi ?? null,
+      client_pec: doc.clientPec ?? null,
       profile_id: profileId,
       updated_at: new Date().toISOString(),
     }], { onConflict: 'id' });
@@ -92,6 +96,8 @@ export async function updateDocument(doc: Document): Promise<void> {
       iva_rate: doc.ivaRate,
       rivalsa_inps: doc.rivalsaInps,
       doc_regime: doc.docRegime,
+      client_sdi: doc.clientSdi ?? null,
+      client_pec: doc.clientPec ?? null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', doc.id);
