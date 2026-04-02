@@ -49,7 +49,9 @@ interface TasseOrdinario {
   imposta: number;
   irpef: number;
   addizionali: number;
-  inps: number;
+  inps: number;        // netto rivalsa
+  inpsLordo: number;   // prima della rivalsa
+  rivalsaInps: number; // rivalsa ricevuta dai clienti
   netto: number;
   redditoImponibile: number;
   aliquota: number;
@@ -163,16 +165,25 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
     } else {
       // Regime ordinario — INPS deducibile dalla base imponibile IRPEF (IT-20)
       const redditoLordo = Math.max(0, base - expenses);
-      const inps = calcInpsAmount(redditoLordo, INPS_GESTIONE_SEPARATA);
+      const inpsLordo = calcInpsAmount(redditoLordo, INPS_GESTIONE_SEPARATA);
+
+      // Rivalsa INPS 4% ricevuta dai clienti riduce il costo INPS effettivo (solo IT ordinario)
+      const rivalsaInps = profile.country === 'Italy'
+        ? documents
+            .filter(d => d.type === 'invoice' && d.status === 'paid' && d.rivalsaInps && getLocalYear(d.date) === displayYear)
+            .reduce((sum, d) => sum + d.amount * 0.04, 0)
+        : 0;
+      const inps = Math.max(0, inpsLordo - rivalsaInps);
+
       const redditoImponibile = Math.max(0, redditoLordo - inps);
       const irpef = calcIRPEF(redditoImponibile);
       const addizionali = redditoImponibile * getAddizionaliRate(profile.region);
       const totaleImposta = irpef + addizionali;
       const netto = base - totaleImposta - inps - expenses;
 
-      return { regime: 'ordinario', imposta: totaleImposta, irpef, addizionali, inps, netto, redditoImponibile, aliquota: redditoImponibile > 0 ? totaleImposta / redditoImponibile : 0 };
+      return { regime: 'ordinario', imposta: totaleImposta, irpef, addizionali, inps, inpsLordo, rivalsaInps, netto, redditoImponibile, aliquota: redditoImponibile > 0 ? totaleImposta / redditoImponibile : 0 };
     }
-  }, [income, expenses, profile, displayYear]);
+  }, [income, expenses, profile, displayYear, documents]);
 
   const sogliAlert = income >= SOGLIA_FORFETTARIO ? 'exceeded' : income >= ALERT_SOGLIA ? 'warning' : income >= ALERT_SOGLIA_VICINO ? 'approaching' : null;
 
@@ -529,12 +540,18 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
                       <span className="text-xs font-bold text-slate-400">{inpsType === 'artigiani' ? t('dashboard.inps_artigiani') : inpsType === 'commercianti' ? t('dashboard.inps_commercianti') : t('dashboard.inps_sep')}</span>
-                      <span className="text-xs font-bold text-amber-500">{fmt(tasse.inps)}</span>
+                      <span className="text-xs font-bold text-amber-500">{fmt(tasse.inpsLordo)}</span>
                     </div>
                     <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                       <div className="bg-amber-400 h-full rounded-full" style={{ width: `${Math.min(barInps, 100)}%` }} />
                     </div>
                   </div>
+                  {tasse.rivalsaInps > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-xs font-bold text-emerald-600">Rivalsa INPS ricevuta (4%)</span>
+                      <span className="text-xs font-bold text-emerald-600">−{fmt(tasse.rivalsaInps)}</span>
+                    </div>
+                  )}
                 </>)}
 
                 <div className={`pt-3 border-t space-y-1.5 ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
