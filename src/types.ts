@@ -21,6 +21,10 @@ export interface Profile {
   subscriptionStartedAt?: string;
   regimenFiscal?: 'simplificada' | 'normal' | 'modulos';
   ivaHabitual?: 21 | 10 | 4;
+  street?: string;
+  cap?: string;
+  city?: string;
+  province?: string;
   region?: string;
 }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Globe, CreditCard, Briefcase, FileEdit, CheckCircle2, MapPin, Receipt, User, Lock, Info, ChevronDown } from 'lucide-react';
+import { IT_PROVINCE, getRegionFromProvince } from '../lib/it/province';
 import { Profile } from '../types';
 import PaywallModal from '../components/modals/PaywallModal';
 import { CountryBadge } from '../components/CountryBadge';
@@ -13,6 +14,7 @@ const DB_PROFILE_FIELDS: (keyof Profile)[] = [
   'id', 'name', 'email', 'jobType', 'country', 'currency', 'avatar',
   'address', 'piva', 'nie', 'codiceFiscale', 'iban', 'regime', 'coefficiente',
   'annoInizioAttivita', 'isPro', 'regimenFiscal', 'ivaHabitual',
+  'street', 'cap', 'city', 'province', 'region',
 ];
 
 interface ProfileViewProps {
@@ -94,6 +96,10 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     country: activeProfile.country,
     currency: activeProfile.currency,
     address: activeProfile.address || '',
+    street: activeProfile.street || activeProfile.address || '',
+    cap: activeProfile.cap || '',
+    city: activeProfile.city || '',
+    province: activeProfile.province || '',
     piva: activeProfile.piva || '',
     codiceFiscale: activeProfile.codiceFiscale || '',
     iban: activeProfile.iban || '',
@@ -135,6 +141,11 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
       localStorage.removeItem(`nie_${activeProfile.id}`);
 
       // Build a clean profile object with only valid DB fields (no nie, no retaMensile)
+      const derivedRegion = editData.country === 'Italy' && editData.province
+        ? getRegionFromProvince(editData.province)
+        : activeProfile.region;
+      const derivedAddress = [editData.street, editData.cap && editData.city ? `${editData.cap} ${editData.city}` : editData.city].filter(Boolean).join(', ') || editData.address || undefined;
+
       const updatedProfile: Profile = {
         ...activeProfile,
         name: editData.name,
@@ -142,7 +153,12 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
         jobType: editData.jobType,
         country: editData.country,
         currency: editData.currency,
-        address: editData.address || undefined,
+        address: derivedAddress,
+        street: editData.street || undefined,
+        cap: editData.cap || undefined,
+        city: editData.city || undefined,
+        province: editData.country === 'Italy' ? (editData.province || undefined) : undefined,
+        region: derivedRegion || undefined,
         piva: isSpain ? (taxIdType === 'nif' ? editData.piva || undefined : undefined) : editData.piva || undefined,
         nie: isSpain && taxIdType === 'nie' ? editData.nie || undefined : undefined,
         codiceFiscale: editData.codiceFiscale || undefined,
@@ -215,7 +231,6 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                     { label: t('profile.field_name'), key: 'name', placeholder: t('profile.field_name_placeholder') },
                     { label: t('profile.field_email'), key: 'email', placeholder: t('profile.field_email_placeholder') },
                     { label: t('profile.field_job_type'), key: 'jobType', placeholder: t('profile.field_job_type_placeholder') },
-                    { label: t('profile.field_address'), key: 'address', placeholder: t('profile.field_address_placeholder') },
                   ].map(({ label, key, placeholder }) => (
                     <div key={key} className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{label}</label>
@@ -228,6 +243,36 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                       />
                     </div>
                   ))}
+                  {/* Indirizzo strutturato */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{isSpain ? 'Calle / Dirección' : 'Via / Indirizzo'}</label>
+                    <input type="text" value={editData.street} onChange={e => setEditData({ ...editData, street: e.target.value })} placeholder={isSpain ? 'Calle Gran Vía 1' : 'Via Roma 1'} className={inputClass()} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{isSpain ? 'Código Postal' : 'CAP'}</label>
+                      <input type="text" inputMode="numeric" value={editData.cap} onChange={e => setEditData({ ...editData, cap: e.target.value })} placeholder={isSpain ? '28013' : '20100'} className={inputClass()} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{isSpain ? 'Ciudad' : 'Città'}</label>
+                      <input type="text" value={editData.city} onChange={e => setEditData({ ...editData, city: e.target.value })} placeholder={isSpain ? 'Madrid' : 'Milano'} className={inputClass()} />
+                    </div>
+                  </div>
+                  {!isSpain && (
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Provincia</label>
+                      <select value={editData.province} onChange={e => setEditData({ ...editData, province: e.target.value })} className={inputClass()}>
+                        <option value="">Seleziona provincia…</option>
+                        {IT_PROVINCE.map(p => <option key={p} value={p}>{p}</option>)}
+                      </select>
+                    </div>
+                  )}
+                  {!isSpain && editData.province && (
+                    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold ${darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-700'}`}>
+                      <span>🗺️</span>
+                      <span>Regione: {getRegionFromProvince(editData.province) ?? '—'}</span>
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('profile.country_label')}</label>

@@ -8,7 +8,7 @@ import PaywallModal from '../components/modals/PaywallModal';
 import DeleteAccountModal from '../components/modals/DeleteAccountModal';
 import { useProStatus } from '../hooks/useProStatus';
 import { Profile, Document, Deadline } from '../types';
-import { IT_REGIONI, IT_ADDIZIONALI_REGIONALI } from '../lib/it/addizionali';
+import { IT_ADDIZIONALI_REGIONALI } from '../lib/it/addizionali';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
@@ -228,36 +228,34 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
         <motion.div variants={item} className="space-y-3">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Fiscale</p>
 
-          {/* Region selector */}
-          <div className={`p-4 rounded-3xl border space-y-3 transition-colors`} style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
-            <div className="space-y-1.5">
-              <p className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Regione</p>
-              <select
-                value={profile.region ?? ''}
-                onChange={e => onUpdateProfile?.({ ...profile, region: e.target.value || undefined })}
-                className={`w-full px-3 py-2.5 border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`}
-              >
-                <option value="">Seleziona regione…</option>
-                {IT_REGIONI.map(r => (
-                  <option key={r} value={r}>
-                    {r} — {(IT_ADDIZIONALI_REGIONALI[r] * 100).toFixed(2)}%
-                  </option>
-                ))}
-              </select>
-              {profile.regime === 'forfettario' ? (
-                <p className="text-[10px] text-slate-400 leading-relaxed ml-1">
-                  Nel regime forfettario le addizionali non si applicano — il dato è salvato per eventuale passaggio all'ordinario.
-                </p>
-              ) : profile.region ? (
-                <p className="text-[10px] text-emerald-600 ml-1 font-bold">
-                  Addizionale regionale {(IT_ADDIZIONALI_REGIONALI[profile.region] * 100).toFixed(2)}% applicata al calcolo IRPEF
-                </p>
-              ) : (
-                <p className="text-[10px] text-slate-400 ml-1">
-                  Seleziona la regione per usare l'aliquota reale nel calcolo tasse
-                </p>
-              )}
-            </div>
+          {/* Region display — auto-filled from province */}
+          <div className={`p-4 rounded-3xl border space-y-2 transition-colors`} style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+            <p className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Regione fiscale</p>
+            {profile.region ? (
+              <>
+                <div className={`flex items-center justify-between px-3 py-2.5 rounded-xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                  <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{profile.region}</span>
+                  {IT_ADDIZIONALI_REGIONALI[profile.region] && (
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${profile.regime === 'ordinario' ? 'bg-primary/10 text-primary' : (darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-200 text-slate-500')}`}>
+                      {(IT_ADDIZIONALI_REGIONALI[profile.region] * 100).toFixed(2)}%
+                    </span>
+                  )}
+                </div>
+                {profile.regime === 'forfettario' ? (
+                  <p className="text-[10px] text-slate-400 leading-relaxed">
+                    Nel regime forfettario le addizionali non si applicano — salvata per eventuale passaggio all'ordinario.
+                  </p>
+                ) : (
+                  <p className="text-[10px] text-emerald-600 font-bold">
+                    Addizionale regionale applicata al calcolo IRPEF
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-[10px] text-slate-400 leading-relaxed">
+                Imposta la provincia nel tuo <span className="font-bold text-primary">Profilo → Modifica</span> per calcolare le addizionali regionali reali.
+              </p>
+            )}
           </div>
 
           {/* INPS type warning */}

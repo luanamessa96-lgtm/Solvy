@@ -130,6 +130,10 @@ export async function getProfiles(userId: string, userEmail?: string): Promise<P
     regimenFiscal: p.regimen_fiscal ?? undefined,
     ivaHabitual: p.iva_habitual ?? undefined,
     region: p.region ?? undefined,
+    street: p.street ?? undefined,
+    cap: p.cap ?? undefined,
+    city: p.city ?? undefined,
+    province: p.province ?? undefined,
   }));
 }
 
@@ -158,6 +162,10 @@ export async function createProfile(profile: Profile): Promise<void> {
       regimen_fiscal: profile.regimenFiscal ?? null,
       iva_habitual: profile.ivaHabitual ?? null,
       region: profile.region ?? null,
+      street: profile.street ?? null,
+      cap: profile.cap ?? null,
+      city: profile.city ?? null,
+      province: profile.province ?? null,
     });
 
   if (error) throw error;
@@ -187,6 +195,10 @@ export async function updateProfile(profile: Profile): Promise<void> {
       regimen_fiscal: profile.regimenFiscal ?? null,
       iva_habitual: profile.ivaHabitual ?? null,
       region: profile.region ?? null,
+      street: profile.street ?? null,
+      cap: profile.cap ?? null,
+      city: profile.city ?? null,
+      province: profile.province ?? null,
     });
 
   if (error) throw error;

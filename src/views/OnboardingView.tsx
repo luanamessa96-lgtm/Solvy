@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, ChevronLeft, Info } from 'lucide-react';
+import { IT_PROVINCE, getRegionFromProvince } from '../lib/it/province';
 import { Profile } from '../types';
 import { profileStorage } from '../lib/supabase';
 
@@ -40,7 +41,10 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
   const [annoInizioAttivita, setAnnoInizioAttivita] = useState('');
   const [piva, setPiva] = useState('');
   const [codiceFiscale, setCodiceFiscale] = useState('');
-  const [address, setAddress] = useState('');
+  const [street, setStreet] = useState('');
+  const [cap, setCap] = useState('');
+  const [city, setCity] = useState('');
+  const [province, setProvince] = useState('');
 
   // Spain fields
   const [taxIdType, setTaxIdType] = useState<'nif' | 'nie'>('nif');
@@ -48,7 +52,9 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
   const [nie, setNie] = useState('');
   const [retaMensile, setRetaMensile] = useState('500');
   const [annoInizioSpagna, setAnnoInizioSpagna] = useState('');
-  const [addressSpagna, setAddressSpagna] = useState('');
+  const [streetEs, setStreetEs] = useState('');
+  const [capEs, setCapEs] = useState('');
+  const [cityEs, setCityEs] = useState('');
   const [regimenFiscal, setRegimenFiscal] = useState<'simplificada' | 'normal' | 'modulos'>('simplificada');
   const [ivaHabitual, setIvaHabitual] = useState<'21' | '10' | '4'>('21');
 
@@ -70,7 +76,10 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
         regime: undefined,
         coefficiente: undefined,
         annoInizioAttivita: annoInizioSpagna ? parseInt(annoInizioSpagna) : undefined,
-        address: addressSpagna || undefined,
+        street: streetEs || undefined,
+        cap: capEs || undefined,
+        city: cityEs || undefined,
+        address: [streetEs, capEs && cityEs ? `${capEs} ${cityEs}` : cityEs].filter(Boolean).join(', ') || undefined,
         regimenFiscal,
         ivaHabitual: parseInt(ivaHabitual) as 21 | 10 | 4,
       } : {
@@ -79,7 +88,12 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
         annoInizioAttivita: annoInizioAttivita ? parseInt(annoInizioAttivita) : undefined,
         piva: piva || undefined,
         codiceFiscale: codiceFiscale || undefined,
-        address: address || undefined,
+        street: street || undefined,
+        cap: cap || undefined,
+        city: city || undefined,
+        province: province || undefined,
+        region: getRegionFromProvince(province) || undefined,
+        address: [street, cap && city ? `${cap} ${city}` : city].filter(Boolean).join(', ') || undefined,
       }),
     };
     if (isSpain && nie) {
@@ -412,8 +426,18 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                   <input type="number" min="2000" max={currentYear} value={annoInizioSpagna} onChange={e => setAnnoInizioSpagna(e.target.value)} placeholder={`Es. ${currentYear - 2}`} className={ic} />
                 </div>
                 <div className="space-y-1.5">
-                  <label className={lc}>Indirizzo / Dirección</label>
-                  <input type="text" value={addressSpagna} onChange={e => setAddressSpagna(e.target.value)} placeholder="Calle Gran Vía 1, 28013 Madrid" className={ic} />
+                  <label className={lc}>Calle / Dirección</label>
+                  <input type="text" value={streetEs} onChange={e => setStreetEs(e.target.value)} placeholder="Calle Gran Vía 1" className={ic} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className={lc}>Código Postal</label>
+                    <input type="text" inputMode="numeric" value={capEs} onChange={e => setCapEs(e.target.value)} placeholder="28013" className={ic} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className={lc}>Ciudad</label>
+                    <input type="text" value={cityEs} onChange={e => setCityEs(e.target.value)} placeholder="Madrid" className={ic} />
+                  </div>
                 </div>
               </div>
 
@@ -463,9 +487,29 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                   <HelpText text="16 caratteri alfanumerici. Lo trovi sulla tua tessera sanitaria." />
                 </div>
                 <div className="space-y-1.5">
-                  <label className={lc}>Indirizzo</label>
-                  <input type="text" value={address} onChange={e => setAddress(e.target.value)} placeholder="Via Roma 1, 20100 Milano" className={ic} />
-                  <HelpText text="Indirizzo di residenza o sede professionale per le fatture." />
+                  <label className={lc}>Via / Indirizzo</label>
+                  <input type="text" value={street} onChange={e => setStreet(e.target.value)} placeholder="Via Roma 1" className={ic} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className={lc}>CAP</label>
+                    <input type="text" inputMode="numeric" value={cap} onChange={e => setCap(e.target.value)} placeholder="20100" className={ic} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className={lc}>Città</label>
+                    <input type="text" value={city} onChange={e => setCity(e.target.value)} placeholder="Milano" className={ic} />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className={lc}>Provincia</label>
+                  <select value={province} onChange={e => setProvince(e.target.value)} className={ic}>
+                    <option value="">Seleziona provincia…</option>
+                    {IT_PROVINCE.map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                  {province && (
+                    <p className="text-[10px] text-emerald-600 font-bold ml-1">Regione: {getRegionFromProvince(province)}</p>
+                  )}
+                  <HelpText text="La regione si compila automaticamente dalla provincia — usata per il calcolo addizionali IRPEF." />
                 </div>
               </div>
               <div className="space-y-2">
