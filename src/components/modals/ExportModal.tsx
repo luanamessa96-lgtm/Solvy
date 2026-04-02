@@ -36,6 +36,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const [selectedMonths, setSelectedMonths] = useState<Set<number>>(new Set());
   const [includeFatturaPA, setIncludeFatturaPA] = useState(true);
   const [includeResumen, setIncludeResumen] = useState(true);
+  const [includeDocumenti, setIncludeDocumenti] = useState(true);
   const [includeRegistro, setIncludeRegistro] = useState(false);
   const [includeRiepilogo, setIncludeRiepilogo] = useState(false);
   const [overrideQuarter, setOverrideQuarter] = useState<1 | 2 | 3 | 4 | null>(null);
@@ -56,6 +57,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       setReadyBlob(null);
       setIncludeFatturaPA(true);
       setIncludeResumen(true);
+      setIncludeDocumenti(true);
       setIncludeRegistro(false);
       setIncludeRiepilogo(false);
       setOverrideQuarter(null);
@@ -161,7 +163,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   }, [syncedMonths, year]);
 
   const handleExport = async () => {
-    if (filteredDocs.length === 0 && !includeRiepilogo) return;
+    if (filteredDocs.length === 0 && !includeRiepilogo && !includeRegistro) return;
     setExporting(true);
     try {
       await exportPDF();
@@ -625,8 +627,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       pdf.text('Pag. 1 di 1', R, 285, { align: 'right' });
     };
 
-    const invoices = filteredDocs.filter(d => d.type === 'invoice' || d.type === 'credit_note');
-    const expenses = filteredDocs.filter(d => d.type === 'expense');
+    const invoices = includeDocumenti ? filteredDocs.filter(d => d.type === 'invoice' || d.type === 'credit_note') : [];
+    const expenses = includeDocumenti ? filteredDocs.filter(d => d.type === 'expense') : [];
 
     // Una pagina per ogni fattura/nota di credito
     invoices.forEach((inv, i) => isSpain ? drawInvoicePageSpain(inv, i === 0) : drawInvoicePage(inv, i === 0));
@@ -1393,6 +1395,20 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                       </p>
                     </div>
                   </button>
+                  {/* Fatture del periodo */}
+                  <button
+                    onClick={() => { setIncludeDocumenti(prev => !prev); setReadyBlob(null); }}
+                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
+                  >
+                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeDocumenti ? 'bg-primary border-primary' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
+                      {includeDocumenti && <Check size={12} strokeWidth={3} className="text-white" />}
+                    </div>
+                    <span className="text-xl shrink-0">🧾</span>
+                    <div className="text-left flex-1 min-w-0">
+                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Fatture del periodo</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">Una pagina per ogni fattura/spesa selezionata</p>
+                    </div>
+                  </button>
                   {/* Registro Cronologico */}
                   <button
                     onClick={() => { setIncludeRegistro(prev => !prev); setReadyBlob(null); }}
@@ -1592,7 +1608,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
               ) : (
                 <button
                   onClick={handleExport}
-                  disabled={exporting || (filteredDocs.length === 0 && !includeRiepilogo)}
+                  disabled={exporting || (filteredDocs.length === 0 && !includeRiepilogo && !includeRegistro)}
                   className="w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
                 >
                   <Download size={18} />
