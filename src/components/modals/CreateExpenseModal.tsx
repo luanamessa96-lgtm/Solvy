@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Plus, FileText, CreditCard, Calendar } from 'lucide-react';
+import { getItDeductibilityRate } from '../../lib/it/deductibility';
 
 interface CreateExpenseModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ const IVA_RATES = [0, 4, 10, 21] as const;
 
 const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: CreateExpenseModalProps) => {
   const isSpain = profile?.country === 'Spain';
+  const isItaly = profile?.country === 'Italy';
   const [formData, setFormData] = useState({
     title: '',
     amount: '',
@@ -45,13 +47,26 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
     setAmountTouched(false);
   };
 
-  const categories = [
+  const categories = isItaly ? [
+    { value: 'abbonamento', label: 'Abbonamento', emoji: '📦' },
+    { value: 'software', label: 'Software', emoji: '💻' },
+    { value: 'materiale', label: 'Materiale', emoji: '🛠️' },
+    { value: 'formazione', label: 'Formazione', emoji: '📚' },
+    { value: 'telefono', label: 'Telefono', emoji: '📱' },
+    { value: 'auto_moto', label: 'Auto/Moto', emoji: '🚗' },
+    { value: 'casa_ufficio', label: 'Casa/Ufficio', emoji: '🏠' },
+    { value: 'pasti', label: 'Pasti/Rapp.', emoji: '🍽️' },
+    { value: 'altro', label: 'Altro', emoji: '📎' },
+  ] : [
     { value: 'abbonamento', label: 'Abbonamento', emoji: '📦' },
     { value: 'materiale', label: 'Materiale', emoji: '🛠️' },
     { value: 'software', label: 'Software', emoji: '💻' },
     { value: 'formazione', label: 'Formazione', emoji: '📚' },
     { value: 'altro', label: 'Altro', emoji: '📎' },
   ];
+
+  const deductRate = isItaly ? getItDeductibilityRate(formData.category) : 1;
+  const deductPct = Math.round(deductRate * 100);
 
   return (
     <AnimatePresence>
@@ -80,7 +95,7 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
               <div className="space-y-3">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Categoria</label>
-                  <div className="grid grid-cols-5 gap-1.5">
+                  <div className={`grid gap-1.5 ${isItaly ? 'grid-cols-3' : 'grid-cols-5'}`}>
                     {categories.map(cat => (
                       <button key={cat.value} onClick={() => setFormData({ ...formData, category: cat.value })} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl border text-center transition-all active:scale-95 ${formData.category === cat.value ? 'bg-indigo-500 border-indigo-500 text-white' : (darkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-600')}`}>
                         <span className="text-base">{cat.emoji}</span>
@@ -88,6 +103,12 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
                       </button>
                     ))}
                   </div>
+                  {isItaly && (
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-bold ${deductPct === 100 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'}`}>
+                      <span>{deductPct === 100 ? '✅' : '⚠️'}</span>
+                      <span>{deductPct}% deducibile</span>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Descrizione (opzionale)</label>

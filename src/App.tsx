@@ -11,6 +11,7 @@ import { supabaseReady, getClient } from './lib/supabase';
 import { Profile, Document, Deadline, Accountant } from './types';
 import { setLanguageByCountry } from './lib/i18n';
 import { parseLocalDate, getLocalYear } from './utils/date';
+import { getItDeductibilityRate } from './lib/it/deductibility';
 import AuthView from './views/AuthView';
 
 import { ToastProvider, useToast } from './components/ui/Toast';
@@ -411,8 +412,11 @@ function AppInner() {
 
   const totalExpenses = useMemo(() => {
     const currentYear = new Date().getFullYear();
-    return documents.filter(doc => doc.type === 'expense' && getLocalYear(doc.date) === currentYear).reduce((sum, doc) => sum + doc.amount, 0);
-  }, [documents]);
+    const isItaly = activeProfile.country === 'Italy';
+    return documents
+      .filter(doc => doc.type === 'expense' && getLocalYear(doc.date) === currentYear)
+      .reduce((sum, doc) => sum + doc.amount * (isItaly ? getItDeductibilityRate(doc.category) : 1), 0);
+  }, [documents, activeProfile.country]);
 
   const paidPercentage = useMemo(() => {
     const currentYear = new Date().getFullYear();
