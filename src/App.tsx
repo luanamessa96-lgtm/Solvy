@@ -725,7 +725,7 @@ function AppInner() {
           ) : isSettingsPage ? (
             <SettingsView theme={theme} setTheme={(t) => setProfileTheme(t, activeProfile.id)} profile={activeProfile} onUpdateProfile={handleUpdateProfile} profilesCount={profiles.length} documents={documents} deadlines={deadlines} />
           ) : isFiscalPage ? (
-            <Suspense fallback={null}><FiscalView profile={activeProfile} onUpdateProfile={handleUpdateProfile} darkMode={darkMode} /></Suspense>
+            <Suspense fallback={null}><FiscalView profile={activeProfile} onUpdateProfile={handleUpdateProfile} darkMode={darkMode} documents={documents} /></Suspense>
           ) : isAccountantPage ? (
             <AccountantView
               accountant={accountant}
