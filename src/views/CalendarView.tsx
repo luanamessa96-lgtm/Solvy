@@ -282,7 +282,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                         return displayAmt ? (
                           <div className="text-right shrink-0">
                             <p className={`text-sm font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>~€{displayAmt.toLocaleString()}</p>
-                            {isFiscalEstimate(deadline) && <p className="text-[9px] text-slate-400 leading-tight">stimato · può variare</p>}
+                            {FISCAL_ESTIMATE_TITLES.has(deadline.title) && <p className="text-[9px] text-slate-400 leading-tight">stimato · può variare</p>}
                           </div>
                         ) : null;
                       })()}
@@ -386,7 +386,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                     return displayAmt ? (
                       <>
                         <p className="text-sm font-bold text-primary mt-0.5">~€{displayAmt.toLocaleString()}</p>
-                        {isFiscalEstimate(selectedDeadline) && <p className="text-[10px] text-slate-400 mt-0.5">Stima basata sui dati attuali. L'importo reale dipende dalla dichiarazione definitiva. Consulta il tuo commercialista.</p>}
+                        {FISCAL_ESTIMATE_TITLES.has(selectedDeadline.title) && <p className="text-[10px] text-slate-400 mt-0.5">Stima basata sui dati attuali. L'importo reale dipende dalla dichiarazione definitiva. Consulta il tuo commercialista.</p>}
                       </>
                     ) : null;
                   })()}
