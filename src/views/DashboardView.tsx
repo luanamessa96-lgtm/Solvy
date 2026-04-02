@@ -60,6 +60,7 @@ const INPS_GESTIONE_SEPARATA = 0.2607;
 const INPS_ORDINARIO = 0.24;
 const SOGLIA_FORFETTARIO = 85000;
 const ALERT_SOGLIA = 80000;
+const ALERT_SOGLIA_VICINO = 65000;
 
 function calcIRPEF(imponibile: number): number {
   if (imponibile <= 0) return 0;
@@ -150,7 +151,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
     }
   }, [income, expenses, profile, displayYear]);
 
-  const sogliAlert = income >= SOGLIA_FORFETTARIO ? 'exceeded' : income >= ALERT_SOGLIA ? 'warning' : null;
+  const sogliAlert = income >= SOGLIA_FORFETTARIO ? 'exceeded' : income >= ALERT_SOGLIA ? 'warning' : income >= ALERT_SOGLIA_VICINO ? 'approaching' : null;
 
   const spesePerCategoria = useMemo(() => {
     const currentYear = new Date().getFullYear();
@@ -434,10 +435,22 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
               </div>
 
               {isForfettario && sogliAlert && (
-                <div className={`mx-4 mt-4 px-4 py-3 rounded-2xl flex items-start gap-3 ${sogliAlert === 'exceeded' ? (darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600') : (darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600')}`}>
-                  {sogliAlert === 'exceeded' ? <AlertCircle size={16} className="mt-0.5 shrink-0" /> : <AlertTriangle size={16} className="mt-0.5 shrink-0" />}
+                <div className={`mx-4 mt-4 px-4 py-3 rounded-2xl flex items-start gap-3 ${
+                  sogliAlert === 'exceeded'
+                    ? (darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600')
+                    : sogliAlert === 'warning'
+                      ? (darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600')
+                      : (darkMode ? 'bg-yellow-500/10 text-yellow-400' : 'bg-yellow-50 text-yellow-700')
+                }`}>
+                  {sogliAlert === 'exceeded'
+                    ? <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                    : <AlertTriangle size={16} className="mt-0.5 shrink-0" />}
                   <p className="text-xs font-bold leading-relaxed">
-                    {sogliAlert === 'exceeded' ? t('dashboard.alert_exceeded') : t('dashboard.alert_warning', { remaining: fmt(SOGLIA_FORFETTARIO - income) })}
+                    {sogliAlert === 'exceeded'
+                      ? t('dashboard.alert_exceeded')
+                      : sogliAlert === 'warning'
+                        ? t('dashboard.alert_warning', { remaining: fmt(SOGLIA_FORFETTARIO - income) })
+                        : t('dashboard.alert_approaching')}
                   </p>
                 </div>
               )}
