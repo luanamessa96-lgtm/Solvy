@@ -190,14 +190,17 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
   const spesePerCategoria = useMemo(() => {
     const currentYear = new Date().getFullYear();
     const yearExpenses = documents.filter(d => d.type === 'expense' && getLocalYear(d.date) === currentYear);
-    const map: Record<string, number> = {};
     const applyDeductibility = profile.country === 'Italy' && profile.regime === 'ordinario';
+    const map: Record<string, { gross: number; deductible: number; rate: number }> = {};
     yearExpenses.forEach(d => {
       const cat = d.category || 'Altro';
-      map[cat] = (map[cat] || 0) + d.amount * (applyDeductibility ? getItDeductibilityRate(d.category) : 1);
+      const rate = applyDeductibility ? getItDeductibilityRate(d.category) : 1;
+      if (!map[cat]) map[cat] = { gross: 0, deductible: 0, rate };
+      map[cat].gross += d.amount;
+      map[cat].deductible += d.amount * rate;
     });
     return Object.entries(map)
-      .map(([name, amount]) => ({ name, amount }))
+      .map(([name, { gross, deductible, rate }]) => ({ name, amount: deductible, gross, rate }))
       .sort((a, b) => b.amount - a.amount);
   }, [documents, profile.country, profile.regime]);
 
@@ -632,8 +635,9 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   ><Receipt size={18} /></div>
                 </div>
                 <div className="px-6 py-4 space-y-3">
-                  {spesePerCategoria.map(({ name, amount }, index) => {
+                  {spesePerCategoria.map(({ name, amount, gross, rate }, index) => {
                     const pct = expenses > 0 ? (amount / expenses) * 100 : 0;
+                    const showDeductibility = rate < 1;
                     const colors = [
                       { bar: isProDark ? '#2dd4bf' : '#6366f1', bg: 'bg-indigo-500' },
                       { bar: '#f59e0b', bg: 'bg-amber-400' },
@@ -647,14 +651,21 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                     const color = colors[index % colors.length];
                     return (
                       <div key={name} className="space-y-1.5">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-start">
                           <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full shrink-0 ${color.bg}`} />
+                            <div className={`w-2 h-2 rounded-full shrink-0 mt-0.5 ${color.bg}`} />
                             <span className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{name}</span>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 text-right">
                             <span className="text-[10px] font-bold text-slate-400">{Math.round(pct)}%</span>
-                            <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{amount.toLocaleString()}</span>
+                            {showDeductibility ? (
+                              <div className="text-right">
+                                <p className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{amount.toLocaleString()} <span className="text-[10px] font-semibold text-slate-400">deducibile</span></p>
+                                <p className="text-[10px] text-slate-400">€{gross.toLocaleString()} lordo · {Math.round(rate * 100)}%</p>
+                              </div>
+                            ) : (
+                              <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{amount.toLocaleString()}</span>
+                            )}
                           </div>
                         </div>
                         <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
