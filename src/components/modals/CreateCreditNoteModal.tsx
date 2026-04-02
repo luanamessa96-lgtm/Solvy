@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
-import { Plus } from 'lucide-react';
+import { Plus, CheckCircle2, ChevronDown } from 'lucide-react';
 import { Document, Profile } from '../../types';
 
 interface CreateCreditNoteModalProps {
@@ -26,6 +26,7 @@ const CreateCreditNoteModal = ({ isOpen, onClose, onSave, profile, documents, da
   const [selectedInvoiceId, setSelectedInvoiceId] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [touched, setTouched] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const selectedInvoice = useMemo(() => invoices.find(i => i.id === selectedInvoiceId) ?? null, [invoices, selectedInvoiceId]);
 
@@ -34,6 +35,7 @@ const CreateCreditNoteModal = ({ isOpen, onClose, onSave, profile, documents, da
       setSelectedInvoiceId('');
       setDate(new Date().toISOString().split('T')[0]);
       setTouched(false);
+      setPickerOpen(false);
     }
   }, [isOpen]);
 
@@ -97,20 +99,52 @@ const CreateCreditNoteModal = ({ isOpen, onClose, onSave, profile, documents, da
                 <input type="date" value={date} onChange={e => setDate(e.target.value)} className={ic} />
               </div>
 
+              {/* Custom invoice picker — iOS-safe (no native <select>) */}
               <div className="space-y-1.5">
                 <label className={lc}>Fattura originale *</label>
-                <select
-                  value={selectedInvoiceId}
-                  onChange={e => setSelectedInvoiceId(e.target.value)}
-                  className={`${ic} ${touched && !selectedInvoiceId ? 'border-red-400 ring-1 ring-red-300' : ''}`}
+
+                {/* Trigger button */}
+                <button
+                  type="button"
+                  onClick={() => setPickerOpen(o => !o)}
+                  className={`w-full px-4 py-3 border rounded-xl text-sm text-left flex items-center justify-between transition-all active:scale-[0.98] ${touched && !selectedInvoiceId ? 'border-red-400 ring-1 ring-red-300' : ''} ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`}
                 >
-                  <option value="">Seleziona una fattura…</option>
-                  {invoices.map(inv => (
-                    <option key={inv.id} value={inv.id}>
-                      {inv.invoiceNumber ? `${inv.invoiceNumber} — ` : ''}{inv.client || inv.title} — €{inv.amount.toLocaleString('it-IT')}
-                    </option>
-                  ))}
-                </select>
+                  <span className={selectedInvoice ? '' : 'text-slate-400'}>
+                    {selectedInvoice
+                      ? `${selectedInvoice.invoiceNumber ? selectedInvoice.invoiceNumber + ' — ' : ''}${selectedInvoice.client || selectedInvoice.title}`
+                      : 'Seleziona una fattura…'}
+                  </span>
+                  <ChevronDown size={16} className={`text-slate-400 transition-transform ${pickerOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Dropdown list */}
+                {pickerOpen && (
+                  <div className={`rounded-xl border overflow-hidden ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} shadow-lg`}>
+                    {invoices.length === 0 ? (
+                      <p className="px-4 py-3 text-sm text-slate-400">Nessuna fattura disponibile</p>
+                    ) : (
+                      invoices.map(inv => (
+                        <button
+                          key={inv.id}
+                          type="button"
+                          onClick={() => { setSelectedInvoiceId(inv.id); setPickerOpen(false); }}
+                          className={`w-full px-4 py-3 flex items-center justify-between text-left border-b last:border-b-0 transition-all active:scale-[0.98] ${darkMode ? 'border-slate-700 hover:bg-slate-700' : 'border-slate-50 hover:bg-slate-50'} ${inv.id === selectedInvoiceId ? (darkMode ? 'bg-primary/10' : 'bg-primary/5') : ''}`}
+                        >
+                          <div className="min-w-0">
+                            <p className={`text-sm font-bold truncate ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                              {inv.invoiceNumber ? `${inv.invoiceNumber} — ` : ''}{inv.client || inv.title || 'Fattura'}
+                            </p>
+                            <p className="text-xs text-slate-400">
+                              {new Date(inv.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })} · €{inv.amount.toLocaleString('it-IT')}
+                            </p>
+                          </div>
+                          {inv.id === selectedInvoiceId && <CheckCircle2 size={16} className="text-primary shrink-0 ml-2" />}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+
                 {touched && !selectedInvoiceId && <p className="text-xs text-red-500 ml-1">Campo obbligatorio</p>}
               </div>
 

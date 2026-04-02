@@ -339,7 +339,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
               <div className="p-6 space-y-4">
                 <div className={`p-4 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
                   <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedDoc.client || selectedDoc.title}</p>
-                  <p className={`text-sm font-bold mt-0.5 ${selectedDoc.type === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>{selectedDoc.type === 'expense' ? '-' : '+'}€{selectedDoc.amount.toLocaleString()}</p>
+                  <p className={`text-sm font-bold mt-0.5 ${selectedDoc.type === 'expense' || selectedDoc.type === 'credit_note' ? 'text-red-500' : 'text-emerald-500'}`}>{selectedDoc.type === 'expense' || selectedDoc.type === 'credit_note' ? '-' : '+'}€{selectedDoc.amount.toLocaleString()}</p>
                 </div>
                 {selectedDoc.type === 'invoice' && selectedDoc.status !== 'paid' && (
                   <button onClick={() => { onUpdateDocument({ ...selectedDoc, status: 'paid' }); setSelectedDoc(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
@@ -420,7 +420,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                 <div className="flex justify-between items-start">
                   <div>
                     <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Modifica</h2>
-                    <p className="text-sm text-slate-500">{docToEdit.type === 'invoice' ? `Fattura ${docToEdit.invoiceNumber || ''}` : 'Spesa'}</p>
+                    <p className="text-sm text-slate-500">{docToEdit.type === 'invoice' ? `Fattura ${docToEdit.invoiceNumber || ''}` : docToEdit.type === 'credit_note' ? `Nota di credito ${docToEdit.invoiceNumber || ''}` : 'Spesa'}</p>
                   </div>
                   <button onClick={() => setDocToEdit(null)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
                 </div>
