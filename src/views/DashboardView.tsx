@@ -10,7 +10,6 @@ const DashboardChart = lazy(() => import('../components/DashboardChart'));
 import { calculateSpanishTaxes } from '../lib/countries/es';
 import { getSpanishDeadlines } from '../data/deadlines-es';
 import { parseLocalDate, getLocalYear } from '../utils/date';
-import { parseLocalDate, getLocalYear } from '../utils/date';
 function getCountryFlag(country: string): string {
   const flags: Record<string, string> = {
     'Italy': '🇮🇹',
@@ -173,6 +172,21 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
     }
     return tasse.imposta + tasse.inps;
   }, [isSpainProfile, income, profile.annoInizioAttivita, displayYear, tasse]);
+  const mettiDaParte = useMemo(() => {
+    if (!isPro || isSpainProfile) return null;
+    const today = new Date();
+    const currentMonth = today.getMonth() + 1; // 1–12
+    const mesiRimasti = Math.max(1, 12 - currentMonth);
+    const rataMensile = Math.round(totaleTasse / mesiRimasti);
+    const year = today.getFullYear();
+    const deadlines = [
+      { date: new Date(year, 5, 30), label: '30 giugno', month: 'giugno', amount: Math.round(totaleTasse * 0.4) },
+      { date: new Date(year, 10, 30), label: '30 novembre', month: 'novembre', amount: Math.round(totaleTasse * 0.6) },
+    ];
+    const next = deadlines.find(d => d.date >= today) ?? deadlines[1];
+    return { rataMensile, next };
+  }, [isPro, isSpainProfile, totaleTasse]);
+
   const barImposta = income > 0 ? (tasse.imposta / income) * 100 : 0;
   const barInps = income > 0 ? (tasse.inps / income) * 100 : 0;
   const barNetto = income > 0 ? (Math.max(0, tasse.netto) / income) * 100 : 0;
@@ -403,7 +417,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
         })()}
 
         {activeTab === 'taxes' && profile.country !== 'Spain' && (
-          <motion.div key="taxes" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }} className="px-6">
+          <motion.div key="taxes" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }} className="px-6 space-y-4">
             <div className={`rounded-3xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
               <div className={`px-6 pt-5 pb-4 border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
                 <div className="flex items-center justify-between mb-1">
@@ -510,6 +524,29 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                 </p>
               </div>
             </div>
+
+            {/* IT-24 — Metti da parte (Pro IT) */}
+            {mettiDaParte && (
+              <div
+                className="rounded-3xl p-5 border"
+                style={darkMode
+                  ? { background: 'rgba(109, 40, 217, 0.1)', borderColor: 'rgba(139, 92, 246, 0.2)' }
+                  : { background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)', borderColor: '#ddd6fe' }
+                }
+              >
+                <div className="space-y-2 mb-3">
+                  <p className={`text-sm font-bold ${darkMode ? 'text-violet-300' : 'text-violet-800'}`}>
+                    💰 Metti da parte €{mettiDaParte.rataMensile.toLocaleString('it-IT')}/mese per essere tranquillo a {mettiDaParte.next.month}
+                  </p>
+                  <p className={`text-sm font-bold ${darkMode ? 'text-violet-400' : 'text-violet-700'}`}>
+                    📅 Prossimo pagamento fiscale: €{mettiDaParte.next.amount.toLocaleString('it-IT')} il {mettiDaParte.next.label}
+                  </p>
+                </div>
+                <p className={`text-[10px] leading-relaxed ${darkMode ? 'text-violet-500' : 'text-violet-500'}`}>
+                  Stima basata sui dati attuali. L'importo reale potrebbe variare.
+                </p>
+              </div>
+            )}
           </motion.div>
         )}
 
