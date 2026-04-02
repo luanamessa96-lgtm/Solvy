@@ -37,6 +37,7 @@ const CalendarView = lazy(() => import('./views/CalendarView'));
 const ProfileView = lazy(() => import('./views/ProfileView'));
 const SettingsView = lazy(() => import('./views/SettingsView'));
 const AccountantView = lazy(() => import('./views/AccountantView'));
+const FiscalView = lazy(() => import('./views/FiscalView'));
 const MediaLibraryView = lazy(() => import('./views/MediaLibraryView'));
 const MenuView = lazy(() => import('./views/MenuView'));
 const OnboardingView = lazy(() => import('./views/OnboardingView'));
@@ -56,6 +57,7 @@ function AppInner() {
   const [isProfilePage, setIsProfilePage] = useState(false);
   const [isSettingsPage, setIsSettingsPage] = useState(false);
   const [isAccountantPage, setIsAccountantPage] = useState(false);
+  const [isFiscalPage, setIsFiscalPage] = useState(false);
   const [isMediaLibraryPage, setIsMediaLibraryPage] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [theme, setTheme] = useState<string>(() => {
@@ -441,6 +443,7 @@ function AppInner() {
     if (isProfilePage) return 'Profilo';
     if (isSettingsPage) return 'Impostazioni';
     if (isAccountantPage) return 'Commercialista';
+    if (isFiscalPage) return 'Fiscalità';
     if (isMediaLibraryPage) return 'Libreria';
     switch (activeTab) {
       case 'home': return 'Dashboard';
@@ -449,12 +452,13 @@ function AppInner() {
       case 'menu': return 'Menu';
       default: return 'Dashboard';
     }
-  }, [activeTab, isProfilePage, isSettingsPage, isAccountantPage, isMediaLibraryPage]);
+  }, [activeTab, isProfilePage, isSettingsPage, isAccountantPage, isFiscalPage, isMediaLibraryPage]);
 
-  const resetSubPages = () => { setIsProfilePage(false); setIsSettingsPage(false); setIsAccountantPage(false); setIsMediaLibraryPage(false); };
+  const resetSubPages = () => { setIsProfilePage(false); setIsSettingsPage(false); setIsAccountantPage(false); setIsFiscalPage(false); setIsMediaLibraryPage(false); };
   const handleProfileClick = () => { resetSubPages(); setIsProfilePage(true); setActiveTab('menu'); };
   const handleSettingsClick = () => { resetSubPages(); setIsSettingsPage(true); setActiveTab('menu'); };
   const handleAccountantClick = () => { resetSubPages(); setIsAccountantPage(true); setActiveTab('menu'); };
+  const handleFiscalClick = () => { resetSubPages(); setIsFiscalPage(true); setActiveTab('menu'); };
   const handleMediaLibraryClick = () => { resetSubPages(); setIsMediaLibraryPage(true); setActiveTab('docs'); };
   const handleTabChange = (tab: string) => { resetSubPages(); setActiveTab(tab); };
 
@@ -698,7 +702,7 @@ function AppInner() {
         onProfileClick={handleProfileClick}
         onBellClick={() => setIsNotificationsOpen(true)}
         notificationCount={notificationCount}
-        showBack={isProfilePage || isSettingsPage || isAccountantPage || isMediaLibraryPage}
+        showBack={isProfilePage || isSettingsPage || isAccountantPage || isFiscalPage || isMediaLibraryPage}
         onBack={handleBack}
         darkMode={darkMode}
       />
@@ -720,6 +724,8 @@ function AppInner() {
             />
           ) : isSettingsPage ? (
             <SettingsView theme={theme} setTheme={(t) => setProfileTheme(t, activeProfile.id)} profile={activeProfile} onUpdateProfile={handleUpdateProfile} profilesCount={profiles.length} documents={documents} deadlines={deadlines} />
+          ) : isFiscalPage ? (
+            <Suspense fallback={null}><FiscalView profile={activeProfile} onUpdateProfile={handleUpdateProfile} darkMode={darkMode} /></Suspense>
           ) : isAccountantPage ? (
             <AccountantView
               accountant={accountant}
@@ -733,14 +739,14 @@ function AppInner() {
               <div style={{ display: activeTab === 'home' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><DashboardView profile={activeProfile} onProfileClick={handleProfileClick} onAddDocumentClick={() => handleTabChange('docs')} income={totalIncome} expenses={totalExpenses} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} theme={theme} /></Suspense></div>
               <div style={{ display: activeTab === 'docs' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><DocumentsView documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} onUpdateProfile={handleUpdateProfile} accountant={accountant} profile={activeProfile} darkMode={darkMode} theme={theme} onMediaLibraryClick={handleMediaLibraryClick} onNavigateToProfile={handleProfileClick} openChoiceTrigger={docChoiceTrigger} /></Suspense></div>
               <div style={{ display: activeTab === 'calendar' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><CalendarView deadlines={deadlines} onAddDeadline={handleAddDeadline} onUpdateDeadline={handleUpdateDeadline} onDeleteDeadline={handleDeleteDeadline} darkMode={darkMode} profile={activeProfile} openAddTrigger={calAddTrigger} income={totalIncome} expenses={totalExpenses} /></Suspense></div>
-              <div style={{ display: activeTab === 'menu' ? 'block' : 'none' }}><Suspense fallback={null}><MenuView activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} onLogout={handleLogout} darkMode={darkMode} /></Suspense></div>
+              <div style={{ display: activeTab === 'menu' ? 'block' : 'none' }}><Suspense fallback={null}><MenuView activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} onFiscalClick={handleFiscalClick} onLogout={handleLogout} darkMode={darkMode} /></Suspense></div>
             </>
           )}
         </Suspense>
       </main>
 
     </div>
-    <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} theme={theme} onPlusPress={handlePlusPress} />
+    <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage || isFiscalPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} theme={theme} onPlusPress={handlePlusPress} />
     <AnimatePresence>
       {swRegistration && (
         <UpdateBanner
