@@ -53,12 +53,21 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // IT-33: primo anno e reddito N-1
+  const annoInizio = profile?.annoInizioAttivita != null ? Number(profile.annoInizioAttivita) : null;
+  const isPrimoAnnoIT = !isSpain && annoInizio != null && annoInizio === selectedYear;
+  const redditoN1 = profile?.redditoN1;
+
   // IT-21 + IT-22: importi stimati per scadenze fiscali IT
   // NOTA: currentYear deve essere dichiarato prima di questo useMemo
   const fiscalAmounts = useMemo<Record<string, number>>(() => {
     if (isSpain) return {};
-    const inc = typeof income === 'number' && Number.isFinite(income) && income > 0 ? income : 0;
-    if (inc === 0) return {};
+    if (isPrimoAnnoIT) return {};
+    // IT-33: usa reddito N-1 se disponibile, altrimenti reddito corrente
+    const baseInc = (redditoN1 != null && redditoN1 > 0)
+      ? redditoN1
+      : (typeof income === 'number' && Number.isFinite(income) && income > 0 ? income : 0);
+    if (baseInc === 0) return {};
     const exp = typeof expenses === 'number' && Number.isFinite(expenses) ? expenses : 0;
     const regime = profile?.regime ?? 'forfettario';
     let imposta = 0;
@@ -67,14 +76,13 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
       if (regime === 'forfettario') {
         const coeffRaw = profile?.coefficiente;
         const coeff = coeffRaw != null && coeffRaw > 0 ? coeffRaw / 100 : 0.78;
-        const redditoLordo = Math.max(0, inc * coeff);
+        const redditoLordo = Math.max(0, baseInc * coeff);
         inps = redditoLordo * 0.2607;
         const base = Math.max(0, redditoLordo - inps);
-        const annoInizio = profile?.annoInizioAttivita != null ? Number(profile.annoInizioAttivita) : null;
         const isFive = annoInizio != null && Number.isFinite(annoInizio) && (currentYear - annoInizio) < 5;
         imposta = base * (isFive ? 0.05 : 0.15);
       } else {
-        const redditoLordo = Math.max(0, inc - exp);
+        const redditoLordo = Math.max(0, baseInc - exp);
         inps = redditoLordo * 0.24;
         const base = Math.max(0, redditoLordo - inps);
         const irpef = base <= 0 ? 0 : base <= 28000 ? base * 0.23 : base <= 50000 ? 28000 * 0.23 + (base - 28000) * 0.35 : 28000 * 0.23 + 22000 * 0.35 + (base - 50000) * 0.43;
@@ -90,7 +98,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
       '2° acconto imposta sostitutiva': Math.round(imposta * 0.60),
       '2° acconto INPS gestione separata': Math.round(inps * 0.60),
     };
-  }, [isSpain, income, expenses, profile, currentYear]);
+  }, [isSpain, isPrimoAnnoIT, redditoN1, income, expenses, profile, annoInizio, currentYear, selectedYear]);
 
   const scadenzeFiscaliRaw = isSpain
     ? getSpanishDeadlines(selectedYear).map(s => ({ title: s.title, date: s.date, type: 'tax' as Deadline['type'] }))
@@ -203,6 +211,25 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                 <h3 className="text-lg font-bold leading-tight">{nextDeadline.title}</h3>
                 {nextDeadline.amount && <p className="text-2xl font-bold pt-2">€{nextDeadline.amount.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</p>}
               </div>
+            </motion.div>
+          )}
+
+          {isPrimoAnnoIT && !searchQuery && (
+            <motion.div variants={item} className={`flex items-start gap-3 px-4 py-3.5 rounded-2xl border ${darkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-300' : 'bg-blue-50 border-blue-100 text-blue-700'}`}>
+              <span className="text-base leading-none mt-0.5">🎉</span>
+              <div>
+                <p className="text-sm font-bold">Primo anno — nessun acconto dovuto</p>
+                <p className="text-[10px] mt-0.5 opacity-70">Le imposte del primo anno si pagano interamente nell'anno successivo.</p>
+              </div>
+            </motion.div>
+          )}
+
+          {!isPrimoAnnoIT && redditoN1 != null && redditoN1 > 0 && !isSpain && !searchQuery && (
+            <motion.div variants={item} className={`flex items-center gap-3 px-4 py-3 rounded-2xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+              <span className="text-base leading-none">📊</span>
+              <p className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                Acconti calcolati su reddito {selectedYear - 1}: €{redditoN1.toLocaleString('it-IT')}
+              </p>
             </motion.div>
           )}
 

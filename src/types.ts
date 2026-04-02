@@ -26,6 +26,7 @@ export interface Profile {
   city?: string;
   province?: string;
   region?: string;
+  redditoN1?: number;
 }
 
 export interface Document {

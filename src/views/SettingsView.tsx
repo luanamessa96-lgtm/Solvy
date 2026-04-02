@@ -30,6 +30,8 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [redditoN1Input, setRedditoN1Input] = useState(profile.redditoN1 != null ? String(profile.redditoN1) : '');
+  const [redditoN1Saved, setRedditoN1Saved] = useState(false);
 
   // Refund flow state: idle → confirming → loading → success | error
   type RefundStep = 'idle' | 'confirming' | 'loading' | 'success' | 'error';
@@ -254,6 +256,45 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
             ) : (
               <p className="text-[10px] text-slate-400 leading-relaxed">
                 Imposta la provincia nel tuo <span className="font-bold text-primary">Profilo → Modifica</span> per calcolare le addizionali regionali reali.
+              </p>
+            )}
+          </div>
+
+          {/* Reddito anno precedente per acconti */}
+          <div className={`p-4 rounded-3xl border space-y-3 transition-colors`} style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+            <div>
+              <p className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Reddito anno precedente</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">Per calcolo acconti più preciso</p>
+            </div>
+            <div className="flex gap-2">
+              <div className={`flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                <span className={`text-sm font-bold ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>€</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  step={1}
+                  value={redditoN1Input}
+                  onChange={e => { setRedditoN1Input(e.target.value); setRedditoN1Saved(false); }}
+                  placeholder="es. 28000"
+                  className={`flex-1 text-sm font-bold bg-transparent focus:outline-none ${darkMode ? 'text-white placeholder:text-slate-600' : 'text-slate-900 placeholder:text-slate-400'}`}
+                />
+              </div>
+              <button
+                onClick={() => {
+                  const val = redditoN1Input.trim() ? Number(redditoN1Input) : undefined;
+                  onUpdateProfile?.({ ...profile, redditoN1: val });
+                  setRedditoN1Saved(true);
+                  setTimeout(() => setRedditoN1Saved(false), 2000);
+                }}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${redditoN1Saved ? 'bg-emerald-500 text-white' : 'bg-primary text-white'}`}
+              >
+                {redditoN1Saved ? '✓' : 'Salva'}
+              </button>
+            </div>
+            {profile.annoInizioAttivita === new Date().getFullYear() && (
+              <p className="text-[10px] text-blue-500 font-bold">
+                Primo anno — nessun acconto dovuto nel calendario
               </p>
             )}
           </div>
