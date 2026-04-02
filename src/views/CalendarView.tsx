@@ -82,7 +82,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
         imposta = base * (isFive ? 0.05 : 0.15);
       } else {
         const redditoLordo = Math.max(0, baseInc - exp);
-        inps = redditoLordo * 0.24;
+        inps = redditoLordo * 0.2607; // gestione separata (stesso del forfettario)
         const base = Math.max(0, redditoLordo - inps);
         const irpef = base <= 0 ? 0 : base <= 28000 ? base * 0.23 : base <= 50000 ? 28000 * 0.23 + (base - 28000) * 0.35 : 28000 * 0.23 + 22000 * 0.35 + (base - 50000) * 0.43;
         imposta = irpef + base * 0.023;
