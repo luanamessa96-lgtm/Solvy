@@ -756,10 +756,10 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
           const c = calcR(doc);
           return [String(i+1), parseLocalDate(doc.date).toLocaleDateString('it-IT'), doc.invoiceNumber || doc.id.slice(0,8), (doc.client||'—').slice(0,22), c.cid.slice(0,18), c.imp.toFixed(2), c.iva.toFixed(2), c.rit.toFixed(2), c.bollo.toFixed(2), c.tot.toFixed(2), c.stato, c.incasso];
         }),
-        styles: { fontSize: 6.5, cellPadding: { top: 2, bottom: 2, left: 1.5, right: 1.5 }, textColor: black },
-        headStyles: { fillColor: [248, 250, 252], textColor: grey, fontStyle: 'bold', fontSize: 6, lineColor: lightGrey, lineWidth: 0.3 },
+        styles: { fontSize: 6, cellPadding: { top: 1.5, bottom: 1.5, left: 1, right: 1 }, textColor: black },
+        headStyles: { fillColor: [248, 250, 252], textColor: grey, fontStyle: 'bold', fontSize: 5.5, lineColor: lightGrey, lineWidth: 0.3 },
         bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
-        columnStyles: { 0:{cellWidth:8,halign:'center'}, 1:{cellWidth:18}, 2:{cellWidth:18}, 3:{cellWidth:28}, 4:{cellWidth:24}, 5:{cellWidth:18,halign:'right'}, 6:{cellWidth:14,halign:'right'}, 7:{cellWidth:16,halign:'right'}, 8:{cellWidth:11,halign:'right'}, 9:{cellWidth:18,halign:'right',fontStyle:'bold'}, 10:{cellWidth:16}, 11:{cellWidth:17} },
+        columnStyles: { 0:{cellWidth:7,halign:'center'}, 1:{cellWidth:16}, 2:{cellWidth:15}, 3:{cellWidth:25}, 4:{cellWidth:20}, 5:{cellWidth:16,halign:'right'}, 6:{cellWidth:12,halign:'right'}, 7:{cellWidth:14,halign:'right'}, 8:{cellWidth:10,halign:'right'}, 9:{cellWidth:17,halign:'right',fontStyle:'bold'}, 10:{cellWidth:14}, 11:{cellWidth:16} },
         didParseCell: (data) => { if (data.section==='body' && regDocs[data.row.index]?.type==='credit_note') { data.cell.styles.textColor=[225,29,72]; } },
         margin: { left: margin, right: margin },
       });
