@@ -67,6 +67,9 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   const annoInizio = profile?.annoInizioAttivita != null ? Number(profile.annoInizioAttivita) : null;
   const redditoN1 = profile?.redditoN1;
   const isPrimoAnnoIT = !isSpain && profile?.regime !== 'ordinario' && annoInizio != null && annoInizio === selectedYear && !(redditoN1 != null && redditoN1 > 0);
+  if (process.env.NODE_ENV === 'development') {
+    console.log('isPrimoAnnoIT:', isPrimoAnnoIT, 'regime:', profile?.regime, 'annoInizio:', annoInizio, 'selectedYear:', selectedYear, 'income:', income, 'expenses:', expenses);
+  }
 
   // IT-21 + IT-22: importi stimati per scadenze fiscali IT
   // NOTA: currentYear deve essere dichiarato prima di questo useMemo
