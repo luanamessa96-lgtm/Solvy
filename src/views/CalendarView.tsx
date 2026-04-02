@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft, Search, X } from 'lucide-react';
-import { Deadline, Profile } from '../types';
+import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft, Search, X, Download, Loader2 } from 'lucide-react';
+import { Deadline, Profile, Document } from '../types';
 import { getSpanishDeadlines } from '../data/deadlines-es';
 import { parseLocalDate, getLocalYear, getLocalMonth } from '../utils/date';
 import PaywallModal from '../components/modals/PaywallModal';
@@ -30,9 +30,10 @@ interface CalendarViewProps {
   openAddTrigger?: number;
   income?: number;
   expenses?: number;
+  documents?: Document[];
 }
 
-const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDeadline, darkMode, profile, openAddTrigger, income, expenses }: CalendarViewProps) => {
+const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDeadline, darkMode, profile, openAddTrigger, income, expenses, documents = [] }: CalendarViewProps) => {
   const { t, i18n } = useTranslation();
   const isSpain = profile?.country === 'Spain';
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -51,6 +52,8 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [searchQuery, setSearchQuery] = useState('');
+  const [archiveYear, setArchiveYear] = useState<number | null>(null);
+  const [isExportingZip, setIsExportingZip] = useState(false);
 
   // IT-33: primo anno e reddito N-1
   // ORDINE DICHIARAZIONI: redditoN1 deve stare prima di isPrimoAnnoIT (evita TDZ crash)
@@ -142,6 +145,95 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   }, [deadlines]);
 
   const daysUntilNext = nextDeadline ? Math.ceil((new Date(nextDeadline.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
+
+  const isItaly = profile?.country === 'Italy';
+
+  // IT-40: archivio fatture pagate per anno
+  const archiveByYear = useMemo(() => {
+    if (!isItaly) return {} as Record<number, { invoices: Document[]; total: number }>;
+    const byYear: Record<number, { invoices: Document[]; total: number }> = {};
+    for (const d of documents) {
+      if (d.type !== 'invoice' || d.status !== 'paid') continue;
+      const year = getLocalYear(d.date);
+      if (!byYear[year]) byYear[year] = { invoices: [], total: 0 };
+      byYear[year].invoices.push(d);
+      byYear[year].total += d.amount;
+    }
+    return byYear;
+  }, [documents, isItaly]);
+  const archiveYears = Object.keys(archiveByYear).map(Number).sort((a, b) => b - a);
+
+  const handleExportZip = async (year: number) => {
+    if (!profile) return;
+    setIsExportingZip(true);
+    try {
+      const [{ default: JSZip }, { buildInvoicePDFBlob }, { generateFatturaPA }, jspdfMod] = await Promise.all([
+        import('jszip'),
+        import('../lib/generateInvoicePDF'),
+        import('../services/fatturaPA'),
+        import('jspdf'),
+      ]);
+      const zip = new JSZip();
+      const yearData = archiveByYear[year];
+      if (!yearData) return;
+
+      for (const inv of yearData.invoices) {
+        const { blob, fileName } = await buildInvoicePDFBlob(inv, profile);
+        zip.file(`fatture/${fileName}`, blob);
+      }
+
+      // Summary PDF
+      const jsPDF = jspdfMod.jsPDF;
+      const pdoc = new jsPDF();
+      pdoc.setFont('helvetica', 'bold');
+      pdoc.setFontSize(16);
+      pdoc.text(`Riepilogo Fatture ${year}`, 20, 20);
+      pdoc.setFont('helvetica', 'normal');
+      pdoc.setFontSize(9);
+      let y = 35;
+      pdoc.setTextColor(150, 150, 150);
+      pdoc.text('N° Fattura', 20, y); pdoc.text('Data', 65, y); pdoc.text('Cliente', 95, y); pdoc.text('Importo', 168, y);
+      pdoc.setTextColor(0, 0, 0);
+      y += 4;
+      pdoc.setDrawColor(220, 220, 220);
+      pdoc.line(20, y, 190, y);
+      y += 7;
+      for (const inv of yearData.invoices) {
+        pdoc.text(inv.invoiceNumber || '-', 20, y);
+        pdoc.text(inv.date.split('T')[0], 65, y);
+        pdoc.text((inv.client || '-').slice(0, 28), 95, y);
+        pdoc.text(`\u20AC${inv.amount.toFixed(2)}`, 168, y);
+        y += 7;
+        if (y > 270) { pdoc.addPage(); y = 20; }
+      }
+      y += 2;
+      pdoc.line(20, y, 190, y);
+      y += 8;
+      pdoc.setFont('helvetica', 'bold');
+      pdoc.text('Totale', 95, y);
+      pdoc.text(`\u20AC${yearData.total.toFixed(2)}`, 168, y);
+      zip.file(`riepilogo_${year}.pdf`, pdoc.output('blob'));
+
+      if (isPro) {
+        for (const inv of yearData.invoices) {
+          const { xml, filename } = generateFatturaPA(inv, profile);
+          zip.file(`xml/${filename}`, xml);
+        }
+      }
+
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `archivio_fatture_${year}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } finally {
+      setIsExportingZip(false);
+    }
+  };
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.15 } } };
   const item = { hidden: { opacity: 0 }, show: { opacity: 1 } };
@@ -305,6 +397,36 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
               )}
             </div>
           </motion.div>
+
+          {/* IT-40: Archivio Fatture — solo IT */}
+          {isItaly && archiveYears.length > 0 && !searchQuery && (
+            <motion.div variants={item} className="space-y-3">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-2">Archivio Fatture</span>
+              <div className="rounded-3xl border overflow-hidden transition-colors" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+                {archiveYears.map((year, i) => {
+                  const data = archiveByYear[year];
+                  return (
+                    <button
+                      key={year}
+                      type="button"
+                      onClick={() => setArchiveYear(year)}
+                      className={`w-full flex items-center justify-between px-5 py-4 active:scale-[0.98] transition-all hover:bg-primary/5 text-left ${i > 0 ? 'border-t' : ''}`}
+                      style={i > 0 ? { borderColor: 'var(--color-border)' } : undefined}
+                    >
+                      <div>
+                        <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{year}</p>
+                        <p className="text-xs text-slate-400">{data.invoices.length} fattur{data.invoices.length === 1 ? 'a' : 'e'} saldat{data.invoices.length === 1 ? 'a' : 'e'}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <p className="text-sm font-bold text-emerald-500">€{data.total.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</p>
+                        <ChevronRight size={16} className="text-slate-300" />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
         </>
       )}
 
@@ -486,6 +608,63 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
           </div>
         )}
       </AnimatePresence>
+      {/* IT-40: modale dettaglio anno archivio */}
+      <AnimatePresence>
+        {archiveYear !== null && archiveByYear[archiveYear] && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setArchiveYear(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl"
+              style={{ backgroundColor: 'var(--color-card)' }}>
+              <div className="overflow-y-auto max-h-[85vh] p-6 space-y-4 [padding-bottom:max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))]">
+                {/* Header */}
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Archivio {archiveYear}</h2>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {archiveByYear[archiveYear].invoices.length} fattur{archiveByYear[archiveYear].invoices.length === 1 ? 'a' : 'e'} · €{archiveByYear[archiveYear].total.toLocaleString('it-IT', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                  <button onClick={() => setArchiveYear(null)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
+                    <Plus className="rotate-45" size={24} />
+                  </button>
+                </div>
+
+                {/* Invoice list */}
+                <div className="space-y-2">
+                  {archiveByYear[archiveYear].invoices
+                    .slice()
+                    .sort((a, b) => a.date.localeCompare(b.date))
+                    .map(inv => (
+                      <div key={inv.id} className={`flex items-center justify-between p-3 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                        <div className="min-w-0">
+                          <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{inv.invoiceNumber || inv.id.slice(0, 8)}</p>
+                          <p className="text-xs text-slate-400 truncate">{inv.client} · {inv.date.split('T')[0]}</p>
+                        </div>
+                        <p className="text-sm font-bold text-emerald-500 shrink-0 ml-3">€{inv.amount.toFixed(2)}</p>
+                      </div>
+                    ))}
+                </div>
+
+                {/* Export ZIP */}
+                <button
+                  type="button"
+                  onClick={() => handleExportZip(archiveYear)}
+                  disabled={isExportingZip}
+                  className="w-full py-4 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isExportingZip ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                  {isExportingZip ? 'Generazione in corso…' : `Esporta archivio ZIP ${archiveYear}`}
+                </button>
+                {isPro && (
+                  <p className="text-[10px] text-center text-primary font-bold">Include XML FatturaPA per ogni fattura</p>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} darkMode={darkMode} />
     </motion.div>
   );
