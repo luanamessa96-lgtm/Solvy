@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, ChevronLeft, Info } from 'lucide-react';
 import { IT_PROVINCE, getRegionFromProvince } from '../lib/it/province';
+import { useKeyboardPadding, scrollFieldIntoView } from '../hooks/useKeyboardPadding';
 import { Profile } from '../types';
 import { profileStorage } from '../lib/supabase';
 
@@ -24,6 +25,7 @@ const CATEGORIE: { label: string; value: number }[] = [
 type OnboardingStep = 0 | 'country' | 1 | 2 | 3 | 'done';
 
 export default function OnboardingView({ profile, onComplete, onCancel, darkMode }: OnboardingViewProps) {
+  const keyboardPadding = useKeyboardPadding();
   const [step, setStep] = useState<OnboardingStep>(0);
   const [direction, setDirection] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -242,7 +244,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
 
           {/* STEP 1 — Chi sei (common) */}
           {step === 1 && (
-            <motion.div key="step1" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col p-8 pt-6 space-y-6">
+            <motion.div key="step1" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col p-8 pt-6 space-y-6 overflow-y-auto" style={{ paddingBottom: Math.max(32, keyboardPadding + 32) }} onFocus={scrollFieldIntoView}>
               {/* Country badge */}
               <div className="flex items-center gap-2">
                 <span className={`text-lg font-black ${darkMode ? 'text-white' : 'text-slate-900'}`}>Chi sei?</span>
@@ -276,7 +278,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
 
           {/* STEP 2 — Regime fiscale (Italy) OR Dati fiscali (Spain) */}
           {step === 2 && selectedCountry === 'Italy' && (
-            <motion.div key="step2-italy" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col p-8 pt-6 space-y-6 overflow-y-auto">
+            <motion.div key="step2-italy" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col p-8 pt-6 space-y-6 overflow-y-auto" style={{ paddingBottom: Math.max(32, keyboardPadding + 32) }} onFocus={scrollFieldIntoView}>
               <div className="space-y-1">
                 <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Regime fiscale</h2>
                 <p className="text-sm text-slate-500">Usato per calcolare correttamente le tue tasse.</p>
@@ -361,7 +363,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
 
           {/* STEP 2 — Dati fiscali (Spain) */}
           {step === 2 && selectedCountry === 'Spain' && (
-            <motion.div key="step2-spain" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col p-8 pt-6 space-y-6 overflow-y-auto">
+            <motion.div key="step2-spain" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col p-8 pt-6 space-y-6 overflow-y-auto" style={{ paddingBottom: Math.max(32, keyboardPadding + 32) }} onFocus={scrollFieldIntoView}>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Dati fiscali</h2>
@@ -467,7 +469,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
 
           {/* STEP 3 — Dati fiscali (Italy only) */}
           {step === 3 && selectedCountry === 'Italy' && (
-            <motion.div key="step3" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col p-8 pt-6 space-y-6">
+            <motion.div key="step3" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col p-8 pt-6 space-y-6 overflow-y-auto" style={{ paddingBottom: Math.max(32, keyboardPadding + 32) }} onFocus={scrollFieldIntoView}>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Dati fiscali</h2>

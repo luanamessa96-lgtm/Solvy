@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Globe, CreditCard, Briefcase, FileEdit, CheckCircle2, MapPin, Receipt, User, Lock, Info, ChevronDown } from 'lucide-react';
 import { IT_PROVINCE, getRegionFromProvince } from '../lib/it/province';
+import { useKeyboardPadding, scrollFieldIntoView } from '../hooks/useKeyboardPadding';
 import { Profile } from '../types';
 import PaywallModal from '../components/modals/PaywallModal';
 import { CountryBadge } from '../components/CountryBadge';
@@ -80,6 +81,7 @@ function validateCF(v: string): string | null {
 
 const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile, onAddProfile, darkMode }: ProfileViewProps) => {
   const { t } = useTranslation();
+  const keyboardPadding = useKeyboardPadding();
   const [isEditing, setIsEditing] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isIT19Expanded, setIsIT19Expanded] = useState(false);
@@ -213,7 +215,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsEditing(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl" style={{ backgroundColor: 'var(--color-card)' }}>
-              <div className="overflow-y-auto max-h-[90vh] p-8 space-y-5">
+              <div className="overflow-y-auto max-h-[90vh] p-8 space-y-5" style={{ paddingBottom: Math.max(32, keyboardPadding + 32) }} onFocus={scrollFieldIntoView}>
                 <div className="flex justify-between items-start">
                   <div>
                     <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('profile.edit_title')}</h2>
