@@ -717,6 +717,176 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       pdf.text(isSpain ? `Generado el ${new Date().toLocaleDateString('es-ES')}` : `Generato il ${new Date().toLocaleDateString('it-IT')}`, R, 285, { align: 'right' });
     }
 
+    const hasMainContent = invoices.length > 0 || expenses.length > 0;
+    let pdfSections = hasMainContent ? 1 : 0;
+
+    // ── SEZIONE INLINE: Registro Cronologico (solo IT Pro, formato PDF) ───────
+    if (includeRegistro && isItaly && isPro) {
+      if (pdfSections > 0) pdf.addPage();
+      pdfSections++;
+      const regDocs = yearDocs
+        .filter(d => (d.type === 'invoice' || d.type === 'credit_note') && syncedMonths.has(getLocalMonth(d.date)))
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      pdf.setFillColor(...primary);
+      pdf.rect(0, 0, W, 22, 'F');
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(14); pdf.setTextColor(255, 255, 255);
+      pdf.text('REGISTRO CRONOLOGICO', margin, 14);
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(200, 200, 255);
+      pdf.text(`${profile.name} · ${periodLabel}`, margin, 20);
+      const MBVAL = 2;
+      const calcR = (doc: AppDoc) => {
+        const isCN = doc.type === 'credit_note';
+        const sign = isCN ? -1 : 1;
+        const isOrd = (doc.docRegime ?? profile.regime ?? 'forfettario') === 'ordinario';
+        const rivA = !isCN && doc.rivalsaInps ? doc.amount * 0.04 : 0;
+        const imp = (doc.amount + rivA) * sign;
+        const iva = isOrd && !isCN ? imp * ((doc.ivaRate ?? 0) / 100) : 0;
+        const rit = !isCN && doc.ritenuta ? doc.amount * 0.20 : 0;
+        const bollo = !isCN && doc.marcaBollo ? MBVAL : 0;
+        const tot = imp + iva + bollo - rit;
+        const stato = isCN ? 'Storno' : doc.status === 'paid' ? 'Pagata' : doc.status === 'overdue' ? 'Scaduta' : 'In attesa';
+        const incasso = doc.status === 'paid' ? parseLocalDate(doc.date).toLocaleDateString('it-IT') : '';
+        const cid = doc.clientPiva === 'Privato' ? `CF: ${doc.clientCf || '—'}` : (doc.clientPiva || doc.clientCf || '—');
+        return { imp, iva, rit, bollo, tot, stato, incasso, cid };
+      };
+      autoTable(pdf, {
+        startY: 28,
+        head: [['N°', 'Data', 'N° Doc', 'Cliente', 'P.IVA/CF', 'Imponib.', 'IVA', 'Ritenuta', 'Bollo', 'Totale', 'Stato', 'Incasso']],
+        body: regDocs.map((doc, i) => {
+          const c = calcR(doc);
+          return [String(i+1), parseLocalDate(doc.date).toLocaleDateString('it-IT'), doc.invoiceNumber || doc.id.slice(0,8), (doc.client||'—').slice(0,22), c.cid.slice(0,18), c.imp.toFixed(2), c.iva.toFixed(2), c.rit.toFixed(2), c.bollo.toFixed(2), c.tot.toFixed(2), c.stato, c.incasso];
+        }),
+        styles: { fontSize: 6.5, cellPadding: { top: 2, bottom: 2, left: 1.5, right: 1.5 }, textColor: black },
+        headStyles: { fillColor: [248, 250, 252], textColor: grey, fontStyle: 'bold', fontSize: 6, lineColor: lightGrey, lineWidth: 0.3 },
+        bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+        columnStyles: { 0:{cellWidth:8,halign:'center'}, 1:{cellWidth:18}, 2:{cellWidth:18}, 3:{cellWidth:28}, 4:{cellWidth:24}, 5:{cellWidth:18,halign:'right'}, 6:{cellWidth:14,halign:'right'}, 7:{cellWidth:16,halign:'right'}, 8:{cellWidth:11,halign:'right'}, 9:{cellWidth:18,halign:'right',fontStyle:'bold'}, 10:{cellWidth:16}, 11:{cellWidth:17} },
+        didParseCell: (data) => { if (data.section==='body' && regDocs[data.row.index]?.type==='credit_note') { data.cell.styles.textColor=[225,29,72]; } },
+        margin: { left: margin, right: margin },
+      });
+    }
+
+    // ── SEZIONE INLINE: Riepilogo Annuale (solo IT Pro, formato PDF) ──────────
+    if (includeRiepilogo && isItaly && isPro) {
+      if (pdfSections > 0) pdf.addPage();
+      pdfSections++;
+      const green: [number,number,number] = [16,185,129];
+      const red: [number,number,number] = [239,68,68];
+      const fmtE = (n: number) => `€ ${Math.abs(n).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+      function calcIRPEFi(imp: number): number {
+        if (imp<=0) return 0;
+        if (imp<=28000) return imp*0.23;
+        if (imp<=50000) return 28000*0.23+(imp-28000)*0.35;
+        return 28000*0.23+22000*0.35+(imp-50000)*0.43;
+      }
+      const allY = documents.filter(d => getLocalYear(d.date)===year);
+      const paidInv = allY.filter(d => d.type==='invoice' && d.status==='paid');
+      const cNotes = allY.filter(d => d.type==='credit_note');
+      const expD = allY.filter(d => d.type==='expense');
+      const totFatt = paidInv.reduce((s,d)=>s+d.amount,0);
+      const totCred = cNotes.reduce((s,d)=>s+d.amount,0);
+      const totInc = totFatt-totCred;
+      const totExp = expD.reduce((s,d)=>s+d.amount,0);
+      const regimeR = profile.regime||'forfettario';
+      const isForf = regimeR!=='ordinario';
+      const coeff = (profile.coefficiente!=null&&profile.coefficiente>0)?profile.coefficiente/100:0.78;
+      const redLordo = isForf ? Math.max(0,totInc*coeff) : Math.max(0,totInc-totExp);
+      const inpsR = isForf ? 0.2607 : 0.24;
+      const inps = redLordo*inpsR;
+      const redImp = Math.max(0,redLordo-inps);
+      const annoIn = profile.annoInizioAttivita??null;
+      const yrsAct = annoIn!=null ? year-Number(annoIn) : null;
+      const is5pct = isForf && yrsAct!=null && Number.isFinite(yrsAct) && yrsAct<5;
+      const aliq = isForf?(is5pct?0.05:0.15):0;
+      const impForf = redImp*aliq;
+      const irpef = isForf?0:calcIRPEFi(redImp);
+      const addiz = isForf?0:redImp*0.023;
+      const imposta = isForf?impForf:irpef+addiz;
+      const accGiu = imposta*0.40;
+      const accNov = imposta*0.60;
+      const saldo = imposta-accGiu-accNov;
+      const netto = isForf?totInc-imposta-inps:totInc-imposta-inps-totExp;
+      const ritDocs = paidInv.filter(d=>d.ritenuta);
+      const totRit = ritDocs.reduce((s,d)=>{const rA=d.rivalsaInps?d.amount*0.04:0; return s+(d.amount+rA)*0.20;},0);
+      const spCat: Record<string,number> = {};
+      expD.forEach(d=>{ const cat=d.category||'Altro'; spCat[cat]=(spCat[cat]||0)+d.amount; });
+      const spRows = Object.entries(spCat).sort((a,b)=>b[1]-a[1]);
+
+      // Header viola
+      pdf.setFillColor(...primary);
+      pdf.rect(0,0,W,32,'F');
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(18); pdf.setTextColor(255,255,255);
+      pdf.text(`Riepilogo Annuale ${year}`,margin,14);
+      pdf.setFont('helvetica','normal'); pdf.setFontSize(10); pdf.setTextColor(200,200,255);
+      pdf.text(profile.name,margin,22);
+      pdf.text(`Generato il ${new Date().toLocaleDateString('it-IT')}`,rightCol,22,{align:'right'});
+      pdf.setFontSize(9);
+      pdf.text(`Regime: ${isForf?'Forfettario':'Ordinario'}${is5pct?' · 5%':''}`,rightCol,14,{align:'right'});
+
+      let ry=42;
+
+      // Fatturato
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(9); pdf.setTextColor(...grey);
+      pdf.text('FATTURATO',margin,ry); ry+=4;
+      autoTable(pdf,{
+        startY:ry,
+        head:[['Voce','Importo']],
+        body:[['Fatture incassate',fmtE(totFatt)],...(totCred>0?[['Note di credito',`– ${fmtE(totCred)}`]]:[]),['Fatturato netto',fmtE(totInc)]],
+        styles:{fontSize:9,cellPadding:{top:3,bottom:3,left:3,right:3},textColor:black},
+        headStyles:{fillColor:[248,250,252],textColor:grey,fontStyle:'bold',fontSize:8,lineColor:lightGrey,lineWidth:0.3},
+        bodyStyles:{lineColor:lightGrey,lineWidth:0.2},
+        columnStyles:{0:{cellWidth:'auto'},1:{cellWidth:45,halign:'right',fontStyle:'bold'}},
+        didParseCell:(data)=>{ if(data.section==='body'&&data.row.index===(totCred>0?2:1)){ data.cell.styles.fontStyle='bold'; data.cell.styles.textColor=green; } },
+        margin:{left:margin,right:margin},
+      });
+      ry=(pdf.lastAutoTable?.finalY??ry+20)+8;
+
+      // Calcolo fiscale
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(9); pdf.setTextColor(...grey);
+      pdf.text('CALCOLO FISCALE STIMATO',margin,ry); ry+=4;
+      const fiscBody = isForf
+        ? [['Coefficiente',`${(coeff*100).toFixed(0)}%`],['Reddito lordo',fmtE(redLordo)],[`INPS (${(inpsR*100).toFixed(2)}%)`,fmtE(inps)],['Reddito imponibile',fmtE(redImp)],[`Imposta sostitutiva (${(aliq*100).toFixed(0)}%)`,fmtE(imposta)],['Acconto giugno (40%)',fmtE(accGiu)],['Acconto novembre (60%)',fmtE(accNov)],['Saldo stimato',fmtE(saldo)]]
+        : [['Reddito lordo',fmtE(redLordo)],[`INPS (${(inpsR*100).toFixed(0)}%)`,fmtE(inps)],['Reddito imponibile',fmtE(redImp)],['IRPEF',fmtE(irpef)],['Addizionali (~2.3%)',fmtE(addiz)],['Totale imposta',fmtE(imposta)],['Acconto giugno (40%)',fmtE(accGiu)],['Acconto novembre (60%)',fmtE(accNov)],['Saldo stimato',fmtE(saldo)]];
+      autoTable(pdf,{
+        startY:ry,
+        head:[['Calcolo','Importo stimato']],
+        body:fiscBody,
+        styles:{fontSize:9,cellPadding:{top:3,bottom:3,left:3,right:3},textColor:black},
+        headStyles:{fillColor:[248,250,252],textColor:grey,fontStyle:'bold',fontSize:8,lineColor:lightGrey,lineWidth:0.3},
+        bodyStyles:{lineColor:lightGrey,lineWidth:0.2},
+        columnStyles:{0:{cellWidth:'auto'},1:{cellWidth:45,halign:'right'}},
+        margin:{left:margin,right:margin},
+      });
+      ry=(pdf.lastAutoTable?.finalY??ry+30)+8;
+
+      autoTable(pdf,{startY:ry,body:[[`Netto reale stimato anno ${year}`,fmtE(netto)]],styles:{fontSize:11,fontStyle:'bold',cellPadding:{top:5,bottom:5,left:3,right:3}},bodyStyles:{lineColor:primary,lineWidth:0.4,textColor:primary},columnStyles:{0:{cellWidth:'auto'},1:{cellWidth:45,halign:'right'}},margin:{left:margin,right:margin}});
+      ry=(pdf.lastAutoTable?.finalY??ry+14)+8;
+
+      if (spRows.length>0) {
+        pdf.setFont('helvetica','bold'); pdf.setFontSize(9); pdf.setTextColor(...grey);
+        pdf.text('SPESE DEDUCIBILI PER CATEGORIA',margin,ry); ry+=4;
+        autoTable(pdf,{startY:ry,head:[['Categoria','Totale']],body:[...spRows.map(([cat,amt])=>[cat,fmtE(amt)]),['Totale spese',fmtE(totExp)]],styles:{fontSize:9,cellPadding:{top:3,bottom:3,left:3,right:3},textColor:black},headStyles:{fillColor:[248,250,252],textColor:grey,fontStyle:'bold',fontSize:8,lineColor:lightGrey,lineWidth:0.3},bodyStyles:{lineColor:lightGrey,lineWidth:0.2},columnStyles:{0:{cellWidth:'auto'},1:{cellWidth:45,halign:'right'}},didParseCell:(data)=>{ if(data.section==='body'&&data.row.index===spRows.length){ data.cell.styles.fontStyle='bold'; data.cell.styles.textColor=red; } },margin:{left:margin,right:margin}});
+        ry=(pdf.lastAutoTable?.finalY??ry+20)+8;
+      }
+
+      if (ritDocs.length>0) {
+        if(ry>220){pdf.addPage();ry=20;}
+        pdf.setFont('helvetica','bold'); pdf.setFontSize(9); pdf.setTextColor(...grey);
+        pdf.text("RITENUTE D'ACCONTO SUBITE",margin,ry); ry+=4;
+        autoTable(pdf,{startY:ry,head:[['Fattura','Cliente','Importo','Ritenuta 20%']],body:[...ritDocs.map(d=>{const rA=d.rivalsaInps?d.amount*0.04:0;const rit=(d.amount+rA)*0.20;return[d.invoiceNumber||d.id.slice(0,8),d.client||'—',fmtE(d.amount),fmtE(rit)];}),['Totale ritenute','','',fmtE(totRit)]],styles:{fontSize:8,cellPadding:{top:3,bottom:3,left:3,right:3},textColor:black},headStyles:{fillColor:[248,250,252],textColor:grey,fontStyle:'bold',fontSize:7.5,lineColor:lightGrey,lineWidth:0.3},bodyStyles:{lineColor:lightGrey,lineWidth:0.2},columnStyles:{2:{halign:'right'},3:{halign:'right',fontStyle:'bold'}},didParseCell:(data)=>{ if(data.section==='body'&&data.row.index===ritDocs.length){ data.cell.styles.fontStyle='bold'; } },margin:{left:margin,right:margin}});
+      }
+
+      // Disclaimer su ogni pagina del riepilogo
+      const pgCount = pdf.getNumberOfPages();
+      for (let i=1;i<=pgCount;i++) {
+        pdf.setPage(i);
+        pdf.setDrawColor(...lightGrey); pdf.setLineWidth(0.3); pdf.line(margin,286,rightCol,286);
+        pdf.setFont('helvetica','italic'); pdf.setFontSize(6.5); pdf.setTextColor(...grey);
+        pdf.text('Documento riepilogativo con dati stimati. Verificare con il commercialista per la dichiarazione definitiva.',margin,291);
+        pdf.setFont('helvetica','normal');
+        pdf.text(`Pag. ${i} di ${pgCount}`,rightCol,291,{align:'right'});
+      }
+    }
+
     const blob = pdf.output('blob');
     const fileName = `documenti_${year}_${Date.now()}.pdf`;
     await shareOrDownload(blob, fileName, 'application/pdf');
@@ -847,12 +1017,13 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
         resumenFile = { blob: resumenPdf.output('blob'), fileName: resumenFileName };
       }
 
+      // Registro e Riepilogo sono già inline nel PDF — generarli separati solo per CSV
       let registroFile: { blob: Blob; fileName: string } | undefined;
-      if (includeRegistro && isItaly && isPro) {
+      if (includeRegistro && isItaly && isPro && format !== 'pdf') {
         registroFile = await generateRegistroFile();
       }
       let riepilogoFile: { blob: Blob; fileName: string } | undefined;
-      if (includeRiepilogo && isItaly && isPro) {
+      if (includeRiepilogo && isItaly && isPro && format !== 'pdf') {
         riepilogoFile = await generateRiepilogoFile();
       }
       setReadyBlob({ blob, fileName, xmlFiles, resumenFile, registroFile, riepilogoFile });
