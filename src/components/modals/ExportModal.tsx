@@ -40,6 +40,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const [includeRegistro, setIncludeRegistro] = useState(false);
   const [overrideQuarter, setOverrideQuarter] = useState<1 | 2 | 3 | 4 | null>(null);
   const [pdfPreview, setPdfPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
+  const [riepilogoBlob, setRiepilogoBlob] = useState<{ blob: Blob; fileName: string } | null>(null);
+  const [generatingRiepilogo, setGeneratingRiepilogo] = useState(false);
   const [readyBlob, setReadyBlob] = useState<{
     blob: Blob; fileName: string;
     xmlFiles?: { blob: Blob; fileName: string }[];
@@ -53,6 +55,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       setYear(selectedYear);
       setSelectedMonths(new Set());
       setReadyBlob(null);
+      setRiepilogoBlob(null);
       setIncludeFatturaPA(true);
       setIncludeResumen(true);
       setIncludeRegistro(false);
@@ -833,8 +836,6 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     onClose();
   };
 
-  const [generatingRiepilogo, setGeneratingRiepilogo] = useState(false);
-
   const handleRiepilogoPDF = async () => {
     setGeneratingRiepilogo(true);
     try {
@@ -1116,7 +1117,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const piva = (profile.piva || 'NOPIVA').replace(/\s/g, '');
       const pdfFileName = `riepilogo_annuale_${year}_${piva}.pdf`;
 
-      setPdfPreview({ blob: pdfBlob, fileName: pdfFileName });
+      setRiepilogoBlob({ blob: pdfBlob, fileName: pdfFileName });
     } finally {
       setGeneratingRiepilogo(false);
     }
@@ -1337,25 +1338,62 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
               {/* Bottone Riepilogo Annuale PDF — solo Italy Pro */}
               {isItaly && isPro && (
-                <button
-                  onClick={handleRiepilogoPDF}
-                  disabled={generatingRiepilogo}
-                  className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'} ${generatingRiepilogo ? 'opacity-60' : ''}`}
-                >
-                  <span className="text-xl shrink-0">📊</span>
-                  <div className="text-left flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                        {generatingRiepilogo ? 'Generazione in corso…' : 'Riepilogo Annuale PDF'}
-                      </p>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-violet-100 text-violet-600 shrink-0">Pro</span>
+                <div className="space-y-3">
+                  <button
+                    onClick={handleRiepilogoPDF}
+                    disabled={generatingRiepilogo}
+                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'} ${generatingRiepilogo ? 'opacity-60' : ''}`}
+                  >
+                    <span className="text-xl shrink-0">📊</span>
+                    <div className="text-left flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                          {generatingRiepilogo ? 'Generazione in corso…' : 'Riepilogo Annuale PDF'}
+                        </p>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-violet-100 text-violet-600 shrink-0">Pro</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-0.5">Riepilogo completo per il commercialista · Anno {year}</p>
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Riepilogo completo per il commercialista · Anno {year}</p>
-                  </div>
-                  {!generatingRiepilogo && (
-                    <Download size={16} className="text-slate-400 shrink-0" />
+                    {!generatingRiepilogo && (
+                      <Download size={16} className="text-slate-400 shrink-0" />
+                    )}
+                  </button>
+                  {/* Card "Riepilogo pronto" — indipendente da readyBlob */}
+                  {riepilogoBlob && (
+                    <div className="space-y-2">
+                      <div className={`rounded-2xl p-4 flex items-center gap-3 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                        <Check size={18} className="text-emerald-500 shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Riepilogo pronto</p>
+                          <p className="text-xs text-slate-400 truncate">{riepilogoBlob.fileName}</p>
+                        </div>
+                        <button
+                          onClick={() => setRiepilogoBlob(null)}
+                          className="text-slate-400 shrink-0"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          const file = new File([riepilogoBlob.blob], riepilogoBlob.fileName, { type: 'application/pdf' });
+                          if (navigator.share && navigator.canShare?.({ files: [file] })) {
+                            await navigator.share({ files: [file], title: riepilogoBlob.fileName });
+                          } else {
+                            const url = URL.createObjectURL(riepilogoBlob.blob);
+                            const a = window.document.createElement('a');
+                            a.href = url; a.download = riepilogoBlob.fileName; a.click();
+                            URL.revokeObjectURL(url);
+                          }
+                        }}
+                        className="w-full py-4 rounded-2xl font-bold text-white bg-violet-600 shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                      >
+                        <Share2 size={18} />
+                        Scarica / Condividi Riepilogo
+                      </button>
+                    </div>
                   )}
-                </button>
+                </div>
               )}
 
               {/* Riepilogo — nascosto per Spain con resumen attivo (sostituito dalle card Ingresos/Gastos/IRPF) */}
