@@ -1116,15 +1116,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const piva = (profile.piva || 'NOPIVA').replace(/\s/g, '');
       const pdfFileName = `riepilogo_annuale_${year}_${piva}.pdf`;
 
-      const file = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
-      if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: pdfFileName });
-      } else {
-        const url = URL.createObjectURL(pdfBlob);
-        const a = window.document.createElement('a');
-        a.href = url; a.download = pdfFileName; a.click();
-        URL.revokeObjectURL(url);
-      }
+      setPdfPreview({ blob: pdfBlob, fileName: pdfFileName });
     } finally {
       setGeneratingRiepilogo(false);
     }
