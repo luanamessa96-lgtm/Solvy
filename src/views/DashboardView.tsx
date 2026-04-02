@@ -11,6 +11,7 @@ import { calculateSpanishTaxes } from '../lib/countries/es';
 import { getSpanishDeadlines } from '../data/deadlines-es';
 import { parseLocalDate, getLocalYear } from '../utils/date';
 import { getItDeductibilityRate } from '../lib/it/deductibility';
+import { getAddizionaliRate } from '../lib/it/addizionali';
 function getCountryFlag(country: string): string {
   const flags: Record<string, string> = {
     'Italy': '🇮🇹',
@@ -165,7 +166,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
       const inps = calcInpsAmount(redditoLordo, INPS_ORDINARIO);
       const redditoImponibile = Math.max(0, redditoLordo - inps);
       const irpef = calcIRPEF(redditoImponibile);
-      const addizionali = redditoImponibile * 0.023;
+      const addizionali = redditoImponibile * getAddizionaliRate(profile.region);
       const totaleImposta = irpef + addizionali;
       const netto = base - totaleImposta - inps - expenses;
 

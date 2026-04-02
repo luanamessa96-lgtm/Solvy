@@ -129,6 +129,7 @@ export async function getProfiles(userId: string, userEmail?: string): Promise<P
     subscriptionStartedAt: p.subscription_started_at ?? undefined,
     regimenFiscal: p.regimen_fiscal ?? undefined,
     ivaHabitual: p.iva_habitual ?? undefined,
+    region: p.region ?? undefined,
   }));
 }
 
@@ -156,6 +157,7 @@ export async function createProfile(profile: Profile): Promise<void> {
       is_pro: profile.isPro ?? false,
       regimen_fiscal: profile.regimenFiscal ?? null,
       iva_habitual: profile.ivaHabitual ?? null,
+      region: profile.region ?? null,
     });
 
   if (error) throw error;
@@ -184,6 +186,7 @@ export async function updateProfile(profile: Profile): Promise<void> {
       iban: profile.iban,
       regimen_fiscal: profile.regimenFiscal ?? null,
       iva_habitual: profile.ivaHabitual ?? null,
+      region: profile.region ?? null,
     });
 
   if (error) throw error;

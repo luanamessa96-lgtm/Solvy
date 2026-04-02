@@ -21,6 +21,7 @@ export interface Profile {
   subscriptionStartedAt?: string;
   regimenFiscal?: 'simplificada' | 'normal' | 'modulos';
   ivaHabitual?: 21 | 10 | 4;
+  region?: string;
 }
 
 export interface Document {

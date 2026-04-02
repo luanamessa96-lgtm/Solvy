@@ -8,6 +8,7 @@ import PaywallModal from '../components/modals/PaywallModal';
 import DeleteAccountModal from '../components/modals/DeleteAccountModal';
 import { useProStatus } from '../hooks/useProStatus';
 import { Profile, Document, Deadline } from '../types';
+import { IT_REGIONI, IT_ADDIZIONALI_REGIONALI } from '../lib/it/addizionali';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
@@ -15,13 +16,14 @@ interface SettingsViewProps {
   theme: string;
   setTheme: (t: string) => void;
   profile: Profile;
+  onUpdateProfile?: (p: Profile) => void;
   profilesCount?: number;
   key?: string;
   documents?: Document[];
   deadlines?: Deadline[];
 }
 
-const SettingsView = ({ theme, setTheme, profile, profilesCount = 1, documents = [], deadlines = [] }: SettingsViewProps) => {
+const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount = 1, documents = [], deadlines = [] }: SettingsViewProps) => {
   const { t } = useTranslation();
   const isPro = useProStatus(profile);
   const darkMode = theme === 'dark' || theme === 'pro-dark';
@@ -222,15 +224,51 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1, documents =
         </div>
       </motion.div>
 
-      {profile.country === 'Italy' && (profile.coefficiente === 67 || profile.coefficiente === 40) && (
+      {profile.country === 'Italy' && (
         <motion.div variants={item} className="space-y-3">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Fiscale</p>
-          <div className={`flex items-start gap-3 px-4 py-3.5 rounded-2xl border ${darkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-300' : 'bg-blue-50 border-blue-100 text-blue-700'}`}>
-            <Info size={16} className="mt-0.5 shrink-0" />
-            <p className="text-xs font-bold leading-relaxed">
-              La tua categoria potrebbe richiedere INPS {profile.coefficiente === 67 ? 'artigiani' : 'commercianti'} invece della gestione separata. Verifica con il tuo commercialista.
-            </p>
+
+          {/* Region selector */}
+          <div className={`p-4 rounded-3xl border space-y-3 transition-colors`} style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+            <div className="space-y-1.5">
+              <p className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Regione</p>
+              <select
+                value={profile.region ?? ''}
+                onChange={e => onUpdateProfile?.({ ...profile, region: e.target.value || undefined })}
+                className={`w-full px-3 py-2.5 border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`}
+              >
+                <option value="">Seleziona regione…</option>
+                {IT_REGIONI.map(r => (
+                  <option key={r} value={r}>
+                    {r} — {(IT_ADDIZIONALI_REGIONALI[r] * 100).toFixed(2)}%
+                  </option>
+                ))}
+              </select>
+              {profile.regime === 'forfettario' ? (
+                <p className="text-[10px] text-slate-400 leading-relaxed ml-1">
+                  Nel regime forfettario le addizionali non si applicano — il dato è salvato per eventuale passaggio all'ordinario.
+                </p>
+              ) : profile.region ? (
+                <p className="text-[10px] text-emerald-600 ml-1 font-bold">
+                  Addizionale regionale {(IT_ADDIZIONALI_REGIONALI[profile.region] * 100).toFixed(2)}% applicata al calcolo IRPEF
+                </p>
+              ) : (
+                <p className="text-[10px] text-slate-400 ml-1">
+                  Seleziona la regione per usare l'aliquota reale nel calcolo tasse
+                </p>
+              )}
+            </div>
           </div>
+
+          {/* INPS type warning */}
+          {(profile.coefficiente === 67 || profile.coefficiente === 40) && (
+            <div className={`flex items-start gap-3 px-4 py-3.5 rounded-2xl border ${darkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-300' : 'bg-blue-50 border-blue-100 text-blue-700'}`}>
+              <Info size={16} className="mt-0.5 shrink-0" />
+              <p className="text-xs font-bold leading-relaxed">
+                La tua categoria potrebbe richiedere INPS {profile.coefficiente === 67 ? 'artigiani' : 'commercianti'} invece della gestione separata. Verifica con il tuo commercialista.
+              </p>
+            </div>
+          )}
         </motion.div>
       )}
 
