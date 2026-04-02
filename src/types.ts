@@ -27,6 +27,8 @@ export interface Profile {
   province?: string;
   region?: string;
   redditoN1?: number;
+  invoiceCounters?: Record<string, number>;
+  deletedInvoiceNumbers?: string[];
 }
 
 export interface Document {

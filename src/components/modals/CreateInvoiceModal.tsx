@@ -30,13 +30,16 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
 
   const nextInvoiceNumber = useMemo(() => {
     const year = new Date().getFullYear();
+    const yearStr = String(year);
     if (isProforma) {
       const count = documents.filter(d => d.type === 'proforma' && new Date(d.date).getFullYear() === year).length + 1;
       return `PRO${String(count).padStart(3, '0')}/${year}`;
     }
-    const count = documents.filter(d => d.type === 'invoice' && new Date(d.date).getFullYear() === year).length + 1;
-    return `${String(count).padStart(3, '0')}/${year}`;
-  }, [documents, isProforma]);
+    // IT-35: use stored counter if available, else fall back to count for backwards compat
+    const existingCount = documents.filter(d => d.type === 'invoice' && new Date(d.date).getFullYear() === year).length;
+    const counter = profile.invoiceCounters?.[yearStr] ?? existingCount;
+    return `${String(counter + 1).padStart(3, '0')}/${year}`;
+  }, [documents, isProforma, profile.invoiceCounters]);
 
   const [form, setForm] = useState({
     invoiceNumber: '',
@@ -87,6 +90,17 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
   const handleSubmit = () => {
     setTouched({ client: true, title: true, amount: true });
     if (!form.client.trim() || !form.title.trim() || amount <= 0) return;
+    // IT-35: increment counter on every new invoice (not proforma)
+    if (!isProforma) {
+      const year = new Date().getFullYear();
+      const yearStr = String(year);
+      const existingCount = documents.filter(d => d.type === 'invoice' && new Date(d.date).getFullYear() === year).length;
+      const current = profile.invoiceCounters?.[yearStr] ?? existingCount;
+      onUpdateProfile({
+        ...profile,
+        invoiceCounters: { ...(profile.invoiceCounters ?? {}), [yearStr]: current + 1 },
+      });
+    }
     onSave({
       id: Math.random().toString(36).substr(2, 9),
       type: isProforma ? 'proforma' : 'invoice',

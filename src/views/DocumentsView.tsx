@@ -367,16 +367,20 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   </button>
                   <button onClick={() => {
                     const year = new Date().getFullYear();
-                    const count = documents.filter(d => d.type === 'invoice' && getLocalYear(d.date) === year).length + 1;
+                    const yearStr = String(year);
+                    const existingCount = documents.filter(d => d.type === 'invoice' && getLocalYear(d.date) === year).length;
+                    const current = profile.invoiceCounters?.[yearStr] ?? existingCount;
+                    const nextNum = `${String(current + 1).padStart(3, '0')}/${year}`;
                     const converted: Document = {
                       ...selectedDoc,
                       id: Math.random().toString(36).substr(2, 9),
                       type: 'invoice',
                       status: 'pending',
-                      invoiceNumber: `${String(count).padStart(3, '0')}/${year}`,
+                      invoiceNumber: nextNum,
                       date: new Date().toISOString().split('T')[0],
                     };
                     onAddDocument(converted);
+                    onUpdateProfile({ ...profile, invoiceCounters: { ...(profile.invoiceCounters ?? {}), [yearStr]: current + 1 } });
                     showToast(`Fattura ${converted.invoiceNumber} creata`, 'success');
                     setSelectedDoc(null);
                   }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
@@ -432,15 +436,19 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                 {selectedDoc.type === 'invoice' && selectedDoc.type !== 'credit_note' && (
                   <button onClick={() => {
                     const year = new Date().getFullYear();
-                    const count = documents.filter(d => d.type === 'invoice' && getLocalYear(d.date) === year).length + 1;
+                    const yearStr = String(year);
+                    const existingCount = documents.filter(d => d.type === 'invoice' && getLocalYear(d.date) === year).length;
+                    const current = profile.invoiceCounters?.[yearStr] ?? existingCount;
+                    const nextNum = `${String(current + 1).padStart(3, '0')}/${year}`;
                     const newDoc: Document = {
                       ...selectedDoc,
                       id: Math.random().toString(36).substr(2, 9),
                       date: new Date().toISOString().split('T')[0],
                       status: 'pending',
-                      invoiceNumber: `${String(count).padStart(3, '0')}/${year}`,
+                      invoiceNumber: nextNum,
                     };
                     onAddDocument(newDoc);
+                    onUpdateProfile({ ...profile, invoiceCounters: { ...(profile.invoiceCounters ?? {}), [yearStr]: current + 1 } });
                     setSelectedDoc(null);
                   }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${darkMode ? 'bg-slate-700 text-amber-400' : 'bg-amber-50 text-amber-500'}`}><Copy size={18} /></div>
@@ -606,7 +614,17 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                 </div>
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   <button onClick={() => setDocToDelete(null)} className={`py-4 rounded-2xl font-bold active:scale-[0.98] transition-all ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>Annulla</button>
-                  <button onClick={() => { onDeleteDocument(docToDelete.id); setDocToDelete(null); }} className="py-4 rounded-2xl font-bold bg-red-500 text-white shadow-xl shadow-red-500/30 active:scale-[0.98] transition-all">Elimina</button>
+                  <button onClick={() => {
+                    // IT-35: audit log per fatture eliminate (contatore non torna indietro)
+                    if (docToDelete.type === 'invoice' && docToDelete.invoiceNumber) {
+                      onUpdateProfile({
+                        ...profile,
+                        deletedInvoiceNumbers: [...(profile.deletedInvoiceNumbers ?? []), docToDelete.invoiceNumber],
+                      });
+                    }
+                    onDeleteDocument(docToDelete.id);
+                    setDocToDelete(null);
+                  }} className="py-4 rounded-2xl font-bold bg-red-500 text-white shadow-xl shadow-red-500/30 active:scale-[0.98] transition-all">Elimina</button>
                 </div>
               </div>
             </motion.div>
