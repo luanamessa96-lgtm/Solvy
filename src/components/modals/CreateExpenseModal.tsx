@@ -121,7 +121,7 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
                   {isOrdinario && (
                     <p className="text-[10px] text-slate-400 ml-1">💻 Software include abbonamenti a software e servizi digitali</p>
                   )}
-                  {isItaly && (
+                  {isOrdinario && (
                     <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-bold ${deductPct === 100 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'}`}>
                       <span>{deductPct === 100 ? '✅' : '⚠️'}</span>
                       <span>{deductPct}% deducibile</span>
