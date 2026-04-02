@@ -7,6 +7,7 @@ import { parseLocalDate, getLocalYear, getLocalMonth } from '../utils/date';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
 import { useTranslation } from 'react-i18next';
+import InfoTooltip from '../components/ui/InfoTooltip';
 
 const FISCAL_ESTIMATE_TITLES = new Set([
   'Saldo imposta sostitutiva + 1° acconto',
@@ -18,6 +19,13 @@ const FISCAL_ESTIMATE_TITLES = new Set([
 function isFiscalEstimate(deadline: Deadline): boolean {
   return deadline.type === 'tax' && !!deadline.amount && FISCAL_ESTIMATE_TITLES.has(deadline.title);
 }
+
+const DEADLINE_TOOLTIPS: Record<string, string> = {
+  'Saldo imposta sostitutiva + 1° acconto': "Conguaglio finale delle tasse dovute + primo anticipo dell'anno in corso. Il saldo si paga a giugno dopo la dichiarazione; l'acconto copre il 40% dell'imposta stimata.",
+  '1° acconto INPS gestione separata': 'Contributi previdenziali obbligatori per professionisti autonomi. Si calcolano sul reddito imponibile e danno diritto alla pensione.',
+  '2° acconto imposta sostitutiva': 'Pagamento anticipato delle tasse dell\'anno in corso. Si versa in due rate: 40% a giugno e 60% a novembre.',
+  '2° acconto INPS gestione separata': 'Contributi previdenziali obbligatori per professionisti autonomi. Si calcolano sul reddito imponibile e danno diritto alla pensione.',
+};
 
 function getScadenzeFiscali(year: number): Omit<Deadline, 'id'>[] {
   return [
@@ -275,7 +283,12 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start mb-0.5">
-                      <h3 className={`text-sm font-bold truncate pr-2 transition-colors ${deadline.completed ? 'line-through text-slate-400' : (darkMode ? 'text-white' : 'text-slate-900')}`}>{deadline.title}</h3>
+                      <div className="flex items-center gap-0.5 flex-1 min-w-0 pr-2">
+                        <h3 className={`text-sm font-bold truncate transition-colors ${deadline.completed ? 'line-through text-slate-400' : (darkMode ? 'text-white' : 'text-slate-900')}`}>{deadline.title}</h3>
+                        {DEADLINE_TOOLTIPS[deadline.title] && (
+                          <InfoTooltip text={DEADLINE_TOOLTIPS[deadline.title]} darkMode={darkMode} />
+                        )}
+                      </div>
                       {(() => {
                         const liveAmt = FISCAL_ESTIMATE_TITLES.has(deadline.title) ? fiscalAmounts[deadline.title] : undefined;
                         const displayAmt = liveAmt != null && liveAmt > 0 ? liveAmt : deadline.amount;
@@ -465,7 +478,10 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                           <span className="text-[9px] font-bold uppercase">{new Date(s.date).toLocaleDateString('it-IT', { month: 'short' })}</span>
                           <span className="text-sm font-black leading-none">{new Date(s.date).getDate()}</span>
                         </div>
-                        <p className={`text-sm font-semibold flex-1 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{s.title}</p>
+                        <div className="flex items-center gap-0.5 flex-1">
+                          <p className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{s.title}</p>
+                          {DEADLINE_TOOLTIPS[s.title] && <InfoTooltip text={DEADLINE_TOOLTIPS[s.title]} darkMode={darkMode} />}
+                        </div>
                         {amt != null && amt > 0 && (
                           <div className="text-right shrink-0">
                             <p className="text-sm font-bold text-red-500">~€{amt.toLocaleString('it-IT')}</p>

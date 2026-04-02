@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Plus, FileText, CheckCircle2 } from 'lucide-react';
 import { Document, Profile } from '../../types';
+import InfoTooltip from '../ui/InfoTooltip';
 
 interface CreateInvoiceModalProps {
   isOpen: boolean;
@@ -304,7 +305,10 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 {regime === 'ordinario' && !isProforma && (
                   <div className={`flex items-center gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
                     <div className="flex-1">
-                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Rivalsa INPS 4%</p>
+                      <p className={`text-sm font-bold flex items-center ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                        Rivalsa INPS 4%
+                        <InfoTooltip text="Quota dei contributi INPS che puoi addebitare al cliente in fattura. Riduce il tuo costo INPS effettivo." darkMode={darkMode} />
+                      </p>
                       {amount > 0 && form.rivalsaInps && (
                         <p className="text-xs text-slate-400 mt-0.5">+€{rivalsaAmount.toFixed(2)} sull'imponibile</p>
                       )}
@@ -313,7 +317,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   </div>
                 )}
 
-                {/* Ritenuta — forfettario: badge informativo; ordinario: checkbox */}
+                {/* Ritenuta — forfettario IT: badge informativo; altri: checkbox */}
                 {!isProforma && (
                   regime === 'forfettario' && isItaly ? (
                     <div className={`flex items-start gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'}`}>
@@ -325,7 +329,10 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   ) : (
                     <div className={`flex items-center gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
                       <div className="flex-1">
-                        <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Ritenuta d&apos;acconto 20%</p>
+                        <p className={`text-sm font-bold flex items-center ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                          Ritenuta d&apos;acconto 20%
+                          <InfoTooltip text="Il cliente trattiene il 20% del compenso e lo versa per te all'Agenzia delle Entrate. I forfettari ne sono esenti per legge." darkMode={darkMode} />
+                        </p>
                         {amount > 0 && form.ritenuta && (
                           <p className="text-xs text-slate-400 mt-0.5">−€{ritenutaAmount.toFixed(2)} trattenuti dal cliente</p>
                         )}
@@ -339,7 +346,10 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 {!isProforma && regime === 'forfettario' && amount > 0 && (
                   <div className={`flex items-center gap-3 p-4 rounded-2xl border ${marcaBollo ? (darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-100') : (darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100')}`}>
                     <div className="flex-1">
-                      <p className={`text-sm font-bold ${marcaBollo ? 'text-amber-500' : 'text-slate-400'}`}>Marca da bollo €2</p>
+                      <p className={`text-sm font-bold flex items-center ${marcaBollo ? 'text-amber-500' : 'text-slate-400'}`}>
+                        Marca da bollo €2
+                        <InfoTooltip text="Imposta di bollo obbligatoria sulle fatture superiori a €77,47 in regime forfettario (esenti IVA)." darkMode={darkMode} />
+                      </p>
                       <p className={`text-xs mt-0.5 ${marcaBollo ? 'text-amber-500/70' : 'text-slate-400'}`}>
                         {marcaBollo ? 'Applicata automaticamente (importo > €77,47)' : 'Non applicata (importo ≤ €77,47)'}
                       </p>

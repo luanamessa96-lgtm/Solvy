@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
 import { Profile, Document } from '../types';
+import InfoTooltip from '../components/ui/InfoTooltip';
 
 const DashboardChart = lazy(() => import('../components/DashboardChart'));
 import { calculateSpanishTaxes } from '../lib/countries/es';
@@ -495,12 +496,18 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
               <div className="px-6 py-4 space-y-3">
                 {isForfettario ? (<>
                   <div className="flex justify-between">
-                    <span className="text-xs font-bold text-slate-400">{t('dashboard.taxable_income', { pct: tasse.regime === 'forfettario' ? Math.round(tasse.coeff * 100) : 100 })}</span>
+                    <span className="inline-flex items-center text-xs font-bold text-slate-400">
+                      {t('dashboard.taxable_income', { pct: tasse.regime === 'forfettario' ? Math.round(tasse.coeff * 100) : 100 })}
+                      <InfoTooltip text="Percentuale che determina la base imponibile nel forfettario. Varia per categoria (es. 78% per professionisti). Rappresenta la quota di fatturato considerata come reddito." darkMode={darkMode} />
+                    </span>
                     <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(tasse.redditoImponibile)}</span>
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
-                      <span className="text-xs font-bold text-slate-400">{t('dashboard.substitutive_tax', { pct: Math.round(tasse.aliquota * 100) })}</span>
+                      <span className="inline-flex items-center text-xs font-bold text-slate-400">
+                        {t('dashboard.substitutive_tax', { pct: Math.round(tasse.aliquota * 100) })}
+                        <InfoTooltip text="Tassa flat del forfettario: 5% nei primi 5 anni, 15% dal 6° anno. Sostituisce IRPEF, addizionali e IVA." darkMode={darkMode} />
+                      </span>
                       <span className="text-xs font-bold text-rose-500">{fmt(tasse.imposta)}</span>
                     </div>
                     <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
@@ -509,7 +516,15 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
-                      <span className="text-xs font-bold text-slate-400">{inpsType === 'artigiani' ? t('dashboard.inps_artigiani') : inpsType === 'commercianti' ? t('dashboard.inps_commercianti') : t('dashboard.inps_sep')}</span>
+                      <span className="inline-flex items-center text-xs font-bold text-slate-400">
+                        {inpsType === 'artigiani' ? t('dashboard.inps_artigiani') : inpsType === 'commercianti' ? t('dashboard.inps_commercianti') : t('dashboard.inps_sep')}
+                        <InfoTooltip
+                          text={inpsType === 'artigiani' || inpsType === 'commercianti'
+                            ? "Contributi previdenziali per artigiani e lavoratori manuali. Hanno un minimale annuo di ~€4.000 indipendentemente dal reddito."
+                            : "Contributi previdenziali obbligatori per professionisti autonomi. Si calcolano sul reddito imponibile e danno diritto alla pensione."}
+                          darkMode={darkMode}
+                        />
+                      </span>
                       <span className="text-xs font-bold text-amber-500">{fmt(tasse.inps)}</span>
                     </div>
                     <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
@@ -532,17 +547,26 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                       </div>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-xs font-bold text-slate-400">
+                      <span className="inline-flex items-center text-xs font-bold text-slate-400">
                         {profile.region
                           ? `Addizionali (${(getAddizionaliRate(profile.region) * 100).toFixed(2)}% — ${profile.region})`
                           : t('dashboard.surcharges')}
+                        <InfoTooltip text="Tasse aggiuntive all'IRPEF che variano per regione (da 0.7% Valle d'Aosta a 3.33% Lazio). Non si applicano al forfettario." darkMode={darkMode} />
                       </span>
                       <span className="text-xs font-bold text-orange-500">{fmt(tasse.addizionali)}</span>
                     </div>
                   </>)}
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
-                      <span className="text-xs font-bold text-slate-400">{inpsType === 'artigiani' ? t('dashboard.inps_artigiani') : inpsType === 'commercianti' ? t('dashboard.inps_commercianti') : t('dashboard.inps_sep')}</span>
+                      <span className="inline-flex items-center text-xs font-bold text-slate-400">
+                        {inpsType === 'artigiani' ? t('dashboard.inps_artigiani') : inpsType === 'commercianti' ? t('dashboard.inps_commercianti') : t('dashboard.inps_sep')}
+                        <InfoTooltip
+                          text={inpsType === 'artigiani' || inpsType === 'commercianti'
+                            ? "Contributi previdenziali per artigiani e lavoratori manuali. Hanno un minimale annuo di ~€4.000 indipendentemente dal reddito."
+                            : "Contributi previdenziali obbligatori per professionisti autonomi. Si calcolano sul reddito imponibile e danno diritto alla pensione."}
+                          darkMode={darkMode}
+                        />
+                      </span>
                       <span className="text-xs font-bold text-amber-500">{fmt(tasse.inpsLordo)}</span>
                     </div>
                     <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
