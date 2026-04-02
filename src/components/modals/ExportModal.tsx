@@ -1301,6 +1301,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
   const inputBase = `px-4 py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-95`;
   const dragControls = useDragControls();
+  console.log('[TEST] ExportModal rendering, profile.regime:', profile?.regime);
 
   return (
     <>
