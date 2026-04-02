@@ -28,6 +28,7 @@ function formatAmount(n: number) {
 }
 
 export default function ExportModal({ isOpen, onClose, documents, selectedYear, profile, accountant, darkMode }: ExportModalProps) {
+  console.log('[EXPORT MODAL OPENED] profile:', profile?.regime, profile?.country);
   const isPro = useProStatus(profile);
   const isItaly = profile.country === 'Italy';
   const isSpain = profile.country === 'Spain';
