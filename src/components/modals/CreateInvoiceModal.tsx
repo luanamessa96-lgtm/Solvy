@@ -11,6 +11,7 @@ interface CreateInvoiceModalProps {
   profile: Profile;
   documents: Document[];
   darkMode?: boolean;
+  isProforma?: boolean;
 }
 
 const MARCA_BOLLO_THRESHOLD = 77.47;
@@ -24,14 +25,18 @@ const FORFETTARIO_NOTE =
 
 const IVA_OPTIONS = [4, 5, 10, 22];
 
-const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile, documents, darkMode }: CreateInvoiceModalProps) => {
+const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile, documents, darkMode, isProforma = false }: CreateInvoiceModalProps) => {
   const regime = profile.regime ?? 'forfettario';
 
   const nextInvoiceNumber = useMemo(() => {
     const year = new Date().getFullYear();
+    if (isProforma) {
+      const count = documents.filter(d => d.type === 'proforma' && new Date(d.date).getFullYear() === year).length + 1;
+      return `PRO${String(count).padStart(3, '0')}/${year}`;
+    }
     const count = documents.filter(d => d.type === 'invoice' && new Date(d.date).getFullYear() === year).length + 1;
     return `${String(count).padStart(3, '0')}/${year}`;
-  }, [documents]);
+  }, [documents, isProforma]);
 
   const [form, setForm] = useState({
     invoiceNumber: '',
@@ -84,8 +89,8 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
     if (!form.client.trim() || !form.title.trim() || amount <= 0) return;
     onSave({
       id: Math.random().toString(36).substr(2, 9),
-      type: 'invoice',
-      status: form.status,
+      type: isProforma ? 'proforma' : 'invoice',
+      status: isProforma ? 'pending' : form.status,
       invoiceNumber: form.invoiceNumber || nextInvoiceNumber,
       date: form.date,
       client: form.client,
@@ -145,7 +150,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
               {/* Header */}
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Nuova Fattura</h2>
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{isProforma ? 'Nuova Proforma' : 'Nuova Fattura'}</h2>
                   <p className="text-sm text-slate-500">{form.invoiceNumber || nextInvoiceNumber}</p>
                 </div>
                 <button onClick={onClose} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>

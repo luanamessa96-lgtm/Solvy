@@ -25,6 +25,7 @@ export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<
     import('jspdf-autotable'),
   ]);
   const isCreditNote = doc.type === 'credit_note';
+  const isProforma = doc.type === 'proforma';
   const isSpain = profile.country === 'Spain';
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
   const W = 210;
@@ -40,7 +41,15 @@ export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(22);
   pdf.setTextColor(...black);
-  pdf.text(isCreditNote ? 'NOTA DI CREDITO' : isSpain ? 'FACTURA' : 'FATTURA', M, 18);
+  if (isProforma) {
+    pdf.text('FATTURA PROFORMA', M, 18);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    pdf.setTextColor(...grey);
+    pdf.text('NON FISCALMENTE VALIDA', M, 24);
+  } else {
+    pdf.text(isCreditNote ? 'NOTA DI CREDITO' : isSpain ? 'FACTURA' : 'FATTURA', M, 18);
+  }
 
   // Numero fattura top right
   pdf.setFont('helvetica', 'normal');

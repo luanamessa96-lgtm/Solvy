@@ -31,7 +31,7 @@ export interface Profile {
 
 export interface Document {
   id: string;
-  type: 'invoice' | 'expense' | 'credit_note';
+  type: 'invoice' | 'expense' | 'credit_note' | 'proforma';
   title: string;
   amount: number;
   date: string;
