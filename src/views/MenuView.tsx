@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Briefcase, Settings, CreditCard, LogOut, ChevronRight, Sparkles, BarChart2, type LucideIcon } from 'lucide-react';
+import { Briefcase, Settings, CreditCard, LogOut, ChevronRight, Sparkles, BarChart2, BookOpen, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Profile } from '../types';
 import LogoutModal from '../components/modals/LogoutModal';
@@ -12,12 +12,13 @@ interface MenuViewProps {
   onSettingsClick: () => void;
   onAccountantClick: () => void;
   onFiscalClick: () => void;
+  onGuidaFiscaleClick: () => void;
   onLogout: () => void;
   darkMode?: boolean;
   key?: string;
 }
 
-const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountantClick, onFiscalClick, onLogout, darkMode }: MenuViewProps) => {
+const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountantClick, onFiscalClick, onGuidaFiscaleClick, onLogout, darkMode }: MenuViewProps) => {
   const { t } = useTranslation();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
@@ -25,6 +26,7 @@ const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountant
 
   const menuItems: { label: string; icon: LucideIcon; onClick: () => void; color?: string }[] = [
     { label: 'Fiscalità', icon: BarChart2, onClick: onFiscalClick },
+    { label: '📚 Guida Fiscale', icon: BookOpen, onClick: onGuidaFiscaleClick },
     { label: t('menu.accountant'), icon: Briefcase, onClick: onAccountantClick },
     { label: t('menu.settings'), icon: Settings, onClick: onSettingsClick },
     { label: t('menu.subscription'), icon: CreditCard, onClick: () => setIsPaywallOpen(true) },
