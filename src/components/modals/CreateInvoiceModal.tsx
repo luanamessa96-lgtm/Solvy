@@ -313,17 +313,26 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   </div>
                 )}
 
-                {/* Ritenuta — entrambi i regimi, non su proforma */}
+                {/* Ritenuta — forfettario: badge informativo; ordinario: checkbox */}
                 {!isProforma && (
-                <div className={`flex items-center gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
-                  <div className="flex-1">
-                    <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Ritenuta d'acconto 20%</p>
-                    {amount > 0 && form.ritenuta && (
-                      <p className="text-xs text-slate-400 mt-0.5">−€{ritenutaAmount.toFixed(2)} trattenuti dal cliente</p>
-                    )}
-                  </div>
-                  <input type="checkbox" checked={form.ritenuta} onChange={e => set('ritenuta', e.target.checked)} className="w-5 h-5 rounded-lg text-primary focus:ring-primary" />
-                </div>
+                  regime === 'forfettario' && isItaly ? (
+                    <div className={`flex items-start gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'}`}>
+                      <span className="text-base leading-none mt-0.5">ℹ️</span>
+                      <p className={`text-xs leading-relaxed ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+                        <span className="font-bold">Regime forfettario</span> — non soggetto a ritenuta d&apos;acconto (art. 1, co. 67, L.190/2014)
+                      </p>
+                    </div>
+                  ) : (
+                    <div className={`flex items-center gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                      <div className="flex-1">
+                        <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Ritenuta d&apos;acconto 20%</p>
+                        {amount > 0 && form.ritenuta && (
+                          <p className="text-xs text-slate-400 mt-0.5">−€{ritenutaAmount.toFixed(2)} trattenuti dal cliente</p>
+                        )}
+                      </div>
+                      <input type="checkbox" checked={form.ritenuta} onChange={e => set('ritenuta', e.target.checked)} className="w-5 h-5 rounded-lg text-primary focus:ring-primary" />
+                    </div>
+                  )
                 )}
 
                 {/* Marca da bollo — solo forfettario, non su proforma */}
