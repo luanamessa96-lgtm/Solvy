@@ -162,7 +162,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   }, [syncedMonths, year]);
 
   const handleExport = async () => {
-    if (filteredDocs.length === 0) return;
+    if (filteredDocs.length === 0 && !includeRiepilogo) return;
     setExporting(true);
     try {
       if (format === 'csv') {
@@ -1300,7 +1300,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                     <span className="text-xl shrink-0">📊</span>
                     <div className="text-left flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Includi Riepilogo Annuale</p>
+                        <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Riepilogo Annuale</p>
                         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-violet-100 text-violet-600 shrink-0">Pro</span>
                       </div>
                       <p className="text-[10px] text-slate-400 mt-0.5">PDF fiscale completo con stime per il commercialista</p>
@@ -1418,7 +1418,10 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                 <div className="space-y-3">
                   <button
                     onClick={() => {
-                      if (readyBlob.fileName.endsWith('.pdf')) {
+                      // Se il riepilogo è incluso ha priorità nell'anteprima
+                      if (readyBlob.riepilogoFile) {
+                        setPdfPreview({ blob: readyBlob.riepilogoFile.blob, fileName: readyBlob.riepilogoFile.fileName });
+                      } else if (readyBlob.fileName.endsWith('.pdf')) {
                         setPdfPreview({ blob: readyBlob.blob, fileName: readyBlob.fileName });
                       } else {
                         const url = URL.createObjectURL(readyBlob.blob);
@@ -1460,7 +1463,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
               ) : (
                 <button
                   onClick={handleExport}
-                  disabled={exporting || filteredDocs.length === 0}
+                  disabled={exporting || (filteredDocs.length === 0 && !includeRiepilogo)}
                   className="w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
                 >
                   <Download size={18} />
