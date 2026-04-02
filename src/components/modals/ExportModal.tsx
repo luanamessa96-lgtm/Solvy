@@ -37,12 +37,14 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const [selectedMonths, setSelectedMonths] = useState<Set<number>>(new Set());
   const [includeFatturaPA, setIncludeFatturaPA] = useState(true);
   const [includeResumen, setIncludeResumen] = useState(true);
+  const [includeRegistro, setIncludeRegistro] = useState(false);
   const [overrideQuarter, setOverrideQuarter] = useState<1 | 2 | 3 | 4 | null>(null);
   const [pdfPreview, setPdfPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
   const [readyBlob, setReadyBlob] = useState<{
     blob: Blob; fileName: string;
     xmlFiles?: { blob: Blob; fileName: string }[];
     resumenFile?: { blob: Blob; fileName: string };
+    registroFile?: { blob: Blob; fileName: string };
   } | null>(null);
   const [year, setYear] = useState(selectedYear);
 
@@ -53,6 +55,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       setReadyBlob(null);
       setIncludeFatturaPA(true);
       setIncludeResumen(true);
+      setIncludeRegistro(false);
       setOverrideQuarter(null);
     }
   }, [isOpen, selectedYear]);
@@ -174,7 +177,10 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     const resumenFileObj = readyBlob.resumenFile
       ? new File([readyBlob.resumenFile.blob], readyBlob.resumenFile.fileName, { type: 'application/pdf' })
       : null;
-    const allFiles = [primaryFile, ...xmlFileObjs, ...(resumenFileObj ? [resumenFileObj] : [])];
+    const registroFileObj = readyBlob.registroFile
+      ? new File([readyBlob.registroFile.blob], readyBlob.registroFile.fileName, { type: readyBlob.registroFile.blob.type })
+      : null;
+    const allFiles = [primaryFile, ...xmlFileObjs, ...(resumenFileObj ? [resumenFileObj] : []), ...(registroFileObj ? [registroFileObj] : [])];
 
     if (navigator.share && navigator.canShare?.({ files: allFiles })) {
       await navigator.share({ files: allFiles, title: fileName });
@@ -193,6 +199,12 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
         const u = URL.createObjectURL(readyBlob.resumenFile.blob);
         const ar = window.document.createElement('a');
         ar.href = u; ar.download = readyBlob.resumenFile.fileName; ar.click();
+        URL.revokeObjectURL(u);
+      }
+      if (readyBlob.registroFile) {
+        const u = URL.createObjectURL(readyBlob.registroFile.blob);
+        const ar = window.document.createElement('a');
+        ar.href = u; ar.download = readyBlob.registroFile.fileName; ar.click();
         URL.revokeObjectURL(u);
       }
     }
@@ -217,9 +229,17 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       ar.href = u; ar.download = readyBlob.resumenFile.fileName; ar.click();
       URL.revokeObjectURL(u);
     }
+    // Download registro cronologico if present
+    if (readyBlob?.registroFile) {
+      const u = URL.createObjectURL(readyBlob.registroFile.blob);
+      const ar = window.document.createElement('a');
+      ar.href = u; ar.download = readyBlob.registroFile.fileName; ar.click();
+      URL.revokeObjectURL(u);
+    }
 
     const hasXmls = xmlFiles.length > 0;
     const hasResumen = !!readyBlob?.resumenFile;
+    const hasRegistro = !!readyBlob?.registroFile;
     const subject = encodeURIComponent(`Documenti ${periodLabel} — Solvy`);
     const body = encodeURIComponent(
       `Ciao ${accountant.firstName},\n\n` +
@@ -227,9 +247,11 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       `In allegato trovi il file ${format.toUpperCase()}` +
       (hasXmls ? ` e gli XML FatturaPA di ${xmlFiles.length} fattur${xmlFiles.length === 1 ? 'a' : 'e'}` : '') +
       (hasResumen ? ` e il Resumen Trimestral ${QUARTER_LABELS[resumenQuarter].split(' ')[0]} ${resumenYear}` : '') +
+      (hasRegistro ? ` e il Registro Cronologico ${year}` : '') +
       `.\n` +
       (hasXmls ? `\nGli XML FatturaPA sono stati salvati nella cartella Download — allegali manualmente all'email.\n` : '') +
       (hasResumen ? `\nIl PDF Resumen Trimestral è stato salvato nella cartella Download — allegalo manualmente all'email.\n` : '') +
+      (hasRegistro ? `\nIl Registro Cronologico è stato salvato nella cartella Download — allegalo manualmente all'email.\n` : '') +
       `\nGrazie`
     );
     window.location.href = `mailto:${accountant.email}?subject=${subject}&body=${body}`;
@@ -662,6 +684,108 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     await shareOrDownload(blob, fileName, 'application/pdf');
   };
 
+  const generateRegistroFile = async (): Promise<{ blob: Blob; fileName: string }> => {
+    const MARCA_BOLLO_VAL = 2;
+    const registroDocs = yearDocs
+      .filter(d => (d.type === 'invoice' || d.type === 'credit_note') && syncedMonths.has(getLocalMonth(d.date)))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    const calcDoc = (doc: AppDoc) => {
+      const isCN = doc.type === 'credit_note';
+      const sign = isCN ? -1 : 1;
+      const regime = doc.docRegime ?? profile.regime ?? 'forfettario';
+      const isOrdinario = regime === 'ordinario';
+      const rivalsaAmount = !isCN && doc.rivalsaInps ? doc.amount * 0.04 : 0;
+      const imponibile = (doc.amount + rivalsaAmount) * sign;
+      const ivaRate = doc.ivaRate ?? 0;
+      const ivaAmount = isOrdinario && !isCN ? imponibile * (ivaRate / 100) : 0;
+      const ritenutaAmount = !isCN && doc.ritenuta ? doc.amount * 0.20 : 0;
+      const bolloAmount = !isCN && doc.marcaBollo ? MARCA_BOLLO_VAL : 0;
+      const totale = imponibile + ivaAmount + bolloAmount - ritenutaAmount;
+      const stato = isCN ? 'Storno NC' : doc.status === 'paid' ? 'Pagata' : doc.status === 'overdue' ? 'Scaduta' : 'In attesa';
+      const dataIncasso = doc.status === 'paid' ? parseLocalDate(doc.date).toLocaleDateString('it-IT') : '';
+      const clienteId = doc.clientPiva === 'Privato' ? `CF: ${doc.clientCf || '—'}` : (doc.clientPiva || doc.clientCf || '—');
+      return { isCN, imponibile, ivaAmount, ritenutaAmount, bolloAmount, totale, stato, dataIncasso, clienteId };
+    };
+
+    if (format === 'csv') {
+      const header = ['N°', 'Data', 'N° Documento', 'Cliente', 'P.IVA/C.F.', 'Imponibile (€)', 'IVA (€)', 'Ritenuta (€)', 'Marca Bollo (€)', 'Totale (€)', 'Stato', 'Data Incasso'];
+      const rows = registroDocs.map((doc, i) => {
+        const c = calcDoc(doc);
+        return [
+          String(i + 1),
+          parseLocalDate(doc.date).toLocaleDateString('it-IT'),
+          doc.invoiceNumber || doc.id.slice(0, 8),
+          doc.client || '—',
+          c.clienteId,
+          c.imponibile.toFixed(2),
+          c.ivaAmount.toFixed(2),
+          c.ritenutaAmount.toFixed(2),
+          c.bolloAmount.toFixed(2),
+          c.totale.toFixed(2),
+          c.stato,
+          c.dataIncasso,
+        ];
+      });
+      const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+      return { blob: new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }), fileName: `registro_cronologico_${year}.csv` };
+    }
+
+    // PDF landscape
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
+    const W = 297; const M = 14; const R = W - M;
+    const black: [number, number, number] = [15, 23, 42];
+    const grey: [number, number, number] = [100, 116, 139];
+    const lightGrey: [number, number, number] = [226, 232, 240];
+    const primary: [number, number, number] = [79, 70, 229];
+
+    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(18); pdf.setTextColor(...black);
+    pdf.text('REGISTRO CRONOLOGICO FATTURE', M, 18);
+    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9); pdf.setTextColor(...grey);
+    pdf.text(`${profile.name} · ${periodLabel}`, M, 26);
+    if (profile.piva) pdf.text(`P.IVA: ${profile.piva}`, R, 26, { align: 'right' });
+    pdf.setDrawColor(...lightGrey); pdf.setLineWidth(0.4); pdf.line(M, 30, R, 30);
+
+    const tableRows = registroDocs.map((doc, i) => {
+      const c = calcDoc(doc);
+      return [String(i + 1), parseLocalDate(doc.date).toLocaleDateString('it-IT'), doc.invoiceNumber || doc.id.slice(0, 8), (doc.client || '—').slice(0, 28), c.clienteId, c.imponibile.toFixed(2), c.ivaAmount.toFixed(2), c.ritenutaAmount.toFixed(2), c.bolloAmount.toFixed(2), c.totale.toFixed(2), c.stato, c.dataIncasso];
+    });
+
+    autoTable(pdf, {
+      startY: 36,
+      head: [['N°', 'Data', 'N° Doc', 'Cliente', 'P.IVA/CF', 'Imponibile', 'IVA', 'Ritenuta', 'Bollo', 'Totale', 'Stato', 'Data Incasso']],
+      body: tableRows,
+      styles: { fontSize: 7.5, cellPadding: { top: 3, bottom: 3, left: 2, right: 2 }, textColor: black },
+      headStyles: { fillColor: [248, 250, 252], textColor: grey, fontStyle: 'bold', fontSize: 7, lineColor: lightGrey, lineWidth: 0.3 },
+      bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+      columnStyles: { 0: { cellWidth: 10, halign: 'center' }, 1: { cellWidth: 22 }, 2: { cellWidth: 22 }, 3: { cellWidth: 38 }, 4: { cellWidth: 28 }, 5: { cellWidth: 22, halign: 'right' }, 6: { cellWidth: 17, halign: 'right' }, 7: { cellWidth: 19, halign: 'right' }, 8: { cellWidth: 14, halign: 'right' }, 9: { cellWidth: 22, halign: 'right', fontStyle: 'bold', textColor: primary }, 10: { cellWidth: 22 }, 11: { cellWidth: 22 } },
+      margin: { left: M, right: M },
+      tableLineColor: lightGrey, tableLineWidth: 0.3,
+      didParseCell: (data) => {
+        if (data.section === 'body' && registroDocs[data.row.index]?.type === 'credit_note') {
+          data.cell.styles.fillColor = [255, 241, 242];
+          data.cell.styles.textColor = [225, 29, 72];
+        }
+      },
+    });
+
+    const fy = (pdf.lastAutoTable?.finalY ?? 36) + 6;
+    const totalImponibile = registroDocs.reduce((s, d) => s + calcDoc(d).imponibile, 0);
+    const totalIva = registroDocs.reduce((s, d) => s + calcDoc(d).ivaAmount, 0);
+    const totalTotale = registroDocs.reduce((s, d) => s + calcDoc(d).totale, 0);
+    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8.5); pdf.setTextColor(...black);
+    pdf.text('TOTALE', M, fy);
+    pdf.setTextColor(...primary);
+    pdf.text(`Imponibile: €${totalImponibile.toFixed(2)}   IVA: €${totalIva.toFixed(2)}   Totale: €${totalTotale.toFixed(2)}`, M + 18, fy);
+    pdf.setDrawColor(...lightGrey); pdf.setLineWidth(0.4); pdf.line(M, 200, R, 200);
+    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(6.5); pdf.setTextColor(...grey);
+    pdf.text('Registro cronologico generato da Solvy. Stima indicativa — consulta il tuo commercialista.', M, 205);
+    pdf.text(`Generato il ${new Date().toLocaleDateString('it-IT')}`, R, 205, { align: 'right' });
+
+    return { blob: pdf.output('blob'), fileName: `registro_cronologico_${year}.pdf` };
+  };
+
   const shareOrDownload = async (blob: Blob, fileName: string, mimeType: string) => {
     if (accountant) {
       // Generate FatturaPA XMLs if toggle is on
@@ -685,7 +809,11 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
         resumenFile = { blob: resumenPdf.output('blob'), fileName: resumenFileName };
       }
 
-      setReadyBlob({ blob, fileName, xmlFiles, resumenFile });
+      let registroFile: { blob: Blob; fileName: string } | undefined;
+      if (includeRegistro && isItaly && isPro) {
+        registroFile = await generateRegistroFile();
+      }
+      setReadyBlob({ blob, fileName, xmlFiles, resumenFile, registroFile });
       return;
     }
     const file = new File([blob], fileName, { type: mimeType });
@@ -829,6 +957,20 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                       </p>
                     </div>
                   </button>
+                  <button
+                    onClick={() => setIncludeRegistro(prev => !prev)}
+                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
+                  >
+                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeRegistro ? 'bg-violet-500 border-violet-500' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
+                      {includeRegistro && <Check size={12} strokeWidth={3} className="text-white" />}
+                    </div>
+                    <div className="text-left flex-1">
+                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>📋 Includi Registro Cronologico</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        {`${yearDocs.filter(d => d.type === 'invoice' || d.type === 'credit_note').length} doc · ${format.toUpperCase()} con 12 campi Agenzia delle Entrate`}
+                      </p>
+                    </div>
+                  </button>
                 </div>
               )}
 
@@ -956,6 +1098,9 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                       <p className="text-xs text-slate-400 truncate">{readyBlob.fileName}</p>
                       {(readyBlob.xmlFiles?.length ?? 0) > 0 && (
                         <p className="text-[10px] text-primary mt-0.5">+ {readyBlob.xmlFiles!.length} XML FatturaPA</p>
+                      )}
+                      {readyBlob.registroFile && (
+                        <p className="text-[10px] text-violet-500 mt-0.5">+ Registro Cronologico</p>
                       )}
                     </div>
                     <div className="flex items-center gap-1.5 text-primary shrink-0">
