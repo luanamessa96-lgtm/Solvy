@@ -767,6 +767,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const totCred = cNotes.reduce((s,d)=>s+d.amount,0);
       const totInc = totFatt-totCred;
       const totExpFull = expD.reduce((s,d)=>s+d.amount,0);
+      console.log('[DEBUG] profile.regime:', profile.regime, '| typeof:', typeof profile.regime, '| country:', profile.country);
       const regimeR = profile.regime||'forfettario';
       const isForf = regimeR!=='ordinario';
       const isItOrd = profile.country==='Italy' && !isForf;
@@ -1041,6 +1042,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const totalIncome = totalFatturato - totalCrediti;
       const totalExpensesAmt = expenseDocs.reduce((s, d) => s + d.amount, 0);
 
+      console.log('[DEBUG] profile.regime:', profile.regime, '| typeof:', typeof profile.regime, '| country:', profile.country);
       const regime = profile.regime || 'forfettario';
       const isForfettario = regime !== 'ordinario';
       const isItOrdinario = profile.country === 'Italy' && !isForfettario;
