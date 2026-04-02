@@ -26,7 +26,7 @@ const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountant
 
   const menuItems: { label: string; icon: LucideIcon; onClick: () => void; color?: string }[] = [
     { label: 'Fiscalità', icon: BarChart2, onClick: onFiscalClick },
-    { label: '📚 Guida Fiscale', icon: BookOpen, onClick: onGuidaFiscaleClick },
+    ...(activeProfile.country !== 'Spain' ? [{ label: '📚 Guida Fiscale', icon: BookOpen, onClick: onGuidaFiscaleClick }] : []),
     { label: t('menu.accountant'), icon: Briefcase, onClick: onAccountantClick },
     { label: t('menu.settings'), icon: Settings, onClick: onSettingsClick },
     { label: t('menu.subscription'), icon: CreditCard, onClick: () => setIsPaywallOpen(true) },
