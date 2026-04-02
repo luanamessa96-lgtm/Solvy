@@ -143,7 +143,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
   const totals = useMemo(() => filteredDocs.reduce((acc, d) => {
     if (d.type === 'invoice') acc.income += d.amount;
-    else acc.expenses += d.amount;
+    else if (d.type === 'credit_note') acc.income -= d.amount;
+    else if (d.type === 'expense') acc.expenses += d.amount;
     return acc;
   }, { income: 0, expenses: 0 }), [filteredDocs]);
 
