@@ -29,6 +29,8 @@
     "substitutive_tax": "Imposta sostitutiva ({{pct}}%)",
     "inps_sep": "INPS gest. separata (26.07%)",
     "inps_artisan": "INPS artigiani/comm. (~24%)",
+    "inps_artigiani": "INPS artigiani (24%)",
+    "inps_commercianti": "INPS commercianti (24.48%)",
     "irpef_brackets": "IRPEF (scaglioni)",
     "surcharges": "Addizionali (~2.3%)",
     "net_estimated": "Netto stimato",

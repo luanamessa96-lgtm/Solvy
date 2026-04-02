@@ -58,6 +58,19 @@ type Tasse = TasseForfettario | TasseOrdinario;
 
 const INPS_GESTIONE_SEPARATA = 0.2607;
 const INPS_ORDINARIO = 0.24;
+const INPS_ARTIGIANI = 0.24;
+const INPS_COMMERCIANTI = 0.2448;
+const INPS_MINIMALE = 4000; // minimale annuo artigiani/commercianti
+
+type InpsType = 'separata' | 'artigiani' | 'commercianti';
+
+function getInpsType(country: string, coeff: number | undefined): InpsType {
+  if (country !== 'Italy') return 'separata';
+  if (coeff === 67) return 'artigiani';
+  if (coeff === 40) return 'commercianti';
+  return 'separata';
+}
+
 const SOGLIA_FORFETTARIO = 85000;
 const ALERT_SOGLIA = 80000;
 const ALERT_SOGLIA_VICINO = 65000;
@@ -114,10 +127,19 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
     return avgMonthly * 12;
   }, [chartData, income]);
 
+  const inpsType = getInpsType(profile.country, profile.coefficiente);
+
   // Calcoli fiscali
   const tasse = useMemo((): Tasse => {
     const regime = profile.regime || 'forfettario';
     const base = income; // fatturato incassato
+    const it = getInpsType(profile.country, profile.coefficiente);
+
+    const calcInpsAmount = (reddito: number, fallbackRate: number) => {
+      if (it === 'artigiani') return Math.max(INPS_MINIMALE, reddito * INPS_ARTIGIANI);
+      if (it === 'commercianti') return Math.max(INPS_MINIMALE, reddito * INPS_COMMERCIANTI);
+      return reddito * fallbackRate;
+    };
 
     if (regime === 'forfettario') {
       const coeffRaw = profile.coefficiente;
@@ -125,7 +147,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
       const redditoLordo = Math.max(0, base * coeff);
 
       // INPS è deducibile al 100% dalla base imponibile IRPEF (IT-20)
-      const inps = redditoLordo * INPS_GESTIONE_SEPARATA;
+      const inps = calcInpsAmount(redditoLordo, INPS_GESTIONE_SEPARATA);
       const redditoImponibile = Math.max(0, redditoLordo - inps);
 
       const annoInizio = profile.annoInizioAttivita ?? null;
@@ -140,7 +162,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
     } else {
       // Regime ordinario — INPS deducibile dalla base imponibile IRPEF (IT-20)
       const redditoLordo = Math.max(0, base - expenses);
-      const inps = redditoLordo * INPS_ORDINARIO;
+      const inps = calcInpsAmount(redditoLordo, INPS_ORDINARIO);
       const redditoImponibile = Math.max(0, redditoLordo - inps);
       const irpef = calcIRPEF(redditoImponibile);
       const addizionali = redditoImponibile * 0.023;
@@ -472,7 +494,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
-                      <span className="text-xs font-bold text-slate-400">{t('dashboard.inps_sep')}</span>
+                      <span className="text-xs font-bold text-slate-400">{inpsType === 'artigiani' ? t('dashboard.inps_artigiani') : inpsType === 'commercianti' ? t('dashboard.inps_commercianti') : t('dashboard.inps_sep')}</span>
                       <span className="text-xs font-bold text-amber-500">{fmt(tasse.inps)}</span>
                     </div>
                     <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
@@ -501,7 +523,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   </>)}
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
-                      <span className="text-xs font-bold text-slate-400">{t('dashboard.inps_artisan')}</span>
+                      <span className="text-xs font-bold text-slate-400">{inpsType === 'artigiani' ? t('dashboard.inps_artigiani') : inpsType === 'commercianti' ? t('dashboard.inps_commercianti') : t('dashboard.inps_sep')}</span>
                       <span className="text-xs font-bold text-amber-500">{fmt(tasse.inps)}</span>
                     </div>
                     <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>

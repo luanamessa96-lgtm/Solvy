@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import JSZip from 'jszip';
 import { motion } from 'motion/react';
-import { Sun, Moon, Languages, Trash2, RotateCcw, Loader2, CheckCircle2, AlertCircle, Sparkles, Lock, Download } from 'lucide-react';
+import { Sun, Moon, Languages, Trash2, RotateCcw, Loader2, CheckCircle2, AlertCircle, Sparkles, Lock, Download, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getClient } from '../lib/supabase';
 import PaywallModal from '../components/modals/PaywallModal';
@@ -221,6 +221,18 @@ const SettingsView = ({ theme, setTheme, profile, profilesCount = 1, documents =
           </div>
         </div>
       </motion.div>
+
+      {profile.country === 'Italy' && (profile.coefficiente === 67 || profile.coefficiente === 40) && (
+        <motion.div variants={item} className="space-y-3">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Fiscale</p>
+          <div className={`flex items-start gap-3 px-4 py-3.5 rounded-2xl border ${darkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-300' : 'bg-blue-50 border-blue-100 text-blue-700'}`}>
+            <Info size={16} className="mt-0.5 shrink-0" />
+            <p className="text-xs font-bold leading-relaxed">
+              La tua categoria potrebbe richiedere INPS {profile.coefficiente === 67 ? 'artigiani' : 'commercianti'} invece della gestione separata. Verifica con il tuo commercialista.
+            </p>
+          </div>
+        </motion.div>
+      )}
 
       {isPro && (
         <motion.div variants={item} className="rounded-3xl border overflow-hidden transition-colors" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
