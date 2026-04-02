@@ -790,9 +790,9 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const netto = isForf?totInc-imposta-inps:totInc-imposta-inps-totExpFull;
       const ritDocs = paidInv.filter(d=>d.ritenuta);
       const totRit = ritDocs.reduce((s,d)=>{const rA=d.rivalsaInps?d.amount*0.04:0; return s+(d.amount+rA)*0.20;},0);
-      const spCat: Record<string,number> = {};
-      expD.forEach(d=>{ const cat=d.category||'Altro'; spCat[cat]=(spCat[cat]||0)+d.amount*(isItOrd?getItDeductibilityRate(d.category):1); });
-      const spRows = Object.entries(spCat).sort((a,b)=>b[1]-a[1]);
+      const spCat: Record<string,{ gross: number; deductible: number; rate: number }> = {};
+      expD.forEach(d=>{ const cat=d.category||'Altro'; const rate=isItOrd?getItDeductibilityRate(d.category):1; if(!spCat[cat]) spCat[cat]={gross:0,deductible:0,rate}; spCat[cat].gross+=d.amount; spCat[cat].deductible+=d.amount*rate; });
+      const spRows = Object.entries(spCat).sort((a,b)=>b[1].deductible-a[1].deductible);
 
       // Header viola
       pdf.setFillColor(...primary);
@@ -847,8 +847,17 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       if (spRows.length>0) {
         pdf.setFont('helvetica','bold'); pdf.setFontSize(9); pdf.setTextColor(...grey);
         pdf.text('SPESE DEDUCIBILI PER CATEGORIA',margin,ry); ry+=4;
-        autoTable(pdf,{startY:ry,head:[['Categoria','Totale']],body:[...spRows.map(([cat,amt])=>[cat,fmtE(amt)]),['Totale spese',fmtE(totExp)]],styles:{fontSize:9,cellPadding:{top:3,bottom:3,left:3,right:3},textColor:black},headStyles:{fillColor:[248,250,252],textColor:grey,fontStyle:'bold',fontSize:8,lineColor:lightGrey,lineWidth:0.3},bodyStyles:{lineColor:lightGrey,lineWidth:0.2},columnStyles:{0:{cellWidth:'auto'},1:{cellWidth:45,halign:'right'}},didParseCell:(data)=>{ if(data.section==='body'&&data.row.index===spRows.length){ data.cell.styles.fontStyle='bold'; data.cell.styles.textColor=red; } },margin:{left:margin,right:margin}});
-        ry=(pdf.lastAutoTable?.finalY??ry+20)+8;
+        if (isItOrd) {
+          const totGross=expD.reduce((s,d)=>s+d.amount,0);
+          autoTable(pdf,{startY:ry,head:[['Categoria','Lordo','Deducibile','%']],body:[...spRows.map(([cat,{gross,deductible,rate}])=>[cat,fmtE(gross),fmtE(deductible),`${Math.round(rate*100)}%`]),['Totale',fmtE(totGross),fmtE(totExp),'']],styles:{fontSize:9,cellPadding:{top:3,bottom:3,left:3,right:3},textColor:black},headStyles:{fillColor:[248,250,252],textColor:grey,fontStyle:'bold',fontSize:8,lineColor:lightGrey,lineWidth:0.3},bodyStyles:{lineColor:lightGrey,lineWidth:0.2},columnStyles:{0:{cellWidth:'auto'},1:{cellWidth:38,halign:'right'},2:{cellWidth:38,halign:'right'},3:{cellWidth:16,halign:'center'}},didParseCell:(data)=>{ if(data.section==='body'&&data.row.index===spRows.length){ data.cell.styles.fontStyle='bold'; data.cell.styles.textColor=red; } },margin:{left:margin,right:margin}});
+          ry=(pdf.lastAutoTable?.finalY??ry+20)+4;
+          pdf.setFont('helvetica','italic'); pdf.setFontSize(7); pdf.setTextColor(...grey);
+          pdf.text('Gli importi nella colonna Deducibile sono utilizzati per il calcolo del reddito imponibile.',margin,ry);
+          ry+=8;
+        } else {
+          autoTable(pdf,{startY:ry,head:[['Categoria','Totale']],body:[...spRows.map(([cat,{gross}])=>[cat,fmtE(gross)]),['Totale spese',fmtE(totExp)]],styles:{fontSize:9,cellPadding:{top:3,bottom:3,left:3,right:3},textColor:black},headStyles:{fillColor:[248,250,252],textColor:grey,fontStyle:'bold',fontSize:8,lineColor:lightGrey,lineWidth:0.3},bodyStyles:{lineColor:lightGrey,lineWidth:0.2},columnStyles:{0:{cellWidth:'auto'},1:{cellWidth:45,halign:'right'}},didParseCell:(data)=>{ if(data.section==='body'&&data.row.index===spRows.length){ data.cell.styles.fontStyle='bold'; data.cell.styles.textColor=red; } },margin:{left:margin,right:margin}});
+          ry=(pdf.lastAutoTable?.finalY??ry+20)+8;
+        }
       }
 
       if (ritDocs.length>0) {
@@ -1064,9 +1073,15 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
         return s + (d.amount + rivalsaAmt) * 0.20;
       }, 0);
 
-      const spesePerCat: Record<string, number> = {};
-      expenseDocs.forEach(d => { const cat = d.category || 'Altro'; spesePerCat[cat] = (spesePerCat[cat] || 0) + d.amount * (isItOrdinario ? getItDeductibilityRate(d.category) : 1); });
-      const speseRows = Object.entries(spesePerCat).sort((a, b) => b[1] - a[1]);
+      const spesePerCat: Record<string, { gross: number; deductible: number; rate: number }> = {};
+      expenseDocs.forEach(d => {
+        const cat = d.category || 'Altro';
+        const rate = isItOrdinario ? getItDeductibilityRate(d.category) : 1;
+        if (!spesePerCat[cat]) spesePerCat[cat] = { gross: 0, deductible: 0, rate };
+        spesePerCat[cat].gross += d.amount;
+        spesePerCat[cat].deductible += d.amount * rate;
+      });
+      const speseRows = Object.entries(spesePerCat).sort((a, b) => b[1].deductible - a[1].deductible);
 
       // ── Header pagina ───────────────────────────────────────────────────────
       pdf.setFillColor(...primary);
@@ -1172,23 +1187,52 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
         pdf.setTextColor(...grey);
         pdf.text('SPESE DEDUCIBILI PER CATEGORIA', M, y);
         y += 4;
-        autoTable(pdf, {
-          startY: y,
-          head: [['Categoria', 'Totale']],
-          body: [...speseRows.map(([cat, amt]) => [cat, fmtEur(amt)]), ['Totale spese', fmtEur(totalDeductibleExpenses)]],
-          styles: { fontSize: 9, cellPadding: { top: 3, bottom: 3, left: 3, right: 3 }, textColor: black },
-          headStyles: { fillColor: [248, 250, 252], textColor: grey, fontStyle: 'bold', fontSize: 8, lineColor: lightGrey, lineWidth: 0.3 },
-          bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
-          columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 45, halign: 'right' } },
-          didParseCell: (data) => {
-            if (data.section === 'body' && data.row.index === speseRows.length) {
-              data.cell.styles.fontStyle = 'bold';
-              data.cell.styles.textColor = red;
-            }
-          },
-          margin: { left: M, right: M },
-        });
-        y = (pdf.lastAutoTable?.finalY ?? y + 20) + 8;
+        if (isItOrdinario) {
+          const totalGross = expenseDocs.reduce((s, d) => s + d.amount, 0);
+          autoTable(pdf, {
+            startY: y,
+            head: [['Categoria', 'Lordo', 'Deducibile', '%']],
+            body: [
+              ...speseRows.map(([cat, { gross, deductible, rate }]) => [cat, fmtEur(gross), fmtEur(deductible), `${Math.round(rate * 100)}%`]),
+              ['Totale', fmtEur(totalGross), fmtEur(totalDeductibleExpenses), ''],
+            ],
+            styles: { fontSize: 9, cellPadding: { top: 3, bottom: 3, left: 3, right: 3 }, textColor: black },
+            headStyles: { fillColor: [248, 250, 252], textColor: grey, fontStyle: 'bold', fontSize: 8, lineColor: lightGrey, lineWidth: 0.3 },
+            bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+            columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 38, halign: 'right' }, 2: { cellWidth: 38, halign: 'right' }, 3: { cellWidth: 16, halign: 'center' } },
+            didParseCell: (data) => {
+              if (data.section === 'body' && data.row.index === speseRows.length) {
+                data.cell.styles.fontStyle = 'bold';
+                data.cell.styles.textColor = red;
+              }
+            },
+            margin: { left: M, right: M },
+          });
+          y = (pdf.lastAutoTable?.finalY ?? y + 20) + 4;
+          pdf.setFont('helvetica', 'italic');
+          pdf.setFontSize(7);
+          pdf.setTextColor(...grey);
+          pdf.text('Gli importi nella colonna Deducibile sono utilizzati per il calcolo del reddito imponibile.', M, y);
+          y += 8;
+        } else {
+          autoTable(pdf, {
+            startY: y,
+            head: [['Categoria', 'Totale']],
+            body: [...speseRows.map(([cat, { gross }]) => [cat, fmtEur(gross)]), ['Totale spese', fmtEur(totalDeductibleExpenses)]],
+            styles: { fontSize: 9, cellPadding: { top: 3, bottom: 3, left: 3, right: 3 }, textColor: black },
+            headStyles: { fillColor: [248, 250, 252], textColor: grey, fontStyle: 'bold', fontSize: 8, lineColor: lightGrey, lineWidth: 0.3 },
+            bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+            columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 45, halign: 'right' } },
+            didParseCell: (data) => {
+              if (data.section === 'body' && data.row.index === speseRows.length) {
+                data.cell.styles.fontStyle = 'bold';
+                data.cell.styles.textColor = red;
+              }
+            },
+            margin: { left: M, right: M },
+          });
+          y = (pdf.lastAutoTable?.finalY ?? y + 20) + 8;
+        }
       }
 
       // ── Ritenute d'acconto ──────────────────────────────────────────────────
