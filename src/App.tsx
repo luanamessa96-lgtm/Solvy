@@ -412,11 +412,11 @@ function AppInner() {
 
   const totalExpenses = useMemo(() => {
     const currentYear = new Date().getFullYear();
-    const isItaly = activeProfile.country === 'Italy';
+    const applyDeductibility = activeProfile.country === 'Italy' && activeProfile.regime === 'ordinario';
     return documents
       .filter(doc => doc.type === 'expense' && getLocalYear(doc.date) === currentYear)
-      .reduce((sum, doc) => sum + doc.amount * (isItaly ? getItDeductibilityRate(doc.category) : 1), 0);
-  }, [documents, activeProfile.country]);
+      .reduce((sum, doc) => sum + doc.amount * (applyDeductibility ? getItDeductibilityRate(doc.category) : 1), 0);
+  }, [documents, activeProfile.country, activeProfile.regime]);
 
   const paidPercentage = useMemo(() => {
     const currentYear = new Date().getFullYear();

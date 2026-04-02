@@ -100,9 +100,9 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
       const date = parseLocalDate(d.date);
       return date.getFullYear() === currentYear && date.getMonth() === i;
     });
-    const isItaly = profile.country === 'Italy';
+    const applyDeductibility = profile.country === 'Italy' && profile.regime === 'ordinario';
     const monthIncome = monthDocs.filter(d => d.type === 'invoice' && d.status === 'paid').reduce((s, d) => s + d.amount, 0);
-    const monthExpenses = monthDocs.filter(d => d.type === 'expense').reduce((s, d) => s + d.amount * (isItaly ? getItDeductibilityRate(d.category) : 1), 0);
+    const monthExpenses = monthDocs.filter(d => d.type === 'expense').reduce((s, d) => s + d.amount * (applyDeductibility ? getItDeductibilityRate(d.category) : 1), 0);
     return { name: month, income: monthIncome, expenses: monthExpenses, net: monthIncome - monthExpenses };
   });
 
@@ -157,15 +157,15 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
     const currentYear = new Date().getFullYear();
     const yearExpenses = documents.filter(d => d.type === 'expense' && getLocalYear(d.date) === currentYear);
     const map: Record<string, number> = {};
-    const isItaly = profile.country === 'Italy';
+    const applyDeductibility = profile.country === 'Italy' && profile.regime === 'ordinario';
     yearExpenses.forEach(d => {
       const cat = d.category || 'Altro';
-      map[cat] = (map[cat] || 0) + d.amount * (isItaly ? getItDeductibilityRate(d.category) : 1);
+      map[cat] = (map[cat] || 0) + d.amount * (applyDeductibility ? getItDeductibilityRate(d.category) : 1);
     });
     return Object.entries(map)
       .map(([name, amount]) => ({ name, amount }))
       .sort((a, b) => b.amount - a.amount);
-  }, [documents, profile.country]);
+  }, [documents, profile.country, profile.regime]);
 
   const isSpainProfile = profile.country === 'Spain';
   const isForfettario = !isSpainProfile && tasse.regime === 'forfettario';
