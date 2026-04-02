@@ -1548,18 +1548,29 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                     }}
                     className={`w-full rounded-2xl p-4 flex items-center gap-3 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 hover:border-primary/40' : 'bg-slate-50 hover:bg-slate-100'}`}
                   >
-                    <Check size={18} className="text-emerald-500 shrink-0" />
-                    <div className="min-w-0 flex-1 text-left">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Documenti del periodo</p>
-                      <p className="text-xs text-slate-400 truncate">{readyBlob.fileName}</p>
+                    <div className="min-w-0 flex-1 text-left space-y-1.5">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Pronto per l'invio</p>
+                      <div className="flex items-center gap-1.5">
+                        <Check size={13} className="text-emerald-500 shrink-0" />
+                        <p className="text-xs text-slate-500 truncate">{readyBlob.fileName}</p>
+                      </div>
                       {(readyBlob.xmlFiles?.length ?? 0) > 0 && (
-                        <p className="text-[10px] text-blue-500 mt-1.5">📎 {readyBlob.xmlFiles!.length} file XML FatturaPA allegati</p>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[11px] leading-none shrink-0">📎</span>
+                          <p className="text-[11px] text-blue-500">{readyBlob.xmlFiles!.length} file XML FatturaPA allegati</p>
+                        </div>
                       )}
-                      {readyBlob.registroFile && (
-                        <p className="text-[10px] text-emerald-600 mt-0.5">📋 Registro Cronologico allegato</p>
+                      {includeRegistro && (
+                        <div className="flex items-center gap-1.5">
+                          <Check size={13} className="text-emerald-500 shrink-0" />
+                          <p className="text-[11px] text-emerald-600 font-medium">+ Registro Cronologico</p>
+                        </div>
                       )}
-                      {readyBlob.riepilogoFile && (
-                        <p className="text-[10px] text-violet-500 mt-0.5">📊 Riepilogo Annuale allegato</p>
+                      {includeRiepilogo && (
+                        <div className="flex items-center gap-1.5">
+                          <Check size={13} className="text-violet-500 shrink-0" />
+                          <p className="text-[11px] text-violet-500 font-medium">+ Riepilogo Annuale {year}</p>
+                        </div>
                       )}
                     </div>
                     <div className="flex items-center gap-1.5 text-primary shrink-0">
