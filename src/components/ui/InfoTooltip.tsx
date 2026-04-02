@@ -27,12 +27,15 @@ const InfoTooltip = ({ text, darkMode }: InfoTooltipProps) => {
   const calcStyle = (): React.CSSProperties => {
     if (!btnRef.current) return {};
     const rect = btnRef.current.getBoundingClientRect();
+    // visualViewport is more accurate on iOS Safari (excludes browser chrome)
+    const vw = window.visualViewport?.width ?? window.innerWidth;
 
-    // Horizontal: clamp so tooltip never bleeds off screen
-    let left = rect.left;
-    if (left + TOOLTIP_W > window.innerWidth - 8) {
-      left = window.innerWidth - TOOLTIP_W - 8;
-    }
+    // Anchor tooltip's RIGHT edge to button's right edge, then shift left if needed.
+    // This prevents overflow when the ℹ️ sits near the right side of the screen.
+    let left = rect.right - TOOLTIP_W;
+    // Don't bleed off the right edge
+    if (left + TOOLTIP_W > vw - 8) left = vw - TOOLTIP_W - 8;
+    // Don't bleed off the left edge
     left = Math.max(8, left);
 
     // Vertical: show above if less than 150px below button
@@ -42,7 +45,6 @@ const InfoTooltip = ({ text, darkMode }: InfoTooltipProps) => {
     return {
       position: 'fixed',
       left,
-      // above → anchor bottom of tooltip to top of button (via translateY)
       top: above ? rect.top - 6 : rect.bottom + 6,
       transform: above ? 'translateY(-100%)' : undefined,
       zIndex: 9999,
