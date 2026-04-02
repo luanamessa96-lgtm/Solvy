@@ -52,7 +52,8 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [searchQuery, setSearchQuery] = useState('');
-  const [archiveYear, setArchiveYear] = useState<number | null>(null);
+  const [selectedArchive, setSelectedArchive] = useState<{ year: number; invoices: Document[]; total: number } | null>(null);
+  const [archiveSearch, setArchiveSearch] = useState('');
   const [isExportingZip, setIsExportingZip] = useState(false);
 
   // IT-33: primo anno e reddito N-1
@@ -163,9 +164,10 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   }, [documents, isItaly]);
   const archiveYears = Object.keys(archiveByYear).map(Number).sort((a, b) => b - a);
 
-  const handleExportZip = async (year: number) => {
+  const handleExportZip = async (archive: { year: number; invoices: Document[]; total: number }) => {
     if (!profile) return;
     setIsExportingZip(true);
+    const { year } = archive;
     try {
       const [{ default: JSZip }, { buildInvoicePDFBlob }, { generateFatturaPA }, jspdfMod] = await Promise.all([
         import('jszip'),
@@ -174,8 +176,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
         import('jspdf'),
       ]);
       const zip = new JSZip();
-      const yearData = archiveByYear[year];
-      if (!yearData) return;
+      const yearData = archive;
 
       for (const inv of yearData.invoices) {
         const { blob, fileName } = await buildInvoicePDFBlob(inv, profile);
@@ -409,13 +410,15 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                     <button
                       key={year}
                       type="button"
-                      onClick={() => setArchiveYear(year)}
+                      onClick={() => { setSelectedArchive({ year, invoices: data.invoices, total: data.total }); setArchiveSearch(''); }}
                       className={`w-full flex items-center justify-between px-5 py-4 active:scale-[0.98] transition-all hover:bg-primary/5 text-left ${i > 0 ? 'border-t' : ''}`}
                       style={i > 0 ? { borderColor: 'var(--color-border)' } : undefined}
                     >
                       <div>
                         <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{year}</p>
-                        <p className="text-xs text-slate-400">{data.invoices.length} fattur{data.invoices.length === 1 ? 'a' : 'e'} saldat{data.invoices.length === 1 ? 'a' : 'e'}</p>
+                        <p className="text-xs text-slate-400">
+                          {data.invoices.length} fattur{data.invoices.length === 1 ? 'a' : 'e'} saldat{data.invoices.length === 1 ? 'a' : 'e'} · conserva fino al {year + 10}
+                        </p>
                       </div>
                       <div className="flex items-center gap-3">
                         <p className="text-sm font-bold text-emerald-500">€{data.total.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</p>
@@ -610,9 +613,9 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
       </AnimatePresence>
       {/* IT-40: modale dettaglio anno archivio */}
       <AnimatePresence>
-        {archiveYear !== null && archiveByYear[archiveYear] && (
+        {selectedArchive !== null && (
           <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setArchiveYear(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedArchive(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl"
               style={{ backgroundColor: 'var(--color-card)' }}>
@@ -620,21 +623,41 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                 {/* Header */}
                 <div className="flex items-start justify-between">
                   <div>
-                    <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Archivio {archiveYear}</h2>
+                    <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Archivio {selectedArchive.year}</h2>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      {archiveByYear[archiveYear].invoices.length} fattur{archiveByYear[archiveYear].invoices.length === 1 ? 'a' : 'e'} · €{archiveByYear[archiveYear].total.toLocaleString('it-IT', { minimumFractionDigits: 2 })}
+                      {selectedArchive.invoices.length} fattur{selectedArchive.invoices.length === 1 ? 'a' : 'e'} · €{selectedArchive.total.toLocaleString('it-IT', { minimumFractionDigits: 2 })} · conserva fino al {selectedArchive.year + 10}
                     </p>
                   </div>
-                  <button onClick={() => setArchiveYear(null)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
+                  <button onClick={() => setSelectedArchive(null)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
                     <Plus className="rotate-45" size={24} />
                   </button>
                 </div>
 
+                {/* Ricerca */}
+                <div className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                  <Search size={14} className="text-slate-400 shrink-0" />
+                  <input
+                    type="text"
+                    value={archiveSearch}
+                    onChange={e => setArchiveSearch(e.target.value)}
+                    placeholder="Cerca per cliente o N° fattura"
+                    className={`flex-1 text-sm bg-transparent focus:outline-none ${darkMode ? 'text-white placeholder:text-slate-600' : 'text-slate-900 placeholder:text-slate-400'}`}
+                  />
+                  {archiveSearch && (
+                    <button type="button" onClick={() => setArchiveSearch('')} className="text-slate-400"><X size={14} /></button>
+                  )}
+                </div>
+
                 {/* Invoice list */}
                 <div className="space-y-2">
-                  {archiveByYear[archiveYear].invoices
+                  {selectedArchive.invoices
                     .slice()
                     .sort((a, b) => a.date.localeCompare(b.date))
+                    .filter(inv => {
+                      if (!archiveSearch.trim()) return true;
+                      const q = archiveSearch.toLowerCase();
+                      return (inv.client || '').toLowerCase().includes(q) || (inv.invoiceNumber || '').toLowerCase().includes(q);
+                    })
                     .map(inv => (
                       <div key={inv.id} className={`flex items-center justify-between p-3 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
                         <div className="min-w-0">
@@ -644,17 +667,23 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                         <p className="text-sm font-bold text-emerald-500 shrink-0 ml-3">€{inv.amount.toFixed(2)}</p>
                       </div>
                     ))}
+                  {archiveSearch.trim() && selectedArchive.invoices.filter(inv => {
+                    const q = archiveSearch.toLowerCase();
+                    return (inv.client || '').toLowerCase().includes(q) || (inv.invoiceNumber || '').toLowerCase().includes(q);
+                  }).length === 0 && (
+                    <p className="text-xs text-slate-400 text-center py-4">Nessuna fattura trovata per "{archiveSearch}"</p>
+                  )}
                 </div>
 
                 {/* Export ZIP */}
                 <button
                   type="button"
-                  onClick={() => handleExportZip(archiveYear)}
+                  onClick={() => handleExportZip(selectedArchive)}
                   disabled={isExportingZip}
                   className="w-full py-4 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isExportingZip ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
-                  {isExportingZip ? 'Generazione in corso…' : `Esporta archivio ZIP ${archiveYear}`}
+                  {isExportingZip ? 'Generazione in corso…' : `Esporta archivio ZIP ${selectedArchive.year}`}
                 </button>
                 {isPro && (
                   <p className="text-[10px] text-center text-primary font-bold">Include XML FatturaPA per ogni fattura</p>
