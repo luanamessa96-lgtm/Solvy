@@ -32,7 +32,6 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const isSpain = profile.country === 'Spain';
 
   const [docFilter, setDocFilter] = useState<'all' | 'invoice' | 'expense'>('all');
-  const [format, setFormat] = useState<'pdf' | 'csv'>('pdf');
   const [exporting, setExporting] = useState(false);
   const [selectedMonths, setSelectedMonths] = useState<Set<number>>(new Set());
   const [includeFatturaPA, setIncludeFatturaPA] = useState(true);
@@ -165,11 +164,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     if (filteredDocs.length === 0 && !includeRiepilogo) return;
     setExporting(true);
     try {
-      if (format === 'csv') {
-        await exportCSV();
-      } else {
-        await exportPDF();
-      }
+      await exportPDF();
     } finally {
       setExporting(false);
     }
@@ -267,7 +262,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     const body = encodeURIComponent(
       `Ciao ${accountant.firstName},\n\n` +
       `ti invio i documenti relativi al periodo: ${periodLabel}.\n` +
-      `In allegato trovi il file ${format.toUpperCase()}` +
+      `In allegato trovi il file PDF` +
       (hasXmls ? ` e gli XML FatturaPA di ${xmlFiles.length} fattur${xmlFiles.length === 1 ? 'a' : 'e'}` : '') +
       (hasResumen ? ` e il Resumen Trimestral ${QUARTER_LABELS[resumenQuarter].split(' ')[0]} ${resumenYear}` : '') +
       (hasRegistro ? ` e il Registro Cronologico ${year}` : '') +
@@ -280,23 +275,6 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       `\nGrazie`
     );
     window.location.href = `mailto:${accountant.email}?subject=${subject}&body=${body}`;
-  };
-
-  const exportCSV = async () => {
-    const header = ['Data', 'Tipo', 'Descrizione', 'Cliente', 'Importo (€)', 'Stato', 'Categoria'];
-    const rows = filteredDocs.map(d => [
-      parseLocalDate(d.date).toLocaleDateString('it-IT'),
-      d.type === 'invoice' ? 'Fattura' : 'Spesa',
-      d.title,
-      d.client || '',
-      d.amount.toFixed(2),
-      d.status === 'paid' ? 'Saldato' : d.status === 'pending' ? 'In attesa' : d.status,
-      d.category || '',
-    ]);
-    const csv = [header, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const fileName = `documenti_${year}_${Date.now()}.csv`;
-    await shareOrDownload(blob, fileName, 'text/csv');
   };
 
   const exportPDF = async () => {
@@ -916,29 +894,6 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       return { isCN, imponibile, ivaAmount, ritenutaAmount, bolloAmount, totale, stato, dataIncasso, clienteId };
     };
 
-    if (format === 'csv') {
-      const header = ['N°', 'Data', 'N° Documento', 'Cliente', 'P.IVA/C.F.', 'Imponibile (€)', 'IVA (€)', 'Ritenuta (€)', 'Marca Bollo (€)', 'Totale (€)', 'Stato', 'Data Incasso'];
-      const rows = registroDocs.map((doc, i) => {
-        const c = calcDoc(doc);
-        return [
-          String(i + 1),
-          parseLocalDate(doc.date).toLocaleDateString('it-IT'),
-          doc.invoiceNumber || doc.id.slice(0, 8),
-          doc.client || '—',
-          c.clienteId,
-          c.imponibile.toFixed(2),
-          c.ivaAmount.toFixed(2),
-          c.ritenutaAmount.toFixed(2),
-          c.bolloAmount.toFixed(2),
-          c.totale.toFixed(2),
-          c.stato,
-          c.dataIncasso,
-        ];
-      });
-      const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
-      return { blob: new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }), fileName: `registro_cronologico_${year}.csv` };
-    }
-
     // PDF landscape
     const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
@@ -1017,15 +972,9 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
         resumenFile = { blob: resumenPdf.output('blob'), fileName: resumenFileName };
       }
 
-      // Registro e Riepilogo sono già inline nel PDF — generarli separati solo per CSV
-      let registroFile: { blob: Blob; fileName: string } | undefined;
-      if (includeRegistro && isItaly && isPro && format !== 'pdf') {
-        registroFile = await generateRegistroFile();
-      }
-      let riepilogoFile: { blob: Blob; fileName: string } | undefined;
-      if (includeRiepilogo && isItaly && isPro && format !== 'pdf') {
-        riepilogoFile = await generateRiepilogoFile();
-      }
+      // Registro e Riepilogo sono già inline nel PDF principale
+      const registroFile: { blob: Blob; fileName: string } | undefined = undefined;
+      const riepilogoFile: { blob: Blob; fileName: string } | undefined = undefined;
       setReadyBlob({ blob, fileName, xmlFiles, resumenFile, registroFile, riepilogoFile });
       return;
     }
@@ -1419,18 +1368,6 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                 )}
               </div>
 
-              {/* Formato */}
-              <div className="space-y-2">
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Formato</p>
-                <div className={`p-1 rounded-2xl flex gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                  {(['pdf', 'csv'] as const).map(f => (
-                    <button key={f} onClick={() => { setFormat(f); setReadyBlob(null); }} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${format === f ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
-                      {f.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Toggle FatturaPA XML + Registro Cronologico — solo Italy Pro con commercialista */}
               {isItaly && isPro && accountant && docFilter !== 'expense' && (
                 <div className="space-y-2">
@@ -1470,7 +1407,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                         <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Includi Registro Cronologico</p>
                         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-600 shrink-0">Commercialista</span>
                       </div>
-                      <p className="text-[10px] text-slate-400 mt-0.5">Elenco fatture per il commercialista (CSV/PDF)</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">Elenco fatture per il commercialista</p>
                     </div>
                   </button>
                   {/* Riepilogo Annuale */}
@@ -1648,7 +1585,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                   className="w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
                 >
                   <Download size={18} />
-                  {exporting ? 'Preparazione...' : accountant ? `Invia al Commercialista` : `Esporta ${format.toUpperCase()}`}
+                  {exporting ? 'Preparazione...' : accountant ? `Invia al Commercialista` : `Esporta PDF`}
                 </button>
               )}
               {/* Disclaimer IT-18 / ES-12 */}
