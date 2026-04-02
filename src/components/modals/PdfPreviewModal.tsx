@@ -1,4 +1,5 @@
-import { X, Share2, FileText } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { X, Share2, FileText, ExternalLink } from 'lucide-react';
 
 interface PdfPreviewModalProps {
   isOpen: boolean;
@@ -9,7 +10,27 @@ interface PdfPreviewModalProps {
 }
 
 export default function PdfPreviewModal({ isOpen, onClose, blob, fileName, darkMode }: PdfPreviewModalProps) {
-  if (!isOpen) return null;
+  const [blocked, setBlocked] = useState(false);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen || !blob.size) return;
+    const url = URL.createObjectURL(blob);
+    setBlobUrl(url);
+    const win = window.open(url, '_blank');
+    if (win) {
+      onClose();
+    } else {
+      setBlocked(true);
+    }
+    return () => {
+      URL.revokeObjectURL(url);
+      setBlobUrl(null);
+      setBlocked(false);
+    };
+  }, [isOpen, blob]);
+
+  if (!isOpen || !blocked) return null;
 
   const handleShare = async () => {
     const file = new File([blob], fileName, { type: 'application/pdf' });
@@ -25,6 +46,10 @@ export default function PdfPreviewModal({ isOpen, onClose, blob, fileName, darkM
     }
   };
 
+  const handleOpenManual = () => {
+    if (blobUrl) window.open(blobUrl, '_blank');
+  };
+
   return (
     <div className="fixed inset-0 z-[70] flex flex-col" style={{ backgroundColor: darkMode ? '#0f172a' : '#f8fafc' }}>
       {/* Header */}
@@ -38,7 +63,7 @@ export default function PdfPreviewModal({ isOpen, onClose, blob, fileName, darkM
         <p className={`text-sm font-bold truncate flex-1 ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fileName}</p>
       </div>
 
-      {/* PDF placeholder */}
+      {/* Fallback (popup bloccato) */}
       <div className="flex-1 flex flex-col items-center justify-center gap-5 px-8">
         <div className={`w-24 h-28 rounded-3xl flex flex-col items-center justify-center gap-1.5 shadow-lg ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
           <FileText size={40} className="text-red-500" strokeWidth={1.5} />
@@ -46,12 +71,19 @@ export default function PdfPreviewModal({ isOpen, onClose, blob, fileName, darkM
         </div>
         <p className={`text-sm font-bold text-center ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fileName}</p>
         <p className="text-xs text-slate-400 text-center leading-relaxed">
-          Anteprima non disponibile su iOS.{'\n'}Usa il bottone qui sotto per aprire o condividere il PDF.
+          Il browser ha bloccato l'apertura automatica. Usa i bottoni qui sotto.
         </p>
       </div>
 
       {/* Footer */}
-      <div className={`px-4 py-4 border-t shrink-0 ${darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-100 bg-white'}`}>
+      <div className={`px-4 py-4 border-t shrink-0 space-y-3 ${darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-100 bg-white'}`}>
+        <button
+          onClick={handleOpenManual}
+          className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-all ${darkMode ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-900'}`}
+        >
+          <ExternalLink size={18} />
+          Apri PDF
+        </button>
         <button
           onClick={handleShare}
           className="w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
