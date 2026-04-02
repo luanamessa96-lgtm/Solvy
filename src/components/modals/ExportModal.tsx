@@ -5,6 +5,7 @@ import { Document as AppDoc, Profile, Accountant } from '../../types';
 import { useProStatus } from '../../hooks/useProStatus';
 import { generateFatturaPA, getMissingProfileFields } from '../../services/fatturaPA';
 import { parseLocalDate, getLocalYear, getLocalMonth } from '../../utils/date';
+import { getItDeductibilityRate } from '../../lib/it/deductibility';
 import { calcularTrimestre, generateResumenPDF, getCurrentQuarter, QUARTER_LABELS } from '../../services/modelosES';
 import PdfPreviewModal from './PdfPreviewModal';
 
@@ -765,9 +766,11 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const totFatt = paidInv.reduce((s,d)=>s+d.amount,0);
       const totCred = cNotes.reduce((s,d)=>s+d.amount,0);
       const totInc = totFatt-totCred;
-      const totExp = expD.reduce((s,d)=>s+d.amount,0);
+      const totExpFull = expD.reduce((s,d)=>s+d.amount,0);
       const regimeR = profile.regime||'forfettario';
       const isForf = regimeR!=='ordinario';
+      const isItOrd = profile.country==='Italy' && !isForf;
+      const totExp = isItOrd ? expD.reduce((s,d)=>s+d.amount*getItDeductibilityRate(d.category),0) : totExpFull;
       const coeff = (profile.coefficiente!=null&&profile.coefficiente>0)?profile.coefficiente/100:0.78;
       const redLordo = isForf ? Math.max(0,totInc*coeff) : Math.max(0,totInc-totExp);
       const inpsR = isForf ? 0.2607 : 0.24;
@@ -784,11 +787,11 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const accGiu = imposta*0.40;
       const accNov = imposta*0.60;
       const saldo = imposta-accGiu-accNov;
-      const netto = isForf?totInc-imposta-inps:totInc-imposta-inps-totExp;
+      const netto = isForf?totInc-imposta-inps:totInc-imposta-inps-totExpFull;
       const ritDocs = paidInv.filter(d=>d.ritenuta);
       const totRit = ritDocs.reduce((s,d)=>{const rA=d.rivalsaInps?d.amount*0.04:0; return s+(d.amount+rA)*0.20;},0);
       const spCat: Record<string,number> = {};
-      expD.forEach(d=>{ const cat=d.category||'Altro'; spCat[cat]=(spCat[cat]||0)+d.amount; });
+      expD.forEach(d=>{ const cat=d.category||'Altro'; spCat[cat]=(spCat[cat]||0)+d.amount*(isItOrd?getItDeductibilityRate(d.category):1); });
       const spRows = Object.entries(spCat).sort((a,b)=>b[1]-a[1]);
 
       // Header viola
@@ -1033,8 +1036,12 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
       const regime = profile.regime || 'forfettario';
       const isForfettario = regime !== 'ordinario';
+      const isItOrdinario = profile.country === 'Italy' && !isForfettario;
+      const totalDeductibleExpenses = isItOrdinario
+        ? expenseDocs.reduce((s, d) => s + d.amount * getItDeductibilityRate(d.category), 0)
+        : totalExpensesAmt;
       const coeff = (profile.coefficiente != null && profile.coefficiente > 0) ? profile.coefficiente / 100 : 0.78;
-      const redditoLordo = isForfettario ? Math.max(0, totalIncome * coeff) : Math.max(0, totalIncome - totalExpensesAmt);
+      const redditoLordo = isForfettario ? Math.max(0, totalIncome * coeff) : Math.max(0, totalIncome - totalDeductibleExpenses);
       const inpsRate = isForfettario ? INPS_GESTIONE_SEPARATA : INPS_ORDINARIO;
       const inps = redditoLordo * inpsRate;
       const redditoImponibile = Math.max(0, redditoLordo - inps);
@@ -1058,7 +1065,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       }, 0);
 
       const spesePerCat: Record<string, number> = {};
-      expenseDocs.forEach(d => { const cat = d.category || 'Altro'; spesePerCat[cat] = (spesePerCat[cat] || 0) + d.amount; });
+      expenseDocs.forEach(d => { const cat = d.category || 'Altro'; spesePerCat[cat] = (spesePerCat[cat] || 0) + d.amount * (isItOrdinario ? getItDeductibilityRate(d.category) : 1); });
       const speseRows = Object.entries(spesePerCat).sort((a, b) => b[1] - a[1]);
 
       // ── Header pagina ───────────────────────────────────────────────────────
@@ -1168,7 +1175,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
         autoTable(pdf, {
           startY: y,
           head: [['Categoria', 'Totale']],
-          body: [...speseRows.map(([cat, amt]) => [cat, fmtEur(amt)]), ['Totale spese', fmtEur(totalExpensesAmt)]],
+          body: [...speseRows.map(([cat, amt]) => [cat, fmtEur(amt)]), ['Totale spese', fmtEur(totalDeductibleExpenses)]],
           styles: { fontSize: 9, cellPadding: { top: 3, bottom: 3, left: 3, right: 3 }, textColor: black },
           headStyles: { fillColor: [248, 250, 252], textColor: grey, fontStyle: 'bold', fontSize: 8, lineColor: lightGrey, lineWidth: 0.3 },
           bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
