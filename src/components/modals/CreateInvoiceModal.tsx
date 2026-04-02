@@ -228,7 +228,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   )}
                   <div className="space-y-1.5">
                     <label className={lc}>C.F. Cliente</label>
-                    <input type="text" value={form.clientCf} onChange={e => set('clientCf', e.target.value.toUpperCase())} placeholder="RSSMRA80..." className={ic()} />
+                    <input type="text" value={form.clientCf} onChange={e => set('clientCf', e.target.value.toUpperCase())} placeholder={form.clientPiva !== 'Privato' ? 'Opzionale per aziende' : 'RSSMRA80...'} className={ic()} />
                   </div>
                 </div>
 
