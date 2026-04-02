@@ -111,6 +111,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   );
 
   const toggleMonth = (m: number) => {
+    setReadyBlob(null);
     setSelectedMonths(prev => {
       const next = new Set(prev.size === 0 ? availableMonths : prev);
       if (next.has(m)) { next.delete(m); } else { next.add(m); }
@@ -119,6 +120,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   };
 
   const toggleAll = () => {
+    setReadyBlob(null);
     if (syncedMonths.size === availableMonths.length) {
       setSelectedMonths(new Set());
     } else {
@@ -867,7 +869,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Tipo</p>
                 <div className={`p-1 rounded-2xl flex gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                   {(['all', 'invoice', 'expense'] as const).map(f => (
-                    <button key={f} onClick={() => setDocFilter(f)} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${docFilter === f ? (f === 'invoice' ? 'bg-emerald-500 text-white shadow-lg' : f === 'expense' ? 'bg-red-500 text-white shadow-lg' : 'bg-primary text-white shadow-lg') : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
+                    <button key={f} onClick={() => { setDocFilter(f); setReadyBlob(null); }} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${docFilter === f ? (f === 'invoice' ? 'bg-emerald-500 text-white shadow-lg' : f === 'expense' ? 'bg-red-500 text-white shadow-lg' : 'bg-primary text-white shadow-lg') : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
                       {f === 'all' ? 'Tutti' : f === 'invoice' ? 'Fatture' : 'Spese'}
                     </button>
                   ))}
@@ -892,7 +894,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Anno</p>
                 <div className="flex gap-2 flex-wrap">
                   {availableYears.map(y => (
-                    <button key={y} onClick={() => { setYear(y); setSelectedMonths(new Set()); }} className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all active:scale-95 ${year === y ? 'bg-primary text-white shadow-lg shadow-primary/40' : (darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500')}`}>{y}</button>
+                    <button key={y} onClick={() => { setYear(y); setSelectedMonths(new Set()); setReadyBlob(null); }} className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all active:scale-95 ${year === y ? 'bg-primary text-white shadow-lg shadow-primary/40' : (darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500')}`}>{y}</button>
                   ))}
                 </div>
               </div>
@@ -931,7 +933,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Formato</p>
                 <div className={`p-1 rounded-2xl flex gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                   {(['pdf', 'csv'] as const).map(f => (
-                    <button key={f} onClick={() => setFormat(f)} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${format === f ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
+                    <button key={f} onClick={() => { setFormat(f); setReadyBlob(null); }} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${format === f ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>
                       {f.toUpperCase()}
                     </button>
                   ))}
@@ -944,7 +946,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Opzioni</p>
                   {/* FatturaPA XML */}
                   <button
-                    onClick={() => setIncludeFatturaPA(prev => !prev)}
+                    onClick={() => { setIncludeFatturaPA(prev => !prev); setReadyBlob(null); }}
                     className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
                   >
                     <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeFatturaPA ? 'bg-primary border-primary' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
@@ -965,7 +967,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                   </button>
                   {/* Registro Cronologico */}
                   <button
-                    onClick={() => setIncludeRegistro(prev => !prev)}
+                    onClick={() => { setIncludeRegistro(prev => !prev); setReadyBlob(null); }}
                     className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
                   >
                     <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeRegistro ? 'bg-emerald-500 border-emerald-500' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
@@ -989,7 +991,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Opzioni</p>
                   <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'border-slate-700' : 'border-slate-100'}`}>
                     <button
-                      onClick={() => setIncludeResumen(prev => !prev)}
+                      onClick={() => { setIncludeResumen(prev => !prev); setReadyBlob(null); }}
                       className={`w-full flex items-center gap-3 p-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}
                     >
                       <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeResumen ? 'bg-primary border-primary' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
@@ -1011,7 +1013,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                           {([1, 2, 3, 4] as const).map(q => (
                             <button
                               key={q}
-                              onClick={() => setOverrideQuarter(q)}
+                              onClick={() => { setOverrideQuarter(q); setReadyBlob(null); }}
                               className={`py-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${
                                 resumenQuarter === q
                                   ? 'bg-primary text-white shadow-md shadow-primary/30'
