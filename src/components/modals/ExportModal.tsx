@@ -38,15 +38,15 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const [includeFatturaPA, setIncludeFatturaPA] = useState(true);
   const [includeResumen, setIncludeResumen] = useState(true);
   const [includeRegistro, setIncludeRegistro] = useState(false);
+  const [includeRiepilogo, setIncludeRiepilogo] = useState(false);
   const [overrideQuarter, setOverrideQuarter] = useState<1 | 2 | 3 | 4 | null>(null);
   const [pdfPreview, setPdfPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
-  const [riepilogoBlob, setRiepilogoBlob] = useState<{ blob: Blob; fileName: string } | null>(null);
-  const [generatingRiepilogo, setGeneratingRiepilogo] = useState(false);
   const [readyBlob, setReadyBlob] = useState<{
     blob: Blob; fileName: string;
     xmlFiles?: { blob: Blob; fileName: string }[];
     resumenFile?: { blob: Blob; fileName: string };
     registroFile?: { blob: Blob; fileName: string };
+    riepilogoFile?: { blob: Blob; fileName: string };
   } | null>(null);
   const [year, setYear] = useState(selectedYear);
 
@@ -55,10 +55,10 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       setYear(selectedYear);
       setSelectedMonths(new Set());
       setReadyBlob(null);
-      setRiepilogoBlob(null);
       setIncludeFatturaPA(true);
       setIncludeResumen(true);
       setIncludeRegistro(false);
+      setIncludeRiepilogo(false);
       setOverrideQuarter(null);
     }
   }, [isOpen, selectedYear]);
@@ -186,7 +186,10 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     const registroFileObj = readyBlob.registroFile
       ? new File([readyBlob.registroFile.blob], readyBlob.registroFile.fileName, { type: readyBlob.registroFile.blob.type })
       : null;
-    const allFiles = [primaryFile, ...xmlFileObjs, ...(resumenFileObj ? [resumenFileObj] : []), ...(registroFileObj ? [registroFileObj] : [])];
+    const riepilogoFileObj = readyBlob.riepilogoFile
+      ? new File([readyBlob.riepilogoFile.blob], readyBlob.riepilogoFile.fileName, { type: 'application/pdf' })
+      : null;
+    const allFiles = [primaryFile, ...xmlFileObjs, ...(resumenFileObj ? [resumenFileObj] : []), ...(registroFileObj ? [registroFileObj] : []), ...(riepilogoFileObj ? [riepilogoFileObj] : [])];
 
     if (navigator.share && navigator.canShare?.({ files: allFiles })) {
       await navigator.share({ files: allFiles, title: fileName });
@@ -211,6 +214,12 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
         const u = URL.createObjectURL(readyBlob.registroFile.blob);
         const ar = window.document.createElement('a');
         ar.href = u; ar.download = readyBlob.registroFile.fileName; ar.click();
+        URL.revokeObjectURL(u);
+      }
+      if (readyBlob.riepilogoFile) {
+        const u = URL.createObjectURL(readyBlob.riepilogoFile.blob);
+        const ar = window.document.createElement('a');
+        ar.href = u; ar.download = readyBlob.riepilogoFile.fileName; ar.click();
         URL.revokeObjectURL(u);
       }
     }
@@ -242,10 +251,18 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       ar.href = u; ar.download = readyBlob.registroFile.fileName; ar.click();
       URL.revokeObjectURL(u);
     }
+    // Download riepilogo annuale if present
+    if (readyBlob?.riepilogoFile) {
+      const u = URL.createObjectURL(readyBlob.riepilogoFile.blob);
+      const ar = window.document.createElement('a');
+      ar.href = u; ar.download = readyBlob.riepilogoFile.fileName; ar.click();
+      URL.revokeObjectURL(u);
+    }
 
     const hasXmls = xmlFiles.length > 0;
     const hasResumen = !!readyBlob?.resumenFile;
     const hasRegistro = !!readyBlob?.registroFile;
+    const hasRiepilogo = !!readyBlob?.riepilogoFile;
     const subject = encodeURIComponent(`Documenti ${periodLabel} — Solvy`);
     const body = encodeURIComponent(
       `Ciao ${accountant.firstName},\n\n` +
@@ -254,10 +271,12 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       (hasXmls ? ` e gli XML FatturaPA di ${xmlFiles.length} fattur${xmlFiles.length === 1 ? 'a' : 'e'}` : '') +
       (hasResumen ? ` e il Resumen Trimestral ${QUARTER_LABELS[resumenQuarter].split(' ')[0]} ${resumenYear}` : '') +
       (hasRegistro ? ` e il Registro Cronologico ${year}` : '') +
+      (hasRiepilogo ? ` e il Riepilogo Annuale ${year}` : '') +
       `.\n` +
       (hasXmls ? `\nGli XML FatturaPA sono stati salvati nella cartella Download — allegali manualmente all'email.\n` : '') +
       (hasResumen ? `\nIl PDF Resumen Trimestral è stato salvato nella cartella Download — allegalo manualmente all'email.\n` : '') +
       (hasRegistro ? `\nIl Registro Cronologico è stato salvato nella cartella Download — allegalo manualmente all'email.\n` : '') +
+      (hasRiepilogo ? `\nIl Riepilogo Annuale è stato salvato nella cartella Download — allegalo manualmente all'email.\n` : '') +
       `\nGrazie`
     );
     window.location.href = `mailto:${accountant.email}?subject=${subject}&body=${body}`;
@@ -819,7 +838,11 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       if (includeRegistro && isItaly && isPro) {
         registroFile = await generateRegistroFile();
       }
-      setReadyBlob({ blob, fileName, xmlFiles, resumenFile, registroFile });
+      let riepilogoFile: { blob: Blob; fileName: string } | undefined;
+      if (includeRiepilogo && isItaly && isPro) {
+        riepilogoFile = await generateRiepilogoFile();
+      }
+      setReadyBlob({ blob, fileName, xmlFiles, resumenFile, registroFile, riepilogoFile });
       return;
     }
     const file = new File([blob], fileName, { type: mimeType });
@@ -836,9 +859,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     onClose();
   };
 
-  const handleRiepilogoPDF = async () => {
-    setGeneratingRiepilogo(true);
-    try {
+  const generateRiepilogoFile = async (): Promise<{ blob: Blob; fileName: string }> => {
       const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
         import('jspdf'),
         import('jspdf-autotable'),
@@ -1116,11 +1137,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const pdfBlob: Blob = pdf.output('blob');
       const piva = (profile.piva || 'NOPIVA').replace(/\s/g, '');
       const pdfFileName = `riepilogo_annuale_${year}_${piva}.pdf`;
-
-      setRiepilogoBlob({ blob: pdfBlob, fileName: pdfFileName });
-    } finally {
-      setGeneratingRiepilogo(false);
-    }
+      return { blob: pdfBlob, fileName: pdfFileName };
   };
 
   const inputBase = `px-4 py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-95`;
@@ -1272,6 +1289,23 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                       <p className="text-[10px] text-slate-400 mt-0.5">Elenco fatture per il commercialista (CSV/PDF)</p>
                     </div>
                   </button>
+                  {/* Riepilogo Annuale */}
+                  <button
+                    onClick={() => { setIncludeRiepilogo(prev => !prev); setReadyBlob(null); }}
+                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
+                  >
+                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeRiepilogo ? 'bg-violet-500 border-violet-500' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
+                      {includeRiepilogo && <Check size={12} strokeWidth={3} className="text-white" />}
+                    </div>
+                    <span className="text-xl shrink-0">📊</span>
+                    <div className="text-left flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Includi Riepilogo Annuale</p>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-violet-100 text-violet-600 shrink-0">Pro</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-0.5">PDF fiscale completo con stime per il commercialista</p>
+                    </div>
+                  </button>
                 </div>
               )}
 
@@ -1333,66 +1367,6 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                       </div>
                     )}
                   </div>
-                </div>
-              )}
-
-              {/* Bottone Riepilogo Annuale PDF — solo Italy Pro */}
-              {isItaly && isPro && (
-                <div className="space-y-3">
-                  <button
-                    onClick={handleRiepilogoPDF}
-                    disabled={generatingRiepilogo}
-                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'} ${generatingRiepilogo ? 'opacity-60' : ''}`}
-                  >
-                    <span className="text-xl shrink-0">📊</span>
-                    <div className="text-left flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                          {generatingRiepilogo ? 'Generazione in corso…' : 'Riepilogo Annuale PDF'}
-                        </p>
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-violet-100 text-violet-600 shrink-0">Pro</span>
-                      </div>
-                      <p className="text-[10px] text-slate-400 mt-0.5">Riepilogo completo per il commercialista · Anno {year}</p>
-                    </div>
-                    {!generatingRiepilogo && (
-                      <Download size={16} className="text-slate-400 shrink-0" />
-                    )}
-                  </button>
-                  {/* Card "Riepilogo pronto" — indipendente da readyBlob */}
-                  {riepilogoBlob && (
-                    <div className="space-y-2">
-                      <div className={`rounded-2xl p-4 flex items-center gap-3 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
-                        <Check size={18} className="text-emerald-500 shrink-0" />
-                        <div className="min-w-0 flex-1">
-                          <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Riepilogo pronto</p>
-                          <p className="text-xs text-slate-400 truncate">{riepilogoBlob.fileName}</p>
-                        </div>
-                        <button
-                          onClick={() => setRiepilogoBlob(null)}
-                          className="text-slate-400 shrink-0"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                      <button
-                        onClick={async () => {
-                          const file = new File([riepilogoBlob.blob], riepilogoBlob.fileName, { type: 'application/pdf' });
-                          if (navigator.share && navigator.canShare?.({ files: [file] })) {
-                            await navigator.share({ files: [file], title: riepilogoBlob.fileName });
-                          } else {
-                            const url = URL.createObjectURL(riepilogoBlob.blob);
-                            const a = window.document.createElement('a');
-                            a.href = url; a.download = riepilogoBlob.fileName; a.click();
-                            URL.revokeObjectURL(url);
-                          }
-                        }}
-                        className="w-full py-4 rounded-2xl font-bold text-white bg-violet-600 shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
-                      >
-                        <Share2 size={18} />
-                        Scarica / Condividi Riepilogo
-                      </button>
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -1462,6 +1436,9 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                       )}
                       {readyBlob.registroFile && (
                         <p className="text-[10px] text-violet-500 mt-0.5">+ Registro Cronologico</p>
+                      )}
+                      {readyBlob.riepilogoFile && (
+                        <p className="text-[10px] text-violet-500 mt-0.5">+ Riepilogo Annuale</p>
                       )}
                     </div>
                     <div className="flex items-center gap-1.5 text-primary shrink-0">
