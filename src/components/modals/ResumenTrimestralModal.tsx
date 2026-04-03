@@ -68,24 +68,43 @@ export default function ResumenTrimestralModal({
     setIsGenerating(true);
     try {
       const resumenResult = await buildResumenPDFBlob(documents, profile, quarter, year);
-      setPdfPreview(resumenResult);
+      const libroE = includeLibroEmitidas ? await generateLibroEmitidaBlob(documents, profile, year) : null;
+      const libroR = includeLibroRecibidas ? await generateLibroRecibidaBlob(documents, profile, year) : null;
 
-      // Libro PDFs: download directly (separate files from the Resumen)
-      if (includeLibroEmitidas) {
-        const libroE = await generateLibroEmitidaBlob(documents, profile, year);
+      // Decide what to show in preview:
+      // - only Emitidas → preview Libro Emitidas (solo fatture)
+      // - only Recibidas → preview Libro Recibidas (solo spese)
+      // - both or neither → preview Resumen (tutto insieme)
+      if (libroE && !libroR) {
+        setPdfPreview(libroE);
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(libroE.blob);
-        a.download = libroE.fileName;
+        a.href = URL.createObjectURL(resumenResult.blob);
+        a.download = resumenResult.fileName;
         a.click();
         URL.revokeObjectURL(a.href);
-      }
-      if (includeLibroRecibidas) {
-        const libroR = await generateLibroRecibidaBlob(documents, profile, year);
+      } else if (libroR && !libroE) {
+        setPdfPreview(libroR);
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(libroR.blob);
-        a.download = libroR.fileName;
+        a.href = URL.createObjectURL(resumenResult.blob);
+        a.download = resumenResult.fileName;
         a.click();
         URL.revokeObjectURL(a.href);
+      } else {
+        setPdfPreview(resumenResult);
+        if (libroE) {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(libroE.blob);
+          a.download = libroE.fileName;
+          a.click();
+          URL.revokeObjectURL(a.href);
+        }
+        if (libroR) {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(libroR.blob);
+          a.download = libroR.fileName;
+          a.click();
+          URL.revokeObjectURL(a.href);
+        }
       }
     } catch {
       showToast('Error al generar el PDF', 'error');
