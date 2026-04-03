@@ -1,12 +1,14 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Download, Lock } from 'lucide-react';
+import { X, Download, Lock, Check } from 'lucide-react';
 import { Document, Profile } from '../../types';
 import {
   calcularTrimestre,
   buildResumenPDFBlob,
   getCurrentQuarter,
   QUARTER_LABELS,
+  generateLibroEmitidaBlob,
+  generateLibroRecibidaBlob,
 } from '../../services/modelosES';
 import PdfPreviewModal from './PdfPreviewModal';
 import { useToast } from '../ui/Toast';
@@ -33,6 +35,8 @@ export default function ResumenTrimestralModal({
   const [year, setYear] = useState<number>(currentYear);
   const [isGenerating, setIsGenerating] = useState(false);
   const [pdfPreview, setPdfPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
+  const [includeLibroEmitidas, setIncludeLibroEmitidas] = useState(false);
+  const [includeLibroRecibidas, setIncludeLibroRecibidas] = useState(false);
 
   const availableYears = useMemo(() => {
     const years = new Set(documents.map(d => getLocalYear(d.date)));
@@ -63,8 +67,26 @@ export default function ResumenTrimestralModal({
 
     setIsGenerating(true);
     try {
-      const result = await buildResumenPDFBlob(documents, profile, quarter, year);
-      setPdfPreview(result);
+      const resumenResult = await buildResumenPDFBlob(documents, profile, quarter, year);
+      setPdfPreview(resumenResult);
+
+      // Libro PDFs: download directly (separate files from the Resumen)
+      if (includeLibroEmitidas) {
+        const libroE = await generateLibroEmitidaBlob(documents, profile, year);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(libroE.blob);
+        a.download = libroE.fileName;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }
+      if (includeLibroRecibidas) {
+        const libroR = await generateLibroRecibidaBlob(documents, profile, year);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(libroR.blob);
+        a.download = libroR.fileName;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }
     } catch {
       showToast('Error al generar el PDF', 'error');
     } finally {
@@ -193,6 +215,45 @@ export default function ResumenTrimestralModal({
               <p className="text-[10px] text-slate-400 leading-relaxed">
                 Los valores son estimativos. Verifica los datos en la sede electrónica de la AEAT antes de presentar.
               </p>
+
+              {/* Libro Registro toggles — Spain Pro */}
+              {isPro && (
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Incluir también</p>
+                  <button
+                    onClick={() => setIncludeLibroEmitidas(p => !p)}
+                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${dm ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
+                  >
+                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeLibroEmitidas ? 'bg-blue-600 border-blue-600' : dm ? 'border-slate-600' : 'border-slate-300'}`}>
+                      {includeLibroEmitidas && <Check size={12} strokeWidth={3} className="text-white" />}
+                    </div>
+                    <span className="text-xl shrink-0">📋</span>
+                    <div className="text-left flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className={`text-sm font-bold ${dm ? 'text-white' : 'text-slate-900'}`}>Libro Facturas Emitidas</p>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 shrink-0">AEAT</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-0.5">PDF anual con todos los campos obligatorios AEAT</p>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setIncludeLibroRecibidas(p => !p)}
+                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${dm ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
+                  >
+                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeLibroRecibidas ? 'bg-blue-600 border-blue-600' : dm ? 'border-slate-600' : 'border-slate-300'}`}>
+                      {includeLibroRecibidas && <Check size={12} strokeWidth={3} className="text-white" />}
+                    </div>
+                    <span className="text-xl shrink-0">📋</span>
+                    <div className="text-left flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className={`text-sm font-bold ${dm ? 'text-white' : 'text-slate-900'}`}>Libro Facturas Recibidas</p>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 shrink-0">AEAT</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-0.5">PDF anual de gastos con campos obligatorios AEAT</p>
+                    </div>
+                  </button>
+                </div>
+              )}
 
               {/* Download button */}
               {isPro ? (
