@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Download, Lock, Check, Mail } from 'lucide-react';
+import { X, Download, Lock, Check, Mail, Share2, Eye } from 'lucide-react';
 import { Document, Profile, Accountant } from '../../types';
 import {
   calcularTrimestre,
@@ -27,6 +27,14 @@ interface ResumenTrimestralModalProps {
   onNavigateToProfile?: () => void;
 }
 
+type ReadyFiles = {
+  resumenResult: { blob: Blob; fileName: string };
+  libroE: { blob: Blob; fileName: string } | null;
+  libroR: { blob: Blob; fileName: string } | null;
+  facturasResult: { blob: Blob; fileName: string } | null;
+  gastosResult: { blob: Blob; fileName: string } | null;
+};
+
 export default function ResumenTrimestralModal({
   isOpen, onClose, documents, profile, accountant, darkMode, onNavigateToProfile,
 }: ResumenTrimestralModalProps) {
@@ -37,20 +45,22 @@ export default function ResumenTrimestralModal({
   const [quarter, setQuarter] = useState<1 | 2 | 3 | 4>(getCurrentQuarter());
   const [year, setYear] = useState<number>(currentYear);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isSending, setIsSending] = useState(false);
   const [pdfPreview, setPdfPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
+  const [readyFiles, setReadyFiles] = useState<ReadyFiles | null>(null);
+
   const [includeLibroEmitidas, setIncludeLibroEmitidas] = useState(false);
   const [includeLibroRecibidas, setIncludeLibroRecibidas] = useState(false);
   const [includeFacturas, setIncludeFacturas] = useState(false);
   const [includeGastos, setIncludeGastos] = useState(false);
 
-  // Reset toggles every time the modal closes so stale selections don't bleed into the next session
+  // Reset everything when the modal closes
   useEffect(() => {
     if (!isOpen) {
       setIncludeLibroEmitidas(false);
       setIncludeLibroRecibidas(false);
       setIncludeFacturas(false);
       setIncludeGastos(false);
+      setReadyFiles(null);
     }
   }, [isOpen]);
 
@@ -75,21 +85,7 @@ export default function ResumenTrimestralModal({
     URL.revokeObjectURL(a.href);
   };
 
-  const generateAll = async () => {
-    const resumenResult = await buildResumenPDFBlob(documents, profile, quarter, year);
-    const libroE = includeLibroEmitidas ? await generateLibroEmitidaBlob(documents, profile, year) : null;
-    const libroR = includeLibroRecibidas ? await generateLibroRecibidaBlob(documents, profile, year) : null;
-    const facturasResult = includeFacturas
-      ? await generateFacturasTrimestreBlob([...resumen.invoices, ...resumen.rectificativas], profile, quarter, year)
-      : null;
-    const gastosResult = includeGastos
-      ? await generateGastosTrimestreBlob(resumen.expenses, profile, quarter, year)
-      : null;
-    return { resumenResult, libroE, libroR, facturasResult, gastosResult };
-  };
-
-  const handleDownload = async () => {
-    if (!isPro) return;
+  const handleGenerate = async () => {
     if (!hasTaxId) {
       showToast(
         'Añade tu NIF o NIE en el perfil para generar el resumen',
@@ -103,25 +99,16 @@ export default function ResumenTrimestralModal({
 
     setIsGenerating(true);
     try {
-      const { resumenResult, libroE, libroR, facturasResult, gastosResult } = await generateAll();
-
-      // Decide what to show in preview:
-      // - only Emitidas → preview Libro Emitidas
-      // - only Recibidas → preview Libro Recibidas
-      // - only Facturas → preview Facturas trimestre
-      // - only Gastos → preview Gastos trimestre
-      // - anything else / none → preview Resumen
-      const extras = [libroE, libroR, facturasResult, gastosResult].filter(Boolean);
-      if (extras.length === 1) {
-        setPdfPreview(extras[0]!);
-        downloadBlob(resumenResult);
-      } else {
-        setPdfPreview(resumenResult);
-        if (libroE) downloadBlob(libroE);
-        if (libroR) downloadBlob(libroR);
-        if (facturasResult) downloadBlob(facturasResult);
-        if (gastosResult) downloadBlob(gastosResult);
-      }
+      const resumenResult = await buildResumenPDFBlob(documents, profile, quarter, year);
+      const libroE = includeLibroEmitidas ? await generateLibroEmitidaBlob(documents, profile, year) : null;
+      const libroR = includeLibroRecibidas ? await generateLibroRecibidaBlob(documents, profile, year) : null;
+      const facturasResult = includeFacturas
+        ? await generateFacturasTrimestreBlob([...resumen.invoices, ...resumen.rectificativas], profile, quarter, year)
+        : null;
+      const gastosResult = includeGastos
+        ? await generateGastosTrimestreBlob(resumen.expenses, profile, quarter, year)
+        : null;
+      setReadyFiles({ resumenResult, libroE, libroR, facturasResult, gastosResult });
     } catch {
       showToast('Error al generar el PDF', 'error');
     } finally {
@@ -129,54 +116,61 @@ export default function ResumenTrimestralModal({
     }
   };
 
-  const handleSendGestor = async () => {
-    if (!accountant) return;
-    if (!hasTaxId) {
-      showToast(
-        'Añade tu NIF o NIE en el perfil para generar el resumen',
-        'error',
-        onNavigateToProfile
-          ? { label: 'Ir al perfil', onClick: () => { onClose(); onNavigateToProfile(); } }
-          : undefined
-      );
-      return;
+  const handleShareFiles = async () => {
+    if (!readyFiles) return;
+    const { resumenResult, libroE, libroR, facturasResult, gastosResult } = readyFiles;
+    const subject = `Documentos T${quarter} ${year} — Solvy`;
+
+    const allFiles: File[] = [
+      new File([resumenResult.blob], resumenResult.fileName, { type: 'application/pdf' }),
+      ...(libroE ? [new File([libroE.blob], libroE.fileName, { type: 'application/pdf' })] : []),
+      ...(libroR ? [new File([libroR.blob], libroR.fileName, { type: 'application/pdf' })] : []),
+      ...(facturasResult ? [new File([facturasResult.blob], facturasResult.fileName, { type: 'application/pdf' })] : []),
+      ...(gastosResult ? [new File([gastosResult.blob], gastosResult.fileName, { type: 'application/pdf' })] : []),
+    ];
+
+    if (navigator.share && navigator.canShare?.({ files: allFiles })) {
+      await navigator.share({ files: allFiles, title: subject });
+    } else {
+      downloadBlob(resumenResult);
+      if (libroE) downloadBlob(libroE);
+      if (libroR) downloadBlob(libroR);
+      if (facturasResult) downloadBlob(facturasResult);
+      if (gastosResult) downloadBlob(gastosResult);
     }
+    setReadyFiles(null);
+    onClose();
+  };
 
-    setIsSending(true);
-    try {
-      const { resumenResult, libroE, libroR, facturasResult, gastosResult } = await generateAll();
+  const handleOpenMail = () => {
+    if (!accountant || !readyFiles) return;
+    const { resumenResult, libroE, libroR, facturasResult, gastosResult } = readyFiles;
 
-      const subject = `Documentos T${quarter} ${year} — Solvy`;
+    downloadBlob(resumenResult);
+    if (libroE) downloadBlob(libroE);
+    if (libroR) downloadBlob(libroR);
+    if (facturasResult) downloadBlob(facturasResult);
+    if (gastosResult) downloadBlob(gastosResult);
 
-      const allFiles: File[] = [
-        new File([resumenResult.blob], resumenResult.fileName, { type: 'application/pdf' }),
-        ...(libroE ? [new File([libroE.blob], libroE.fileName, { type: 'application/pdf' })] : []),
-        ...(libroR ? [new File([libroR.blob], libroR.fileName, { type: 'application/pdf' })] : []),
-        ...(facturasResult ? [new File([facturasResult.blob], facturasResult.fileName, { type: 'application/pdf' })] : []),
-        ...(gastosResult ? [new File([gastosResult.blob], gastosResult.fileName, { type: 'application/pdf' })] : []),
-      ];
-
-      if (navigator.share && navigator.canShare?.({ files: allFiles })) {
-        await navigator.share({ files: allFiles, title: subject });
-      } else {
-        downloadBlob(resumenResult);
-        if (libroE) downloadBlob(libroE);
-        if (libroR) downloadBlob(libroR);
-        if (facturasResult) downloadBlob(facturasResult);
-        if (gastosResult) downloadBlob(gastosResult);
-      }
-    } catch {
-      showToast('Error al generar los PDFs', 'error');
-    } finally {
-      setIsSending(false);
-    }
+    const qLabel = QUARTER_LABELS[quarter];
+    const subject = encodeURIComponent(`Documentos T${quarter} ${year} — Solvy`);
+    const body = encodeURIComponent(
+      `Hola ${accountant.firstName},\n\n` +
+      `Te envío los documentos fiscales del T${quarter} ${year} (${qLabel}).\n` +
+      `Encontrarás adjunto el Resumen Trimestral T${quarter} ${year} (Mod. 130 + 303)` +
+      (libroE ? `, el Libro Registro de Facturas Emitidas ${year}` : '') +
+      (libroR ? `, el Libro Registro de Facturas Recibidas ${year}` : '') +
+      (facturasResult ? `, las Facturas emitidas T${quarter} ${year}` : '') +
+      (gastosResult ? `, los Gastos T${quarter} ${year}` : '') +
+      `.\n\nGracias`
+    );
+    window.location.href = `mailto:${accountant.email}?subject=${subject}&body=${body}`;
   };
 
   const fmtPreview = (n: number) =>
     `€${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const dm = darkMode;
-  const isWorking = isGenerating || isSending;
 
   const Toggle = ({
     checked, onToggle, emoji, label, badge, subtitle,
@@ -242,7 +236,7 @@ export default function ResumenTrimestralModal({
                   {([1, 2, 3, 4] as const).map(q => (
                     <button
                       key={q}
-                      onClick={() => setQuarter(q)}
+                      onClick={() => { setQuarter(q); setReadyFiles(null); }}
                       className={`py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-95 ${
                         quarter === q
                           ? 'bg-primary text-white shadow-lg shadow-primary/30'
@@ -262,7 +256,7 @@ export default function ResumenTrimestralModal({
                   {availableYears.map(y => (
                     <button
                       key={y}
-                      onClick={() => setYear(y)}
+                      onClick={() => { setYear(y); setReadyFiles(null); }}
                       className={`shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all active:scale-95 ${
                         year === y
                           ? 'bg-primary text-white shadow-lg shadow-primary/40'
@@ -327,7 +321,7 @@ export default function ResumenTrimestralModal({
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Incluir también</p>
                   <Toggle
                     checked={includeLibroEmitidas}
-                    onToggle={() => setIncludeLibroEmitidas(p => !p)}
+                    onToggle={() => { setIncludeLibroEmitidas(p => !p); setReadyFiles(null); }}
                     emoji="📋"
                     label="Libro Facturas Emitidas"
                     badge="AEAT"
@@ -335,7 +329,7 @@ export default function ResumenTrimestralModal({
                   />
                   <Toggle
                     checked={includeLibroRecibidas}
-                    onToggle={() => setIncludeLibroRecibidas(p => !p)}
+                    onToggle={() => { setIncludeLibroRecibidas(p => !p); setReadyFiles(null); }}
                     emoji="📋"
                     label="Libro Facturas Recibidas"
                     badge="AEAT"
@@ -343,14 +337,14 @@ export default function ResumenTrimestralModal({
                   />
                   <Toggle
                     checked={includeFacturas}
-                    onToggle={() => setIncludeFacturas(p => !p)}
+                    onToggle={() => { setIncludeFacturas(p => !p); setReadyFiles(null); }}
                     emoji="📄"
                     label="Facturas del trimestre"
                     subtitle={`Solo facturas emitidas — T${quarter} ${year}`}
                   />
                   <Toggle
                     checked={includeGastos}
-                    onToggle={() => setIncludeGastos(p => !p)}
+                    onToggle={() => { setIncludeGastos(p => !p); setReadyFiles(null); }}
                     emoji="💳"
                     label="Gastos del trimestre"
                     subtitle={`Solo gastos — T${quarter} ${year}`}
@@ -358,28 +352,80 @@ export default function ResumenTrimestralModal({
                 </div>
               )}
 
-              {/* Download button */}
+              {/* Bottoni */}
               {isPro ? (
-                <div className="space-y-3">
+                readyFiles ? (
+                  <div className="space-y-3">
+                    {/* File card — click to preview */}
+                    <button
+                      onClick={() => setPdfPreview(readyFiles.resumenResult)}
+                      className={`w-full rounded-2xl p-4 flex items-center gap-3 transition-all active:scale-[0.98] ${dm ? 'bg-slate-800' : 'bg-slate-50 hover:bg-slate-100'}`}
+                    >
+                      <div className="min-w-0 flex-1 text-left space-y-1.5">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Listo para enviar</p>
+                        <div className="flex items-center gap-1.5">
+                          <Check size={13} className="text-emerald-500 shrink-0" />
+                          <p className="text-xs text-slate-500 truncate">{readyFiles.resumenResult.fileName}</p>
+                        </div>
+                        {readyFiles.libroE && (
+                          <div className="flex items-center gap-1.5">
+                            <Check size={13} className="text-emerald-500 shrink-0" />
+                            <p className="text-[11px] text-emerald-600 font-medium">+ Libro Facturas Emitidas</p>
+                          </div>
+                        )}
+                        {readyFiles.libroR && (
+                          <div className="flex items-center gap-1.5">
+                            <Check size={13} className="text-emerald-500 shrink-0" />
+                            <p className="text-[11px] text-emerald-600 font-medium">+ Libro Facturas Recibidas</p>
+                          </div>
+                        )}
+                        {readyFiles.facturasResult && (
+                          <div className="flex items-center gap-1.5">
+                            <Check size={13} className="text-emerald-500 shrink-0" />
+                            <p className="text-[11px] text-emerald-600 font-medium">+ Facturas T{quarter} {year}</p>
+                          </div>
+                        )}
+                        {readyFiles.gastosResult && (
+                          <div className="flex items-center gap-1.5">
+                            <Check size={13} className="text-emerald-500 shrink-0" />
+                            <p className="text-[11px] text-emerald-600 font-medium">+ Gastos T{quarter} {year}</p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-primary shrink-0">
+                        <Eye size={16} />
+                        <span className="text-xs font-bold">Anteprima</span>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={handleShareFiles}
+                      className="w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                    >
+                      <Share2 size={18} />
+                      Condividi / Allega File
+                    </button>
+
+                    {accountant && (
+                      <button
+                        onClick={handleOpenMail}
+                        className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-all ${dm ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-900'}`}
+                      >
+                        <Mail size={18} />
+                        Enviar al Gestor · {accountant.email}
+                      </button>
+                    )}
+                  </div>
+                ) : (
                   <button
-                    onClick={handleDownload}
-                    disabled={isWorking}
+                    onClick={handleGenerate}
+                    disabled={isGenerating}
                     className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-white bg-primary shadow-lg shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-60"
                   >
                     <Download size={18} />
-                    {isGenerating ? 'Generando…' : 'Descargar PDF'}
+                    {isGenerating ? 'Generando…' : accountant ? 'Generar y enviar al Gestor' : 'Generar PDF'}
                   </button>
-                  {accountant && (
-                    <button
-                      onClick={handleSendGestor}
-                      disabled={isWorking}
-                      className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold transition-all active:scale-[0.98] disabled:opacity-60 ${dm ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-900'}`}
-                    >
-                      <Mail size={18} />
-                      {isSending ? 'Preparando…' : `Enviar al Gestor · ${accountant.email}`}
-                    </button>
-                  )}
-                </div>
+                )
               ) : (
                 <button
                   disabled
