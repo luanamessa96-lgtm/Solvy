@@ -158,7 +158,10 @@ export default function ResumenTrimestralModal({
                   <div className={`p-4 border-r ${dm ? 'border-slate-800' : 'border-slate-100'}`}>
                     <p className="text-[9px] font-bold uppercase tracking-wider text-emerald-500 mb-1">Ingresos</p>
                     <p className={`text-base font-bold ${dm ? 'text-white' : 'text-slate-900'}`}>{fmtPreview(resumen.totalIngresos)}</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">{resumen.invoices.length} factura{resumen.invoices.length !== 1 ? 's' : ''}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      {resumen.invoices.length} factura{resumen.invoices.length !== 1 ? 's' : ''}
+                      {resumen.rectificativas.length > 0 && ` · ${resumen.rectificativas.length} rect.`}
+                    </p>
                   </div>
                   <div className="p-4">
                     <p className="text-[9px] font-bold uppercase tracking-wider text-red-500 mb-1">Gastos</p>

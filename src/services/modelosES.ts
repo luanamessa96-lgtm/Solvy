@@ -8,6 +8,7 @@ export interface ResumenTrimestral {
   quarter: 1 | 2 | 3 | 4;
   year: number;
   invoices: Document[];
+  rectificativas: Document[];
   expenses: Document[];
   totalIngresos: number;
   totalGastos: number;
@@ -65,13 +66,17 @@ export function calcularTrimestre(
     return date >= start && date <= end;
   };
 
-  const invoices = documents.filter(d => d.type === 'invoice' && inRange(d));
-  const expenses = documents.filter(d => d.type === 'expense' && inRange(d));
+  const invoices      = documents.filter(d => d.type === 'invoice' && inRange(d));
+  // factura_rectificativa: filtered by its OWN date (d.date), not the original invoice date
+  const rectificativas = documents.filter(d => d.type === 'factura_rectificativa' && inRange(d));
+  const expenses      = documents.filter(d => d.type === 'expense' && inRange(d));
 
-  const totalIngresos = invoices.reduce((sum, d) => sum + d.amount, 0);
+  const totalIngresos = invoices.reduce((sum, d) => sum + d.amount, 0)
+                      - rectificativas.reduce((sum, d) => sum + d.amount, 0);
   const totalGastos   = expenses.reduce((sum, d) => sum + d.amount, 0);
 
-  const ivaRepercutida = invoices.reduce((sum, d) => sum + d.amount * ((d.ivaRate ?? 0) / 100), 0);
+  const ivaRepercutida = invoices.reduce((sum, d) => sum + d.amount * ((d.ivaRate ?? 0) / 100), 0)
+                       - rectificativas.reduce((sum, d) => sum + d.amount * ((d.ivaRate ?? 0) / 100), 0);
   const ivaSoportada   = expenses
     .filter(d => (d.ivaRate ?? 0) > 0)
     .reduce((sum, d) => sum + d.amount * ((d.ivaRate ?? 0) / 100), 0);
@@ -81,7 +86,7 @@ export function calcularTrimestre(
 
   return {
     quarter, year,
-    invoices, expenses,
+    invoices, rectificativas, expenses,
     totalIngresos, totalGastos,
     ivaRepercutida, ivaSoportada,
     diferenciaIVA: ivaRepercutida - ivaSoportada,
@@ -106,7 +111,7 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
   const bgLight:   [number, number, number] = [248, 250, 252];
 
   const nif = profile.nie || profile.piva || '';
-  const { invoices, expenses, totalIngresos, totalGastos,
+  const { invoices, rectificativas, expenses, totalIngresos, totalGastos,
           ivaRepercutida, ivaSoportada, diferenciaIVA,
           baseImponible130, cuotaIRPF } = resumen;
 
@@ -163,28 +168,41 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
   pdf.text('INGRESOS', M, y);
   y += 4;
 
-  const invoiceRows = invoices.length > 0
-    ? invoices.map(d => {
-        const iva = d.amount * ((d.ivaRate ?? 0) / 100);
+  const red: [number, number, number] = [220, 38, 38];
+  const allIngresosDocs = [...invoices, ...rectificativas.map(d => ({ ...d, _isRect: true as const }))];
+  const invoiceRows = allIngresosDocs.length > 0
+    ? allIngresosDocs.map(d => {
+        const isRect = d.type === 'factura_rectificativa';
+        const sign = isRect ? -1 : 1;
+        const base = sign * d.amount;
+        const iva = base * ((d.ivaRate ?? 0) / 100);
         return [
           d.invoiceNumber || '—',
-          d.client || d.title,
+          isRect ? `↩ ${d.client || d.title}` : (d.client || d.title),
           new Date(d.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-          fmtES(d.amount),
+          fmtES(base),
           d.ivaRate ? `${d.ivaRate}%` : '—',
-          fmtES(d.amount + iva),
+          fmtES(base + iva),
         ];
       })
     : [['—', 'No hay facturas en este período', '', '', '', '']];
 
   autoTable(pdf, {
     startY: y,
-    head: [['N° Factura', 'Cliente', 'Fecha', 'Base', 'IVA', 'Total']],
+    head: [['N° Factura', 'Cliente/Descripción', 'Fecha', 'Base', 'IVA', 'Total']],
     body: invoiceRows,
-    ...(invoices.length > 0 ? {
+    ...(allIngresosDocs.length > 0 ? {
       foot: [['', 'TOTAL INGRESOS', '', fmtES(totalIngresos), '', fmtES(totalIngresos + ivaRepercutida)]],
       footStyles: { fillColor: bgLight, textColor: black, fontStyle: 'bold', fontSize: 8 },
     } : {}),
+    didParseCell: (data: { section: string; row: { index: number }; cell: { styles: { textColor: [number, number, number] } } }) => {
+      if (data.section === 'body') {
+        const doc = allIngresosDocs[data.row.index];
+        if (doc?.type === 'factura_rectificativa') {
+          data.cell.styles.textColor = red;
+        }
+      }
+    },
     styles: { fontSize: 8, cellPadding: { top: 3, bottom: 3, left: 3, right: 3 }, textColor: black },
     headStyles: { fillColor: bgLight, textColor: grey, fontStyle: 'bold', fontSize: 7, lineColor: lightGrey, lineWidth: 0.3 },
     bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
