@@ -212,8 +212,13 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
       }
 
       // README.txt
-      const years = Object.keys(byYear).sort().join(', ');
+      const sortedYears = Object.keys(byYear).sort();
       const nif = profile.nie || profile.piva || 'N/D';
+      const yearFolderLines = sortedYears.flatMap(yr => [
+        `  ${yr}/`,
+        `    factura_NNN_Cliente.pdf`,
+        `    resumen_facturas_${yr}.pdf`,
+      ]);
       const readme = [
         'ARCHIVO SOLVY — BACKUP FACTURAS',
         '=================================',
@@ -221,16 +226,14 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
         `Autónomo: ${profile.name}`,
         `NIF/NIE: ${nif}`,
         `Fecha exportación: ${new Date().toLocaleDateString('es-ES')}`,
-        `Años incluidos: ${years}`,
+        `Años incluidos: ${sortedYears.join(', ')}`,
         `Facturas totales: ${paidInvoices.length}`,
         '',
         'ESTRUCTURA DEL ARCHIVO',
         '----------------------',
         'archivo_solvy_backup/',
-        '  AÑO/',
-        '    factura_NNN_Cliente.pdf     — PDF de la factura',
-        '    resumen_facturas_AÑO.pdf   — Resumen con totales del año',
-        '  README.txt                    — Este archivo',
+        ...yearFolderLines,
+        '  README.txt',
         '',
         'NOTAS',
         '-----',
