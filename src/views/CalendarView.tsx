@@ -121,10 +121,10 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   }, [isSpain, isPrimoAnnoIT, redditoN1, income, expenses, profile, annoInizio, currentYear, selectedYear]);
 
   const scadenzeFiscaliRaw = isSpain
-    ? getSpanishDeadlines(selectedYear).map(s => ({ title: s.title, date: s.date, type: 'tax' as Deadline['type'] }))
+    ? getSpanishDeadlines(selectedYear, { redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined }).map(s => ({ title: s.title, date: s.date, amount: s.amount, type: 'tax' as Deadline['type'] }))
     : getScadenzeFiscali(selectedYear);
   const scadenzeFiscali = scadenzeFiscaliRaw;
-  const addedCount = scadenzeFiscali.filter(s => deadlines.some(d => d.title === s.title && getLocalYear(d.date) === getLocalYear(s.date))).length;
+  const addedCount = scadenzeFiscali.filter(s => deadlines.some(d => d.title === s.title && d.date === s.date)).length;
   const hasFiscalDeadlines = addedCount === scadenzeFiscali.length;
   const partialFiscalDeadlines = addedCount > 0 && addedCount < scadenzeFiscali.length;
   const missingCount = scadenzeFiscali.length - addedCount;
@@ -138,13 +138,16 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     // Build a map title→date from this year's fiscal templates
     // (handles ES deadlines like T4/390 whose date falls in year+1)
     const templates = isSpain
-      ? getSpanishDeadlines(selectedYear).map(s => ({ title: s.title, date: s.date }))
+      ? getSpanishDeadlines(selectedYear, { redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined }).map(s => ({ title: s.title, date: s.date }))
       : getScadenzeFiscali(selectedYear);
-    const templateMap = new Map(templates.map(s => [s.title, s.date]));
+    // Use Sets to handle multiple deadlines with the same title (e.g. 12 RETA entries)
+    const templateTitleSet = new Set(templates.map(s => s.title));
+    const templateEntrySet = new Set(templates.map(s => `${s.title}||${s.date}`));
     return deadlines.filter(d => {
-      const templateDate = templateMap.get(d.title);
-      // Template deadline: show if title+date matches this year's template exactly
-      if (templateDate !== undefined) return templateDate === d.date;
+      if (templateTitleSet.has(d.title)) {
+        // Template deadline: show only if title+date match exactly
+        return templateEntrySet.has(`${d.title}||${d.date}`);
+      }
       // User-created deadline: show by date year
       return getLocalYear(d.date) === selectedYear;
     });
@@ -472,8 +475,8 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   <button onClick={() => setIsPreloadOpen(false)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
                 </div>
                 <div className="space-y-2">
-                  {scadenzeFiscali.filter(s => !deadlines.some(d => d.title === s.title && getLocalYear(d.date) === getLocalYear(s.date))).map((s, i) => {
-                    const amt = fiscalAmounts[s.title];
+                  {scadenzeFiscali.filter(s => !deadlines.some(d => d.title === s.title && d.date === s.date)).map((s, i) => {
+                    const amt = fiscalAmounts[s.title] ?? s.amount;
                     return (
                       <div key={i} className={`flex items-center gap-3 p-3 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
                         <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 text-red-500 ${darkMode ? 'bg-red-500/10' : 'bg-red-50'}`}>
@@ -497,9 +500,9 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                 <button
                   onClick={() => {
                     scadenzeFiscali
-                      .filter(s => !deadlines.some(d => d.title === s.title && getLocalYear(d.date) === getLocalYear(s.date)))
+                      .filter(s => !deadlines.some(d => d.title === s.title && d.date === s.date))
                       .forEach(s => {
-                        const amt = fiscalAmounts[s.title];
+                        const amt = fiscalAmounts[s.title] ?? s.amount;
                         onAddDeadline({ ...s, id: Math.random().toString(36).substr(2, 9), ...(amt != null && amt > 0 ? { amount: amt } : {}) });
                       });
                     setIsPreloadOpen(false);
