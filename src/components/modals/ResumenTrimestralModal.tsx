@@ -146,31 +146,25 @@ export default function ResumenTrimestralModal({
     try {
       const { resumenResult, libroE, libroR, facturasResult, gastosResult } = await generateAll();
 
-      // Download all files to Downloads folder
-      downloadBlob(resumenResult);
-      if (libroE) downloadBlob(libroE);
-      if (libroR) downloadBlob(libroR);
-      if (facturasResult) downloadBlob(facturasResult);
-      if (gastosResult) downloadBlob(gastosResult);
+      const subject = `Documentos T${quarter} ${year} — Solvy`;
 
-      // Build file list for body
-      const fileNames: string[] = [
-        resumenResult.fileName,
-        ...(libroE ? [libroE.fileName] : []),
-        ...(libroR ? [libroR.fileName] : []),
-        ...(facturasResult ? [facturasResult.fileName] : []),
-        ...(gastosResult ? [gastosResult.fileName] : []),
+      const allFiles: File[] = [
+        new File([resumenResult.blob], resumenResult.fileName, { type: 'application/pdf' }),
+        ...(libroE ? [new File([libroE.blob], libroE.fileName, { type: 'application/pdf' })] : []),
+        ...(libroR ? [new File([libroR.blob], libroR.fileName, { type: 'application/pdf' })] : []),
+        ...(facturasResult ? [new File([facturasResult.blob], facturasResult.fileName, { type: 'application/pdf' })] : []),
+        ...(gastosResult ? [new File([gastosResult.blob], gastosResult.fileName, { type: 'application/pdf' })] : []),
       ];
 
-      const subject = encodeURIComponent(`Documentos T${quarter} ${year} — Solvy`);
-      const body = encodeURIComponent(
-        `Hola ${accountant.firstName},\n\n` +
-        `te envío los documentos del trimestre T${quarter} ${year}.\n\n` +
-        `Archivos descargados:\n${fileNames.map(n => `- ${n}`).join('\n')}\n\n` +
-        `Encuéntralos en la carpeta Descargas — adjúntalos manualmente al email.\n\n` +
-        `Gracias`
-      );
-      window.location.href = `mailto:${accountant.email}?subject=${subject}&body=${body}`;
+      if (navigator.share && navigator.canShare?.({ files: allFiles })) {
+        await navigator.share({ files: allFiles, title: subject });
+      } else {
+        downloadBlob(resumenResult);
+        if (libroE) downloadBlob(libroE);
+        if (libroR) downloadBlob(libroR);
+        if (facturasResult) downloadBlob(facturasResult);
+        if (gastosResult) downloadBlob(gastosResult);
+      }
     } catch {
       showToast('Error al generar los PDFs', 'error');
     } finally {

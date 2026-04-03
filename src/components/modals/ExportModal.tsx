@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
-import { X, Download, Check, Mail, Eye, AlertTriangle } from 'lucide-react';
+import { X, Download, Check, Mail, Share2, Eye, AlertTriangle } from 'lucide-react';
 import { Document as AppDoc, Profile, Accountant } from '../../types';
 import { useProStatus } from '../../hooks/useProStatus';
 import { generateFatturaPA, getMissingProfileFields } from '../../services/fatturaPA';
@@ -174,24 +174,6 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     }
   };
 
-  const dlFile = (f: { blob: Blob; fileName: string }) => {
-    const u = URL.createObjectURL(f.blob);
-    const a = window.document.createElement('a');
-    a.href = u; a.download = f.fileName; a.click();
-    URL.revokeObjectURL(u);
-  };
-
-  const handleDownloadAll = () => {
-    if (!readyBlob) return;
-    dlFile({ blob: readyBlob.blob, fileName: readyBlob.fileName });
-    for (const f of readyBlob.xmlFiles || []) dlFile(f);
-    if (readyBlob.resumenFile) dlFile(readyBlob.resumenFile);
-    if (readyBlob.registroFile) dlFile(readyBlob.registroFile);
-    if (readyBlob.riepilogoFile) dlFile(readyBlob.riepilogoFile);
-    setReadyBlob(null);
-    onClose();
-  };
-
   const handleShareFile = async () => {
     if (!readyBlob) return;
     const { blob, fileName, xmlFiles } = readyBlob;
@@ -249,36 +231,57 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   };
 
   const handleOpenMail = () => {
-    if (!accountant || !readyBlob) return;
-    const xmlFiles = readyBlob.xmlFiles || [];
-
-    // Download all files to Downloads folder
-    dlFile({ blob: readyBlob.blob, fileName: readyBlob.fileName });
-    for (const f of xmlFiles) dlFile(f);
-    if (readyBlob.resumenFile) dlFile(readyBlob.resumenFile);
-    if (readyBlob.registroFile) dlFile(readyBlob.registroFile);
-    if (readyBlob.riepilogoFile) dlFile(readyBlob.riepilogoFile);
-
-    // Build file list for body
-    const fileNames: string[] = [
-      readyBlob.fileName,
-      ...xmlFiles.map(f => f.fileName),
-      ...(readyBlob.resumenFile ? [readyBlob.resumenFile.fileName] : []),
-      ...(readyBlob.registroFile ? [readyBlob.registroFile.fileName] : []),
-      ...(readyBlob.riepilogoFile ? [readyBlob.riepilogoFile.fileName] : []),
-    ];
-
+    if (!accountant) return;
+    const xmlFiles = readyBlob?.xmlFiles || [];
+    // Download XMLs so they land in the Downloads folder for manual attachment
+    for (const f of xmlFiles) {
+      const u = URL.createObjectURL(f.blob);
+      const a = window.document.createElement('a');
+      a.href = u; a.download = f.fileName; a.click();
+      URL.revokeObjectURL(u);
+    }
+    // Download resumen PDF if present
+    if (readyBlob?.resumenFile) {
+      const u = URL.createObjectURL(readyBlob.resumenFile.blob);
+      const ar = window.document.createElement('a');
+      ar.href = u; ar.download = readyBlob.resumenFile.fileName; ar.click();
+      URL.revokeObjectURL(u);
+    }
+    // Download registro cronologico if present
+    if (readyBlob?.registroFile) {
+      const u = URL.createObjectURL(readyBlob.registroFile.blob);
+      const ar = window.document.createElement('a');
+      ar.href = u; ar.download = readyBlob.registroFile.fileName; ar.click();
+      URL.revokeObjectURL(u);
+    }
+    // Download riepilogo annuale if present
+    if (readyBlob?.riepilogoFile) {
+      const u = URL.createObjectURL(readyBlob.riepilogoFile.blob);
+      const ar = window.document.createElement('a');
+      ar.href = u; ar.download = readyBlob.riepilogoFile.fileName; ar.click();
+      URL.revokeObjectURL(u);
+    }
+    const hasXmls = xmlFiles.length > 0;
+    const hasResumen = !!readyBlob?.resumenFile;
+    const hasRegistro = !!readyBlob?.registroFile;
+    const hasRiepilogo = !!readyBlob?.riepilogoFile;
     const subject = encodeURIComponent(`Documenti ${periodLabel} — Solvy`);
     const body = encodeURIComponent(
       `Ciao ${accountant.firstName},\n\n` +
-      `ti invio i documenti relativi al periodo: ${periodLabel}.\n\n` +
-      `File scaricati:\n${fileNames.map(n => `- ${n}`).join('\n')}\n\n` +
-      `Trovi i file in Downloads — allegali manualmente all'email.\n\n` +
-      `Grazie`
+      `ti invio i documenti relativi al periodo: ${periodLabel}.\n` +
+      `In allegato trovi il file PDF` +
+      (hasXmls ? ` e gli XML FatturaPA di ${xmlFiles.length} fattur${xmlFiles.length === 1 ? 'a' : 'e'}` : '') +
+      (hasResumen ? ` e il Resumen Trimestral ${QUARTER_LABELS[resumenQuarter].split(' ')[0]} ${resumenYear}` : '') +
+      (hasRegistro ? ` e il Registro Cronologico ${year}` : '') +
+      (hasRiepilogo ? ` e il Riepilogo Annuale ${year}` : '') +
+      `.\n` +
+      (hasXmls ? `\nGli XML FatturaPA sono stati salvati nella cartella Download — allegali manualmente all'email.\n` : '') +
+      (hasResumen ? `\nIl PDF Resumen Trimestral è stato salvato nella cartella Download — allegalo manualmente all'email.\n` : '') +
+      (hasRegistro ? `\nIl Registro Cronologico è stato salvato nella cartella Download — allegalo manualmente all'email.\n` : '') +
+      (hasRiepilogo ? `\nIl Riepilogo Annuale è stato salvato nella cartella Download — allegalo manualmente all'email.\n` : '') +
+      `\nGrazie`
     );
     window.location.href = `mailto:${accountant.email}?subject=${subject}&body=${body}`;
-    setReadyBlob(null);
-    onClose();
   };
 
   const exportPDF = async () => {
@@ -1662,15 +1665,14 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                       <span className="text-xs font-bold">Anteprima</span>
                     </div>
                   </button>
-                  {accountant ? (
-                    <button onClick={handleOpenMail} className="w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
+                  <button onClick={handleShareFile} className="w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
+                    <Share2 size={18} />
+                    Condividi / Allega File
+                  </button>
+                  {accountant && (
+                    <button onClick={handleOpenMail} className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-all ${darkMode ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-900'}`}>
                       <Mail size={18} />
-                      Invia al Commercialista · {accountant.email}
-                    </button>
-                  ) : (
-                    <button onClick={handleDownloadAll} className="w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
-                      <Download size={18} />
-                      Scarica File
+                      Apri Mail · {accountant.email}
                     </button>
                   )}
                 </div>
