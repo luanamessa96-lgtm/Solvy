@@ -125,7 +125,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
         <span className="flex-1">{t('documents.search_placeholder')}</span>
       </button>
 
-      <motion.button variants={item} onClick={() => setIsExportOpen(true)} className={`w-full p-6 border rounded-3xl flex items-center justify-between transition-all group active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5'}`}>
+      {profile.country !== 'Spain' && <motion.button variants={item} onClick={() => setIsExportOpen(true)} className={`w-full p-6 border rounded-3xl flex items-center justify-between transition-all group active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5'}`}>
         <div className="flex items-center gap-4">
           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${darkMode ? 'bg-slate-800 text-primary group-hover:bg-primary group-hover:text-white' : 'bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white'}`}><Mail size={28} strokeWidth={1.5} /></div>
           <div className="text-left">
@@ -134,7 +134,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
           </div>
         </div>
         <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${darkMode ? 'bg-slate-800 text-slate-600 group-hover:bg-primary/20 group-hover:text-primary' : 'bg-slate-50 text-slate-300 group-hover:bg-primary/10 group-hover:text-primary'}`}><ChevronRight size={20} /></div>
-      </motion.button>
+      </motion.button>}
 
       {profile.country === 'Spain' && (
         <motion.button
