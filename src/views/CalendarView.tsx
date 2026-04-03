@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft, Search, X } from 'lucide-react';
 import { Deadline, Profile } from '../types';
-import { getSpanishDeadlines, RETA_TITLE } from '../data/deadlines-es';
+import { getSpanishDeadlines, getNextRetaDeadline } from '../data/deadlines-es';
 import { parseLocalDate, getLocalYear, getLocalMonth, todayLocalISO } from '../utils/date';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
@@ -144,8 +144,6 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     const templateTitleSet = new Set(templates.map(s => s.title));
     const templateEntrySet = new Set(templates.map(s => `${s.title}||${s.date}`));
     return deadlines.filter(d => {
-      // RETA deadlines never appear in the calendar list (only in next-deadline banner)
-      if (isSpain && d.title.startsWith('Cuota RETA')) return false;
       if (templateTitleSet.has(d.title)) {
         // Template deadline: show only if title+date match exactly
         return templateEntrySet.has(`${d.title}||${d.date}`);
@@ -156,12 +154,14 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   }, [deadlines, selectedYear, isSpain]);
 
   const filteredDeadlines = useMemo(() => {
-    // RETA deadlines are shown only in the next-deadline banner, not in the list
-    let result = (selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => getLocalMonth(d.date) === selectedMonth))
-      .filter(d => !(isSpain && d.title.startsWith('Cuota RETA')));
+    let result = selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => getLocalMonth(d.date) === selectedMonth);
     if (searchQuery.trim()) result = result.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
     return result;
-  }, [selectedMonth, yearDeadlines, searchQuery, isSpain]);
+  }, [selectedMonth, yearDeadlines, searchQuery]);
+
+  const nextReta = isSpain
+    ? getNextRetaDeadline({ redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined })
+    : null;
 
   const nextDeadline = useMemo(() => {
     const today = new Date();
@@ -238,6 +238,20 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                 <h3 className="text-lg font-bold leading-tight">{nextDeadline.title}</h3>
                 {nextDeadline.amount && <p className="text-2xl font-bold pt-2">€{nextDeadline.amount.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</p>}
               </div>
+            </motion.div>
+          )}
+
+          {nextReta && !searchQuery && (
+            <motion.div variants={item} className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+              <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 ${darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-500'}`}>
+                <span className="text-[9px] font-bold uppercase">{new Date(nextReta.date).toLocaleDateString('es-ES', { month: 'short' })}</span>
+                <span className="text-sm font-black leading-none">{new Date(nextReta.date).getDate()}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Cuota RETA — Seguridad Social</p>
+                <p className="text-[10px] text-slate-400">Próximo vencimiento mensual</p>
+              </div>
+              <p className={`text-sm font-bold shrink-0 ${darkMode ? 'text-white' : 'text-slate-900'}`}>~€{nextReta.amount}</p>
             </motion.div>
           )}
 
