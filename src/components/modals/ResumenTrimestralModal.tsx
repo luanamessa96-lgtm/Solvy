@@ -12,6 +12,7 @@ import {
   generateFacturasTrimestreBlob,
   generateGastosTrimestreBlob,
   generateResumenAnualBlob,
+  generateResumenAnualIVABlob,
 } from '../../services/modelosES';
 import PdfPreviewModal from './PdfPreviewModal';
 import { useToast } from '../ui/Toast';
@@ -45,6 +46,7 @@ export default function ResumenTrimestralModal({
   const [includeFacturas, setIncludeFacturas] = useState(false);
   const [includeGastos, setIncludeGastos] = useState(false);
   const [includeResumenAnual, setIncludeResumenAnual] = useState(false);
+  const [includeResumenAnualIVA, setIncludeResumenAnualIVA] = useState(false);
 
   // Reset toggles every time the modal closes so stale selections don't bleed into the next session
   useEffect(() => {
@@ -54,6 +56,7 @@ export default function ResumenTrimestralModal({
       setIncludeFacturas(false);
       setIncludeGastos(false);
       setIncludeResumenAnual(false);
+      setIncludeResumenAnualIVA(false);
     }
   }, [isOpen]);
 
@@ -91,7 +94,10 @@ export default function ResumenTrimestralModal({
     const anualResult = includeResumenAnual
       ? await generateResumenAnualBlob(documents, profile, year)
       : null;
-    return { resumenResult, libroE, libroR, facturasResult, gastosResult, anualResult };
+    const anualIVAResult = includeResumenAnualIVA
+      ? await generateResumenAnualIVABlob(documents, profile, year)
+      : null;
+    return { resumenResult, libroE, libroR, facturasResult, gastosResult, anualResult, anualIVAResult };
   };
 
   const handleDownload = async () => {
@@ -109,12 +115,9 @@ export default function ResumenTrimestralModal({
 
     setIsGenerating(true);
     try {
-      const { resumenResult, libroE, libroR, facturasResult, gastosResult, anualResult } = await generateAll();
+      const { resumenResult, libroE, libroR, facturasResult, gastosResult, anualResult, anualIVAResult } = await generateAll();
 
-      // Decide what to show in preview:
-      // - only one extra → preview that extra, download resumen
-      // - multiple extras / none → preview resumen, download extras
-      const extras = [libroE, libroR, facturasResult, gastosResult, anualResult].filter(Boolean);
+      const extras = [libroE, libroR, facturasResult, gastosResult, anualResult, anualIVAResult].filter(Boolean);
       if (extras.length === 1) {
         setPdfPreview(extras[0]!);
         downloadBlob(resumenResult);
@@ -125,6 +128,7 @@ export default function ResumenTrimestralModal({
         if (facturasResult) downloadBlob(facturasResult);
         if (gastosResult) downloadBlob(gastosResult);
         if (anualResult) downloadBlob(anualResult);
+        if (anualIVAResult) downloadBlob(anualIVAResult);
       }
     } catch {
       showToast('Error al generar el PDF', 'error');
@@ -148,7 +152,7 @@ export default function ResumenTrimestralModal({
 
     setIsSending(true);
     try {
-      const { resumenResult, libroE, libroR, facturasResult, gastosResult, anualResult } = await generateAll();
+      const { resumenResult, libroE, libroR, facturasResult, gastosResult, anualResult, anualIVAResult } = await generateAll();
 
       const subject = `Documentos T${quarter} ${year} — Solvy`;
 
@@ -159,6 +163,7 @@ export default function ResumenTrimestralModal({
         ...(facturasResult ? [new File([facturasResult.blob], facturasResult.fileName, { type: 'application/pdf' })] : []),
         ...(gastosResult ? [new File([gastosResult.blob], gastosResult.fileName, { type: 'application/pdf' })] : []),
         ...(anualResult ? [new File([anualResult.blob], anualResult.fileName, { type: 'application/pdf' })] : []),
+        ...(anualIVAResult ? [new File([anualIVAResult.blob], anualIVAResult.fileName, { type: 'application/pdf' })] : []),
       ];
 
       if (navigator.share && navigator.canShare?.({ files: allFiles })) {
@@ -170,6 +175,7 @@ export default function ResumenTrimestralModal({
         if (facturasResult) downloadBlob(facturasResult);
         if (gastosResult) downloadBlob(gastosResult);
         if (anualResult) downloadBlob(anualResult);
+        if (anualIVAResult) downloadBlob(anualIVAResult);
       }
     } catch {
       showToast('Error al generar los PDFs', 'error');
@@ -368,6 +374,14 @@ export default function ResumenTrimestralModal({
                     label="Resumen Anual"
                     badge="PRO"
                     subtitle={`Ingresos, gastos por categoría, IVA y estimación Mod. 100 · ${year}`}
+                  />
+                  <Toggle
+                    checked={includeResumenAnualIVA}
+                    onToggle={() => setIncludeResumenAnualIVA(p => !p)}
+                    emoji="📊"
+                    label="Resumen Anual IVA"
+                    badge="PRO"
+                    subtitle={`IVA por aliquota, diferencia trimestral, Mod. 390 · ${year}`}
                   />
                 </div>
               )}

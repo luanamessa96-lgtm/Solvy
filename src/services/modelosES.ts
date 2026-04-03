@@ -885,6 +885,224 @@ export async function generateResumenAnualBlob(
   return { blob: pdf.output('blob'), fileName: `ES_${nifClean}_resumen_anual_${year}.pdf` };
 }
 
+// ─── Resumen Anual IVA (Modelo 390) ──────────────────────────────────────────
+
+export async function generateResumenAnualIVABlob(
+  documents: Document[],
+  profile: Profile,
+  year: number
+): Promise<{ blob: Blob; fileName: string }> {
+  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ]);
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
+
+  const W = 210, M = 16, R = W - M;
+  const black:     [number, number, number] = [15, 23, 42];
+  const grey:      [number, number, number] = [100, 116, 139];
+  const lightGrey: [number, number, number] = [226, 232, 240];
+  const primary:   [number, number, number] = [79, 70, 229];
+  const bgLight:   [number, number, number] = [248, 250, 252];
+  const green:     [number, number, number] = [16, 185, 129];
+  const red:       [number, number, number] = [220, 38, 38];
+
+  const nif = profile.nie || profile.piva || '';
+  const fmt = (n: number) => `€ ${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  const yearInvoices = documents.filter(d => d.type === 'invoice' && getLocalYear(d.date) === year);
+  const yearRect     = documents.filter(d => d.type === 'factura_rectificativa' && getLocalYear(d.date) === year);
+  const yearExpenses = documents.filter(d => d.type === 'expense' && getLocalYear(d.date) === year);
+
+  // IVA repercutida grouped by rate
+  const ivaRepRates: Record<number, { base: number; cuota: number }> = {};
+  for (const d of yearInvoices) {
+    const rate = d.ivaRate ?? 21;
+    if (!ivaRepRates[rate]) ivaRepRates[rate] = { base: 0, cuota: 0 };
+    ivaRepRates[rate].base += d.amount;
+    ivaRepRates[rate].cuota += d.amount * (rate / 100);
+  }
+  for (const d of yearRect) {
+    const rate = d.ivaRate ?? 21;
+    if (!ivaRepRates[rate]) ivaRepRates[rate] = { base: 0, cuota: 0 };
+    ivaRepRates[rate].base -= d.amount;
+    ivaRepRates[rate].cuota -= d.amount * (rate / 100);
+  }
+
+  // IVA soportada grouped by rate
+  const ivaSopRates: Record<number, { base: number; cuota: number }> = {};
+  for (const d of yearExpenses) {
+    const rate = d.ivaRate ?? 0;
+    if (rate === 0) continue;
+    if (!ivaSopRates[rate]) ivaSopRates[rate] = { base: 0, cuota: 0 };
+    ivaSopRates[rate].base += d.amount;
+    ivaSopRates[rate].cuota += d.amount * (rate / 100);
+  }
+
+  const totalIvaRep = Object.values(ivaRepRates).reduce((s, v) => s + v.cuota, 0);
+  const totalIvaSop = Object.values(ivaSopRates).reduce((s, v) => s + v.cuota, 0);
+  const diferenciaTotal = totalIvaRep - totalIvaSop;
+
+  const quarterData = ([1, 2, 3, 4] as const).map(q => {
+    const r = calcularTrimestre(documents, q, year);
+    return { q, ivaRep: r.ivaRepercutida, ivaSop: r.ivaSoportada, dif: r.diferenciaIVA };
+  });
+
+  // ── Header ─────────────────────────────────────────────────────────────────
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(22); pdf.setTextColor(...primary);
+  pdf.text('SOLVY', M, 18);
+  pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9); pdf.setTextColor(...grey);
+  pdf.text('Resumen Anual IVA · Modelo 390', M, 25);
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(10); pdf.setTextColor(...black);
+  pdf.text(profile.name, R, 14, { align: 'right' });
+  pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(...grey);
+  const infoLines: string[] = [];
+  if (nif) infoLines.push(`NIF/NIE: ${nif}`);
+  if (profile.address) infoLines.push(profile.address);
+  if (profile.email) infoLines.push(profile.email);
+  infoLines.forEach((l, i) => pdf.text(l, R, 20 + i * 5, { align: 'right' }));
+  pdf.setDrawColor(...lightGrey); pdf.setLineWidth(0.4); pdf.line(M, 32, R, 32);
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(14); pdf.setTextColor(...black);
+  pdf.text(`Ejercicio ${year}`, M, 40);
+  pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8); pdf.setTextColor(...grey);
+  pdf.text(`Generado el ${new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}`, R, 40, { align: 'right' });
+  pdf.line(M, 44, R, 44);
+
+  let y = 52;
+
+  // ── IVA Repercutida ────────────────────────────────────────────────────────
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(...grey);
+  pdf.text('IVA REPERCUTIDA — FACTURAS EMITIDAS', M, y);
+  y += 4;
+
+  const repRates = Object.keys(ivaRepRates).map(Number).sort((a, b) => a - b);
+  autoTable(pdf, {
+    startY: y,
+    head: [['Tipo IVA', 'Base Imponible', 'Cuota IVA']],
+    body: repRates.length > 0
+      ? repRates.map(r => [`${r}%`, fmt(ivaRepRates[r].base), fmt(ivaRepRates[r].cuota)])
+      : [['—', 'Sin facturas con IVA', '—']],
+    ...(repRates.length > 0 ? {
+      foot: [['TOTAL', fmt(repRates.reduce((s, r) => s + ivaRepRates[r].base, 0)), fmt(totalIvaRep)]],
+      footStyles: { fillColor: bgLight, textColor: black, fontStyle: 'bold', fontSize: 8 },
+    } : {}),
+    styles: { fontSize: 8, cellPadding: { top: 3, bottom: 3, left: 3, right: 3 }, textColor: black },
+    headStyles: { fillColor: bgLight, textColor: grey, fontStyle: 'bold', fontSize: 7, lineColor: lightGrey, lineWidth: 0.3 },
+    bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+    columnStyles: {
+      0: { cellWidth: 30, halign: 'center', fontStyle: 'bold' },
+      1: { cellWidth: 'auto', halign: 'right' },
+      2: { cellWidth: 50, halign: 'right', fontStyle: 'bold' },
+    },
+    margin: { left: M, right: M },
+    tableLineColor: lightGrey, tableLineWidth: 0.3,
+  });
+
+  y = pdf.lastAutoTable.finalY + 8;
+  if (y > 210) { pdf.addPage(); y = 20; }
+
+  // ── IVA Soportada ─────────────────────────────────────────────────────────
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(...grey);
+  pdf.text('IVA SOPORTADA — GASTOS DEDUCIBLES', M, y);
+  y += 4;
+
+  const sopRates = Object.keys(ivaSopRates).map(Number).sort((a, b) => a - b);
+  autoTable(pdf, {
+    startY: y,
+    head: [['Tipo IVA', 'Base Imponible', 'Cuota IVA']],
+    body: sopRates.length > 0
+      ? sopRates.map(r => [`${r}%`, fmt(ivaSopRates[r].base), fmt(ivaSopRates[r].cuota)])
+      : [['—', 'Sin gastos con IVA deducible', '—']],
+    ...(sopRates.length > 0 ? {
+      foot: [['TOTAL', fmt(sopRates.reduce((s, r) => s + ivaSopRates[r].base, 0)), fmt(totalIvaSop)]],
+      footStyles: { fillColor: bgLight, textColor: black, fontStyle: 'bold', fontSize: 8 },
+    } : {}),
+    styles: { fontSize: 8, cellPadding: { top: 3, bottom: 3, left: 3, right: 3 }, textColor: black },
+    headStyles: { fillColor: bgLight, textColor: grey, fontStyle: 'bold', fontSize: 7, lineColor: lightGrey, lineWidth: 0.3 },
+    bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+    columnStyles: {
+      0: { cellWidth: 30, halign: 'center', fontStyle: 'bold' },
+      1: { cellWidth: 'auto', halign: 'right' },
+      2: { cellWidth: 50, halign: 'right', fontStyle: 'bold' },
+    },
+    margin: { left: M, right: M },
+    tableLineColor: lightGrey, tableLineWidth: 0.3,
+  });
+
+  y = pdf.lastAutoTable.finalY + 8;
+  if (y > 210) { pdf.addPage(); y = 20; }
+
+  // ── Diferencia per trimestre ───────────────────────────────────────────────
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(...grey);
+  pdf.text('DIFERENCIA IVA POR TRIMESTRE', M, y);
+  y += 4;
+
+  autoTable(pdf, {
+    startY: y,
+    head: [['Trimestre', 'IVA Repercutida', 'IVA Soportada', 'Diferencia', 'Resultado']],
+    body: quarterData.map(({ q, ivaRep, ivaSop, dif }) => [
+      QUARTER_LABELS[q],
+      fmt(ivaRep),
+      fmt(ivaSop),
+      fmt(Math.abs(dif)),
+      dif >= 0 ? 'A ingresar' : 'A devolver',
+    ]),
+    foot: [['TOTAL ANUAL', fmt(totalIvaRep), fmt(totalIvaSop), fmt(Math.abs(diferenciaTotal)), diferenciaTotal >= 0 ? 'A ingresar' : 'A devolver']],
+    footStyles: { fillColor: bgLight, textColor: black, fontStyle: 'bold', fontSize: 8 },
+    styles: { fontSize: 8, cellPadding: { top: 3, bottom: 3, left: 3, right: 3 }, textColor: black },
+    headStyles: { fillColor: bgLight, textColor: grey, fontStyle: 'bold', fontSize: 7, lineColor: lightGrey, lineWidth: 0.3 },
+    bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+    columnStyles: {
+      0: { cellWidth: 'auto' },
+      1: { cellWidth: 34, halign: 'right' },
+      2: { cellWidth: 34, halign: 'right' },
+      3: { cellWidth: 28, halign: 'right', fontStyle: 'bold' },
+      4: { cellWidth: 26, halign: 'center' },
+    },
+    didParseCell: (data) => {
+      if (data.section === 'body' && data.column.index === 4) {
+        const qd = quarterData[data.row.index];
+        (data.cell.styles as { textColor: unknown }).textColor = (qd?.dif ?? 0) >= 0 ? red : green;
+      }
+      if (data.section === 'foot' && data.column.index === 4) {
+        (data.cell.styles as { textColor: unknown }).textColor = diferenciaTotal >= 0 ? red : green;
+      }
+    },
+    margin: { left: M, right: M },
+    tableLineColor: lightGrey, tableLineWidth: 0.3,
+  });
+
+  y = pdf.lastAutoTable.finalY + 10;
+  if (y > 200) { pdf.addPage(); y = 20; }
+
+  // ── Resultado final ────────────────────────────────────────────────────────
+  pdf.setDrawColor(...lightGrey); pdf.setLineWidth(0.4); pdf.line(M, y, R, y);
+  y += 8;
+  const isDevolver = diferenciaTotal < 0;
+  const resultColor: [number, number, number] = isDevolver ? green : red;
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(11); pdf.setTextColor(...black);
+  pdf.text('Resultado anual Modelo 390:', M, y);
+  pdf.setTextColor(...resultColor);
+  pdf.text(`${fmt(Math.abs(diferenciaTotal))} — ${isDevolver ? 'A devolver' : 'A ingresar'}`, R, y, { align: 'right' });
+  y += 10;
+
+  // ── Disclaimer ─────────────────────────────────────────────────────────────
+  pdf.setFillColor(...bgLight);
+  pdf.roundedRect(M, y, R - M, 10, 2, 2, 'F');
+  pdf.setFont('helvetica', 'italic'); pdf.setFontSize(7.5); pdf.setTextColor(...grey);
+  pdf.text('Datos para el Modelo 390. Presentar con gestor fiscal.', M + 4, y + 6.5);
+
+  // ── Footer ─────────────────────────────────────────────────────────────────
+  const footerY = pdf.internal.pageSize.height - 14;
+  pdf.setDrawColor(...lightGrey); pdf.setLineWidth(0.4); pdf.line(M, footerY, R, footerY);
+  pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7.5); pdf.setTextColor(...grey);
+  pdf.text('Documento generado con Solvy — solvyapp.com', M, footerY + 5);
+  pdf.text(`Ejercicio ${year}`, R, footerY + 5, { align: 'right' });
+
+  const nifClean = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
+  return { blob: pdf.output('blob'), fileName: `ES_${nifClean}_resumen_anual_iva_${year}.pdf` };
+}
+
 // ─── Gastos del Trimestre ──────────────────────────────────────────────────────
 
 export async function generateGastosTrimestreBlob(
