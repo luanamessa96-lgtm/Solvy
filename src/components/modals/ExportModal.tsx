@@ -1046,8 +1046,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     const defaultIvaRate = profile.ivaHabitual ?? 21;
     const taxId = profile.nie || profile.piva || '';
 
-    const libroDocs = filteredDocs
-      .filter(d => d.type === 'invoice' || d.type === 'factura_rectificativa')
+    const libroDocs = yearDocs
+      .filter(d => (d.type === 'invoice' || d.type === 'factura_rectificativa') && syncedMonths.has(getLocalMonth(d.date)))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     // ── Header ──────────────────────────────────────────────────────────────
@@ -1347,12 +1347,12 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const riepilogoFile: { blob: Blob; fileName: string } | undefined = undefined;
       // Libro Registro Facturas Emitidas (Spain Pro)
       let libroRegistroESFile: { blob: Blob; fileName: string } | undefined;
-      if (includeLibroRegistroES && isSpain && isPro) {
+      if (includeLibroRegistroES && isSpain && isPro && docFilter !== 'expense') {
         libroRegistroESFile = await generateLibroRegistroESFile();
       }
       // Libro Registro Facturas Recibidas (Spain Pro)
       let libroRecibidaESFile: { blob: Blob; fileName: string } | undefined;
-      if (includeLibroRecibidaES && isSpain && isPro) {
+      if (includeLibroRecibidaES && isSpain && isPro && docFilter !== 'invoice') {
         libroRecibidaESFile = await generateLibroRecibidaESFile();
       }
       setReadyBlob({ blob, fileName, xmlFiles, resumenFile, registroFile, riepilogoFile, libroRegistroESFile, libroRecibidaESFile });
