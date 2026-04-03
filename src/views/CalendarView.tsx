@@ -133,7 +133,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
 
   // ES-29 — importi stimati per scadenze trimestrali Spain
   const spFiscalData = useMemo<Record<1|2|3|4, ResumenTrimestral> | null>(() => {
-    if (!isSpain || !documents?.length) return null;
+    if (!isSpain) return null;
     try {
       return {
         1: calcularTrimestre(documents, 1, selectedYear),
@@ -347,12 +347,12 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                         const spData = spQ && spFiscalData ? spFiscalData[spQ] : null;
                         if (spData) {
                           const total = Math.round(spData.cuotaIRPF + Math.max(0, spData.diferenciaIVA));
-                          return total > 0 ? (
+                          return (
                             <div className="text-right shrink-0">
                               <p className={`text-sm font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>~€{total.toLocaleString('es-ES')}</p>
                               <p className="text-[9px] text-slate-400 leading-tight">estimado · puede variar</p>
                             </div>
-                          ) : null;
+                          );
                         }
                         const liveAmt = FISCAL_ESTIMATE_TITLES.has(deadline.title) ? fiscalAmounts[deadline.title] : undefined;
                         const displayAmt = liveAmt != null && liveAmt > 0 ? liveAmt : deadline.amount;
@@ -459,8 +459,8 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedDeadline.title}</p>
                   {(() => {
                     const spQ = getSpQuarter(selectedDeadline.title);
-                    const spData = spQ && spFiscalData ? spFiscalData[spQ] : null;
-                    if (spData) {
+                    if (spQ && spFiscalData) {
+                      const spData = spFiscalData[spQ];
                       return (
                         <div className="space-y-1.5 mt-2">
                           <div className="flex justify-between">
