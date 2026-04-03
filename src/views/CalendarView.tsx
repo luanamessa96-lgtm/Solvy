@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft, Search, X } from 'lucide-react';
 import { Deadline, Profile } from '../types';
-import { getSpanishDeadlines, getAllRetaDeadlines } from '../data/deadlines-es';
+import { getSpanishDeadlines, getAllRetaDeadlines, getNextRetaDeadline } from '../data/deadlines-es';
 import { parseLocalDate, getLocalYear, getLocalMonth, todayLocalISO } from '../utils/date';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
@@ -151,15 +151,14 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   }, [deadlines, selectedYear, isSpain]);
 
   const filteredDeadlines = useMemo(() => {
-    const base = selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => getLocalMonth(d.date) === selectedMonth);
-    const reta: typeof base = isSpain
-      ? getAllRetaDeadlines(selectedYear, { redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined })
-          .filter(d => selectedMonth === null || getLocalMonth(d.date) === selectedMonth) as typeof base
-      : [];
-    const combined = [...base, ...reta].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    if (searchQuery.trim()) return combined.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
-    return combined;
-  }, [selectedMonth, yearDeadlines, searchQuery, isSpain, selectedYear, redditoN1, annoInizio]);
+    let result = selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => getLocalMonth(d.date) === selectedMonth);
+    if (searchQuery.trim()) result = result.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    return result;
+  }, [selectedMonth, yearDeadlines, searchQuery]);
+
+  const nextReta = isSpain
+    ? getNextRetaDeadline({ redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined })
+    : null;
 
   const nextDeadline = useMemo(() => {
     const today = new Date();
@@ -215,6 +214,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   <p className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? 'text-white/60' : 'text-slate-400'}`}>{month.substring(0, 3)}</p>
                   <p className={`text-sm font-bold transition-colors ${isSelected ? 'text-white' : (darkMode ? 'text-slate-200' : 'text-slate-900')}`}>{index + 1}</p>
                   {hasDeadlines && !isSelected && <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-primary" />}
+                  {isSpain && !isSelected && <div className="absolute top-2 right-5 w-1.5 h-1.5 rounded-full bg-cyan-400" />}
                 </motion.button>
               );
             })}
@@ -239,6 +239,21 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
             </motion.div>
           )}
 
+
+          {nextReta && !searchQuery && (
+            <motion.div variants={item} className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+              <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 ${darkMode ? 'bg-cyan-500/10 text-cyan-400' : 'bg-cyan-50 text-cyan-600'}`}>
+                <span className="text-[9px] font-bold uppercase">{new Date(nextReta.date + 'T12:00:00').toLocaleDateString('es-ES', { month: 'short' })}</span>
+                <span className="text-sm font-black leading-none">{new Date(nextReta.date + 'T12:00:00').getDate()}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-bold truncate ${darkMode ? 'text-white' : 'text-slate-900'}`}>Próxima Cuota RETA — Seguridad Social</p>
+                <p className="text-[10px] text-slate-400">
+                  {new Date(nextReta.date + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })} · ~€{nextReta.amount}/mes
+                </p>
+              </div>
+            </motion.div>
+          )}
 
           {isPrimoAnnoIT && !searchQuery && (
             <motion.div variants={item} className={`flex items-start gap-3 px-4 py-3.5 rounded-2xl border ${darkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-300' : 'bg-blue-50 border-blue-100 text-blue-700'}`}>
