@@ -136,32 +136,38 @@ export default function ResumenTrimestralModal({
     try {
       const { resumenResult, libroE, libroR, facturasResult, gastosResult } = await generateAll();
 
-      // Download all to local (user attaches manually)
-      downloadBlob(resumenResult);
-      if (libroE) downloadBlob(libroE);
-      if (libroR) downloadBlob(libroR);
-      if (facturasResult) downloadBlob(facturasResult);
-      if (gastosResult) downloadBlob(gastosResult);
-
       const qLabel = QUARTER_LABELS[quarter];
-      const subject = encodeURIComponent(`Documentos T${quarter} ${year} — Solvy`);
-      const body = encodeURIComponent(
-        `Hola ${accountant.firstName},\n\n` +
-        `Te envío los documentos fiscales del T${quarter} ${year} (${qLabel}).\n` +
-        `Encontrarás el Resumen Trimestral T${quarter} ${year} (Mod. 130 + 303)` +
-        (libroE ? `, el Libro Registro de Facturas Emitidas ${year}` : '') +
-        (libroR ? `, el Libro Registro de Facturas Recibidas ${year}` : '') +
-        (facturasResult ? `, las Facturas emitidas T${quarter} ${year}` : '') +
-        (gastosResult ? `, los Gastos T${quarter} ${year}` : '') +
-        `.\n` +
-        `\nEl Resumen Trimestral T${quarter} ${year} se ha guardado en la carpeta de Descargas — adjúntalo manualmente al email.\n` +
-        (libroE ? `\nEl Libro Registro de Facturas Emitidas ${year} se ha guardado en la carpeta de Descargas — adjúntalo manualmente al email.\n` : '') +
-        (libroR ? `\nEl Libro Registro de Facturas Recibidas ${year} se ha guardado en la carpeta de Descargas — adjúntalo manualmente al email.\n` : '') +
-        (facturasResult ? `\nLas Facturas emitidas T${quarter} ${year} se han guardado en la carpeta de Descargas — adjúntalas manualmente al email.\n` : '') +
-        (gastosResult ? `\nLos Gastos T${quarter} ${year} se han guardado en la carpeta de Descargas — adjúntalos manualmente al email.\n` : '') +
-        `\nGracias`
-      );
-      window.location.href = `mailto:${accountant.email}?subject=${subject}&body=${body}`;
+      const subject = `Documentos T${quarter} ${year} — Solvy`;
+
+      const allFiles: File[] = [
+        new File([resumenResult.blob], resumenResult.fileName, { type: 'application/pdf' }),
+        ...(libroE ? [new File([libroE.blob], libroE.fileName, { type: 'application/pdf' })] : []),
+        ...(libroR ? [new File([libroR.blob], libroR.fileName, { type: 'application/pdf' })] : []),
+        ...(facturasResult ? [new File([facturasResult.blob], facturasResult.fileName, { type: 'application/pdf' })] : []),
+        ...(gastosResult ? [new File([gastosResult.blob], gastosResult.fileName, { type: 'application/pdf' })] : []),
+      ];
+
+      if (navigator.share && navigator.canShare?.({ files: allFiles })) {
+        await navigator.share({ files: allFiles, title: subject });
+      } else {
+        downloadBlob(resumenResult);
+        if (libroE) downloadBlob(libroE);
+        if (libroR) downloadBlob(libroR);
+        if (facturasResult) downloadBlob(facturasResult);
+        if (gastosResult) downloadBlob(gastosResult);
+
+        const body = encodeURIComponent(
+          `Hola ${accountant.firstName},\n\n` +
+          `Te envío los documentos fiscales del T${quarter} ${year} (${qLabel}).\n` +
+          `Encontrarás el Resumen Trimestral T${quarter} ${year} (Mod. 130 + 303)` +
+          (libroE ? `, el Libro Registro de Facturas Emitidas ${year}` : '') +
+          (libroR ? `, el Libro Registro de Facturas Recibidas ${year}` : '') +
+          (facturasResult ? `, las Facturas emitidas T${quarter} ${year}` : '') +
+          (gastosResult ? `, los Gastos T${quarter} ${year}` : '') +
+          `.\n\nGracias`
+        );
+        window.location.href = `mailto:${accountant.email}?subject=${encodeURIComponent(subject)}&body=${body}`;
+      }
     } catch {
       showToast('Error al generar los PDFs', 'error');
     } finally {
