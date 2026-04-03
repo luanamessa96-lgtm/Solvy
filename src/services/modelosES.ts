@@ -12,13 +12,18 @@ export interface ResumenTrimestral {
   invoices: Document[];
   rectificativas: Document[];
   expenses: Document[];
-  totalIngresos: number;
-  totalGastos: number;
-  ivaRepercutida: number;
-  ivaSoportada: number;
-  diferenciaIVA: number;
-  baseImponible130: number;
-  cuotaIRPF: number;
+  totalIngresos: number;        // solo questo trimestre (per le tabelle PDF)
+  totalGastos: number;          // solo questo trimestre
+  ivaRepercutida: number;       // solo questo trimestre
+  ivaSoportada: number;         // solo questo trimestre
+  diferenciaIVA: number;        // solo questo trimestre
+  // Modelo 130 — valori cumulativi (Ene → fine trimestre)
+  ingresosCumulativos: number;
+  gastosCumulativos: number;
+  baseImponible130: number;     // = max(0, ingresosCumulativos − gastosCumulativos)
+  cuotaAcumulada: number;       // baseImponible130 × 20%
+  pagosAnteriores: number;      // cuotas già versate in T1..T(n-1)
+  cuotaIRPF: number;            // netta = max(0, cuotaAcumulada − pagosAnteriores)
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -55,6 +60,31 @@ function fmtES(n: number): string {
 
 // ─── Calculation ──────────────────────────────────────────────────────────────
 
+/** Cumulative base and cuota from Jan 1 to end of the given quarter (Modelo 130). */
+function calcCuotaAcumulada(
+  documents: Document[],
+  upToQuarter: 1 | 2 | 3 | 4,
+  year: number
+): { ingresos: number; gastos: number; base: number; cuota: number } {
+  const startDate = new Date(year, 0, 1, 0, 0, 0, 0);
+  const endDate   = getQuarterRange(upToQuarter, year).end;
+
+  const inCum = (d: Document) => {
+    const parts = d.date.split('T')[0].split('-').map(Number);
+    const date  = new Date(parts[0], parts[1] - 1, parts[2]);
+    return date >= startDate && date <= endDate;
+  };
+
+  const inv  = documents.filter(d => d.type === 'invoice' && inCum(d));
+  const rect = documents.filter(d => d.type === 'factura_rectificativa' && inCum(d));
+  const exp  = documents.filter(d => d.type === 'expense' && inCum(d));
+
+  const ingresos = inv.reduce((s, d) => s + d.amount, 0) - rect.reduce((s, d) => s + d.amount, 0);
+  const gastos   = exp.reduce((s, d) => s + d.amount * getEsDeductibilityRate(d.category), 0);
+  const base     = Math.max(0, ingresos - gastos);
+  return { ingresos, gastos, base, cuota: base * 0.20 };
+}
+
 export function calcularTrimestre(
   documents: Document[],
   quarter: 1 | 2 | 3 | 4,
@@ -83,8 +113,18 @@ export function calcularTrimestre(
     .filter(d => (d.ivaRate ?? 0) > 0)
     .reduce((sum, d) => sum + d.amount * ((d.ivaRate ?? 0) / 100), 0);
 
-  const baseImponible130 = Math.max(0, totalIngresos - totalGastos);
-  const cuotaIRPF        = baseImponible130 * 0.20;
+  // Modelo 130 — calcolo cumulativo (Ene → fine trimestre)
+  const cumActual = calcCuotaAcumulada(documents, quarter, year);
+  const cumPrev   = quarter > 1
+    ? calcCuotaAcumulada(documents, (quarter - 1) as 1 | 2 | 3 | 4, year)
+    : { cuota: 0 };
+
+  const ingresosCumulativos = cumActual.ingresos;
+  const gastosCumulativos   = cumActual.gastos;
+  const baseImponible130    = cumActual.base;
+  const cuotaAcumulada      = cumActual.cuota;
+  const pagosAnteriores     = cumPrev.cuota;
+  const cuotaIRPF           = Math.max(0, cuotaAcumulada - pagosAnteriores);
 
   return {
     quarter, year,
@@ -92,7 +132,8 @@ export function calcularTrimestre(
     totalIngresos, totalGastos,
     ivaRepercutida, ivaSoportada,
     diferenciaIVA: ivaRepercutida - ivaSoportada,
-    baseImponible130, cuotaIRPF,
+    ingresosCumulativos, gastosCumulativos,
+    baseImponible130, cuotaAcumulada, pagosAnteriores, cuotaIRPF,
   };
 }
 
@@ -115,7 +156,8 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
   const nif = profile.nie || profile.piva || '';
   const { invoices, rectificativas, expenses, totalIngresos, totalGastos,
           ivaRepercutida, ivaSoportada, diferenciaIVA,
-          baseImponible130, cuotaIRPF } = resumen;
+          ingresosCumulativos, gastosCumulativos,
+          baseImponible130, cuotaAcumulada, pagosAnteriores, cuotaIRPF } = resumen;
 
   // ── Header ─────────────────────────────────────────────────────────────────
   pdf.setFont('helvetica', 'bold');
@@ -291,12 +333,16 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
   pdf.text('MODELO 303 — DECLARACIÓN IVA TRIMESTRAL', col2, y);
   y += 5;
 
-  // ── Modelo 130 rows (left column) ──────────────────────────────────────────
+  // ── Modelo 130 rows (left column) — valori cumulativi ─────────────────────
   const rows130: [string, string][] = [
-    ['Total ingresos',       fmtES(totalIngresos)],
-    ['Gastos deducibles',    `- ${fmtES(totalGastos)}`],
+    ['Ingresos acumulados',  fmtES(ingresosCumulativos)],
+    ['Gastos acumulados',    `- ${fmtES(gastosCumulativos)}`],
     ['Rendimiento neto',     fmtES(baseImponible130)],
     ['Tipo pago fraccionado','20%'],
+    ...(pagosAnteriores > 0 ? [
+      ['Cuota íntegra',       fmtES(cuotaAcumulada)] as [string, string],
+      ['Pagos anteriores',    `- ${fmtES(pagosAnteriores)}`] as [string, string],
+    ] : []),
   ];
 
   const startFiscalY = y;
