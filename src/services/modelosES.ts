@@ -664,6 +664,227 @@ export async function generateFacturasTrimestreBlob(
   return { blob: pdf.output('blob'), fileName: `ES_${nif}_facturas_T${quarter}_${year}.pdf` };
 }
 
+// ─── Resumen Anual ────────────────────────────────────────────────────────────
+
+export async function generateResumenAnualBlob(
+  documents: Document[],
+  profile: Profile,
+  year: number
+): Promise<{ blob: Blob; fileName: string }> {
+  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ]);
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
+
+  const W = 210, M = 16, R = W - M;
+  const black:     [number, number, number] = [15, 23, 42];
+  const grey:      [number, number, number] = [100, 116, 139];
+  const lightGrey: [number, number, number] = [226, 232, 240];
+  const primary:   [number, number, number] = [79, 70, 229];
+  const bgLight:   [number, number, number] = [248, 250, 252];
+  const green:     [number, number, number] = [16, 185, 129];
+  const red:       [number, number, number] = [220, 38, 38];
+
+  const nif = profile.nie || profile.piva || '';
+  const fmt = (n: number) => `€ ${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  const currentYr = new Date().getFullYear();
+  const yearsActive = profile.annoInizioAttivita ? currentYr - profile.annoInizioAttivita : 10;
+  const retencionRate = yearsActive <= 3 ? 7 : 15;
+
+  const yearInvoices      = documents.filter(d => d.type === 'invoice' && getLocalYear(d.date) === year);
+  const yearRect          = documents.filter(d => d.type === 'factura_rectificativa' && getLocalYear(d.date) === year);
+  const yearExpenses      = documents.filter(d => d.type === 'expense' && getLocalYear(d.date) === year);
+
+  const totalIngresos     = yearInvoices.reduce((s, d) => s + d.amount, 0)
+                          - yearRect.reduce((s, d) => s + d.amount, 0);
+  const totalGastos       = yearExpenses.reduce((s, d) => s + d.amount, 0);
+  const ivaRepercutida    = yearInvoices.reduce((s, d) => s + d.amount * ((d.ivaRate ?? 0) / 100), 0)
+                          - yearRect.reduce((s, d) => s + d.amount * ((d.ivaRate ?? 0) / 100), 0);
+  const ivaSoportada      = yearExpenses.filter(d => (d.ivaRate ?? 0) > 0)
+                              .reduce((s, d) => s + d.amount * ((d.ivaRate ?? 0) / 100), 0);
+  const diferenciaIVA     = ivaRepercutida - ivaSoportada;
+  const totalRetenciones  = yearInvoices.filter(d => d.ritenuta)
+                              .reduce((s, d) => s + d.amount * (retencionRate / 100), 0);
+  const baseModelo100     = Math.max(0, totalIngresos - totalGastos);
+
+  // Per-quarter breakdown
+  const quarterData = ([1, 2, 3, 4] as const).map(q => {
+    const r = calcularTrimestre(documents, q, year);
+    return { q, totalIngresos: r.totalIngresos, ivaRepercutida: r.ivaRepercutida };
+  });
+
+  // Gastos grouped by category
+  const byCat: Record<string, number> = {};
+  for (const d of yearExpenses) {
+    const cat = d.category || 'Sin categoría';
+    byCat[cat] = (byCat[cat] || 0) + d.amount;
+  }
+
+  // ── Header ─────────────────────────────────────────────────────────────────
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(22); pdf.setTextColor(...primary);
+  pdf.text('SOLVY', M, 18);
+  pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9); pdf.setTextColor(...grey);
+  pdf.text('Resumen Anual', M, 25);
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(10); pdf.setTextColor(...black);
+  pdf.text(profile.name, R, 14, { align: 'right' });
+  pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(...grey);
+  const infoLines: string[] = [];
+  if (nif) infoLines.push(`NIF/NIE: ${nif}`);
+  if (profile.address) infoLines.push(profile.address);
+  if (profile.email) infoLines.push(profile.email);
+  infoLines.forEach((l, i) => pdf.text(l, R, 20 + i * 5, { align: 'right' }));
+
+  pdf.setDrawColor(...lightGrey); pdf.setLineWidth(0.4); pdf.line(M, 32, R, 32);
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(14); pdf.setTextColor(...black);
+  pdf.text(`Ejercicio ${year}`, M, 40);
+  pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8); pdf.setTextColor(...grey);
+  pdf.text(`Generado el ${new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}`, R, 40, { align: 'right' });
+  pdf.line(M, 44, R, 44);
+
+  let y = 52;
+
+  // ── Ingresos por trimestre ─────────────────────────────────────────────────
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(...grey);
+  pdf.text('INGRESOS POR TRIMESTRE', M, y);
+  y += 4;
+
+  autoTable(pdf, {
+    startY: y,
+    head: [['Período', 'Base Imponible', 'IVA Repercutida', 'Total Facturado']],
+    body: quarterData.map(({ q, totalIngresos: ti, ivaRepercutida: ivR }) => [
+      QUARTER_LABELS[q],
+      fmt(ti),
+      fmt(ivR),
+      fmt(ti + ivR),
+    ]),
+    foot: [['TOTAL ANUAL', fmt(totalIngresos), fmt(ivaRepercutida), fmt(totalIngresos + ivaRepercutida)]],
+    footStyles: { fillColor: bgLight, textColor: black, fontStyle: 'bold', fontSize: 8 },
+    styles: { fontSize: 8, cellPadding: { top: 3, bottom: 3, left: 3, right: 3 }, textColor: black },
+    headStyles: { fillColor: bgLight, textColor: grey, fontStyle: 'bold', fontSize: 7, lineColor: lightGrey, lineWidth: 0.3 },
+    bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+    columnStyles: {
+      0: { cellWidth: 'auto' },
+      1: { cellWidth: 42, halign: 'right' },
+      2: { cellWidth: 42, halign: 'right' },
+      3: { cellWidth: 42, halign: 'right', fontStyle: 'bold' },
+    },
+    margin: { left: M, right: M },
+    tableLineColor: lightGrey, tableLineWidth: 0.3,
+  });
+
+  y = pdf.lastAutoTable.finalY + 8;
+  if (y > 210) { pdf.addPage(); y = 20; }
+
+  // ── Gastos por categoría ───────────────────────────────────────────────────
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(...grey);
+  pdf.text('GASTOS POR CATEGORÍA', M, y);
+  y += 4;
+
+  const catEntries = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+  const catRows = catEntries.length > 0
+    ? catEntries.map(([cat, amt]) => [cat, fmt(amt)])
+    : [['Sin gastos registrados', '—']];
+  const catFoot = catEntries.length > 0 ? [['TOTAL GASTOS', fmt(totalGastos)]] : undefined;
+
+  autoTable(pdf, {
+    startY: y,
+    head: [['Categoría', 'Importe']],
+    body: catRows,
+    ...(catFoot ? { foot: catFoot, footStyles: { fillColor: bgLight, textColor: black, fontStyle: 'bold', fontSize: 8 } } : {}),
+    styles: { fontSize: 8, cellPadding: { top: 3, bottom: 3, left: 3, right: 3 }, textColor: black },
+    headStyles: { fillColor: bgLight, textColor: grey, fontStyle: 'bold', fontSize: 7, lineColor: lightGrey, lineWidth: 0.3 },
+    bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+    columnStyles: {
+      0: { cellWidth: 'auto' },
+      1: { cellWidth: 42, halign: 'right', fontStyle: 'bold' },
+    },
+    margin: { left: M, right: M },
+    tableLineColor: lightGrey, tableLineWidth: 0.3,
+  });
+
+  y = pdf.lastAutoTable.finalY + 10;
+  if (y > 200) { pdf.addPage(); y = 20; }
+
+  // ── Resumen fiscal (3 cajas: IVA · Retenciones · Modelo 100) ──────────────
+  pdf.setDrawColor(...lightGrey); pdf.setLineWidth(0.4); pdf.line(M, y, R, y);
+  y += 8;
+
+  const colW = 55, gap = 6;
+  const col1 = M, col2 = M + colW + gap, col3 = M + (colW + gap) * 2;
+
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7.5); pdf.setTextColor(...grey);
+  pdf.text('IVA — MODELO 303', col1, y);
+  pdf.text('RETENCIONES IRPF', col2, y);
+  pdf.text('BASE ESTIMADA MOD. 100', col3, y);
+  y += 5;
+
+  const drawRows = (
+    col: number,
+    rows: [string, string][],
+    totalLabel: string,
+    totalValue: string,
+    valueColor: [number, number, number],
+    startY: number
+  ): number => {
+    let cy = startY;
+    rows.forEach(([label, value]) => {
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8); pdf.setTextColor(...grey);
+      pdf.text(label, col + 2, cy + 4);
+      pdf.setTextColor(...black); pdf.text(value, col + colW - 2, cy + 4, { align: 'right' });
+      pdf.setDrawColor(...lightGrey); pdf.setLineWidth(0.2); pdf.line(col, cy + 7, col + colW, cy + 7);
+      cy += 7;
+    });
+    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9); pdf.setTextColor(...black);
+    pdf.text(totalLabel, col + 2, cy + 5);
+    pdf.setTextColor(...valueColor);
+    pdf.text(totalValue, col + colW - 2, cy + 5, { align: 'right' });
+    return cy + 9;
+  };
+
+  const isDevolver = diferenciaIVA < 0;
+  const yAfterIVA = drawRows(col1,
+    [['IVA repercutida', fmt(ivaRepercutida)], ['IVA soportada', `- ${fmt(ivaSoportada)}`]],
+    isDevolver ? 'A devolver' : 'A ingresar',
+    fmt(Math.abs(diferenciaIVA)),
+    isDevolver ? green : red,
+    y
+  );
+
+  const yAfterRet = drawRows(col2,
+    [['Tipo retención', `${retencionRate}%`], ['Base retenciones', fmt(totalIngresos)]],
+    'Total retenido',
+    fmt(totalRetenciones),
+    primary,
+    y
+  );
+
+  const yAfterM100 = drawRows(col3,
+    [['Total ingresos', fmt(totalIngresos)], ['Gastos deducibles', `- ${fmt(totalGastos)}`]],
+    'Rendimiento neto',
+    fmt(baseModelo100),
+    primary,
+    y
+  );
+
+  y = Math.max(yAfterIVA, yAfterRet, yAfterM100) + 6;
+
+  // ── Disclaimer ─────────────────────────────────────────────────────────────
+  pdf.setFont('helvetica', 'italic'); pdf.setFontSize(6.5); pdf.setTextColor(...grey);
+  pdf.text('Estimación indicativa. Verifica los datos con tu gestor o asesor fiscal antes de presentar declaraciones.', M, y);
+
+  // ── Footer ─────────────────────────────────────────────────────────────────
+  const footerY = pdf.internal.pageSize.height - 14;
+  pdf.setDrawColor(...lightGrey); pdf.setLineWidth(0.4); pdf.line(M, footerY, R, footerY);
+  pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7.5); pdf.setTextColor(...grey);
+  pdf.text('Documento generado con Solvy — solvyapp.com', M, footerY + 5);
+  pdf.text(`Ejercicio ${year}`, R, footerY + 5, { align: 'right' });
+
+  const nifClean = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
+  return { blob: pdf.output('blob'), fileName: `ES_${nifClean}_resumen_anual_${year}.pdf` };
+}
+
 // ─── Gastos del Trimestre ──────────────────────────────────────────────────────
 
 export async function generateGastosTrimestreBlob(

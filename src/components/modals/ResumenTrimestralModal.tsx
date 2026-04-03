@@ -11,6 +11,7 @@ import {
   generateLibroRecibidaBlob,
   generateFacturasTrimestreBlob,
   generateGastosTrimestreBlob,
+  generateResumenAnualBlob,
 } from '../../services/modelosES';
 import PdfPreviewModal from './PdfPreviewModal';
 import { useToast } from '../ui/Toast';
@@ -43,6 +44,7 @@ export default function ResumenTrimestralModal({
   const [includeLibroRecibidas, setIncludeLibroRecibidas] = useState(false);
   const [includeFacturas, setIncludeFacturas] = useState(false);
   const [includeGastos, setIncludeGastos] = useState(false);
+  const [includeResumenAnual, setIncludeResumenAnual] = useState(false);
 
   // Reset toggles every time the modal closes so stale selections don't bleed into the next session
   useEffect(() => {
@@ -51,6 +53,7 @@ export default function ResumenTrimestralModal({
       setIncludeLibroRecibidas(false);
       setIncludeFacturas(false);
       setIncludeGastos(false);
+      setIncludeResumenAnual(false);
     }
   }, [isOpen]);
 
@@ -85,7 +88,10 @@ export default function ResumenTrimestralModal({
     const gastosResult = includeGastos
       ? await generateGastosTrimestreBlob(resumen.expenses, profile, quarter, year)
       : null;
-    return { resumenResult, libroE, libroR, facturasResult, gastosResult };
+    const anualResult = includeResumenAnual
+      ? await generateResumenAnualBlob(documents, profile, year)
+      : null;
+    return { resumenResult, libroE, libroR, facturasResult, gastosResult, anualResult };
   };
 
   const handleDownload = async () => {
@@ -103,15 +109,12 @@ export default function ResumenTrimestralModal({
 
     setIsGenerating(true);
     try {
-      const { resumenResult, libroE, libroR, facturasResult, gastosResult } = await generateAll();
+      const { resumenResult, libroE, libroR, facturasResult, gastosResult, anualResult } = await generateAll();
 
       // Decide what to show in preview:
-      // - only Emitidas → preview Libro Emitidas
-      // - only Recibidas → preview Libro Recibidas
-      // - only Facturas → preview Facturas trimestre
-      // - only Gastos → preview Gastos trimestre
-      // - anything else / none → preview Resumen
-      const extras = [libroE, libroR, facturasResult, gastosResult].filter(Boolean);
+      // - only one extra → preview that extra, download resumen
+      // - multiple extras / none → preview resumen, download extras
+      const extras = [libroE, libroR, facturasResult, gastosResult, anualResult].filter(Boolean);
       if (extras.length === 1) {
         setPdfPreview(extras[0]!);
         downloadBlob(resumenResult);
@@ -121,6 +124,7 @@ export default function ResumenTrimestralModal({
         if (libroR) downloadBlob(libroR);
         if (facturasResult) downloadBlob(facturasResult);
         if (gastosResult) downloadBlob(gastosResult);
+        if (anualResult) downloadBlob(anualResult);
       }
     } catch {
       showToast('Error al generar el PDF', 'error');
@@ -144,7 +148,7 @@ export default function ResumenTrimestralModal({
 
     setIsSending(true);
     try {
-      const { resumenResult, libroE, libroR, facturasResult, gastosResult } = await generateAll();
+      const { resumenResult, libroE, libroR, facturasResult, gastosResult, anualResult } = await generateAll();
 
       const subject = `Documentos T${quarter} ${year} — Solvy`;
 
@@ -154,6 +158,7 @@ export default function ResumenTrimestralModal({
         ...(libroR ? [new File([libroR.blob], libroR.fileName, { type: 'application/pdf' })] : []),
         ...(facturasResult ? [new File([facturasResult.blob], facturasResult.fileName, { type: 'application/pdf' })] : []),
         ...(gastosResult ? [new File([gastosResult.blob], gastosResult.fileName, { type: 'application/pdf' })] : []),
+        ...(anualResult ? [new File([anualResult.blob], anualResult.fileName, { type: 'application/pdf' })] : []),
       ];
 
       if (navigator.share && navigator.canShare?.({ files: allFiles })) {
@@ -164,6 +169,7 @@ export default function ResumenTrimestralModal({
         if (libroR) downloadBlob(libroR);
         if (facturasResult) downloadBlob(facturasResult);
         if (gastosResult) downloadBlob(gastosResult);
+        if (anualResult) downloadBlob(anualResult);
       }
     } catch {
       showToast('Error al generar los PDFs', 'error');
@@ -354,6 +360,14 @@ export default function ResumenTrimestralModal({
                     emoji="💳"
                     label="Gastos del trimestre"
                     subtitle={`Solo gastos — T${quarter} ${year}`}
+                  />
+                  <Toggle
+                    checked={includeResumenAnual}
+                    onToggle={() => setIncludeResumenAnual(p => !p)}
+                    emoji="📊"
+                    label="Resumen Anual"
+                    badge="PRO"
+                    subtitle={`Ingresos, gastos por categoría, IVA y estimación Mod. 100 · ${year}`}
                   />
                 </div>
               )}
