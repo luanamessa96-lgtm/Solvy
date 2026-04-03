@@ -144,6 +144,8 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     const templateTitleSet = new Set(templates.map(s => s.title));
     const templateEntrySet = new Set(templates.map(s => `${s.title}||${s.date}`));
     return deadlines.filter(d => {
+      // RETA deadlines never appear in the calendar list (only in next-deadline banner)
+      if (isSpain && d.title.startsWith('Cuota RETA')) return false;
       if (templateTitleSet.has(d.title)) {
         // Template deadline: show only if title+date match exactly
         return templateEntrySet.has(`${d.title}||${d.date}`);
