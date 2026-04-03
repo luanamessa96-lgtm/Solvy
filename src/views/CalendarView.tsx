@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft, Search, X } from 'lucide-react';
 import { Deadline, Profile } from '../types';
-import { getSpanishDeadlines } from '../data/deadlines-es';
+import { getSpanishDeadlines, getNextRetaDeadline } from '../data/deadlines-es';
 import { parseLocalDate, getLocalYear, getLocalMonth, todayLocalISO } from '../utils/date';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
@@ -156,6 +156,10 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     return result;
   }, [selectedMonth, yearDeadlines, searchQuery]);
 
+  const nextReta = isSpain
+    ? getNextRetaDeadline({ redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined })
+    : null;
+
   const nextDeadline = useMemo(() => {
     const today = new Date();
     return deadlines.filter(d => parseLocalDate(d.date) >= today && !d.completed).sort((a, b) => parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime())[0] || null;
@@ -230,6 +234,23 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                 </div>
                 <h3 className="text-lg font-bold leading-tight">{nextDeadline.title}</h3>
                 {nextDeadline.amount && <p className="text-2xl font-bold pt-2">€{nextDeadline.amount.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</p>}
+              </div>
+            </motion.div>
+          )}
+
+          {nextReta && !searchQuery && (
+            <motion.div variants={item} className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+              <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 ${darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-500'}`}>
+                <span className="text-[9px] font-bold uppercase">{new Date(nextReta.date + 'T12:00:00').toLocaleDateString('es-ES', { month: 'short' })}</span>
+                <span className="text-sm font-black leading-none">{new Date(nextReta.date + 'T12:00:00').getDate()}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-bold truncate ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                  Cuota RETA — Seguridad Social
+                </p>
+                <p className="text-[10px] text-slate-400">
+                  {new Date(nextReta.date + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })} · ~€{nextReta.amount}/mes
+                </p>
               </div>
             </motion.div>
           )}
