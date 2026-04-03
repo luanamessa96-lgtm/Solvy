@@ -4,6 +4,7 @@ import { Info, Download, Loader2 } from 'lucide-react';
 import { Profile, Document } from '../types';
 import { todayLocalISO } from '../utils/date';
 import { IT_ADDIZIONALI_REGIONALI } from '../lib/it/addizionali';
+import { RETA_BRACKETS } from '../lib/countries/es';
 import AtecoSelector from '../components/AtecoSelector';
 
 interface FiscalViewProps {
@@ -29,6 +30,34 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
     () => documents.filter(d => d.type === 'invoice' && d.status === 'paid'),
     [documents]
   );
+
+  // ES-30 — Alert cambio fascia RETA
+  const retaAlert = useMemo(() => {
+    if (profile.country !== 'Spain') return null;
+    const currentYear = new Date().getFullYear();
+    // Non mostrare se Tarifa Plana (primo anno)
+    if (profile.annoInizioAttivita != null && profile.annoInizioAttivita >= currentYear) return null;
+    const yearDocs = documents.filter(d => {
+      const y = new Date(d.date.split('T')[0]).getFullYear();
+      return y === currentYear;
+    });
+    const annualIncome = yearDocs.filter(d => d.type === 'invoice').reduce((s, d) => s + d.amount, 0);
+    const annualExpenses = yearDocs.filter(d => d.type === 'expense').reduce((s, d) => s + d.amount, 0);
+    const monthlyNet = (annualIncome - annualExpenses) / 12;
+    if (monthlyNet <= 0) return null;
+    const currentBracketIdx = RETA_BRACKETS.findIndex(b => monthlyNet <= b.maxIncome);
+    if (currentBracketIdx === -1 || currentBracketIdx === RETA_BRACKETS.length - 1) return null;
+    const nextBracket = RETA_BRACKETS[currentBracketIdx + 1];
+    if (nextBracket.maxIncome === Infinity) return null;
+    const threshold15pct = nextBracket.maxIncome * 0.85; // entro 15% sotto il prossimo tramo
+    if (monthlyNet < threshold15pct) return null;
+    const currentBracket = RETA_BRACKETS[currentBracketIdx];
+    return {
+      currentQuote: currentBracket.monthlyQuote,
+      nextQuote: nextBracket.monthlyQuote,
+      nextThreshold: nextBracket.maxIncome,
+    };
+  }, [profile, documents]);
 
   const handleExportBackup = async () => {
     if (!profile || paidInvoices.length === 0) return;
@@ -303,6 +332,25 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
               )}
             </div>
           </motion.div>
+
+          {retaAlert && (
+            <motion.div variants={item}>
+              <div className={`p-4 rounded-3xl border flex gap-3 ${darkMode ? 'bg-amber-950/30 border-amber-800/50' : 'bg-amber-50 border-amber-200'}`}>
+                <span className="text-lg shrink-0">⚠️</span>
+                <div className="space-y-1">
+                  <p className={`text-xs font-bold ${darkMode ? 'text-amber-300' : 'text-amber-800'}`}>
+                    Tu rendimiento estimado se acerca al siguiente tramo RETA
+                  </p>
+                  <p className={`text-[11px] leading-relaxed ${darkMode ? 'text-amber-400' : 'text-amber-700'}`}>
+                    Actual: €{retaAlert.currentQuote}/mes · Próximo tramo: €{retaAlert.nextQuote}/mes a partir de €{retaAlert.nextThreshold.toLocaleString('es-ES')}/mes netos.
+                  </p>
+                  <p className={`text-[10px] ${darkMode ? 'text-amber-500' : 'text-amber-600'}`}>
+                    Consulta con la Seguridad Social.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           <motion.div variants={item} className="space-y-3">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Backup Documentos</p>

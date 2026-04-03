@@ -22,7 +22,7 @@ const IRPF_BRACKETS = [
 ];
 
 // RETA monthly quotes by income bracket (monthly net income → monthly quote)
-const RETA_BRACKETS = [
+export const RETA_BRACKETS = [
   { maxIncome: 670, monthlyQuote: 230 },
   { maxIncome: 900, monthlyQuote: 260 },
   { maxIncome: 1166, monthlyQuote: 275 },
