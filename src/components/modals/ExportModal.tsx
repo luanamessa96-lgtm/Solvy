@@ -177,50 +177,54 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const handleShareFile = async () => {
     if (!readyBlob) return;
     const { blob, fileName, xmlFiles } = readyBlob;
-    const primaryFile = new File([blob], fileName, { type: blob.type });
+
+    const primaryFile = new File([blob], fileName, { type: 'application/pdf' });
     const xmlFileObjs = (xmlFiles || []).map(f => new File([f.blob], f.fileName, { type: 'application/xml' }));
     const resumenFileObj = readyBlob.resumenFile
       ? new File([readyBlob.resumenFile.blob], readyBlob.resumenFile.fileName, { type: 'application/pdf' })
       : null;
     const registroFileObj = readyBlob.registroFile
-      ? new File([readyBlob.registroFile.blob], readyBlob.registroFile.fileName, { type: readyBlob.registroFile.blob.type })
+      ? new File([readyBlob.registroFile.blob], readyBlob.registroFile.fileName, { type: 'application/pdf' })
       : null;
     const riepilogoFileObj = readyBlob.riepilogoFile
       ? new File([readyBlob.riepilogoFile.blob], readyBlob.riepilogoFile.fileName, { type: 'application/pdf' })
       : null;
-    const allFiles = [primaryFile, ...xmlFileObjs, ...(resumenFileObj ? [resumenFileObj] : []), ...(registroFileObj ? [registroFileObj] : []), ...(riepilogoFileObj ? [riepilogoFileObj] : [])];
 
-    if (navigator.share && navigator.canShare?.({ files: allFiles })) {
-      await navigator.share({ files: allFiles, title: fileName });
-    } else {
-      const url = URL.createObjectURL(blob);
+    const pdfFiles = [primaryFile, ...(resumenFileObj ? [resumenFileObj] : []), ...(registroFileObj ? [registroFileObj] : []), ...(riepilogoFileObj ? [riepilogoFileObj] : [])];
+    const allFiles = [...pdfFiles, ...xmlFileObjs];
+
+    const downloadFile = (f: { blob: Blob; fileName: string }) => {
+      const u = URL.createObjectURL(f.blob);
       const a = window.document.createElement('a');
-      a.href = url; a.download = fileName; a.click();
-      URL.revokeObjectURL(url);
-      for (const f of xmlFiles || []) {
-        const u = URL.createObjectURL(f.blob);
-        const ax = window.document.createElement('a');
-        ax.href = u; ax.download = f.fileName; ax.click();
-        URL.revokeObjectURL(u);
+      a.href = u; a.download = f.fileName; a.click();
+      URL.revokeObjectURL(u);
+    };
+
+    try {
+      if (navigator.share && navigator.canShare?.({ files: allFiles })) {
+        // All files (PDF + XML) shareable together
+        await navigator.share({ files: allFiles, title: fileName });
+      } else if (navigator.share && navigator.canShare?.({ files: pdfFiles })) {
+        // XML not shareable on this device — download XMLs, share PDFs via share sheet
+        for (const f of xmlFiles || []) downloadFile(f);
+        await navigator.share({ files: pdfFiles, title: fileName });
+      } else {
+        // No share support — download everything
+        downloadFile({ blob, fileName });
+        for (const f of xmlFiles || []) downloadFile(f);
+        if (readyBlob.resumenFile) downloadFile(readyBlob.resumenFile);
+        if (readyBlob.registroFile) downloadFile(readyBlob.registroFile);
+        if (readyBlob.riepilogoFile) downloadFile(readyBlob.riepilogoFile);
       }
-      if (readyBlob.resumenFile) {
-        const u = URL.createObjectURL(readyBlob.resumenFile.blob);
-        const ar = window.document.createElement('a');
-        ar.href = u; ar.download = readyBlob.resumenFile.fileName; ar.click();
-        URL.revokeObjectURL(u);
-      }
-      if (readyBlob.registroFile) {
-        const u = URL.createObjectURL(readyBlob.registroFile.blob);
-        const ar = window.document.createElement('a');
-        ar.href = u; ar.download = readyBlob.registroFile.fileName; ar.click();
-        URL.revokeObjectURL(u);
-      }
-      if (readyBlob.riepilogoFile) {
-        const u = URL.createObjectURL(readyBlob.riepilogoFile.blob);
-        const ar = window.document.createElement('a');
-        ar.href = u; ar.download = readyBlob.riepilogoFile.fileName; ar.click();
-        URL.revokeObjectURL(u);
-      }
+    } catch (err) {
+      // AbortError = user dismissed the share sheet — don't close the modal
+      if (err instanceof Error && err.name === 'AbortError') return;
+      // Any other error: fall back to download
+      downloadFile({ blob, fileName });
+      for (const f of xmlFiles || []) downloadFile(f);
+      if (readyBlob.resumenFile) downloadFile(readyBlob.resumenFile);
+      if (readyBlob.registroFile) downloadFile(readyBlob.registroFile);
+      if (readyBlob.riepilogoFile) downloadFile(readyBlob.riepilogoFile);
     }
     setReadyBlob(null);
     onClose();
