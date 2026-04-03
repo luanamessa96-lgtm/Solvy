@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft, Search, X } from 'lucide-react';
 import { Deadline, Profile } from '../types';
-import { getSpanishDeadlines, getNextRetaDeadline } from '../data/deadlines-es';
+import { getSpanishDeadlines } from '../data/deadlines-es';
 import { parseLocalDate, getLocalYear, getLocalMonth, todayLocalISO } from '../utils/date';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
@@ -121,10 +121,10 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   }, [isSpain, isPrimoAnnoIT, redditoN1, income, expenses, profile, annoInizio, currentYear, selectedYear]);
 
   const scadenzeFiscaliRaw = isSpain
-    ? getSpanishDeadlines(selectedYear, { redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined }).map(s => ({ title: s.title, date: s.date, amount: s.amount, type: 'tax' as Deadline['type'] }))
+    ? getSpanishDeadlines(selectedYear).map(s => ({ title: s.title, date: s.date, type: 'tax' as Deadline['type'] }))
     : getScadenzeFiscali(selectedYear);
   const scadenzeFiscali = scadenzeFiscaliRaw;
-  const addedCount = scadenzeFiscali.filter(s => deadlines.some(d => d.title === s.title && d.date === s.date)).length;
+  const addedCount = scadenzeFiscali.filter(s => deadlines.some(d => d.title === s.title && getLocalYear(d.date) === getLocalYear(s.date))).length;
   const hasFiscalDeadlines = addedCount === scadenzeFiscali.length;
   const partialFiscalDeadlines = addedCount > 0 && addedCount < scadenzeFiscali.length;
   const missingCount = scadenzeFiscali.length - addedCount;
@@ -138,16 +138,13 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     // Build a map title→date from this year's fiscal templates
     // (handles ES deadlines like T4/390 whose date falls in year+1)
     const templates = isSpain
-      ? getSpanishDeadlines(selectedYear, { redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined }).map(s => ({ title: s.title, date: s.date }))
+      ? getSpanishDeadlines(selectedYear).map(s => ({ title: s.title, date: s.date }))
       : getScadenzeFiscali(selectedYear);
-    // Use Sets to handle multiple deadlines with the same title (e.g. 12 RETA entries)
-    const templateTitleSet = new Set(templates.map(s => s.title));
-    const templateEntrySet = new Set(templates.map(s => `${s.title}||${s.date}`));
+    const templateMap = new Map(templates.map(s => [s.title, s.date]));
     return deadlines.filter(d => {
-      if (templateTitleSet.has(d.title)) {
-        // Template deadline: show only if title+date match exactly
-        return templateEntrySet.has(`${d.title}||${d.date}`);
-      }
+      const templateDate = templateMap.get(d.title);
+      // Template deadline: show if title+date matches this year's template exactly
+      if (templateDate !== undefined) return templateDate === d.date;
       // User-created deadline: show by date year
       return getLocalYear(d.date) === selectedYear;
     });
@@ -158,10 +155,6 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     if (searchQuery.trim()) result = result.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
     return result;
   }, [selectedMonth, yearDeadlines, searchQuery]);
-
-  const nextReta = isSpain
-    ? getNextRetaDeadline({ redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined })
-    : null;
 
   const nextDeadline = useMemo(() => {
     const today = new Date();
@@ -238,20 +231,6 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                 <h3 className="text-lg font-bold leading-tight">{nextDeadline.title}</h3>
                 {nextDeadline.amount && <p className="text-2xl font-bold pt-2">€{nextDeadline.amount.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</p>}
               </div>
-            </motion.div>
-          )}
-
-          {nextReta && !searchQuery && (
-            <motion.div variants={item} className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-              <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 ${darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-500'}`}>
-                <span className="text-[9px] font-bold uppercase">{new Date(nextReta.date).toLocaleDateString('es-ES', { month: 'short' })}</span>
-                <span className="text-sm font-black leading-none">{new Date(nextReta.date).getDate()}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Cuota RETA — Seguridad Social</p>
-                <p className="text-[10px] text-slate-400">Próximo vencimiento mensual</p>
-              </div>
-              <p className={`text-sm font-bold shrink-0 ${darkMode ? 'text-white' : 'text-slate-900'}`}>~€{nextReta.amount}</p>
             </motion.div>
           )}
 
@@ -493,8 +472,8 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   <button onClick={() => setIsPreloadOpen(false)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
                 </div>
                 <div className="space-y-2">
-                  {scadenzeFiscali.filter(s => !deadlines.some(d => d.title === s.title && d.date === s.date)).map((s, i) => {
-                    const amt = fiscalAmounts[s.title] ?? s.amount;
+                  {scadenzeFiscali.filter(s => !deadlines.some(d => d.title === s.title && getLocalYear(d.date) === getLocalYear(s.date))).map((s, i) => {
+                    const amt = fiscalAmounts[s.title];
                     return (
                       <div key={i} className={`flex items-center gap-3 p-3 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
                         <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 text-red-500 ${darkMode ? 'bg-red-500/10' : 'bg-red-50'}`}>
@@ -518,9 +497,9 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                 <button
                   onClick={() => {
                     scadenzeFiscali
-                      .filter(s => !deadlines.some(d => d.title === s.title && d.date === s.date))
+                      .filter(s => !deadlines.some(d => d.title === s.title && getLocalYear(d.date) === getLocalYear(s.date)))
                       .forEach(s => {
-                        const amt = fiscalAmounts[s.title] ?? s.amount;
+                        const amt = fiscalAmounts[s.title];
                         onAddDeadline({ ...s, id: Math.random().toString(36).substr(2, 9), ...(amt != null && amt > 0 ? { amount: amt } : {}) });
                       });
                     setIsPreloadOpen(false);
