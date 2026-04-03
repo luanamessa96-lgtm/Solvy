@@ -47,15 +47,15 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
     if (monthlyNet <= 0) return null;
     const currentBracketIdx = RETA_BRACKETS.findIndex(b => monthlyNet <= b.maxIncome);
     if (currentBracketIdx === -1 || currentBracketIdx === RETA_BRACKETS.length - 1) return null;
-    const nextBracket = RETA_BRACKETS[currentBracketIdx + 1];
-    if (nextBracket.maxIncome === Infinity) return null;
-    const threshold15pct = nextBracket.maxIncome * 0.85; // entro 15% sotto il prossimo tramo
-    if (monthlyNet < threshold15pct) return null;
     const currentBracket = RETA_BRACKETS[currentBracketIdx];
+    const nextBracket = RETA_BRACKETS[currentBracketIdx + 1];
+    // Soglia = tetto del tramo corrente × 0.85 (entro 15% dal cambio fascia)
+    const threshold15pct = currentBracket.maxIncome * 0.85;
+    if (monthlyNet < threshold15pct) return null;
     return {
       currentQuote: currentBracket.monthlyQuote,
       nextQuote: nextBracket.monthlyQuote,
-      nextThreshold: nextBracket.maxIncome,
+      nextThreshold: currentBracket.maxIncome, // soglia da superare per entrare nel prossimo tramo
     };
   }, [profile, documents]);
 
