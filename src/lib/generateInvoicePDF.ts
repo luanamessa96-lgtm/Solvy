@@ -19,19 +19,24 @@ function fmt(n: number) {
   return `€ ${n.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<import('jspdf').jsPDF> {
-  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
-    import('jspdf'),
-    import('jspdf-autotable'),
-  ]);
+/**
+ * Draws the full invoice layout onto the current page of an existing jsPDF instance.
+ * This allows building multi-page PDFs by calling addPage() + buildInvoicePage() per invoice.
+ */
+export async function buildInvoicePage(
+  pdf: import('jspdf').jsPDF,
+  doc: Document,
+  profile: Profile
+): Promise<void> {
+  const { default: autoTable } = await import('jspdf-autotable');
+
   const isCreditNote = doc.type === 'credit_note';
   const isRectificativa = doc.type === 'factura_rectificativa';
   const isProforma = doc.type === 'proforma';
   const isSpain = profile.country === 'Spain';
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
   const W = 210;
-  const M = 16; // margin
-  const R = W - M; // right edge
+  const M = 16;
+  const R = W - M;
 
   const black: [number, number, number] = [15, 23, 42];
   const grey: [number, number, number] = [100, 116, 139];
@@ -162,7 +167,6 @@ export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<
   const ivaRate = doc.ivaRate ?? 0;
   const rivalsaInps = (isCreditNote || isRectificativa) ? false : (doc.rivalsaInps ?? false);
   const ritenuta = (isCreditNote || isRectificativa) ? (doc.ritenuta ?? false) : (doc.ritenuta ?? false);
-  // No marca da bollo for Spanish invoices or credit notes or rectificativas
   const marcaBollo = (isSpain || isCreditNote || isRectificativa) ? false : (!isOrdinario && (doc.marcaBollo ?? (doc.amount > MARCA_BOLLO_THRESHOLD)));
 
   const rivalsaAmount = rivalsaInps ? doc.amount * INPS_RATE : 0;
@@ -170,7 +174,6 @@ export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<
   const ivaAmount = isRectificativa && ivaRate > 0
     ? doc.amount * (ivaRate / 100)
     : (isOrdinario && !isCreditNote) ? totaleImponibile * (ivaRate / 100) : 0;
-  // Forfettario: ritenuta sempre 0 (art. 1, co. 67, L. 190/2014)
   const ritenutaApplicata = ritenuta && (isOrdinario || isSpain || isRectificativa);
   const ritenutaAmount = ritenutaApplicata ? doc.amount * RITENUTA_RATE : 0;
   const totale = totaleImponibile + ivaAmount + (marcaBollo ? MARCA_BOLLO_AMOUNT : 0) - ritenutaAmount;
@@ -302,8 +305,16 @@ export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<
   if (profile.email) footerParts.push(profile.email);
   if (profile.iban) footerParts.push(`IBAN: ${profile.iban}`);
   pdf.text(footerParts.join('   |   '), M, 285);
-  pdf.text(`Pag. 1 di 1`, R, 285, { align: 'right' });
 
+  const totalPages = (pdf as jsPDFWithAutoTable & { internal: { getNumberOfPages: () => number } }).internal.getNumberOfPages();
+  const currentPage = pdf.getCurrentPageInfo().pageNumber;
+  pdf.text(`Pag. ${currentPage} di ${totalPages}`, R, 285, { align: 'right' });
+}
+
+export async function buildInvoicePDF(doc: Document, profile: Profile): Promise<import('jspdf').jsPDF> {
+  const { default: jsPDF } = await import('jspdf');
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  await buildInvoicePage(pdf, doc, profile);
   return pdf;
 }
 

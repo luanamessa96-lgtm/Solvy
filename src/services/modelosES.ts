@@ -638,6 +638,7 @@ export async function generateLibroRecibidaBlob(
 }
 
 // ─── Facturas del Trimestre ────────────────────────────────────────────────────
+// Generates a multi-page PDF: one full invoice layout per page (same as single invoice download).
 
 export async function generateFacturasTrimestreBlob(
   invoiceDocs: Document[],
@@ -645,93 +646,19 @@ export async function generateFacturasTrimestreBlob(
   quarter: 1 | 2 | 3 | 4,
   year: number
 ): Promise<{ blob: Blob; fileName: string }> {
-  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+  const [{ default: jsPDF }, { buildInvoicePage }] = await Promise.all([
     import('jspdf'),
-    import('jspdf-autotable'),
+    import('../lib/generateInvoicePDF'),
   ]);
-  const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
-  const W = 297, M = 12, R = W - M;
-  const black:     [number, number, number] = [15, 23, 42];
-  const grey:      [number, number, number] = [100, 116, 139];
-  const lightGrey: [number, number, number] = [226, 232, 240];
-  const primary:   [number, number, number] = [79, 70, 229];
-  const red:       [number, number, number] = [220, 38, 38];
-
-  const currentYr = new Date().getFullYear();
-  const yearsActive = profile.annoInizioAttivita ? currentYr - profile.annoInizioAttivita : 10;
-  const retencionRate = yearsActive <= 3 ? 7 : 15;
-  const defaultIvaRate = profile.ivaHabitual ?? 21;
-  const taxId = profile.nie || profile.piva || '';
-  const fmtES = (n: number) => `€ ${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  const qLabel = QUARTER_LABELS[quarter];
 
   const docs = [...invoiceDocs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(16); pdf.setTextColor(...black);
-  pdf.text(`FACTURAS EMITIDAS — T${quarter} ${year}`, M, 14);
-  pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(...grey);
-  pdf.text(`${profile.name}${taxId ? ` · NIF/NIE: ${taxId}` : ''} · ${qLabel} ${year}`, M, 20);
-  pdf.setDrawColor(...lightGrey); pdf.setLineWidth(0.4); pdf.line(M, 23, R, 23);
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-  let totalBase = 0, totalCuotaIva = 0, totalRetencion = 0, totalFactura = 0;
-
-  const rows = docs.map(doc => {
-    const isRect = doc.type === 'factura_rectificativa';
-    const sign = isRect ? -1 : 1;
-    const base = sign * doc.amount;
-    const ivaRate = doc.ivaRate ?? defaultIvaRate;
-    const cuotaIva = base * (ivaRate / 100);
-    const retPct = doc.ritenuta ? retencionRate : 0;
-    const impRet = doc.ritenuta ? base * (retencionRate / 100) : 0;
-    const total = base + cuotaIva - impRet;
-    totalBase += base; totalCuotaIva += cuotaIva; totalRetencion += impRet; totalFactura += total;
-    return [
-      doc.invoiceNumber || '—',
-      new Date(doc.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-      doc.clientPiva && doc.clientPiva !== 'Privato' ? doc.clientPiva : '—',
-      doc.client || doc.title || '—',
-      fmtES(base), `${ivaRate}%`, fmtES(cuotaIva),
-      retPct > 0 ? `${retPct}%` : '—',
-      retPct > 0 ? fmtES(impRet) : '—',
-      fmtES(total),
-    ];
-  });
-  rows.push(['', '', '', 'TOTAL', fmtES(totalBase), '', fmtES(totalCuotaIva), '', fmtES(totalRetencion), fmtES(totalFactura)]);
-
-  autoTable(pdf, {
-    startY: 26,
-    head: [['Nº Factura', 'Fecha Exp.', 'NIF/NIE Dest.', 'Nombre/Razón Social', 'Base Imponible', 'Tipo IVA', 'Cuota IVA', 'Ret. IRPF', 'Imp. Ret.', 'Total Factura']],
-    body: rows,
-    styles: { fontSize: 7.5, cellPadding: { top: 3, bottom: 3, left: 2, right: 2 }, textColor: black },
-    headStyles: { fillColor: [241, 245, 249], textColor: grey, fontStyle: 'bold', fontSize: 7, lineColor: lightGrey, lineWidth: 0.3 },
-    bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
-    columnStyles: {
-      0: { cellWidth: 22 }, 1: { cellWidth: 20 }, 2: { cellWidth: 24 }, 3: { cellWidth: 'auto' },
-      4: { cellWidth: 24, halign: 'right' }, 5: { cellWidth: 14, halign: 'center' },
-      6: { cellWidth: 22, halign: 'right' }, 7: { cellWidth: 14, halign: 'center' },
-      8: { cellWidth: 22, halign: 'right' }, 9: { cellWidth: 24, halign: 'right', fontStyle: 'bold' },
-    },
-    margin: { left: M, right: M },
-    tableLineColor: lightGrey, tableLineWidth: 0.3,
-    didParseCell: (data) => {
-      const isLastRow = data.row.index === rows.length - 1;
-      if (data.section === 'body' && isLastRow) {
-        data.cell.styles.fontStyle = 'bold';
-        data.cell.styles.fillColor = [241, 245, 249];
-        (data.cell.styles as { textColor: unknown }).textColor = primary;
-      }
-      if (data.section === 'body' && !isLastRow) {
-        const doc = docs[data.row.index];
-        if (doc?.type === 'factura_rectificativa') (data.cell.styles as { textColor: unknown }).textColor = red;
-      }
-    },
-  });
-
-  const fy = (pdf.lastAutoTable?.finalY ?? 26) + 8;
-  pdf.setDrawColor(...lightGrey); pdf.setLineWidth(0.3); pdf.line(M, fy, R, fy);
-  pdf.setFont('helvetica', 'italic'); pdf.setFontSize(6.5); pdf.setTextColor(...grey);
-  pdf.text('Generado con Solvy. Estimación indicativa — verifica con tu gestor o asesor fiscal.', M, fy + 4);
-  pdf.text(`Generado el ${new Date().toLocaleDateString('es-ES')} · T${quarter} ${year}`, R, fy + 4, { align: 'right' });
+  for (let i = 0; i < docs.length; i++) {
+    if (i > 0) pdf.addPage('a4', 'portrait');
+    await buildInvoicePage(pdf, docs[i], profile);
+  }
 
   const nif = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
   return { blob: pdf.output('blob'), fileName: `ES_${nif}_facturas_T${quarter}_${year}.pdf` };
