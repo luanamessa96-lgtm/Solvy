@@ -659,7 +659,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
 
       <ExportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} documents={documents} selectedYear={selectedYear} profile={profile} accountant={accountant} darkMode={darkMode} />
       <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} darkMode={darkMode} />
-      <ResumenTrimestralModal isOpen={isResumenOpen} onClose={() => setIsResumenOpen(false)} documents={documents} profile={profile} darkMode={darkMode} onNavigateToProfile={onNavigateToProfile} />
+      <ResumenTrimestralModal isOpen={isResumenOpen} onClose={() => setIsResumenOpen(false)} documents={documents} profile={profile} accountant={accountant} darkMode={darkMode} onNavigateToProfile={onNavigateToProfile} />
       <PdfPreviewModal isOpen={!!pdfPreview} onClose={() => setPdfPreview(null)} blob={pdfPreview?.blob ?? new Blob()} fileName={pdfPreview?.fileName ?? ''} darkMode={darkMode} />
 
     </motion.div>

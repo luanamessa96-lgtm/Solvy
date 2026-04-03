@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Download, Lock, Check } from 'lucide-react';
-import { Document, Profile } from '../../types';
+import { X, Download, Lock, Check, Mail } from 'lucide-react';
+import { Document, Profile, Accountant } from '../../types';
 import {
   calcularTrimestre,
   buildResumenPDFBlob,
@@ -9,6 +9,8 @@ import {
   QUARTER_LABELS,
   generateLibroEmitidaBlob,
   generateLibroRecibidaBlob,
+  generateFacturasTrimestreBlob,
+  generateGastosTrimestreBlob,
 } from '../../services/modelosES';
 import PdfPreviewModal from './PdfPreviewModal';
 import { useToast } from '../ui/Toast';
@@ -20,12 +22,13 @@ interface ResumenTrimestralModalProps {
   onClose: () => void;
   documents: Document[];
   profile: Profile;
+  accountant?: Accountant;
   darkMode?: boolean;
   onNavigateToProfile?: () => void;
 }
 
 export default function ResumenTrimestralModal({
-  isOpen, onClose, documents, profile, darkMode, onNavigateToProfile,
+  isOpen, onClose, documents, profile, accountant, darkMode, onNavigateToProfile,
 }: ResumenTrimestralModalProps) {
   const { showToast } = useToast();
   const isPro = useProStatus(profile);
@@ -34,9 +37,12 @@ export default function ResumenTrimestralModal({
   const [quarter, setQuarter] = useState<1 | 2 | 3 | 4>(getCurrentQuarter());
   const [year, setYear] = useState<number>(currentYear);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [pdfPreview, setPdfPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
   const [includeLibroEmitidas, setIncludeLibroEmitidas] = useState(false);
   const [includeLibroRecibidas, setIncludeLibroRecibidas] = useState(false);
+  const [includeFacturas, setIncludeFacturas] = useState(false);
+  const [includeGastos, setIncludeGastos] = useState(false);
 
   const availableYears = useMemo(() => {
     const years = new Set(documents.map(d => getLocalYear(d.date)));
@@ -51,9 +57,29 @@ export default function ResumenTrimestralModal({
 
   const hasTaxId = !!(profile.nie || profile.piva);
 
-  const handleDownload = async () => {
-    if (!isPro) return; // shouldn't happen, button is hidden — safety guard
+  const downloadBlob = (file: { blob: Blob; fileName: string }) => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(file.blob);
+    a.download = file.fileName;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
 
+  const generateAll = async () => {
+    const resumenResult = await buildResumenPDFBlob(documents, profile, quarter, year);
+    const libroE = includeLibroEmitidas ? await generateLibroEmitidaBlob(documents, profile, year) : null;
+    const libroR = includeLibroRecibidas ? await generateLibroRecibidaBlob(documents, profile, year) : null;
+    const facturasResult = includeFacturas
+      ? await generateFacturasTrimestreBlob([...resumen.invoices, ...resumen.rectificativas], profile, quarter, year)
+      : null;
+    const gastosResult = includeGastos
+      ? await generateGastosTrimestreBlob(resumen.expenses, profile, quarter, year)
+      : null;
+    return { resumenResult, libroE, libroR, facturasResult, gastosResult };
+  };
+
+  const handleDownload = async () => {
+    if (!isPro) return;
     if (!hasTaxId) {
       showToast(
         'Añade tu NIF o NIE en el perfil para generar el resumen',
@@ -67,44 +93,24 @@ export default function ResumenTrimestralModal({
 
     setIsGenerating(true);
     try {
-      const resumenResult = await buildResumenPDFBlob(documents, profile, quarter, year);
-      const libroE = includeLibroEmitidas ? await generateLibroEmitidaBlob(documents, profile, year) : null;
-      const libroR = includeLibroRecibidas ? await generateLibroRecibidaBlob(documents, profile, year) : null;
+      const { resumenResult, libroE, libroR, facturasResult, gastosResult } = await generateAll();
 
       // Decide what to show in preview:
-      // - only Emitidas → preview Libro Emitidas (solo fatture)
-      // - only Recibidas → preview Libro Recibidas (solo spese)
-      // - both or neither → preview Resumen (tutto insieme)
-      if (libroE && !libroR) {
-        setPdfPreview(libroE);
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(resumenResult.blob);
-        a.download = resumenResult.fileName;
-        a.click();
-        URL.revokeObjectURL(a.href);
-      } else if (libroR && !libroE) {
-        setPdfPreview(libroR);
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(resumenResult.blob);
-        a.download = resumenResult.fileName;
-        a.click();
-        URL.revokeObjectURL(a.href);
+      // - only Emitidas → preview Libro Emitidas
+      // - only Recibidas → preview Libro Recibidas
+      // - only Facturas → preview Facturas trimestre
+      // - only Gastos → preview Gastos trimestre
+      // - anything else / none → preview Resumen
+      const extras = [libroE, libroR, facturasResult, gastosResult].filter(Boolean);
+      if (extras.length === 1) {
+        setPdfPreview(extras[0]!);
+        downloadBlob(resumenResult);
       } else {
         setPdfPreview(resumenResult);
-        if (libroE) {
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(libroE.blob);
-          a.download = libroE.fileName;
-          a.click();
-          URL.revokeObjectURL(a.href);
-        }
-        if (libroR) {
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(libroR.blob);
-          a.download = libroR.fileName;
-          a.click();
-          URL.revokeObjectURL(a.href);
-        }
+        if (libroE) downloadBlob(libroE);
+        if (libroR) downloadBlob(libroR);
+        if (facturasResult) downloadBlob(facturasResult);
+        if (gastosResult) downloadBlob(gastosResult);
       }
     } catch {
       showToast('Error al generar el PDF', 'error');
@@ -113,10 +119,84 @@ export default function ResumenTrimestralModal({
     }
   };
 
+  const handleSendGestor = async () => {
+    if (!accountant) return;
+    if (!hasTaxId) {
+      showToast(
+        'Añade tu NIF o NIE en el perfil para generar el resumen',
+        'error',
+        onNavigateToProfile
+          ? { label: 'Ir al perfil', onClick: () => { onClose(); onNavigateToProfile(); } }
+          : undefined
+      );
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      const { resumenResult, libroE, libroR, facturasResult, gastosResult } = await generateAll();
+
+      // Download all to local (user attaches manually)
+      downloadBlob(resumenResult);
+      if (libroE) downloadBlob(libroE);
+      if (libroR) downloadBlob(libroR);
+      if (facturasResult) downloadBlob(facturasResult);
+      if (gastosResult) downloadBlob(gastosResult);
+
+      const qLabel = QUARTER_LABELS[quarter];
+      const subject = encodeURIComponent(`Documentos ${qLabel} ${year} — Solvy`);
+      const body = encodeURIComponent(
+        `Hola ${accountant.firstName},\n\n` +
+        `Te envío los documentos fiscales del ${qLabel} ${year}.\n\n` +
+        `Archivos guardados en la carpeta de Descargas — adjúntalos manualmente al email:\n` +
+        `• Resumen Trimestral T${quarter} ${year} (Mod. 130 + 303)\n` +
+        (libroE ? `• Libro Registro de Facturas Emitidas ${year}\n` : '') +
+        (libroR ? `• Libro Registro de Facturas Recibidas ${year}\n` : '') +
+        (facturasResult ? `• Facturas emitidas T${quarter} ${year}\n` : '') +
+        (gastosResult ? `• Gastos T${quarter} ${year}\n` : '') +
+        `\nGracias`
+      );
+      window.location.href = `mailto:${accountant.email}?subject=${subject}&body=${body}`;
+    } catch {
+      showToast('Error al generar los PDFs', 'error');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   const fmtPreview = (n: number) =>
     `€${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const dm = darkMode;
+  const isWorking = isGenerating || isSending;
+
+  const Toggle = ({
+    checked, onToggle, emoji, label, badge, subtitle,
+  }: {
+    checked: boolean;
+    onToggle: () => void;
+    emoji: string;
+    label: string;
+    badge?: string;
+    subtitle: string;
+  }) => (
+    <button
+      onClick={onToggle}
+      className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${dm ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
+    >
+      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${checked ? 'bg-blue-600 border-blue-600' : dm ? 'border-slate-600' : 'border-slate-300'}`}>
+        {checked && <Check size={12} strokeWidth={3} className="text-white" />}
+      </div>
+      <span className="text-xl shrink-0">{emoji}</span>
+      <div className="text-left flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className={`text-sm font-bold ${dm ? 'text-white' : 'text-slate-900'}`}>{label}</p>
+          {badge && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 shrink-0">{badge}</span>}
+        </div>
+        <p className="text-[10px] text-slate-400 mt-0.5">{subtitle}</p>
+      </div>
+    </button>
+  );
 
   return (
     <>
@@ -194,7 +274,6 @@ export default function ResumenTrimestralModal({
 
               {/* Preview cards */}
               <div className={`rounded-2xl border overflow-hidden ${dm ? 'border-slate-800' : 'border-slate-100'}`}>
-                {/* Ingresos / Gastos */}
                 <div className="grid grid-cols-2">
                   <div className={`p-4 border-r ${dm ? 'border-slate-800' : 'border-slate-100'}`}>
                     <p className="text-[9px] font-bold uppercase tracking-wider text-emerald-500 mb-1">Ingresos</p>
@@ -213,7 +292,6 @@ export default function ResumenTrimestralModal({
 
                 <div className={`border-t ${dm ? 'border-slate-800' : 'border-slate-100'}`} />
 
-                {/* Modelo 130 / 303 */}
                 <div className="grid grid-cols-2">
                   <div className={`p-4 border-r ${dm ? 'border-slate-800' : 'border-slate-100'}`}>
                     <p className="text-[9px] font-bold uppercase tracking-wider text-primary mb-1">Mod. 130 — IRPF</p>
@@ -235,55 +313,65 @@ export default function ResumenTrimestralModal({
                 Los valores son estimativos. Verifica los datos en la sede electrónica de la AEAT antes de presentar.
               </p>
 
-              {/* Libro Registro toggles — Spain Pro */}
+              {/* Toggles — Spain Pro */}
               {isPro && (
                 <div className="space-y-2">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Incluir también</p>
-                  <button
-                    onClick={() => setIncludeLibroEmitidas(p => !p)}
-                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${dm ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
-                  >
-                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeLibroEmitidas ? 'bg-blue-600 border-blue-600' : dm ? 'border-slate-600' : 'border-slate-300'}`}>
-                      {includeLibroEmitidas && <Check size={12} strokeWidth={3} className="text-white" />}
-                    </div>
-                    <span className="text-xl shrink-0">📋</span>
-                    <div className="text-left flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className={`text-sm font-bold ${dm ? 'text-white' : 'text-slate-900'}`}>Libro Facturas Emitidas</p>
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 shrink-0">AEAT</span>
-                      </div>
-                      <p className="text-[10px] text-slate-400 mt-0.5">PDF anual con todos los campos obligatorios AEAT</p>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setIncludeLibroRecibidas(p => !p)}
-                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${dm ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
-                  >
-                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeLibroRecibidas ? 'bg-blue-600 border-blue-600' : dm ? 'border-slate-600' : 'border-slate-300'}`}>
-                      {includeLibroRecibidas && <Check size={12} strokeWidth={3} className="text-white" />}
-                    </div>
-                    <span className="text-xl shrink-0">📋</span>
-                    <div className="text-left flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className={`text-sm font-bold ${dm ? 'text-white' : 'text-slate-900'}`}>Libro Facturas Recibidas</p>
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 shrink-0">AEAT</span>
-                      </div>
-                      <p className="text-[10px] text-slate-400 mt-0.5">PDF anual de gastos con campos obligatorios AEAT</p>
-                    </div>
-                  </button>
+                  <Toggle
+                    checked={includeLibroEmitidas}
+                    onToggle={() => setIncludeLibroEmitidas(p => !p)}
+                    emoji="📋"
+                    label="Libro Facturas Emitidas"
+                    badge="AEAT"
+                    subtitle="PDF anual con todos los campos obligatorios AEAT"
+                  />
+                  <Toggle
+                    checked={includeLibroRecibidas}
+                    onToggle={() => setIncludeLibroRecibidas(p => !p)}
+                    emoji="📋"
+                    label="Libro Facturas Recibidas"
+                    badge="AEAT"
+                    subtitle="PDF anual de gastos con campos obligatorios AEAT"
+                  />
+                  <Toggle
+                    checked={includeFacturas}
+                    onToggle={() => setIncludeFacturas(p => !p)}
+                    emoji="📄"
+                    label="Facturas del trimestre"
+                    subtitle={`Solo facturas emitidas — T${quarter} ${year}`}
+                  />
+                  <Toggle
+                    checked={includeGastos}
+                    onToggle={() => setIncludeGastos(p => !p)}
+                    emoji="💳"
+                    label="Gastos del trimestre"
+                    subtitle={`Solo gastos — T${quarter} ${year}`}
+                  />
                 </div>
               )}
 
               {/* Download button */}
               {isPro ? (
-                <button
-                  onClick={handleDownload}
-                  disabled={isGenerating}
-                  className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-white bg-primary shadow-lg shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-60"
-                >
-                  <Download size={18} />
-                  {isGenerating ? 'Generando…' : 'Descargar PDF'}
-                </button>
+                <div className="space-y-3">
+                  <button
+                    onClick={handleDownload}
+                    disabled={isWorking}
+                    className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-white bg-primary shadow-lg shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-60"
+                  >
+                    <Download size={18} />
+                    {isGenerating ? 'Generando…' : 'Descargar PDF'}
+                  </button>
+                  {accountant && (
+                    <button
+                      onClick={handleSendGestor}
+                      disabled={isWorking}
+                      className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold transition-all active:scale-[0.98] disabled:opacity-60 ${dm ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-900'}`}
+                    >
+                      <Mail size={18} />
+                      {isSending ? 'Preparando…' : `Enviar al Gestor · ${accountant.email}`}
+                    </button>
+                  )}
+                </div>
               ) : (
                 <button
                   disabled
