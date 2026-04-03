@@ -12,6 +12,7 @@ import { Profile, Document, Deadline, Accountant } from './types';
 import { setLanguageByCountry } from './lib/i18n';
 import { parseLocalDate, getLocalYear } from './utils/date';
 import { getItDeductibilityRate } from './lib/it/deductibility';
+import { getEsDeductibilityRate } from './lib/es/deductibility';
 import AuthView from './views/AuthView';
 
 import { ToastProvider, useToast } from './components/ui/Toast';
@@ -416,10 +417,16 @@ function AppInner() {
 
   const totalExpenses = useMemo(() => {
     const currentYear = new Date().getFullYear();
-    const applyDeductibility = activeProfile.country === 'Italy' && activeProfile.regime === 'ordinario';
+    const applyItDeductibility = activeProfile.country === 'Italy' && activeProfile.regime === 'ordinario';
+    const applyEsDeductibility = activeProfile.country === 'Spain';
     return documents
       .filter(doc => doc.type === 'expense' && getLocalYear(doc.date) === currentYear)
-      .reduce((sum, doc) => sum + doc.amount * (applyDeductibility ? getItDeductibilityRate(doc.category) : 1), 0);
+      .reduce((sum, doc) => {
+        let rate = 1;
+        if (applyItDeductibility) rate = getItDeductibilityRate(doc.category);
+        else if (applyEsDeductibility) rate = getEsDeductibilityRate(doc.category);
+        return sum + doc.amount * rate;
+      }, 0);
   }, [documents, activeProfile.country, activeProfile.regime]);
 
   const paidPercentage = useMemo(() => {

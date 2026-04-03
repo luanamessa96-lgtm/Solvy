@@ -12,6 +12,7 @@ import { calculateSpanishTaxes } from '../lib/countries/es';
 import { getSpanishDeadlines } from '../data/deadlines-es';
 import { parseLocalDate, getLocalYear } from '../utils/date';
 import { getItDeductibilityRate } from '../lib/it/deductibility';
+import { getEsDeductibilityRate } from '../lib/es/deductibility';
 import { getAddizionaliRate } from '../lib/it/addizionali';
 function getCountryFlag(country: string): string {
   const flags: Record<string, string> = {
@@ -117,9 +118,15 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
       const date = parseLocalDate(d.date);
       return date.getFullYear() === currentYear && date.getMonth() === i;
     });
-    const applyDeductibility = profile.country === 'Italy' && profile.regime === 'ordinario';
+    const applyItDeductibility = profile.country === 'Italy' && profile.regime === 'ordinario';
+    const applyEsDeductibility = profile.country === 'Spain';
     const monthIncome = monthDocs.filter(d => d.type === 'invoice' && d.status === 'paid').reduce((s, d) => s + d.amount, 0);
-    const monthExpenses = monthDocs.filter(d => d.type === 'expense').reduce((s, d) => s + d.amount * (applyDeductibility ? getItDeductibilityRate(d.category) : 1), 0);
+    const monthExpenses = monthDocs.filter(d => d.type === 'expense').reduce((s, d) => {
+      let rate = 1;
+      if (applyItDeductibility) rate = getItDeductibilityRate(d.category);
+      else if (applyEsDeductibility) rate = getEsDeductibilityRate(d.category);
+      return s + d.amount * rate;
+    }, 0);
     return { name: month, income: monthIncome, expenses: monthExpenses, net: monthIncome - monthExpenses };
   });
 

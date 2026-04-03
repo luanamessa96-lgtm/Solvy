@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Plus, FileText, CreditCard, Calendar } from 'lucide-react';
 import { getItDeductibilityRate } from '../../lib/it/deductibility';
+import { getEsDeductibilityRate } from '../../lib/es/deductibility';
 import { todayLocalISO } from '../../utils/date';
 
 interface CreateExpenseModalProps {
@@ -18,7 +19,7 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
   const isSpain = profile?.country === 'Spain';
   const isItaly = profile?.country === 'Italy';
   const isOrdinario = isItaly && profile?.regime === 'ordinario';
-  const defaultCategory = isOrdinario ? 'software' : 'abbonamento';
+  const defaultCategory = isOrdinario ? 'software' : isSpain ? 'suscripcion' : 'abbonamento';
 
   const [formData, setFormData] = useState({
     title: '',
@@ -72,16 +73,16 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
   ];
 
   const categoriesSpain = [
-    { value: 'abbonamento', label: 'Abbonamento', emoji: '📦' },
-    { value: 'materiale', label: 'Materiale', emoji: '🛠️' },
-    { value: 'software', label: 'Software', emoji: '💻' },
-    { value: 'formazione', label: 'Formazione', emoji: '📚' },
-    { value: 'altro', label: 'Altro', emoji: '📎' },
+    { value: 'suscripcion', label: 'Suscripción', emoji: '📦' },
+    { value: 'material',    label: 'Material',    emoji: '🛠️' },
+    { value: 'software',    label: 'Software',    emoji: '💻' },
+    { value: 'formacion',   label: 'Formación',   emoji: '📚' },
+    { value: 'telefono',    label: 'Teléfono',    emoji: '📱' },
   ];
 
   const categories = isOrdinario ? categoriesOrdinario : isItaly ? categoriesForfettario : categoriesSpain;
 
-  const deductRate = isItaly ? getItDeductibilityRate(formData.category) : 1;
+  const deductRate = isItaly ? getItDeductibilityRate(formData.category) : isSpain ? getEsDeductibilityRate(formData.category) : 1;
   const deductPct = Math.round(deductRate * 100);
 
   return (
@@ -122,10 +123,15 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
                   {isOrdinario && (
                     <p className="text-[10px] text-slate-400 ml-1">💻 Software include abbonamenti a software e servizi digitali</p>
                   )}
-                  {isOrdinario && (
-                    <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-bold ${deductPct === 100 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'}`}>
-                      <span>{deductPct === 100 ? '✅' : '⚠️'}</span>
-                      <span>{deductPct}% deducibile</span>
+                  {(isOrdinario || isSpain) && (
+                    <div className="space-y-1">
+                      <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-bold ${deductPct === 100 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'}`}>
+                        <span>{deductPct === 100 ? '✅' : '⚠️'}</span>
+                        <span>{deductPct}% deducible{isItaly ? 'e' : ''}</span>
+                      </div>
+                      {isSpain && deductPct < 100 && (
+                        <p className="text-[10px] text-slate-400 ml-1">Deducibilidad estimada al 50% (uso mixto). Consulta con tu gestor.</p>
+                      )}
                     </div>
                   )}
                 </div>

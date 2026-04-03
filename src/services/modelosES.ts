@@ -1,5 +1,6 @@
 import { Document, Profile } from '../types';
 import { getLocalYear } from '../utils/date';
+import { getEsDeductibilityRate } from '../lib/es/deductibility';
 
 type jsPDFWithAutoTable = import('jspdf').jsPDF & { lastAutoTable: { finalY: number } };
 
@@ -74,7 +75,7 @@ export function calcularTrimestre(
 
   const totalIngresos = invoices.reduce((sum, d) => sum + d.amount, 0)
                       - rectificativas.reduce((sum, d) => sum + d.amount, 0);
-  const totalGastos   = expenses.reduce((sum, d) => sum + d.amount, 0);
+  const totalGastos   = expenses.reduce((sum, d) => sum + d.amount * getEsDeductibilityRate(d.category), 0);
 
   const ivaRepercutida = invoices.reduce((sum, d) => sum + d.amount * ((d.ivaRate ?? 0) / 100), 0)
                        - rectificativas.reduce((sum, d) => sum + d.amount * ((d.ivaRate ?? 0) / 100), 0);
@@ -699,7 +700,7 @@ export async function generateResumenAnualBlob(
 
   const totalIngresos     = yearInvoices.reduce((s, d) => s + d.amount, 0)
                           - yearRect.reduce((s, d) => s + d.amount, 0);
-  const totalGastos       = yearExpenses.reduce((s, d) => s + d.amount, 0);
+  const totalGastos       = yearExpenses.reduce((s, d) => s + d.amount * getEsDeductibilityRate(d.category), 0);
   const ivaRepercutida    = yearInvoices.reduce((s, d) => s + d.amount * ((d.ivaRate ?? 0) / 100), 0)
                           - yearRect.reduce((s, d) => s + d.amount * ((d.ivaRate ?? 0) / 100), 0);
   const ivaSoportada      = yearExpenses.filter(d => (d.ivaRate ?? 0) > 0)
@@ -719,7 +720,7 @@ export async function generateResumenAnualBlob(
   const byCat: Record<string, number> = {};
   for (const d of yearExpenses) {
     const cat = d.category || 'Sin categoría';
-    byCat[cat] = (byCat[cat] || 0) + d.amount;
+    byCat[cat] = (byCat[cat] || 0) + d.amount * getEsDeductibilityRate(d.category);
   }
 
   // ── Header ─────────────────────────────────────────────────────────────────
