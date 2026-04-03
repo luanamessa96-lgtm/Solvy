@@ -130,7 +130,7 @@ export async function getProfiles(userId: string, userEmail?: string): Promise<P
     codiceFiscale: p.codice_fiscale,
     regime: p.regime ?? undefined,
     coefficiente: p.coefficiente,
-    annoInizioAttivita: p.anno_inizio_attivita,
+    annoInizioAttivita: p.anno_inizio_attivita != null ? Number(p.anno_inizio_attivita) : undefined,
     iban: p.iban,
     isPro: p.is_pro ?? false,
     subscriptionStartedAt: p.subscription_started_at ?? undefined,

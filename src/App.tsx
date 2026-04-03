@@ -309,11 +309,21 @@ function AppInner() {
     const sb = getClient();
     const profilesChannel = sb
       .channel(`profiles-${userId}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${userId}` }, payload => {
-        const updated = payload.new as Record<string, unknown>;
-        const isPro = (updated.is_pro as boolean) ?? false;
-        setProfiles(prev => prev.map(p => p.id === (updated.id as string) ? { ...p, isPro } : p));
-        setActiveProfile(prev => prev.id === (updated.id as string) ? { ...prev, isPro } : prev);
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${userId}` }, async (payload) => {
+        const updatedId = (payload.new as Record<string, unknown>).id as string;
+        try {
+          const fresh = await getProfiles(userId);
+          const fp = fresh.find(p => p.id === updatedId);
+          if (fp) {
+            setProfiles(prev => prev.map(p => p.id === updatedId ? fp : p));
+            setActiveProfile(prev => prev.id === updatedId ? fp : prev);
+          }
+        } catch {
+          // fallback: aggiorna solo isPro
+          const isPro = ((payload.new as Record<string, unknown>).is_pro as boolean) ?? false;
+          setProfiles(prev => prev.map(p => p.id === updatedId ? { ...p, isPro } : p));
+          setActiveProfile(prev => prev.id === updatedId ? { ...prev, isPro } : prev);
+        }
       })
       .subscribe();
 
