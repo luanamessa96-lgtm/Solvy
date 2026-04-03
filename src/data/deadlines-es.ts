@@ -5,13 +5,6 @@ export interface FiscalDeadline {
   type: string;
 }
 
-function nextBusinessDay(dateStr: string): string {
-  const d = new Date(dateStr + 'T12:00:00');
-  const day = d.getDay(); // 0=Sun, 6=Sat
-  if (day === 6) d.setDate(d.getDate() + 2);
-  else if (day === 0) d.setDate(d.getDate() + 1);
-  return d.toISOString().slice(0, 10);
-}
 
 export function getSpanishDeadlines(year: number): FiscalDeadline[] {
   return [
@@ -19,7 +12,7 @@ export function getSpanishDeadlines(year: number): FiscalDeadline[] {
     { title: 'Modelo 303+130 — T1', date: `${year}-04-20`, type: 'trimestral' },
     { title: 'Modelo 303+130 — T2', date: `${year}-07-20`, type: 'trimestral' },
     { title: 'Modelo 303+130 — T3', date: `${year}-10-20`, type: 'trimestral' },
-    { title: 'Modelo 303+130 — T4', date: nextBusinessDay(`${year + 1}-01-30`), type: 'trimestral' },
+    { title: 'Modelo 303+130 — T4', date: `${year + 1}-01-30`, type: 'trimestral' },
     // Annual declarations
     { title: 'Modelo 390 — Resumen anual IVA', date: `${year + 1}-01-30`, type: 'annuale' },
     { title: 'Modelo 100 — Renta anual', date: `${year}-06-30`, type: 'annuale' },
