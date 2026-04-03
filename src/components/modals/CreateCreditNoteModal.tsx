@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Plus, CheckCircle2, ChevronDown } from 'lucide-react';
 import { Document, Profile } from '../../types';
+import { todayLocalISO } from '../../utils/date';
 
 interface CreateCreditNoteModalProps {
   isOpen: boolean;
@@ -24,7 +25,7 @@ const CreateCreditNoteModal = ({ isOpen, onClose, onSave, profile, documents, da
   }, [documents]);
 
   const [selectedInvoiceId, setSelectedInvoiceId] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(todayLocalISO());
   const [touched, setTouched] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -33,7 +34,7 @@ const CreateCreditNoteModal = ({ isOpen, onClose, onSave, profile, documents, da
   useEffect(() => {
     if (!isOpen) {
       setSelectedInvoiceId('');
-      setDate(new Date().toISOString().split('T')[0]);
+      setDate(todayLocalISO());
       setTouched(false);
       setPickerOpen(false);
     }

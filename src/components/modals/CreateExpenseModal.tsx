@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Plus, FileText, CreditCard, Calendar } from 'lucide-react';
 import { getItDeductibilityRate } from '../../lib/it/deductibility';
+import { todayLocalISO } from '../../utils/date';
 
 interface CreateExpenseModalProps {
   isOpen: boolean;
@@ -22,7 +23,7 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
   const [formData, setFormData] = useState({
     title: '',
     amount: '',
-    date: new Date().toISOString().split('T')[0],
+    date: todayLocalISO(),
     category: defaultCategory,
   });
   const [ivaRate, setIvaRate] = useState<number>(21);
@@ -45,7 +46,7 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
       ...(isSpain ? { ivaRate } : {}),
     });
     onClose();
-    setFormData({ title: '', amount: '', date: new Date().toISOString().split('T')[0], category: defaultCategory });
+    setFormData({ title: '', amount: '', date: todayLocalISO(), category: defaultCategory });
     setIvaRate(21);
     setAmountTouched(false);
   };

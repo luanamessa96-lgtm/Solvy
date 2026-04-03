@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import JSZip from 'jszip';
+import { todayLocalISO } from '../utils/date';
 import { motion } from 'motion/react';
 import { Sun, Moon, Languages, Trash2, RotateCcw, Loader2, CheckCircle2, AlertCircle, Sparkles, Lock, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -81,7 +82,7 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
 
   const handleGdprExportES = async () => {
     setIsExporting(true);
-    const today = new Date().toISOString().split('T')[0];
+    const today = todayLocalISO();
     const zip = new JSZip();
 
     zip.file('perfil.json', JSON.stringify(profile, null, 2));
@@ -126,7 +127,7 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
 
   const handleGdprExport = async () => {
     setIsExporting(true);
-    const today = new Date().toISOString().split('T')[0];
+    const today = todayLocalISO();
     const zip = new JSZip();
 
     // profilo.json

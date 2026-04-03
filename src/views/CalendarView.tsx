@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft, Search, X } from 'lucide-react';
 import { Deadline, Profile } from '../types';
 import { getSpanishDeadlines } from '../data/deadlines-es';
-import { parseLocalDate, getLocalYear, getLocalMonth } from '../utils/date';
+import { parseLocalDate, getLocalYear, getLocalMonth, todayLocalISO } from '../utils/date';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
 import { useTranslation } from 'react-i18next';
@@ -67,7 +67,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   const [isPreloadOpen, setIsPreloadOpen] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const isPro = useProStatus(profile);
-  const [newDeadline, setNewDeadline] = useState({ title: '', date: new Date().toISOString().split('T')[0], type: 'tax' as Deadline['type'], amount: '' });
+  const [newDeadline, setNewDeadline] = useState({ title: '', date: todayLocalISO(), type: 'tax' as Deadline['type'], amount: '' });
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
@@ -380,7 +380,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                     </div>
                   </div>
                 </div>
-                <button onClick={() => { if (!newDeadline.title) return; onAddDeadline({ id: Math.random().toString(36).substr(2, 9), title: newDeadline.title, date: newDeadline.date, type: newDeadline.type, amount: newDeadline.amount ? parseFloat(newDeadline.amount) : undefined }); setIsAddOpen(false); setNewDeadline({ title: '', date: new Date().toISOString().split('T')[0], type: 'tax', amount: '' }); }} className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">{t('calendar.add_deadline_confirm')}</button>
+                <button onClick={() => { if (!newDeadline.title) return; onAddDeadline({ id: Math.random().toString(36).substr(2, 9), title: newDeadline.title, date: newDeadline.date, type: newDeadline.type, amount: newDeadline.amount ? parseFloat(newDeadline.amount) : undefined }); setIsAddOpen(false); setNewDeadline({ title: '', date: todayLocalISO(), type: 'tax', amount: '' }); }} className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">{t('calendar.add_deadline_confirm')}</button>
               </div>
             </motion.div>
           </div>

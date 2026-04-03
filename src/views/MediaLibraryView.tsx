@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Plus, X, FileText, Image as ImageIcon, Pencil } from 'lucide-react';
 import { Document } from '../types';
 import { uploadFile } from '../lib/db';
+import { todayLocalISO } from '../utils/date';
 
 interface MediaLibraryViewProps {
   documents: Document[];
@@ -145,7 +146,7 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
   const [preview, setPreview] = React.useState<string | null>(null);
   const [fileName, setFileName] = React.useState('');
   const [docType, setDocType] = React.useState<'invoice' | 'expense'>('expense');
-  const [form, setForm] = React.useState({ title: '', client: '', amount: '', date: new Date().toISOString().split('T')[0], category: 'altro' });
+  const [form, setForm] = React.useState({ title: '', client: '', amount: '', date: todayLocalISO(), category: 'altro' });
   const [amountError, setAmountError] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
   const [uploadError, setUploadError] = React.useState('');
@@ -216,7 +217,7 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
   const reset = () => {
     setPreview(null);
     setFileName('');
-    setForm({ title: '', client: '', amount: '', date: new Date().toISOString().split('T')[0], category: 'altro' });
+    setForm({ title: '', client: '', amount: '', date: todayLocalISO(), category: 'altro' });
     setDocType('expense');
     setAmountError(false);
     setIsAdding(false);

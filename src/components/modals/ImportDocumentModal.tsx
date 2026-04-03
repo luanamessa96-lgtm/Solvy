@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Camera, FileText as FileIcon } from 'lucide-react';
+import { todayLocalISO } from '../../utils/date';
 
 interface ImportDocumentModalProps {
   isOpen: boolean;
@@ -29,7 +30,7 @@ const ImportDocumentModal = ({ isOpen, onClose, onSave, darkMode }: ImportDocume
     title: '',
     client: '',
     amount: '',
-    date: new Date().toISOString().split('T')[0],
+    date: todayLocalISO(),
     category: 'altro',
   });
   const [amountError, setAmountError] = React.useState(false);
@@ -42,7 +43,7 @@ const ImportDocumentModal = ({ isOpen, onClose, onSave, darkMode }: ImportDocume
     setPreview(null);
     setFileName(null);
     setDocType('expense');
-    setForm({ title: '', client: '', amount: '', date: new Date().toISOString().split('T')[0], category: 'altro' });
+    setForm({ title: '', client: '', amount: '', date: todayLocalISO(), category: 'altro' });
     setAmountError(false);
   };
 

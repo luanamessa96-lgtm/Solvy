@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Plus, CheckCircle2, ChevronDown } from 'lucide-react';
 import { Document, Profile } from '../../types';
-import { getLocalYear } from '../../utils/date';
+import { getLocalYear, todayLocalISO } from '../../utils/date';
 
 const MOTIVOS = [
   'Error en datos',
@@ -41,7 +41,7 @@ const CreateFacturaRectificativaModal = ({
 
   const [selectedFacturaId, setSelectedFacturaId] = useState('');
   const [motivo, setMotivo] = useState<typeof MOTIVOS[number]>('Error en datos');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(todayLocalISO());
   const [touched, setTouched] = useState(false);
   const [facturaPickerOpen, setFacturaPickerOpen] = useState(false);
   const [motivoPickerOpen, setMotivoPickerOpen] = useState(false);
@@ -55,7 +55,7 @@ const CreateFacturaRectificativaModal = ({
     if (!isOpen) {
       setSelectedFacturaId('');
       setMotivo('Error en datos');
-      setDate(new Date().toISOString().split('T')[0]);
+      setDate(todayLocalISO());
       setTouched(false);
       setFacturaPickerOpen(false);
       setMotivoPickerOpen(false);

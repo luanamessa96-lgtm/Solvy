@@ -16,3 +16,14 @@ export function getLocalYear(dateStr: string): number {
 export function getLocalMonth(dateStr: string): number {
   return parseLocalDate(dateStr).getMonth();
 }
+
+/**
+ * Returns today's date as a YYYY-MM-DD string in LOCAL time.
+ * Avoids the UTC midnight bug of new Date().toISOString().split('T')[0],
+ * which in UTC+1/+2 timezones (Spain, Italy) can return "yesterday" between
+ * midnight and 01:00/02:00 local time.
+ */
+export function todayLocalISO(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}

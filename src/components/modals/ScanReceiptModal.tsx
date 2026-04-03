@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Image } from 'lucide-react';
+import { todayLocalISO } from '../../utils/date';
 
 interface ScanReceiptModalProps {
   isOpen: boolean;
@@ -11,7 +12,7 @@ interface ScanReceiptModalProps {
 
 const ScanReceiptModal = ({ isOpen, onClose, onSave, darkMode }: ScanReceiptModalProps) => {
   const [preview, setPreview] = React.useState<string | null>(null);
-  const [form, setForm] = React.useState({ title: '', amount: '', date: new Date().toISOString().split('T')[0], category: 'altro' });
+  const [form, setForm] = React.useState({ title: '', amount: '', date: todayLocalISO(), category: 'altro' });
   const [amountError, setAmountError] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -25,7 +26,7 @@ const ScanReceiptModal = ({ isOpen, onClose, onSave, darkMode }: ScanReceiptModa
 
   const handleClose = () => {
     setPreview(null);
-    setForm({ title: '', amount: '', date: new Date().toISOString().split('T')[0], category: 'altro' });
+    setForm({ title: '', amount: '', date: todayLocalISO(), category: 'altro' });
     setAmountError(false);
     onClose();
   };

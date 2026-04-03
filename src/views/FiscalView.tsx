@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { Info, Download, Loader2 } from 'lucide-react';
 import { Profile, Document } from '../types';
+import { todayLocalISO } from '../utils/date';
 import { IT_ADDIZIONALI_REGIONALI } from '../lib/it/addizionali';
 import AtecoSelector from '../components/AtecoSelector';
 
@@ -131,7 +132,7 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `archivio_solvy_backup_${new Date().toISOString().split('T')[0]}.zip`;
+      a.download = `archivio_solvy_backup_${todayLocalISO()}.zip`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

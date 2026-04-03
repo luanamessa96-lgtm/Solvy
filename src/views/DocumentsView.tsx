@@ -15,7 +15,7 @@ import { buildInvoicePDFBlob } from '../lib/generateInvoicePDF';
 import PdfPreviewModal from '../components/modals/PdfPreviewModal';
 import { downloadFatturaPA, getMissingProfileFields } from '../services/fatturaPA';
 import { useToast } from '../components/ui/Toast';
-import { parseLocalDate, getLocalYear } from '../utils/date';
+import { parseLocalDate, getLocalYear, todayLocalISO } from '../utils/date';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
 
@@ -398,7 +398,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                       type: 'invoice',
                       status: 'pending',
                       invoiceNumber: nextNum,
-                      date: new Date().toISOString().split('T')[0],
+                      date: todayLocalISO(),
                     };
                     onAddDocument(converted);
                     onUpdateProfile({ ...profile, invoiceCounters: { ...(profile.invoiceCounters ?? {}), [yearStr]: current + 1 } });
@@ -464,7 +464,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                     const newDoc: Document = {
                       ...selectedDoc,
                       id: Math.random().toString(36).substr(2, 9),
-                      date: new Date().toISOString().split('T')[0],
+                      date: todayLocalISO(),
                       status: 'pending',
                       invoiceNumber: nextNum,
                     };

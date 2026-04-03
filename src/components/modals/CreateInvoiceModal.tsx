@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Plus, FileText, CheckCircle2 } from 'lucide-react';
 import { Document, Profile } from '../../types';
+import { todayLocalISO } from '../../utils/date';
 import InfoTooltip from '../ui/InfoTooltip';
 
 interface CreateInvoiceModalProps {
@@ -44,7 +45,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
 
   const [form, setForm] = useState({
     invoiceNumber: '',
-    date: new Date().toISOString().split('T')[0],
+    date: todayLocalISO(),
     status: 'pending' as 'paid' | 'pending',
     client: '',
     clientAddress: '',
@@ -64,7 +65,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
   const reset = () => {
     setForm({
       invoiceNumber: '',
-      date: new Date().toISOString().split('T')[0],
+      date: todayLocalISO(),
       status: 'pending',
       client: '',
       clientAddress: '',
