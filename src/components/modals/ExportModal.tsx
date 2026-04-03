@@ -41,6 +41,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const [includeRegistro, setIncludeRegistro] = useState(false);
   const [includeRiepilogo, setIncludeRiepilogo] = useState(false);
   const [includeLibroRegistroES, setIncludeLibroRegistroES] = useState(false);
+  const [includeLibroRecibidaES, setIncludeLibroRecibidaES] = useState(false);
   const [overrideQuarter, setOverrideQuarter] = useState<1 | 2 | 3 | 4 | null>(null);
   const [pdfPreview, setPdfPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
   const [readyBlob, setReadyBlob] = useState<{
@@ -50,6 +51,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     registroFile?: { blob: Blob; fileName: string };
     riepilogoFile?: { blob: Blob; fileName: string };
     libroRegistroESFile?: { blob: Blob; fileName: string };
+    libroRecibidaESFile?: { blob: Blob; fileName: string };
   } | null>(null);
   const [year, setYear] = useState(selectedYear);
 
@@ -64,6 +66,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       setIncludeRegistro(false);
       setIncludeRiepilogo(false);
       setIncludeLibroRegistroES(false);
+      setIncludeLibroRecibidaES(false);
       setOverrideQuarter(null);
     }
   }, [isOpen, selectedYear]);
@@ -167,7 +170,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   }, [syncedMonths, year]);
 
   const handleExport = async () => {
-    if (filteredDocs.length === 0 && !includeRiepilogo && !includeRegistro && !includeLibroRegistroES) return;
+    if (filteredDocs.length === 0 && !includeRiepilogo && !includeRegistro && !includeLibroRegistroES && !includeLibroRecibidaES) return;
     setExporting(true);
     try {
       await exportPDF();
@@ -193,7 +196,10 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     const libroRegistroESFileObj = readyBlob.libroRegistroESFile
       ? new File([readyBlob.libroRegistroESFile.blob], readyBlob.libroRegistroESFile.fileName, { type: 'application/pdf' })
       : null;
-    const allFiles = [primaryFile, ...xmlFileObjs, ...(resumenFileObj ? [resumenFileObj] : []), ...(registroFileObj ? [registroFileObj] : []), ...(riepilogoFileObj ? [riepilogoFileObj] : []), ...(libroRegistroESFileObj ? [libroRegistroESFileObj] : [])];
+    const libroRecibidaESFileObj = readyBlob.libroRecibidaESFile
+      ? new File([readyBlob.libroRecibidaESFile.blob], readyBlob.libroRecibidaESFile.fileName, { type: 'application/pdf' })
+      : null;
+    const allFiles = [primaryFile, ...xmlFileObjs, ...(resumenFileObj ? [resumenFileObj] : []), ...(registroFileObj ? [registroFileObj] : []), ...(riepilogoFileObj ? [riepilogoFileObj] : []), ...(libroRegistroESFileObj ? [libroRegistroESFileObj] : []), ...(libroRecibidaESFileObj ? [libroRecibidaESFileObj] : [])];
 
     if (navigator.share && navigator.canShare?.({ files: allFiles })) {
       await navigator.share({ files: allFiles, title: fileName });
@@ -230,6 +236,12 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
         const u = URL.createObjectURL(readyBlob.libroRegistroESFile.blob);
         const ar = window.document.createElement('a');
         ar.href = u; ar.download = readyBlob.libroRegistroESFile.fileName; ar.click();
+        URL.revokeObjectURL(u);
+      }
+      if (readyBlob.libroRecibidaESFile) {
+        const u = URL.createObjectURL(readyBlob.libroRecibidaESFile.blob);
+        const ar = window.document.createElement('a');
+        ar.href = u; ar.download = readyBlob.libroRecibidaESFile.fileName; ar.click();
         URL.revokeObjectURL(u);
       }
     }
@@ -275,12 +287,20 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       ar.href = u; ar.download = readyBlob.libroRegistroESFile.fileName; ar.click();
       URL.revokeObjectURL(u);
     }
+    // Download libro recibida ES if present
+    if (readyBlob?.libroRecibidaESFile) {
+      const u = URL.createObjectURL(readyBlob.libroRecibidaESFile.blob);
+      const ar = window.document.createElement('a');
+      ar.href = u; ar.download = readyBlob.libroRecibidaESFile.fileName; ar.click();
+      URL.revokeObjectURL(u);
+    }
 
     const hasXmls = xmlFiles.length > 0;
     const hasResumen = !!readyBlob?.resumenFile;
     const hasRegistro = !!readyBlob?.registroFile;
     const hasRiepilogo = !!readyBlob?.riepilogoFile;
     const hasLibroRegistroES = !!readyBlob?.libroRegistroESFile;
+    const hasLibroRecibidaES = !!readyBlob?.libroRecibidaESFile;
     const subject = encodeURIComponent(`Documenti ${periodLabel} — Solvy`);
     const body = encodeURIComponent(
       `Ciao ${accountant.firstName},\n\n` +
@@ -291,12 +311,14 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       (hasRegistro ? ` e il Registro Cronologico ${year}` : '') +
       (hasRiepilogo ? ` e il Riepilogo Annuale ${year}` : '') +
       (hasLibroRegistroES ? ` e el Libro Registro de Facturas Emitidas ${year}` : '') +
+      (hasLibroRecibidaES ? ` e el Libro Registro de Facturas Recibidas ${year}` : '') +
       `.\n` +
       (hasXmls ? `\nGli XML FatturaPA sono stati salvati nella cartella Download — allegali manualmente all'email.\n` : '') +
       (hasResumen ? `\nIl PDF Resumen Trimestral è stato salvato nella cartella Download — allegalo manualmente all'email.\n` : '') +
       (hasRegistro ? `\nIl Registro Cronologico è stato salvato nella cartella Download — allegalo manualmente all'email.\n` : '') +
       (hasRiepilogo ? `\nIl Riepilogo Annuale è stato salvato nella cartella Download — allegalo manualmente all'email.\n` : '') +
       (hasLibroRegistroES ? `\nEl Libro Registro de Facturas Emitidas ha sido guardado en la carpeta de Descargas — adjúntalo manualmente al email.\n` : '') +
+      (hasLibroRecibidaES ? `\nEl Libro Registro de Facturas Recibidas ha sido guardado en la carpeta de Descargas — adjúntalo manualmente al email.\n` : '') +
       `\nGrazie`
     );
     window.location.href = `mailto:${accountant.email}?subject=${subject}&body=${body}`;
@@ -1162,6 +1184,141 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     return { blob: pdf.output('blob'), fileName: `ES_${nif}_libro_registro_facturas_${year}.pdf` };
   };
 
+  const generateLibroRecibidaESFile = async (): Promise<{ blob: Blob; fileName: string }> => {
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
+    const W = 297;
+    const M = 12;
+    const R = W - M;
+    const black: [number, number, number] = [15, 23, 42];
+    const grey: [number, number, number] = [100, 116, 139];
+    const lightGrey: [number, number, number] = [226, 232, 240];
+    const primary: [number, number, number] = [79, 70, 229];
+    const aeat: [number, number, number] = [37, 99, 235];
+
+    const taxId = profile.nie || profile.piva || '';
+
+    const recibidaDocs = filteredDocs
+      .filter(d => d.type === 'expense')
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // ── Header ──────────────────────────────────────────────────────────────
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(16);
+    pdf.setTextColor(...black);
+    pdf.text('LIBRO REGISTRO DE FACTURAS RECIBIDAS', M, 14);
+
+    // AEAT badge
+    pdf.setFillColor(...aeat);
+    pdf.roundedRect(R - 22, 8, 22, 8, 2, 2, 'F');
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(7);
+    pdf.setTextColor(255, 255, 255);
+    pdf.text('AEAT', R - 11, 13.2, { align: 'center' });
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8.5);
+    pdf.setTextColor(...grey);
+    pdf.text(`${profile.name}${taxId ? ` · NIF/NIE: ${taxId}` : ''} · Ejercicio ${year}`, M, 20);
+
+    pdf.setDrawColor(...lightGrey);
+    pdf.setLineWidth(0.4);
+    pdf.line(M, 23, R, 23);
+
+    // ── Table ────────────────────────────────────────────────────────────────
+    const fmtES = (n: number) => `€ ${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+    let totalBase = 0;
+    let totalCuotaIva = 0;
+    let totalFactura = 0;
+
+    const rows = recibidaDocs.map((doc, i) => {
+      const ivaRate = doc.ivaRate ?? 0;
+      const cuotaIva = doc.amount * (ivaRate / 100);
+      const total = doc.amount + cuotaIva;
+
+      totalBase += doc.amount;
+      totalCuotaIva += cuotaIva;
+      totalFactura += total;
+
+      return [
+        `FREC${String(i + 1).padStart(3, '0')}/${new Date(doc.date).getFullYear()}`,
+        new Date(doc.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+        '—',
+        doc.title || doc.category || '—',
+        fmtES(doc.amount),
+        ivaRate > 0 ? `${ivaRate}%` : '—',
+        ivaRate > 0 ? fmtES(cuotaIva) : '—',
+        fmtES(total),
+      ];
+    });
+
+    // Totals row
+    rows.push([
+      '', '', '', 'TOTAL',
+      fmtES(totalBase),
+      '',
+      fmtES(totalCuotaIva),
+      fmtES(totalFactura),
+    ]);
+
+    autoTable(pdf, {
+      startY: 26,
+      head: [[
+        'Nº Factura Recibida', 'Fecha Recepción', 'NIF Proveedor',
+        'Nombre/Razón Social', 'Base Imponible',
+        'Tipo IVA Ded.', 'Cuota IVA Ded.', 'Total Factura',
+      ]],
+      body: rows,
+      styles: { fontSize: 8, cellPadding: { top: 3, bottom: 3, left: 2, right: 2 }, textColor: black },
+      headStyles: {
+        fillColor: [241, 245, 249],
+        textColor: grey,
+        fontStyle: 'bold',
+        fontSize: 7.5,
+        lineColor: lightGrey,
+        lineWidth: 0.3,
+      },
+      bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
+      columnStyles: {
+        0: { cellWidth: 30 },
+        1: { cellWidth: 24 },
+        2: { cellWidth: 28 },
+        3: { cellWidth: 'auto' },
+        4: { cellWidth: 26, halign: 'right' },
+        5: { cellWidth: 20, halign: 'center' },
+        6: { cellWidth: 26, halign: 'right' },
+        7: { cellWidth: 26, halign: 'right', fontStyle: 'bold' },
+      },
+      margin: { left: M, right: M },
+      tableLineColor: lightGrey,
+      tableLineWidth: 0.3,
+      didParseCell: (data) => {
+        if (data.section === 'body' && data.row.index === rows.length - 1) {
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.fillColor = [241, 245, 249];
+          data.cell.styles.textColor = primary;
+        }
+      },
+    });
+
+    const fy = (pdf.lastAutoTable?.finalY ?? 26) + 8;
+    pdf.setDrawColor(...lightGrey);
+    pdf.setLineWidth(0.3);
+    pdf.line(M, fy, R, fy);
+    pdf.setFont('helvetica', 'italic');
+    pdf.setFontSize(6.5);
+    pdf.setTextColor(...grey);
+    pdf.text('Libro registro generado con Solvy. Estimación indicativa — verifica con tu gestor o asesor fiscal.', M, fy + 4);
+    pdf.text(`Generado el ${new Date().toLocaleDateString('es-ES')} · Ejercicio ${year}`, R, fy + 4, { align: 'right' });
+
+    const nif = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
+    return { blob: pdf.output('blob'), fileName: `ES_${nif}_libro_registro_recibidas_${year}.pdf` };
+  };
+
   const shareOrDownload = async (blob: Blob, fileName: string, mimeType: string) => {
     if (accountant) {
       // Generate FatturaPA XMLs if toggle is on
@@ -1193,7 +1350,12 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       if (includeLibroRegistroES && isSpain && isPro) {
         libroRegistroESFile = await generateLibroRegistroESFile();
       }
-      setReadyBlob({ blob, fileName, xmlFiles, resumenFile, registroFile, riepilogoFile, libroRegistroESFile });
+      // Libro Registro Facturas Recibidas (Spain Pro)
+      let libroRecibidaESFile: { blob: Blob; fileName: string } | undefined;
+      if (includeLibroRecibidaES && isSpain && isPro) {
+        libroRecibidaESFile = await generateLibroRecibidaESFile();
+      }
+      setReadyBlob({ blob, fileName, xmlFiles, resumenFile, registroFile, riepilogoFile, libroRegistroESFile, libroRecibidaESFile });
       return;
     }
     const file = new File([blob], fileName, { type: mimeType });
@@ -1700,26 +1862,46 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                 </div>
               )}
 
-              {/* Toggle Libro Registro Facturas Emitidas — Spain Pro */}
-              {isSpain && isPro && docFilter !== 'expense' && (
+              {/* Toggle Libro Registro Facturas Emitidas + Recibidas — Spain Pro */}
+              {isSpain && isPro && (
                 <div className="space-y-2">
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Opzioni</p>
-                  <button
-                    onClick={() => { setIncludeLibroRegistroES(prev => !prev); setReadyBlob(null); }}
-                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
-                  >
-                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeLibroRegistroES ? 'bg-blue-600 border-blue-600' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
-                      {includeLibroRegistroES && <Check size={12} strokeWidth={3} className="text-white" />}
-                    </div>
-                    <span className="text-xl shrink-0">📋</span>
-                    <div className="text-left flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Libro Registro Facturas Emitidas</p>
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 shrink-0">AEAT</span>
+                  {docFilter !== 'expense' && (
+                    <button
+                      onClick={() => { setIncludeLibroRegistroES(prev => !prev); setReadyBlob(null); }}
+                      className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
+                    >
+                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeLibroRegistroES ? 'bg-blue-600 border-blue-600' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
+                        {includeLibroRegistroES && <Check size={12} strokeWidth={3} className="text-white" />}
                       </div>
-                      <p className="text-[10px] text-slate-400 mt-0.5">PDF con todos los campos obligatorios AEAT · Ejercicio {year}</p>
-                    </div>
-                  </button>
+                      <span className="text-xl shrink-0">📋</span>
+                      <div className="text-left flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Libro Registro Facturas Emitidas</p>
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 shrink-0">AEAT</span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-0.5">PDF con todos los campos obligatorios AEAT · Ejercicio {year}</p>
+                      </div>
+                    </button>
+                  )}
+                  {docFilter !== 'invoice' && (
+                    <button
+                      onClick={() => { setIncludeLibroRecibidaES(prev => !prev); setReadyBlob(null); }}
+                      className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
+                    >
+                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeLibroRecibidaES ? 'bg-blue-600 border-blue-600' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
+                        {includeLibroRecibidaES && <Check size={12} strokeWidth={3} className="text-white" />}
+                      </div>
+                      <span className="text-xl shrink-0">📋</span>
+                      <div className="text-left flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Libro Registro Facturas Recibidas</p>
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 shrink-0">AEAT</span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-0.5">PDF gastos con campos obligatorios AEAT · Ejercicio {year}</p>
+                      </div>
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -1868,7 +2050,13 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                       {includeLibroRegistroES && readyBlob?.libroRegistroESFile && (
                         <div className="flex items-center gap-1.5">
                           <Check size={13} className="text-blue-600 shrink-0" />
-                          <p className="text-[11px] text-blue-600 font-medium">+ Libro Registro Facturas {year}</p>
+                          <p className="text-[11px] text-blue-600 font-medium">+ Libro Registro Facturas Emitidas {year}</p>
+                        </div>
+                      )}
+                      {includeLibroRecibidaES && readyBlob?.libroRecibidaESFile && (
+                        <div className="flex items-center gap-1.5">
+                          <Check size={13} className="text-blue-600 shrink-0" />
+                          <p className="text-[11px] text-blue-600 font-medium">+ Libro Registro Facturas Recibidas {year}</p>
                         </div>
                       )}
                     </div>
@@ -1891,7 +2079,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
               ) : (
                 <button
                   onClick={handleExport}
-                  disabled={exporting || (filteredDocs.length === 0 && !includeRiepilogo && !includeRegistro && !includeLibroRegistroES)}
+                  disabled={exporting || (filteredDocs.length === 0 && !includeRiepilogo && !includeRegistro && !includeLibroRegistroES && !includeLibroRecibidaES)}
                   className="w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
                 >
                   <Download size={18} />
