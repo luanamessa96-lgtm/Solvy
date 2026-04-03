@@ -379,6 +379,13 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
         {activeTab === 'taxes' && profile.country === 'Spain' && (() => {
           const spTaxes = calculateSpanishTaxes(income, false, false, profile.annoInizioAttivita, displayYear);
           const isTarifaPlana = spTaxes.tarifaPlanaStatus !== 'normal';
+          const annoInicio = profile.annoInizioAttivita != null ? Number(profile.annoInizioAttivita) : null;
+          const yearsActiveES = annoInicio != null ? displayYear - annoInicio : null;
+          const retencionRate = yearsActiveES != null && yearsActiveES < 3 ? 7 : 15;
+          const retencionesDocs = documents.filter(d =>
+            d.type === 'invoice' && d.ritenuta === true && getLocalYear(d.date) === displayYear
+          );
+          const totalRetenciones = retencionesDocs.reduce((sum, d) => sum + d.amount * (retencionRate / 100), 0);
           const spDeadlines = getSpanishDeadlines(displayYear);
           const today = new Date();
           const nextSpDeadline = spDeadlines
@@ -474,6 +481,35 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   </p>
                 </div>
               )}
+              {/* ES-28 — Retenciones IRPF subidas */}
+              {retencionesDocs.length > 0 && (
+                <div className={`rounded-3xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                  <div className={`px-6 pt-5 pb-4 border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Retenciones IRPF subidas {displayYear}</p>
+                    <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{Math.round(totalRetenciones).toLocaleString('es-ES')}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Total retenido por clientes ({retencionRate}%)</p>
+                  </div>
+                  <div className="px-6 py-4 space-y-3">
+                    {retencionesDocs.map(d => {
+                      const impRet = d.amount * (retencionRate / 100);
+                      return (
+                        <div key={d.id} className="flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className={`text-xs font-bold truncate ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{d.client || d.title}</p>
+                            <p className="text-[10px] text-slate-400">{retencionRate}% · base €{d.amount.toLocaleString('es-ES')}</p>
+                          </div>
+                          <span className="text-xs font-bold text-rose-500 shrink-0">-€{Math.round(impRet).toLocaleString('es-ES')}</span>
+                        </div>
+                      );
+                    })}
+                    <div className={`pt-3 border-t flex items-start gap-2 ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
+                      <Info size={13} className="mt-0.5 shrink-0 text-slate-400" />
+                      <p className="text-[11px] text-slate-400 leading-relaxed">Se deducen del Modelo 100 anual. Consulta con tu gestor fiscal.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* ES-17 — Aparta para impuestos (Pro ES) */}
               {isPro && income > 0 && (
                 <div
