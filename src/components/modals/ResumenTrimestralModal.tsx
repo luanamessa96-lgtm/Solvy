@@ -146,7 +146,6 @@ export default function ResumenTrimestralModal({
     try {
       const { resumenResult, libroE, libroR, facturasResult, gastosResult } = await generateAll();
 
-      const qLabel = QUARTER_LABELS[quarter];
       const subject = `Documentos T${quarter} ${year} — Solvy`;
 
       const allFiles: File[] = [
@@ -165,18 +164,6 @@ export default function ResumenTrimestralModal({
         if (libroR) downloadBlob(libroR);
         if (facturasResult) downloadBlob(facturasResult);
         if (gastosResult) downloadBlob(gastosResult);
-
-        const body = encodeURIComponent(
-          `Hola ${accountant.firstName},\n\n` +
-          `Te envío los documentos fiscales del T${quarter} ${year} (${qLabel}).\n` +
-          `Encontrarás el Resumen Trimestral T${quarter} ${year} (Mod. 130 + 303)` +
-          (libroE ? `, el Libro Registro de Facturas Emitidas ${year}` : '') +
-          (libroR ? `, el Libro Registro de Facturas Recibidas ${year}` : '') +
-          (facturasResult ? `, las Facturas emitidas T${quarter} ${year}` : '') +
-          (gastosResult ? `, los Gastos T${quarter} ${year}` : '') +
-          `.\n\nGracias`
-        );
-        window.location.href = `mailto:${accountant.email}?subject=${encodeURIComponent(subject)}&body=${body}`;
       }
     } catch {
       showToast('Error al generar los PDFs', 'error');
