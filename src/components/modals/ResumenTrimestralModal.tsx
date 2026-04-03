@@ -144,16 +144,21 @@ export default function ResumenTrimestralModal({
       if (gastosResult) downloadBlob(gastosResult);
 
       const qLabel = QUARTER_LABELS[quarter];
-      const subject = encodeURIComponent(`Documentos ${qLabel} ${year} — Solvy`);
+      const subject = encodeURIComponent(`Documentos T${quarter} ${year} — Solvy`);
       const body = encodeURIComponent(
         `Hola ${accountant.firstName},\n\n` +
-        `Te envío los documentos fiscales del ${qLabel} ${year}.\n\n` +
-        `Archivos guardados en la carpeta de Descargas — adjúntalos manualmente al email:\n` +
-        `• Resumen Trimestral T${quarter} ${year} (Mod. 130 + 303)\n` +
-        (libroE ? `• Libro Registro de Facturas Emitidas ${year}\n` : '') +
-        (libroR ? `• Libro Registro de Facturas Recibidas ${year}\n` : '') +
-        (facturasResult ? `• Facturas emitidas T${quarter} ${year}\n` : '') +
-        (gastosResult ? `• Gastos T${quarter} ${year}\n` : '') +
+        `Te envío los documentos fiscales del T${quarter} ${year} (${qLabel}).\n` +
+        `Encontrarás el Resumen Trimestral T${quarter} ${year} (Mod. 130 + 303)` +
+        (libroE ? `, el Libro Registro de Facturas Emitidas ${year}` : '') +
+        (libroR ? `, el Libro Registro de Facturas Recibidas ${year}` : '') +
+        (facturasResult ? `, las Facturas emitidas T${quarter} ${year}` : '') +
+        (gastosResult ? `, los Gastos T${quarter} ${year}` : '') +
+        `.\n` +
+        `\nEl Resumen Trimestral T${quarter} ${year} se ha guardado en la carpeta de Descargas — adjúntalo manualmente al email.\n` +
+        (libroE ? `\nEl Libro Registro de Facturas Emitidas ${year} se ha guardado en la carpeta de Descargas — adjúntalo manualmente al email.\n` : '') +
+        (libroR ? `\nEl Libro Registro de Facturas Recibidas ${year} se ha guardado en la carpeta de Descargas — adjúntalo manualmente al email.\n` : '') +
+        (facturasResult ? `\nLas Facturas emitidas T${quarter} ${year} se han guardado en la carpeta de Descargas — adjúntalas manualmente al email.\n` : '') +
+        (gastosResult ? `\nLos Gastos T${quarter} ${year} se han guardado en la carpeta de Descargas — adjúntalos manualmente al email.\n` : '') +
         `\nGracias`
       );
       window.location.href = `mailto:${accountant.email}?subject=${subject}&body=${body}`;
