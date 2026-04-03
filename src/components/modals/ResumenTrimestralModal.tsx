@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Download, Lock, Check, Mail } from 'lucide-react';
 import { Document, Profile, Accountant } from '../../types';
@@ -43,6 +43,16 @@ export default function ResumenTrimestralModal({
   const [includeLibroRecibidas, setIncludeLibroRecibidas] = useState(false);
   const [includeFacturas, setIncludeFacturas] = useState(false);
   const [includeGastos, setIncludeGastos] = useState(false);
+
+  // Reset toggles every time the modal closes so stale selections don't bleed into the next session
+  useEffect(() => {
+    if (!isOpen) {
+      setIncludeLibroEmitidas(false);
+      setIncludeLibroRecibidas(false);
+      setIncludeFacturas(false);
+      setIncludeGastos(false);
+    }
+  }, [isOpen]);
 
   const availableYears = useMemo(() => {
     const years = new Set(documents.map(d => getLocalYear(d.date)));
