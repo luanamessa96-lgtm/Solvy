@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft, Search, X } from 'lucide-react';
-import { Deadline, Profile } from '../types';
+import { Deadline, Profile, Document } from '../types';
+import { calcularTrimestre, ResumenTrimestral } from '../services/modelosES';
 import { getSpanishDeadlines, getAllRetaDeadlines, getNextRetaDeadline } from '../data/deadlines-es';
 import { parseLocalDate, getLocalYear, getLocalMonth, todayLocalISO } from '../utils/date';
 import PaywallModal from '../components/modals/PaywallModal';
@@ -51,9 +52,19 @@ interface CalendarViewProps {
   openAddTrigger?: number;
   income?: number;
   expenses?: number;
+  documents?: Document[];
 }
 
-const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDeadline, darkMode, profile, openAddTrigger, income, expenses }: CalendarViewProps) => {
+function getSpQuarter(title: string): 1 | 2 | 3 | 4 | null {
+  if (!title.includes('303+130')) return null;
+  if (title.includes('T1')) return 1;
+  if (title.includes('T2')) return 2;
+  if (title.includes('T3')) return 3;
+  if (title.includes('T4')) return 4;
+  return null;
+}
+
+const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDeadline, darkMode, profile, openAddTrigger, income, expenses, documents }: CalendarViewProps) => {
   const { t, i18n } = useTranslation();
   const isSpain = profile?.country === 'Spain';
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -119,6 +130,19 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
       '2° acconto INPS gestione separata': Math.round(inps * 0.60),
     };
   }, [isSpain, isPrimoAnnoIT, redditoN1, income, expenses, profile, annoInizio, currentYear, selectedYear]);
+
+  // ES-29 — importi stimati per scadenze trimestrali Spain
+  const spFiscalData = useMemo<Record<1|2|3|4, ResumenTrimestral> | null>(() => {
+    if (!isSpain || !documents?.length) return null;
+    try {
+      return {
+        1: calcularTrimestre(documents, 1, selectedYear),
+        2: calcularTrimestre(documents, 2, selectedYear),
+        3: calcularTrimestre(documents, 3, selectedYear),
+        4: calcularTrimestre(documents, 4, selectedYear),
+      };
+    } catch { return null; }
+  }, [isSpain, documents, selectedYear]);
 
   const scadenzeFiscaliRaw = isSpain
     ? getSpanishDeadlines(selectedYear).map(s => ({ title: s.title, date: s.date, type: 'tax' as Deadline['type'] }))
@@ -319,6 +343,17 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                         )}
                       </div>
                       {(() => {
+                        const spQ = getSpQuarter(deadline.title);
+                        const spData = spQ && spFiscalData ? spFiscalData[spQ] : null;
+                        if (spData) {
+                          const total = Math.round(spData.cuotaIRPF + Math.max(0, spData.diferenciaIVA));
+                          return total > 0 ? (
+                            <div className="text-right shrink-0">
+                              <p className={`text-sm font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>~€{total.toLocaleString('es-ES')}</p>
+                              <p className="text-[9px] text-slate-400 leading-tight">estimado · puede variar</p>
+                            </div>
+                          ) : null;
+                        }
                         const liveAmt = FISCAL_ESTIMATE_TITLES.has(deadline.title) ? fiscalAmounts[deadline.title] : undefined;
                         const displayAmt = liveAmt != null && liveAmt > 0 ? liveAmt : deadline.amount;
                         return displayAmt ? (
@@ -423,6 +458,29 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                 <div className={`p-4 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
                   <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedDeadline.title}</p>
                   {(() => {
+                    const spQ = getSpQuarter(selectedDeadline.title);
+                    const spData = spQ && spFiscalData ? spFiscalData[spQ] : null;
+                    if (spData) {
+                      return (
+                        <div className="space-y-1.5 mt-2">
+                          <div className="flex justify-between">
+                            <span className="text-xs text-slate-400">Mod. 130 — IRPF</span>
+                            <span className="text-xs font-bold text-primary">~€{Math.round(spData.cuotaIRPF).toLocaleString('es-ES')}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-xs text-slate-400">Mod. 303 — IVA</span>
+                            <span className={`text-xs font-bold ${spData.diferenciaIVA < 0 ? 'text-emerald-500' : 'text-primary'}`}>
+                              {spData.diferenciaIVA < 0 ? `a devolver ~€${Math.round(Math.abs(spData.diferenciaIVA)).toLocaleString('es-ES')}` : `~€${Math.round(spData.diferenciaIVA).toLocaleString('es-ES')}`}
+                            </span>
+                          </div>
+                          <div className="flex justify-between pt-1 border-t border-slate-200">
+                            <span className="text-xs font-bold text-slate-600">Total estimado</span>
+                            <span className="text-xs font-bold text-primary">~€{Math.round(spData.cuotaIRPF + Math.max(0, spData.diferenciaIVA)).toLocaleString('es-ES')}</span>
+                          </div>
+                          <p className="text-[10px] text-slate-400">Estimación basada en los datos actuales. El importe real puede variar.</p>
+                        </div>
+                      );
+                    }
                     const liveAmt = FISCAL_ESTIMATE_TITLES.has(selectedDeadline.title) ? fiscalAmounts[selectedDeadline.title] : undefined;
                     const displayAmt = liveAmt != null && liveAmt > 0 ? liveAmt : selectedDeadline.amount;
                     return displayAmt ? (
