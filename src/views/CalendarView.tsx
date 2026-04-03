@@ -156,7 +156,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   const filteredDeadlines = useMemo(() => {
     // RETA deadlines are shown only in the next-deadline banner, not in the list
     let result = (selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => getLocalMonth(d.date) === selectedMonth))
-      .filter(d => !(isSpain && d.title === RETA_TITLE));
+      .filter(d => !(isSpain && d.title.startsWith('Cuota RETA')));
     if (searchQuery.trim()) result = result.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
     return result;
   }, [selectedMonth, yearDeadlines, searchQuery, isSpain]);
