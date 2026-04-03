@@ -26,6 +26,8 @@ function lastDayOfMonth(year: number, month: number): string {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+export const RETA_TITLE = 'Cuota RETA \u2014 Seguridad Social';
+
 export function getSpanishDeadlines(year: number, options?: SpanishDeadlinesOptions): FiscalDeadline[] {
   const annoInicio = options?.annoInizioAttivita;
   const redditoN1 = options?.redditoN1;
@@ -42,7 +44,7 @@ export function getSpanishDeadlines(year: number, options?: SpanishDeadlinesOpti
   }
 
   const retaDeadlines: FiscalDeadline[] = Array.from({ length: 12 }, (_, i) => ({
-    title: 'Cuota RETA — Seguridad Social',
+    title: RETA_TITLE,
     date: lastDayOfMonth(year, i),
     amount: retaMonthly,
     type: 'tax',
