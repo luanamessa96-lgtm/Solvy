@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft, Search, X } from 'lucide-react';
 import { Deadline, Profile } from '../types';
-import { getSpanishDeadlines, getNextRetaDeadline } from '../data/deadlines-es';
+import { getSpanishDeadlines, getAllRetaDeadlines } from '../data/deadlines-es';
 import { parseLocalDate, getLocalYear, getLocalMonth, todayLocalISO } from '../utils/date';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
@@ -151,14 +151,15 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   }, [deadlines, selectedYear, isSpain]);
 
   const filteredDeadlines = useMemo(() => {
-    let result = selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => getLocalMonth(d.date) === selectedMonth);
-    if (searchQuery.trim()) result = result.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
-    return result;
-  }, [selectedMonth, yearDeadlines, searchQuery]);
-
-  const nextReta = isSpain
-    ? getNextRetaDeadline({ redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined })
-    : null;
+    const base = selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => getLocalMonth(d.date) === selectedMonth);
+    const reta: typeof base = isSpain
+      ? getAllRetaDeadlines(selectedYear, { redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined })
+          .filter(d => selectedMonth === null || getLocalMonth(d.date) === selectedMonth) as typeof base
+      : [];
+    const combined = [...base, ...reta].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    if (searchQuery.trim()) return combined.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    return combined;
+  }, [selectedMonth, yearDeadlines, searchQuery, isSpain, selectedYear, redditoN1, annoInizio]);
 
   const nextDeadline = useMemo(() => {
     const today = new Date();
@@ -238,22 +239,6 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
             </motion.div>
           )}
 
-          {nextReta && !searchQuery && (
-            <motion.div variants={item} className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-              <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 ${darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-500'}`}>
-                <span className="text-[9px] font-bold uppercase">{new Date(nextReta.date + 'T12:00:00').toLocaleDateString('es-ES', { month: 'short' })}</span>
-                <span className="text-sm font-black leading-none">{new Date(nextReta.date + 'T12:00:00').getDate()}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-bold truncate ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                  Cuota RETA — Seguridad Social
-                </p>
-                <p className="text-[10px] text-slate-400">
-                  {new Date(nextReta.date + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })} · ~€{nextReta.amount}/mes
-                </p>
-              </div>
-            </motion.div>
-          )}
 
           {isPrimoAnnoIT && !searchQuery && (
             <motion.div variants={item} className={`flex items-start gap-3 px-4 py-3.5 rounded-2xl border ${darkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-300' : 'bg-blue-50 border-blue-100 text-blue-700'}`}>
@@ -299,7 +284,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
             </div>
             <div className="space-y-3">
               {filteredDeadlines.length > 0 ? filteredDeadlines.map(deadline => (
-                <motion.button variants={item} key={deadline.id} onClick={() => setSelectedDeadline(deadline)} className={`w-full p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-xl text-left ${deadline.completed ? 'opacity-50' : ''} ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}>
+                <motion.button variants={item} key={deadline.id} onClick={() => { if (!deadline.id.startsWith('reta-virtual-')) setSelectedDeadline(deadline); }} className={`w-full p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-xl text-left ${deadline.completed ? 'opacity-50' : ''} ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}>
                   <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center shrink-0 ${deadline.completed ? (darkMode ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400') : deadline.type === 'tax' ? (darkMode ? 'bg-red-500/10 text-red-500' : 'bg-red-50 text-red-600') : (darkMode ? 'bg-blue-500/10 text-blue-500' : 'bg-blue-50 text-blue-600')}`}>
                     <span className="text-[9px] font-bold uppercase tracking-tighter">{new Date(deadline.date).toLocaleDateString(isSpain ? 'es-ES' : 'it-IT', { month: 'short' })}</span>
                     <span className="text-lg font-black leading-none">{new Date(deadline.date).getDate()}</span>

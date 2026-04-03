@@ -42,6 +42,24 @@ export function getNextRetaDeadline(options?: SpanishDeadlinesOptions): { date: 
   return { date, amount };
 }
 
+/** Returns 12 virtual RETA deadlines (last day of each month) for display only — never saved to DB. */
+export function getAllRetaDeadlines(year: number, options?: SpanishDeadlinesOptions): Array<{ id: string; title: string; date: string; amount: number; type: 'tax' }> {
+  const annoInicio = options?.annoInizioAttivita;
+  const redditoN1 = options?.redditoN1;
+  const currentYear = new Date().getFullYear();
+  let amount = 80;
+  if ((annoInicio == null || annoInicio !== currentYear) && redditoN1 != null && redditoN1 > 0) {
+    amount = calculateRETA(redditoN1 / 12);
+  }
+  return Array.from({ length: 12 }, (_, i) => ({
+    id: `reta-virtual-${year}-${i}`,
+    title: 'Cuota RETA \u2014 Seguridad Social',
+    date: lastDayOfMonth(year, i),
+    amount,
+    type: 'tax' as const,
+  }));
+}
+
 export function getSpanishDeadlines(year: number): FiscalDeadline[] {
   return [
     // Modelo 303+130 — quarterly IVA + IRPF
