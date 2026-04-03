@@ -151,10 +151,16 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   }, [deadlines, selectedYear, isSpain]);
 
   const filteredDeadlines = useMemo(() => {
-    let result = selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => getLocalMonth(d.date) === selectedMonth);
-    if (searchQuery.trim()) result = result.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
-    return result;
-  }, [selectedMonth, yearDeadlines, searchQuery]);
+    let base = selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => getLocalMonth(d.date) === selectedMonth);
+    // In month view, inject the virtual RETA for that month
+    if (isSpain && selectedMonth !== null) {
+      const retaForMonth = getAllRetaDeadlines(selectedYear, { redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined })
+        .filter(d => getLocalMonth(d.date) === selectedMonth);
+      base = [...base, ...retaForMonth as typeof base].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }
+    if (searchQuery.trim()) return base.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    return base;
+  }, [selectedMonth, yearDeadlines, searchQuery, isSpain, selectedYear, redditoN1, annoInizio]);
 
   const nextReta = isSpain
     ? getNextRetaDeadline({ redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined })
