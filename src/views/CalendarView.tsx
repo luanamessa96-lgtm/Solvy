@@ -153,11 +153,14 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     });
   }, [deadlines, selectedYear, isSpain]);
 
+  const RETA_TITLE = 'Cuota RETA — Seguridad Social';
   const filteredDeadlines = useMemo(() => {
-    let result = selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => getLocalMonth(d.date) === selectedMonth);
+    // RETA deadlines are shown only in the next-deadline banner, not in the list
+    let result = (selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => getLocalMonth(d.date) === selectedMonth))
+      .filter(d => !(isSpain && d.title === RETA_TITLE));
     if (searchQuery.trim()) result = result.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
     return result;
-  }, [selectedMonth, yearDeadlines, searchQuery]);
+  }, [selectedMonth, yearDeadlines, searchQuery, isSpain]);
 
   const nextDeadline = useMemo(() => {
     const today = new Date();
@@ -283,7 +286,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
               {filteredDeadlines.length > 0 ? filteredDeadlines.map(deadline => (
                 <motion.button variants={item} key={deadline.id} onClick={() => setSelectedDeadline(deadline)} className={`w-full p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-xl text-left ${deadline.completed ? 'opacity-50' : ''} ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}>
                   <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center shrink-0 ${deadline.completed ? (darkMode ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400') : deadline.type === 'tax' ? (darkMode ? 'bg-red-500/10 text-red-500' : 'bg-red-50 text-red-600') : (darkMode ? 'bg-blue-500/10 text-blue-500' : 'bg-blue-50 text-blue-600')}`}>
-                    <span className="text-[9px] font-bold uppercase tracking-tighter">{new Date(deadline.date).toLocaleDateString('it-IT', { month: 'short' })}</span>
+                    <span className="text-[9px] font-bold uppercase tracking-tighter">{new Date(deadline.date).toLocaleDateString(isSpain ? 'es-ES' : 'it-IT', { month: 'short' })}</span>
                     <span className="text-lg font-black leading-none">{new Date(deadline.date).getDate()}</span>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -480,7 +483,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                     return (
                       <div key={i} className={`flex items-center gap-3 p-3 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
                         <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 text-red-500 ${darkMode ? 'bg-red-500/10' : 'bg-red-50'}`}>
-                          <span className="text-[9px] font-bold uppercase">{new Date(s.date).toLocaleDateString('it-IT', { month: 'short' })}</span>
+                          <span className="text-[9px] font-bold uppercase">{new Date(s.date).toLocaleDateString(isSpain ? 'es-ES' : 'it-IT', { month: 'short' })}</span>
                           <span className="text-sm font-black leading-none">{new Date(s.date).getDate()}</span>
                         </div>
                         <div className="flex items-center gap-0.5 flex-1">
