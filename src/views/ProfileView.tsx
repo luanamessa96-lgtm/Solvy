@@ -356,7 +356,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Año inicio actividad</label>
-                        <input type="number" min="2000" max={new Date().getFullYear()} value={editData.annoInizioAttivita} onChange={e => setEditData({ ...editData, annoInizioAttivita: e.target.value })} placeholder="Es. 2022" className={inputClass()} />
+                        <input type="number" min="2000" max={new Date().getFullYear()} value={editData.annoInizioAttivita} onChange={e => setEditData({ ...editData, annoInizioAttivita: e.target.value })} placeholder="ej. 2023" className={inputClass()} />
                         <p className="text-[10px] text-slate-400 ml-1">{t('profile.reta_note')}</p>
                       </div>
                     </>
@@ -476,6 +476,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
               ...(activeProfile.country !== 'Spain' && activeProfile.coefficiente ? [{ icon: Receipt, label: t('profile.label_category'), value: `${CATEGORIE_COEFFICIENTE[activeProfile.coefficiente] || activeProfile.coefficiente + '%'} (${activeProfile.coefficiente}%)` }] : []),
               ...(activeProfile.country !== 'Spain' && activeProfile.annoInizioAttivita ? [{ icon: Receipt, label: 'Anno inizio attività', value: activeProfile.annoInizioAttivita.toString() }] : []),
               ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'IVA habitual', value: `${activeProfile.ivaHabitual ?? 21}%` }] : []),
+              ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'Año inicio actividad', value: activeProfile.annoInizioAttivita ? activeProfile.annoInizioAttivita.toString() : '—' }] : []),
               ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'Ret. IRPF (auto)', value: (() => { const y = activeProfile.annoInizioAttivita ? new Date().getFullYear() - activeProfile.annoInizioAttivita : 10; return `${y <= 3 ? 7 : 15}%`; })() }] : []),
               ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'RETA mensual', value: `€${profileStorage.get(`reta_${activeProfile.id}`) || '500'}/mes` }] : []),
             ].map(({ icon: Icon, label, value }, i, arr) => (
