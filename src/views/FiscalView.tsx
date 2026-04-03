@@ -36,16 +36,17 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
     if (profile.country !== 'Spain') return null;
     const currentYear = new Date().getFullYear();
     // Non mostrare se Tarifa Plana (primo anno)
-    console.log('[RETA] anno:', profile.annoInizioAttivita, typeof profile.annoInizioAttivita, 'guard39:', profile.annoInizioAttivita != null && profile.annoInizioAttivita >= currentYear);
     if (profile.annoInizioAttivita != null && profile.annoInizioAttivita >= currentYear) return null;
-    const yearDocs = documents.filter(d => {
-      const y = new Date(d.date.split('T')[0]).getFullYear();
-      return y === currentYear;
-    });
-    const annualIncome = yearDocs.filter(d => d.type === 'invoice').reduce((s, d) => s + d.amount, 0);
-    const annualExpenses = yearDocs.filter(d => d.type === 'expense').reduce((s, d) => s + d.amount, 0);
-    const monthlyNet = (annualIncome - annualExpenses) / 12;
-    console.log('[RETA] yearDocs:', yearDocs.length, 'annualIncome:', annualIncome, 'annualExpenses:', annualExpenses, 'monthlyNet:', monthlyNet);
+    // Priorità a redditoN1 (inserito manualmente); fallback al calcolo da fatture anno corrente
+    let monthlyNet: number;
+    if (profile.redditoN1 != null && profile.redditoN1 > 0) {
+      monthlyNet = profile.redditoN1 / 12;
+    } else {
+      const yearDocs = documents.filter(d => new Date(d.date.split('T')[0]).getFullYear() === currentYear);
+      const annualIncome = yearDocs.filter(d => d.type === 'invoice').reduce((s, d) => s + d.amount, 0);
+      const annualExpenses = yearDocs.filter(d => d.type === 'expense').reduce((s, d) => s + d.amount, 0);
+      monthlyNet = (annualIncome - annualExpenses) / 12;
+    }
     if (monthlyNet <= 0) return null;
     const currentBracketIdx = RETA_BRACKETS.findIndex(b => monthlyNet <= b.maxIncome);
     if (currentBracketIdx === -1 || currentBracketIdx === RETA_BRACKETS.length - 1) return null;
@@ -53,14 +54,13 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
     const nextBracket = RETA_BRACKETS[currentBracketIdx + 1];
     // Soglia = tetto del tramo corrente × 0.85 (entro 15% dal cambio fascia)
     const threshold15pct = currentBracket.maxIncome * 0.85;
-    console.log('[RETA] currentBracket:', currentBracket, 'nextBracket:', nextBracket, 'threshold15pct:', threshold15pct, 'pass:', monthlyNet >= threshold15pct);
     if (monthlyNet < threshold15pct) return null;
     return {
       currentQuote: currentBracket.monthlyQuote,
       nextQuote: nextBracket.monthlyQuote,
       nextThreshold: currentBracket.maxIncome, // soglia da superare per entrare nel prossimo tramo
     };
-  }, [profile, documents]);
+  }, [profile, profile.redditoN1, documents]);
 
   const handleExportBackup = async () => {
     if (!profile || paidInvoices.length === 0) return;
