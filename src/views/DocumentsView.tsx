@@ -120,10 +120,12 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-8 pb-24">
-      <button type="button" onClick={() => setIsSearchOpen(true)} className="w-full flex items-center gap-3 pl-4 pr-4 py-3 border rounded-2xl text-sm text-left transition-all active:scale-[0.98] hover:border-primary/30" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}>
-        <Search size={18} className="shrink-0 text-slate-400" />
-        <span className="flex-1">{t('documents.search_placeholder')}</span>
-      </button>
+      {profile.country !== 'Spain' && (
+        <button type="button" onClick={() => setIsSearchOpen(true)} className="w-full flex items-center gap-3 pl-4 pr-4 py-3 border rounded-2xl text-sm text-left transition-all active:scale-[0.98] hover:border-primary/30" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}>
+          <Search size={18} className="shrink-0 text-slate-400" />
+          <span className="flex-1">{t('documents.search_placeholder')}</span>
+        </button>
+      )}
 
       {profile.country !== 'Spain' && <motion.button variants={item} onClick={() => setIsExportOpen(true)} className={`w-full p-6 border rounded-3xl flex items-center justify-between transition-all group active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5'}`}>
         <div className="flex items-center gap-4">
@@ -221,6 +223,12 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
       )}
 
       <motion.div variants={item} className="space-y-4">
+        {profile.country === 'Spain' && (
+          <button type="button" onClick={() => setIsSearchOpen(true)} className="w-full flex items-center gap-3 pl-4 pr-4 py-3 border rounded-2xl text-sm text-left transition-all active:scale-[0.98] hover:border-primary/30" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}>
+            <Search size={18} className="shrink-0 text-slate-400" />
+            <span className="flex-1">{t('documents.search_placeholder')}</span>
+          </button>
+        )}
         <div className="flex items-center justify-between px-2">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
             {searchQuery.trim() ? `${filteredDocuments.length} risultat${filteredDocuments.length === 1 ? 'o' : 'i'} per "${searchQuery}"` : filter === 'all' ? 'Cronologia Completa' : filter === 'income' ? 'Fatture Clienti' : 'Spese e Uscite'}
