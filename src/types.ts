@@ -33,7 +33,7 @@ export interface Profile {
 
 export interface Document {
   id: string;
-  type: 'invoice' | 'expense' | 'credit_note' | 'proforma';
+  type: 'invoice' | 'expense' | 'credit_note' | 'proforma' | 'factura_rectificativa';
   title: string;
   amount: number;
   date: string;

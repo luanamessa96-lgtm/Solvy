@@ -354,7 +354,7 @@ function AppInner() {
 
   const handleAddDocument = async (doc: Document) => {
     setDocuments(prev => markOverdue([doc, ...prev]));
-    showToast(doc.type === 'invoice' ? 'Fattura aggiunta' : doc.type === 'credit_note' ? 'Nota di credito aggiunta' : 'Spesa aggiunta');
+    showToast(doc.type === 'invoice' ? 'Fattura aggiunta' : doc.type === 'credit_note' ? 'Nota di credito aggiunta' : doc.type === 'factura_rectificativa' ? 'Factura rectificativa creada' : 'Spesa aggiunta');
 
     let docToSave = doc;
 
@@ -410,7 +410,7 @@ function AppInner() {
   const totalIncome = useMemo(() => {
     const currentYear = new Date().getFullYear();
     const paid = documents.filter(doc => doc.type === 'invoice' && doc.status === 'paid' && getLocalYear(doc.date) === currentYear).reduce((sum, doc) => sum + doc.amount, 0);
-    const credited = documents.filter(doc => doc.type === 'credit_note' && getLocalYear(doc.date) === currentYear).reduce((sum, doc) => sum + doc.amount, 0);
+    const credited = documents.filter(doc => (doc.type === 'credit_note' || doc.type === 'factura_rectificativa') && getLocalYear(doc.date) === currentYear).reduce((sum, doc) => sum + doc.amount, 0);
     return paid - credited;
   }, [documents]);
 

@@ -137,7 +137,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     return yearDocs.filter(d => {
       const month = getLocalMonth(d.date);
       if (!syncedMonths.has(month)) return false;
-      if (docFilter === 'invoice') return d.type === 'invoice';
+      if (docFilter === 'invoice') return d.type === 'invoice' || d.type === 'factura_rectificativa';
       if (docFilter === 'expense') return d.type === 'expense';
       return true;
     }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -150,7 +150,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
   const totals = useMemo(() => filteredDocs.reduce((acc, d) => {
     if (d.type === 'invoice') acc.income += d.amount;
-    else if (d.type === 'credit_note') acc.income -= d.amount;
+    else if (d.type === 'credit_note' || d.type === 'factura_rectificativa') acc.income -= d.amount;
     else if (d.type === 'expense') acc.expenses += d.amount;
     return acc;
   }, { income: 0, expenses: 0 }), [filteredDocs]);
@@ -317,11 +317,21 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const yearsActive = profile.annoInizioAttivita ? currentYr - profile.annoInizioAttivita : 10;
       const retencionRate = yearsActive <= 3 ? 7 : 15;
 
+      const isRectificativaES = inv.type === 'factura_rectificativa';
+
       // Title
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(22);
       pdf.setTextColor(...black);
-      pdf.text('FACTURA', M, 18);
+      pdf.text(isRectificativaES ? 'FACTURA RECTIFICATIVA' : 'FACTURA', M, 18);
+
+      // Factura original reference for rectificativas
+      if (isRectificativaES && inv.category) {
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(8);
+        pdf.setTextColor(...grey);
+        pdf.text(`Factura original: ${inv.category}`, M, 24);
+      }
 
       // Nº + Fecha (right)
       pdf.setFont('helvetica', 'normal');
@@ -389,7 +399,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       autoTable(pdf, {
         startY: y,
         head: [['Descripción', 'Importe']],
-        body: [[inv.title || 'Servicio no especificado', `€ ${inv.amount.toFixed(2)}`]],
+        body: [[inv.title || (isRectificativaES ? 'Factura rectificativa' : 'Servicio no especificado'), isRectificativaES ? `– € ${inv.amount.toFixed(2)}` : `€ ${inv.amount.toFixed(2)}`]],
         styles: { fontSize: 9, cellPadding: { top: 5, bottom: 5, left: 3, right: 3 }, textColor: black },
         headStyles: { fillColor: [248, 250, 252], textColor: grey, fontStyle: 'bold', fontSize: 8, lineColor: lightGrey, lineWidth: 0.3 },
         bodyStyles: { lineColor: lightGrey, lineWidth: 0.2 },
@@ -407,12 +417,19 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const ivaAmount = inv.amount * (ivaRate / 100);
       const retencionAmount = inv.amount * (retencionRate / 100);
       const totalACobrar = inv.amount + ivaAmount - retencionAmount;
+      const totalADevolver = -(inv.amount + ivaAmount - retencionAmount);
 
-      const summaryRows: [string, string][] = [
-        ['Base imponible', `€ ${inv.amount.toFixed(2)}`],
-        [`IVA ${ivaRate}%`, `+ € ${ivaAmount.toFixed(2)}`],
-        [`Ret. IRPF ${retencionRate}%`, `- € ${retencionAmount.toFixed(2)}`],
-      ];
+      const summaryRows: [string, string][] = isRectificativaES
+        ? [
+            ['Base imponible', `– € ${inv.amount.toFixed(2)}`],
+            [`IVA ${ivaRate}%`, `– € ${ivaAmount.toFixed(2)}`],
+            [`Ret. IRPF ${retencionRate}%`, `+ € ${retencionAmount.toFixed(2)}`],
+          ]
+        : [
+            ['Base imponible', `€ ${inv.amount.toFixed(2)}`],
+            [`IVA ${ivaRate}%`, `+ € ${ivaAmount.toFixed(2)}`],
+            [`Ret. IRPF ${retencionRate}%`, `- € ${retencionAmount.toFixed(2)}`],
+          ];
 
       summaryRows.forEach(([label, value]) => {
         pdf.setFont('helvetica', 'normal');
@@ -430,10 +447,10 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(10);
       pdf.setTextColor(...black);
-      pdf.text('TOTAL A COBRAR', summaryX, y + 5);
+      pdf.text(isRectificativaES ? 'TOTAL A DEVOLVER' : 'TOTAL A COBRAR', summaryX, y + 5);
       pdf.setFontSize(11);
       pdf.setTextColor(...primary);
-      pdf.text(`€ ${totalACobrar.toFixed(2)}`, summaryX + summaryW, y + 5, { align: 'right' });
+      pdf.text(isRectificativaES ? `– € ${Math.abs(totalADevolver).toFixed(2)}` : `€ ${totalACobrar.toFixed(2)}`, summaryX + summaryW, y + 5, { align: 'right' });
 
       // Footer
       pdf.setDrawColor(...lightGrey);
@@ -628,7 +645,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       pdf.text('Pag. 1 di 1', R, 285, { align: 'right' });
     };
 
-    const invoices = includeDocumenti ? filteredDocs.filter(d => d.type === 'invoice' || d.type === 'credit_note') : [];
+    const invoices = includeDocumenti ? filteredDocs.filter(d => d.type === 'invoice' || d.type === 'credit_note' || d.type === 'factura_rectificativa') : [];
     const expenses = includeDocumenti ? filteredDocs.filter(d => d.type === 'expense') : [];
 
     // Una pagina per ogni fattura/nota di credito
@@ -706,7 +723,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       if (pdfSections > 0) pdf.addPage();
       pdfSections++;
       const regDocs = yearDocs
-        .filter(d => (d.type === 'invoice' || d.type === 'credit_note') && syncedMonths.has(getLocalMonth(d.date)))
+        .filter(d => (d.type === 'invoice' || d.type === 'credit_note' || d.type === 'factura_rectificativa') && syncedMonths.has(getLocalMonth(d.date)))
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       pdf.setFillColor(...primary);
       pdf.rect(0, 0, W, 22, 'F');
@@ -887,7 +904,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const generateRegistroFile = async (): Promise<{ blob: Blob; fileName: string }> => {
     const MARCA_BOLLO_VAL = 2;
     const registroDocs = yearDocs
-      .filter(d => (d.type === 'invoice' || d.type === 'credit_note') && syncedMonths.has(getLocalMonth(d.date)))
+      .filter(d => (d.type === 'invoice' || d.type === 'credit_note' || d.type === 'factura_rectificativa') && syncedMonths.has(getLocalMonth(d.date)))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     const calcDoc = (doc: AppDoc) => {
