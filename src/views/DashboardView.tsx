@@ -382,6 +382,19 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
           const barIRPF = income > 0 ? (spTaxes.irpf / income) * 100 : 0;
           const barRETA = income > 0 ? (spTaxes.reta / income) * 100 : 0;
           const barNetES = income > 0 ? (Math.max(0, spTaxes.netIncome) / income) * 100 : 0;
+          // ES-17 — Aparta para impuestos
+          const currentMonthES = today.getMonth() + 1;
+          const mesiRimastiES = Math.max(1, 12 - currentMonthES);
+          const rataMensileES = Math.round((spTaxes.irpf + spTaxes.reta) / mesiRimastiES);
+          const quarterlyAmountES = Math.round(spTaxes.irpf / 4);
+          const currentYearES = today.getFullYear();
+          const quarterlyDeadlinesES = [
+            { date: new Date(currentYearES, 3, 20), label: '20 de abril', modelo: 'Mod. 130 T1' },
+            { date: new Date(currentYearES, 6, 20), label: '20 de julio', modelo: 'Mod. 130 T2' },
+            { date: new Date(currentYearES, 9, 20), label: '20 de octubre', modelo: 'Mod. 130 T3' },
+            { date: new Date(currentYearES + 1, 0, 20), label: '20 de enero', modelo: 'Mod. 130 T4' },
+          ];
+          const nextQuarterlyES = quarterlyDeadlinesES.find(d => d.date >= today) ?? quarterlyDeadlinesES[3];
           return (
             <motion.div key="taxes" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }} className="px-6 space-y-4">
               <div className={`rounded-3xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
@@ -451,6 +464,28 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   <p className="text-xs text-slate-400 mt-0.5">
                     {new Date(nextSpDeadline.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
                     {daysToNext !== null && ` — faltan ${daysToNext} días`}
+                  </p>
+                </div>
+              )}
+              {/* ES-17 — Aparta para impuestos (Pro ES) */}
+              {isPro && income > 0 && (
+                <div
+                  className="rounded-3xl p-5 border"
+                  style={darkMode
+                    ? { background: 'rgba(109, 40, 217, 0.1)', borderColor: 'rgba(139, 92, 246, 0.2)' }
+                    : { background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)', borderColor: '#ddd6fe' }
+                  }
+                >
+                  <div className="space-y-2 mb-3">
+                    <p className={`text-sm font-bold ${darkMode ? 'text-violet-300' : 'text-violet-800'}`}>
+                      💰 Aparta €{rataMensileES.toLocaleString('es-ES')}/mes para estar tranquilo
+                    </p>
+                    <p className={`text-sm font-bold ${darkMode ? 'text-violet-400' : 'text-violet-700'}`}>
+                      📅 Próximo pago: €{quarterlyAmountES.toLocaleString('es-ES')} el {nextQuarterlyES.label} ({nextQuarterlyES.modelo})
+                    </p>
+                  </div>
+                  <p className={`text-[10px] leading-relaxed ${darkMode ? 'text-violet-500' : 'text-violet-500'}`}>
+                    Estimación basada en los datos actuales. El importe real puede variar.
                   </p>
                 </div>
               )}
