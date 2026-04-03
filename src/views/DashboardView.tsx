@@ -10,6 +10,7 @@ import InfoTooltip from '../components/ui/InfoTooltip';
 const DashboardChart = lazy(() => import('../components/DashboardChart'));
 import { calculateSpanishTaxes } from '../lib/countries/es';
 import { getSpanishDeadlines } from '../data/deadlines-es';
+import { calcularTrimestre } from '../services/modelosES';
 import { parseLocalDate, getLocalYear } from '../utils/date';
 import { getItDeductibilityRate } from '../lib/it/deductibility';
 import { getEsDeductibilityRate } from '../lib/es/deductibility';
@@ -409,6 +410,13 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
             { date: new Date(currentYearES + 1, 0, 20), label: '20 de enero', modelo: 'Mod. 130 T4' },
           ];
           const nextQuarterlyES = quarterlyDeadlinesES.find(d => d.date >= today) ?? quarterlyDeadlinesES[3];
+          // ES-29 — importo stimato per il prossimo vencimiento trimestral
+          const nextQNum: 1 | 2 | 3 | 4 | null = nextSpDeadline?.title.includes('T1') ? 1
+            : nextSpDeadline?.title.includes('T2') ? 2
+            : nextSpDeadline?.title.includes('T3') ? 3
+            : nextSpDeadline?.title.includes('T4') ? 4
+            : null;
+          const nextQData = nextQNum ? calcularTrimestre(documents, nextQNum, displayYear) : null;
           return (
             <motion.div key="taxes" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }} className="px-6 space-y-4">
               <div className={`rounded-3xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
@@ -472,13 +480,36 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                 </div>
               </div>
               {nextSpDeadline && (
-                <div className={`rounded-3xl p-5 border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Próximo vencimiento</p>
-                  <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{nextSpDeadline.title}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {new Date(nextSpDeadline.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
-                    {daysToNext !== null && ` — faltan ${daysToNext} días`}
-                  </p>
+                <div className={`rounded-3xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                  <div className={`px-5 pt-5 pb-4 ${nextQData ? `border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}` : ''}`}>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Próximo vencimiento</p>
+                    <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{nextSpDeadline.title}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {new Date(nextSpDeadline.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
+                      {daysToNext !== null && ` — faltan ${daysToNext} días`}
+                    </p>
+                  </div>
+                  {nextQData && (
+                    <div className="px-5 py-4 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-slate-400">Mod. 130 — IRPF</span>
+                        <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>~€{Math.round(nextQData.cuotaIRPF).toLocaleString('es-ES')}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-slate-400">Mod. 303 — IVA</span>
+                        <span className={`text-xs font-bold ${nextQData.diferenciaIVA < 0 ? 'text-emerald-500' : (darkMode ? 'text-white' : 'text-slate-900')}`}>
+                          {nextQData.diferenciaIVA < 0 ? `a devolver ~€${Math.round(Math.abs(nextQData.diferenciaIVA)).toLocaleString('es-ES')}` : `~€${Math.round(nextQData.diferenciaIVA).toLocaleString('es-ES')}`}
+                        </span>
+                      </div>
+                      <div className={`pt-2 border-t flex justify-between items-center ${darkMode ? 'border-slate-800' : 'border-slate-100'}`}>
+                        <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>Total estimado</span>
+                        <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                          ~€{Math.round(nextQData.cuotaIRPF + Math.max(0, nextQData.diferenciaIVA)).toLocaleString('es-ES')}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 pt-1">Estimación basada en los datos actuales. El importe real puede variar.</p>
+                    </div>
+                  )}
                 </div>
               )}
               {/* ES-28 — Retenciones IRPF subidas */}
