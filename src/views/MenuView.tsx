@@ -13,12 +13,13 @@ interface MenuViewProps {
   onAccountantClick: () => void;
   onFiscalClick: () => void;
   onGuidaFiscaleClick: () => void;
+  onGuiaFiscalESClick: () => void;
   onLogout: () => void;
   darkMode?: boolean;
   key?: string;
 }
 
-const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountantClick, onFiscalClick, onGuidaFiscaleClick, onLogout, darkMode }: MenuViewProps) => {
+const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountantClick, onFiscalClick, onGuidaFiscaleClick, onGuiaFiscalESClick, onLogout, darkMode }: MenuViewProps) => {
   const { t } = useTranslation();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
@@ -27,6 +28,7 @@ const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onAccountant
   const menuItems: { label: string; icon: LucideIcon; onClick: () => void; color?: string }[] = [
     { label: 'Fiscalità', icon: BarChart2, onClick: onFiscalClick },
     ...(activeProfile.country !== 'Spain' ? [{ label: '📚 Guida Fiscale', icon: BookOpen, onClick: onGuidaFiscaleClick }] : []),
+    ...(activeProfile.country === 'Spain' ? [{ label: '📚 Guía Fiscal', icon: BookOpen, onClick: onGuiaFiscalESClick }] : []),
     { label: t('menu.accountant'), icon: Briefcase, onClick: onAccountantClick },
     { label: t('menu.settings'), icon: Settings, onClick: onSettingsClick },
     { label: t('menu.subscription'), icon: CreditCard, onClick: () => setIsPaywallOpen(true) },
