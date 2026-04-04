@@ -37,6 +37,38 @@ interface DocumentsViewProps {
   openChoiceTrigger?: number;
 }
 
+function DocCard({ doc, darkMode, profile, i18nLanguage, t, onClick }: { doc: Document; darkMode?: boolean; profile: Profile; i18nLanguage: string; t: (k: string) => string; onClick: () => void }) {
+  return (
+    <motion.button onClick={onClick} className={`w-full p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-xl text-left ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${doc.type === 'invoice' ? (darkMode ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600') : doc.type === 'credit_note' ? (darkMode ? 'bg-violet-500/10 text-violet-400' : 'bg-violet-50 text-violet-600') : doc.type === 'factura_rectificativa' ? (darkMode ? 'bg-rose-500/10 text-rose-400' : 'bg-rose-50 text-rose-600') : doc.type === 'proforma' ? (darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500') : doc.type === 'presupuesto' ? (darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600') : (darkMode ? 'bg-red-500/10 text-red-500' : 'bg-red-50 text-red-600')}`}>
+        {doc.type === 'invoice' ? <FileText size={18} /> : doc.type === 'credit_note' ? <FileMinus size={18} /> : doc.type === 'factura_rectificativa' ? <FileMinus size={18} /> : doc.type === 'proforma' ? <FileText size={18} /> : doc.type === 'presupuesto' ? <FileText size={18} /> : <FileEdit size={18} />}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between items-start mb-0.5">
+          <h3 className={`text-sm font-bold truncate pr-2 transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>{doc.client || doc.title}</h3>
+          <p className={`text-sm font-bold shrink-0 ${doc.type === 'expense' || doc.type === 'credit_note' || doc.type === 'factura_rectificativa' ? 'text-red-500' : doc.type === 'proforma' ? (darkMode ? 'text-slate-400' : 'text-slate-500') : doc.type === 'presupuesto' ? (darkMode ? 'text-amber-400' : 'text-amber-600') : 'text-emerald-500'}`}>{doc.type === 'expense' || doc.type === 'credit_note' || doc.type === 'factura_rectificativa' ? '-' : ''}€{doc.amount.toLocaleString()}</p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] font-medium text-slate-400">{parseLocalDate(doc.date).toLocaleDateString(i18nLanguage, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+          {doc.type === 'proforma' && <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-200 text-slate-500'}`}>PROFORMA</span>}
+          {doc.type === 'presupuesto' && <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}>PRESUPUESTO</span>}
+          {doc.type === 'credit_note' && <span className="text-[10px] font-bold uppercase tracking-wider text-violet-500">· Nota di credito</span>}
+          {doc.type === 'factura_rectificativa' && <span className="text-[10px] font-bold uppercase tracking-wider text-rose-500">· Factura rectificativa</span>}
+          {doc.type === 'invoice' && doc.status === 'paid' && <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">· {t('documents.status_badge_paid')}</span>}
+          {doc.type === 'invoice' && doc.status === 'pending' && <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500">· {t('documents.status_badge_pending')}</span>}
+          {doc.type === 'invoice' && doc.status === 'overdue' && <span className="text-[10px] font-bold uppercase tracking-wider text-red-500">· {t('documents.status_badge_overdue')}</span>}
+          {doc.type === 'credit_note' && doc.category && <span className="text-[10px] font-medium text-slate-400">· rif. {doc.category}</span>}
+          {doc.type === 'expense' && doc.category && <span className="text-[10px] font-medium text-slate-400">· {doc.category}</span>}
+          {doc.type === 'expense' && (doc.ivaRate ?? 0) > 0 && <span className="text-[10px] font-bold text-primary">· {doc.ivaRate}% IVA</span>}
+          {profile.country === 'Italy' && doc.type === 'invoice' && (!doc.title || !doc.clientAddress || (!doc.clientPiva && doc.clientPiva !== 'Privato')) && (
+            <AlertTriangle size={11} className="text-amber-400 shrink-0" />
+          )}
+        </div>
+      </div>
+    </motion.button>
+  );
+}
+
 const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, onUpdateProfile, accountant, profile, darkMode, theme, onMediaLibraryClick, onNavigateToProfile, openChoiceTrigger }: DocumentsViewProps) => {
   const isProDark = theme === 'pro-dark';
   const { t, i18n } = useTranslation();
@@ -118,6 +150,28 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
     if (q) docs = docs.filter(d => (d.title ?? '').toLowerCase().includes(q) || (d.client ?? '').toLowerCase().includes(q) || (d.category ?? '').toLowerCase().includes(q) || String(d.amount).includes(q));
     return docs;
   }, [documents, yearDocuments, filter, statusFilter, searchQuery]);
+
+  const monthGroups = useMemo(() => {
+    if (profile.country !== 'Spain') return null;
+    const groups: { key: string; label: string; income: number; expenses: number; docs: typeof filteredDocuments }[] = [];
+    const map = new Map<string, typeof groups[0]>();
+    for (const doc of filteredDocuments) {
+      const d = parseLocalDate(doc.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (!map.has(key)) {
+        const label = d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+        const entry = { key, label: label.charAt(0).toUpperCase() + label.slice(1), income: 0, expenses: 0, docs: [] as typeof filteredDocuments };
+        map.set(key, entry);
+        groups.push(entry);
+      }
+      const g = map.get(key)!;
+      g.docs.push(doc);
+      if (doc.type === 'invoice' && doc.status === 'paid') g.income += doc.amount;
+      else if (doc.type === 'presupuesto') { /* no totals for estimates */ }
+      else if (doc.type === 'expense' || doc.type === 'factura_rectificativa') g.expenses += doc.amount;
+    }
+    return groups;
+  }, [profile.country, filteredDocuments]);
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.15 } } };
   const item = { hidden: { opacity: 0 }, show: { opacity: 1 } };
@@ -280,35 +334,29 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
           )}
         </div>
         <div className="space-y-3">
-          {filteredDocuments.length > 0 ? filteredDocuments.map(doc => (
-            <motion.button variants={item} key={doc.id} onClick={() => setSelectedDoc(doc)} className={`w-full p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-xl text-left ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}>
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${doc.type === 'invoice' ? (darkMode ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600') : doc.type === 'credit_note' ? (darkMode ? 'bg-violet-500/10 text-violet-400' : 'bg-violet-50 text-violet-600') : doc.type === 'factura_rectificativa' ? (darkMode ? 'bg-rose-500/10 text-rose-400' : 'bg-rose-50 text-rose-600') : doc.type === 'proforma' ? (darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500') : doc.type === 'presupuesto' ? (darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600') : (darkMode ? 'bg-red-500/10 text-red-500' : 'bg-red-50 text-red-600')}`}>
-                {doc.type === 'invoice' ? <FileText size={18} /> : doc.type === 'credit_note' ? <FileMinus size={18} /> : doc.type === 'factura_rectificativa' ? <FileMinus size={18} /> : doc.type === 'proforma' ? <FileText size={18} /> : doc.type === 'presupuesto' ? <FileText size={18} /> : <FileEdit size={18} />}
+          {filteredDocuments.length > 0 ? (
+            profile.country === 'Spain' && monthGroups ? (
+              <div className="space-y-6">
+                {monthGroups.map(group => (
+                  <div key={group.key} className="space-y-2">
+                    <div className="flex items-center gap-3 px-1 pb-1">
+                      <span className={`text-[11px] font-bold uppercase tracking-widest ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>{group.label}</span>
+                      <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800" />
+                      {group.income > 0 && <span className="text-[10px] font-bold text-emerald-500">+€{group.income.toLocaleString()}</span>}
+                      {group.expenses > 0 && <span className="text-[10px] font-bold text-red-500">-€{group.expenses.toLocaleString()}</span>}
+                    </div>
+                    <div className="space-y-2">
+                      {group.docs.map(doc => (
+                        <DocCard key={doc.id} doc={doc} darkMode={darkMode} profile={profile} i18nLanguage={i18n.language} t={t} onClick={() => setSelectedDoc(doc)} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start mb-0.5">
-                  <h3 className={`text-sm font-bold truncate pr-2 transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>{doc.client || doc.title}</h3>
-                  <p className={`text-sm font-bold shrink-0 ${doc.type === 'expense' || doc.type === 'credit_note' || doc.type === 'factura_rectificativa' ? 'text-red-500' : doc.type === 'proforma' ? (darkMode ? 'text-slate-400' : 'text-slate-500') : doc.type === 'presupuesto' ? (darkMode ? 'text-amber-400' : 'text-amber-600') : 'text-emerald-500'}`}>{doc.type === 'expense' || doc.type === 'credit_note' || doc.type === 'factura_rectificativa' ? '-' : ''}€{doc.amount.toLocaleString()}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-medium text-slate-400">{parseLocalDate(doc.date).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                  {doc.type === 'proforma' && <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-200 text-slate-500'}`}>PROFORMA</span>}
-                  {doc.type === 'presupuesto' && <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}>PRESUPUESTO</span>}
-                  {doc.type === 'credit_note' && <span className="text-[10px] font-bold uppercase tracking-wider text-violet-500">· Nota di credito</span>}
-                  {doc.type === 'factura_rectificativa' && <span className="text-[10px] font-bold uppercase tracking-wider text-rose-500">· Factura rectificativa</span>}
-                  {doc.type === 'invoice' && doc.status === 'paid' && <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">· {t('documents.status_badge_paid')}</span>}
-                  {doc.type === 'invoice' && doc.status === 'pending' && <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500">· {t('documents.status_badge_pending')}</span>}
-                  {doc.type === 'invoice' && doc.status === 'overdue' && <span className="text-[10px] font-bold uppercase tracking-wider text-red-500">· {t('documents.status_badge_overdue')}</span>}
-                  {doc.type === 'credit_note' && doc.category && <span className="text-[10px] font-medium text-slate-400">· rif. {doc.category}</span>}
-                  {doc.type === 'expense' && doc.category && <span className="text-[10px] font-medium text-slate-400">· {doc.category}</span>}
-                  {doc.type === 'expense' && (doc.ivaRate ?? 0) > 0 && <span className="text-[10px] font-bold text-primary">· {doc.ivaRate}% IVA</span>}
-                  {profile.country === 'Italy' && doc.type === 'invoice' && (!doc.title || !doc.clientAddress || (!doc.clientPiva && doc.clientPiva !== 'Privato')) && (
-                    <AlertTriangle size={11} className="text-amber-400 shrink-0" />
-                  )}
-                </div>
-              </div>
-            </motion.button>
-          )) : (
+            ) : filteredDocuments.map(doc => (
+              <DocCard key={doc.id} doc={doc} darkMode={darkMode} profile={profile} i18nLanguage={i18n.language} t={t} onClick={() => setSelectedDoc(doc)} />
+            ))
+          ) : (
             <div className="py-16 text-center space-y-4">
               {searchQuery.trim() ? (
                 <>
