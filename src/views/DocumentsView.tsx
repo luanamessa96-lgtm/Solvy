@@ -8,7 +8,6 @@ import CreateInvoiceModal from '../components/modals/CreateInvoiceModal';
 import CreateExpenseModal from '../components/modals/CreateExpenseModal';
 import CreateCreditNoteModal from '../components/modals/CreateCreditNoteModal';
 import CreateFacturaRectificativaModal from '../components/modals/CreateFacturaRectificativaModal';
-import CreatePresupuestoModal from '../components/modals/CreatePresupuestoModal';
 import SearchOverlay from '../components/modals/SearchOverlay';
 import ExportModal from '../components/modals/ExportModal';
 import ResumenTrimestralModal from '../components/modals/ResumenTrimestralModal';
@@ -52,7 +51,6 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const [isCreditNoteOpen, setIsCreditNoteOpen] = useState(false);
   const [isProformaOpen, setIsProformaOpen] = useState(false);
   const [isRectificativaOpen, setIsRectificativaOpen] = useState(false);
-  const [isPresupuestoOpen, setIsPresupuestoOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'pending' | 'overdue'>('all');
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
@@ -92,7 +90,6 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
     if (doc.type === 'invoice' && doc.status === 'paid') acc.income += doc.amount;
     else if (doc.type === 'credit_note' || doc.type === 'factura_rectificativa') acc.income -= doc.amount;
     else if (doc.type === 'expense') acc.expenses += doc.amount;
-    // presupuesto non conta per fatturato
     return acc;
   }, { income: 0, expenses: 0 }), [yearDocuments]);
 
@@ -243,18 +240,17 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
         <div className="space-y-3">
           {filteredDocuments.length > 0 ? filteredDocuments.map(doc => (
             <motion.button variants={item} key={doc.id} onClick={() => setSelectedDoc(doc)} className={`w-full p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-xl text-left ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}>
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${doc.type === 'invoice' ? (darkMode ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600') : doc.type === 'credit_note' ? (darkMode ? 'bg-violet-500/10 text-violet-400' : 'bg-violet-50 text-violet-600') : doc.type === 'factura_rectificativa' ? (darkMode ? 'bg-rose-500/10 text-rose-400' : 'bg-rose-50 text-rose-600') : doc.type === 'proforma' ? (darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500') : doc.type === 'presupuesto' ? (darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600') : (darkMode ? 'bg-red-500/10 text-red-500' : 'bg-red-50 text-red-600')}`}>
-                {doc.type === 'invoice' ? <FileText size={18} /> : doc.type === 'credit_note' ? <FileMinus size={18} /> : doc.type === 'factura_rectificativa' ? <FileMinus size={18} /> : doc.type === 'proforma' ? <FileText size={18} /> : doc.type === 'presupuesto' ? <FileText size={18} /> : <FileEdit size={18} />}
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${doc.type === 'invoice' ? (darkMode ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600') : doc.type === 'credit_note' ? (darkMode ? 'bg-violet-500/10 text-violet-400' : 'bg-violet-50 text-violet-600') : doc.type === 'factura_rectificativa' ? (darkMode ? 'bg-rose-500/10 text-rose-400' : 'bg-rose-50 text-rose-600') : doc.type === 'proforma' ? (darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500') : (darkMode ? 'bg-red-500/10 text-red-500' : 'bg-red-50 text-red-600')}`}>
+                {doc.type === 'invoice' ? <FileText size={18} /> : doc.type === 'credit_note' ? <FileMinus size={18} /> : doc.type === 'factura_rectificativa' ? <FileMinus size={18} /> : doc.type === 'proforma' ? <FileText size={18} /> : <FileEdit size={18} />}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start mb-0.5">
                   <h3 className={`text-sm font-bold truncate pr-2 transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>{doc.client || doc.title}</h3>
-                  <p className={`text-sm font-bold shrink-0 ${doc.type === 'expense' || doc.type === 'credit_note' || doc.type === 'factura_rectificativa' ? 'text-red-500' : doc.type === 'proforma' ? (darkMode ? 'text-slate-400' : 'text-slate-500') : doc.type === 'presupuesto' ? (darkMode ? 'text-amber-400' : 'text-amber-600') : 'text-emerald-500'}`}>{doc.type === 'expense' || doc.type === 'credit_note' || doc.type === 'factura_rectificativa' ? '-' : ''}€{doc.amount.toLocaleString()}</p>
+                  <p className={`text-sm font-bold shrink-0 ${doc.type === 'expense' || doc.type === 'credit_note' || doc.type === 'factura_rectificativa' ? 'text-red-500' : doc.type === 'proforma' ? (darkMode ? 'text-slate-400' : 'text-slate-500') : 'text-emerald-500'}`}>{doc.type === 'expense' || doc.type === 'credit_note' || doc.type === 'factura_rectificativa' ? '-' : ''}€{doc.amount.toLocaleString()}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-medium text-slate-400">{parseLocalDate(doc.date).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                   {doc.type === 'proforma' && <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-200 text-slate-500'}`}>PROFORMA</span>}
-                  {doc.type === 'presupuesto' && <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}>PRESUPUESTO</span>}
                   {doc.type === 'credit_note' && <span className="text-[10px] font-bold uppercase tracking-wider text-violet-500">· Nota di credito</span>}
                   {doc.type === 'factura_rectificativa' && <span className="text-[10px] font-bold uppercase tracking-wider text-rose-500">· Factura rectificativa</span>}
                   {doc.type === 'invoice' && doc.status === 'paid' && <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">· {t('documents.status_badge_paid')}</span>}
@@ -363,14 +359,6 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                       </div>
                       <ChevronRight size={18} className="ml-auto text-slate-400" />
                     </button>
-                    <button onClick={() => { setIsChoiceOpen(false); setIsPresupuestoOpen(true); }} className={`w-full p-5 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-lg ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-amber-500/40 hover:shadow-amber-500/10' : 'bg-white border-slate-100 hover:border-amber-500/20 hover:shadow-amber-500/5'}`}>
-                      <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-amber-500/30"><FileText size={22} /></div>
-                      <div className="text-left">
-                        <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>📋 Presupuesto</p>
-                        <p className="text-sm text-slate-500">Estimación para un cliente</p>
-                      </div>
-                      <ChevronRight size={18} className="ml-auto text-slate-400" />
-                    </button>
                   </>
                 )}
               </div>
@@ -384,7 +372,6 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
       <CreateCreditNoteModal isOpen={isCreditNoteOpen} onClose={() => setIsCreditNoteOpen(false)} onSave={onAddDocument} profile={profile} documents={documents} darkMode={darkMode} />
       <CreateInvoiceModal isOpen={isProformaOpen} onClose={() => setIsProformaOpen(false)} onSave={onAddDocument} onUpdateProfile={onUpdateProfile} profile={profile} documents={documents} darkMode={darkMode} isProforma={true} />
       <CreateFacturaRectificativaModal isOpen={isRectificativaOpen} onClose={() => setIsRectificativaOpen(false)} onSave={onAddDocument} profile={profile} documents={documents} darkMode={darkMode} />
-      <CreatePresupuestoModal isOpen={isPresupuestoOpen} onClose={() => setIsPresupuestoOpen(false)} onSave={onAddDocument} profile={profile} documents={documents} darkMode={darkMode} />
 
       <AnimatePresence>
         {selectedDoc && (
@@ -396,46 +383,9 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   <div className="flex items-center gap-2">
                     <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedDoc.client || selectedDoc.title}</p>
                     {selectedDoc.type === 'proforma' && <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-200 text-slate-500'}`}>PROFORMA</span>}
-                {selectedDoc.type === 'presupuesto' && <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}>PRESUPUESTO</span>}
                   </div>
-                  <p className={`text-sm font-bold mt-0.5 ${selectedDoc.type === 'expense' || selectedDoc.type === 'credit_note' || selectedDoc.type === 'factura_rectificativa' ? 'text-red-500' : selectedDoc.type === 'proforma' ? (darkMode ? 'text-slate-400' : 'text-slate-500') : selectedDoc.type === 'presupuesto' ? (darkMode ? 'text-amber-400' : 'text-amber-600') : 'text-emerald-500'}`}>{selectedDoc.type === 'expense' || selectedDoc.type === 'credit_note' || selectedDoc.type === 'factura_rectificativa' ? '-' : ''}€{selectedDoc.amount.toLocaleString()}</p>
+                  <p className={`text-sm font-bold mt-0.5 ${selectedDoc.type === 'expense' || selectedDoc.type === 'credit_note' || selectedDoc.type === 'factura_rectificativa' ? 'text-red-500' : selectedDoc.type === 'proforma' ? (darkMode ? 'text-slate-400' : 'text-slate-500') : 'text-emerald-500'}`}>{selectedDoc.type === 'expense' || selectedDoc.type === 'credit_note' || selectedDoc.type === 'factura_rectificativa' ? '-' : ''}€{selectedDoc.amount.toLocaleString()}</p>
                 </div>
-
-                {/* ─── Action sheet presupuesto ─────────────────────────── */}
-                {selectedDoc.type === 'presupuesto' && (<>
-                  <button onClick={async () => { if (!isPro) { setIsPaywallOpen(true); return; } const result = await buildInvoicePDFBlob(selectedDoc, profile); setSelectedDoc(null); setPdfPreview(result); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-100'}`}>
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-amber-500 text-white"><Download size={18} /></div>
-                    <span className="font-bold text-amber-600">Scarica PDF Presupuesto</span>
-                    {!isPro && <span className="ml-auto text-[10px] font-bold text-amber-600/60 uppercase tracking-wide">Pro</span>}
-                  </button>
-                  <button onClick={() => {
-                    const year = new Date().getFullYear();
-                    const yearStr = String(year);
-                    const existingCount = documents.filter(d => d.type === 'invoice' && getLocalYear(d.date) === year).length;
-                    const current = profile.invoiceCounters?.[yearStr] ?? existingCount;
-                    const nextNum = `${String(current + 1).padStart(3, '0')}/${year}`;
-                    const converted: Document = {
-                      ...selectedDoc,
-                      id: Math.random().toString(36).substr(2, 9),
-                      type: 'invoice',
-                      status: 'pending',
-                      invoiceNumber: nextNum,
-                      date: todayLocalISO(),
-                    };
-                    onAddDocument(converted);
-                    onUpdateProfile({ ...profile, invoiceCounters: { ...(profile.invoiceCounters ?? {}), [yearStr]: current + 1 } });
-                    showToast(`Factura ${converted.invoiceNumber} creada`, 'success');
-                    setSelectedDoc(null);
-                  }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-500 text-white"><FileText size={18} /></div>
-                    <span className="font-bold text-emerald-600">Convertir en Factura</span>
-                  </button>
-                  <button onClick={() => { setDocToDelete(selectedDoc); setSelectedDoc(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-red-50 text-red-500"><Trash2 size={18} /></div>
-                    <span className="font-bold text-red-500">Eliminar</span>
-                  </button>
-                  <button onClick={() => setSelectedDoc(null)} className={`w-full py-4 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>Cancelar</button>
-                </>)}
 
                 {/* ─── Action sheet proforma ─────────────────────────────── */}
                 {selectedDoc.type === 'proforma' && (<>
@@ -473,8 +423,8 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   <button onClick={() => setSelectedDoc(null)} className={`w-full py-4 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>Annulla</button>
                 </>)}
 
-                {/* ─── Action sheet standard (non proforma, non presupuesto) */}
-                {selectedDoc.type !== 'proforma' && selectedDoc.type !== 'presupuesto' && (<>
+                {/* ─── Action sheet standard (non proforma) ─────────────── */}
+                {selectedDoc.type !== 'proforma' && (<>
                 {selectedDoc.type === 'invoice' && selectedDoc.status !== 'paid' && (
                   <button onClick={() => { onUpdateDocument({ ...selectedDoc, status: 'paid' }); setSelectedDoc(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-500 text-white"><CheckCircle2 size={18} /></div>

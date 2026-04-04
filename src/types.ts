@@ -33,7 +33,7 @@ export interface Profile {
 
 export interface Document {
   id: string;
-  type: 'invoice' | 'expense' | 'credit_note' | 'proforma' | 'factura_rectificativa' | 'presupuesto';
+  type: 'invoice' | 'expense' | 'credit_note' | 'proforma' | 'factura_rectificativa';
   title: string;
   amount: number;
   date: string;
@@ -53,7 +53,6 @@ export interface Document {
   docRegime?: 'forfettario' | 'ordinario';
   clientSdi?: string;
   clientPec?: string;
-  validezDate?: string;
 }
 
 export interface Deadline {
