@@ -183,7 +183,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const item = { hidden: { opacity: 0 }, show: { opacity: 1 } };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-8 pb-24">
+    <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-8" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 7rem)' }}>
       {profile.country !== 'Spain' && (
         <button type="button" onClick={() => setIsSearchOpen(true)} className="w-full flex items-center gap-3 pl-4 pr-4 py-3 border rounded-2xl text-sm text-left transition-all active:scale-[0.98] hover:border-primary/30" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}>
           <Search size={18} className="shrink-0 text-slate-400" />
