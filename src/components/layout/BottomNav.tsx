@@ -36,7 +36,7 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme, onPlusPress, isNa
     { id: 'menu', label: 'Menù', icon: Settings },
   ];
 
-  const hideTranslate = isNavHidden ? 'translateY(110%)' : 'translateY(0)';
+  const hideTranslate = isNavHidden ? 'translateY(calc(100% + 40px))' : 'translateY(0)';
   const containerStyle: import('react').CSSProperties = isPro
     ? { position: 'fixed', bottom: '16px', left: '16px', right: '16px', width: 'auto', zIndex: 30, pointerEvents: 'none', transform: hideTranslate, transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }
     : { position: 'fixed', bottom: 0, left: 0, right: 0, width: '100vw', padding: 0, zIndex: 30, pointerEvents: 'none', transform: hideTranslate, transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' };
