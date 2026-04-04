@@ -252,7 +252,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
             <button
               onClick={() => setFilter('income')}
               className={`p-4 rounded-3xl border transition-all text-left space-y-2 active:scale-[0.95] ${filter === 'income' ? (isProDark ? 'shadow-xl' : 'bg-emerald-500 border-transparent text-white shadow-xl shadow-emerald-500/40') : (darkMode ? 'bg-slate-900 border-slate-800 text-emerald-500 hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/10' : 'bg-white border-slate-100 text-emerald-600 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5')}`}
-              style={filter === 'income' && isProDark ? { background: 'rgba(45, 212, 191, 0.12)', border: '1px solid rgba(45, 212, 191, 0.4)', color: '#2dd4bf' } : undefined}
+              style={filter === 'income' && isProDark ? { background: 'rgba(45, 212, 191, 0.12)', border: '1px solid rgba(45, 212, 191, 0.4)', color: '#2dd4bf', boxShadow: '0 20px 25px -5px rgba(45, 212, 191, 0.25), 0 8px 10px -6px rgba(45, 212, 191, 0.2)' } : undefined}
             >
               <p className={`text-[9px] font-bold uppercase tracking-wider opacity-60`}>Entrate</p>
               <p className="text-sm font-bold">€{totals.income.toLocaleString()}</p>
@@ -260,7 +260,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
             <button
               onClick={() => setFilter('expense')}
               className={`p-4 rounded-3xl border transition-all text-left space-y-2 active:scale-[0.95] ${filter === 'expense' ? (isProDark ? 'shadow-xl' : 'bg-red-600 border-red-600 text-white shadow-xl shadow-red-500/40') : (darkMode ? 'bg-slate-900 border-slate-800 text-red-500 hover:border-red-500/40 hover:shadow-lg hover:shadow-red-500/10' : 'bg-white border-slate-100 text-red-600 hover:border-red-500/20 hover:shadow-lg hover:shadow-red-500/5')}`}
-              style={filter === 'expense' && isProDark ? { background: 'rgba(200, 85, 247, 0.12)', border: '1px solid rgba(200, 85, 247, 0.4)', color: '#c855f7' } : undefined}
+              style={filter === 'expense' && isProDark ? { background: 'rgba(200, 85, 247, 0.12)', border: '1px solid rgba(200, 85, 247, 0.4)', color: '#c855f7', boxShadow: '0 20px 25px -5px rgba(200, 85, 247, 0.25), 0 8px 10px -6px rgba(200, 85, 247, 0.2)' } : undefined}
             >
               <p className={`text-[9px] font-bold uppercase tracking-wider opacity-60`}>Uscite</p>
               <p className="text-sm font-bold">€{totals.expenses.toLocaleString()}</p>
@@ -282,7 +282,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
             <button
               onClick={() => setFilter('income')}
               className={`p-4 rounded-3xl border transition-all text-left space-y-2 active:scale-[0.95] ${filter === 'income' ? (isProDark ? 'shadow-xl' : 'bg-emerald-500 border-transparent text-white shadow-xl shadow-emerald-500/40') : (darkMode ? 'bg-slate-900 border-slate-800 text-emerald-500 hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/10' : 'bg-white border-slate-100 text-emerald-600 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5')}`}
-              style={filter === 'income' && isProDark ? { background: 'rgba(45, 212, 191, 0.12)', border: '1px solid rgba(45, 212, 191, 0.4)', color: '#2dd4bf' } : undefined}
+              style={filter === 'income' && isProDark ? { background: 'rgba(45, 212, 191, 0.12)', border: '1px solid rgba(45, 212, 191, 0.4)', color: '#2dd4bf', boxShadow: '0 20px 25px -5px rgba(45, 212, 191, 0.25), 0 8px 10px -6px rgba(45, 212, 191, 0.2)' } : undefined}
             >
               <p className="text-[9px] font-bold uppercase tracking-wider opacity-60">Ingresos</p>
               <p className="text-sm font-bold">€{totals.income.toLocaleString()}</p>
@@ -290,7 +290,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
             <button
               onClick={() => setFilter('expense')}
               className={`p-4 rounded-3xl border transition-all text-left space-y-2 active:scale-[0.95] ${filter === 'expense' ? (isProDark ? 'shadow-xl' : 'bg-red-600 border-red-600 text-white shadow-xl shadow-red-500/40') : (darkMode ? 'bg-slate-900 border-slate-800 text-red-500 hover:border-red-500/40 hover:shadow-lg hover:shadow-red-500/10' : 'bg-white border-slate-100 text-red-600 hover:border-red-500/20 hover:shadow-lg hover:shadow-red-500/5')}`}
-              style={filter === 'expense' && isProDark ? { background: 'rgba(200, 85, 247, 0.12)', border: '1px solid rgba(200, 85, 247, 0.4)', color: '#c855f7' } : undefined}
+              style={filter === 'expense' && isProDark ? { background: 'rgba(200, 85, 247, 0.12)', border: '1px solid rgba(200, 85, 247, 0.4)', color: '#c855f7', boxShadow: '0 20px 25px -5px rgba(200, 85, 247, 0.25), 0 8px 10px -6px rgba(200, 85, 247, 0.2)' } : undefined}
             >
               <p className="text-[9px] font-bold uppercase tracking-wider opacity-60">Gastos</p>
               <p className="text-sm font-bold">€{totals.expenses.toLocaleString()}</p>
