@@ -500,7 +500,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
 
           {/* IT-19 — Limiti app */}
           {activeProfile.country !== 'Spain' && (
-            <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'border-slate-800' : 'border-slate-100'}`} style={isProLight ? { backgroundColor: 'rgba(255,255,255,0.7)', border: '1px solid rgba(200,85,247,0.2)' } : { backgroundColor: 'var(--color-card-bg)' }}>
+            <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'border-slate-800' : 'border-slate-100'}`} style={isProLight ? { backgroundColor: '#ffffff', border: '1.5px solid rgba(200,85,247,0.35)' } : { backgroundColor: 'var(--color-card-bg)' }}>
               <button
                 onClick={() => setIsIT19Expanded(v => !v)}
                 className="w-full flex items-center justify-between gap-3 px-4 py-3"
@@ -523,7 +523,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
 
           {/* ES-13 — Límites app */}
           {activeProfile.country === 'Spain' && (
-            <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'border-slate-800' : 'border-slate-100'}`} style={isProLight ? { backgroundColor: 'rgba(255,255,255,0.7)', border: '1px solid rgba(200,85,247,0.2)' } : { backgroundColor: 'var(--color-card-bg)' }}>
+            <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'border-slate-800' : 'border-slate-100'}`} style={isProLight ? { backgroundColor: '#ffffff', border: '1.5px solid rgba(200,85,247,0.35)' } : { backgroundColor: 'var(--color-card-bg)' }}>
               <button
                 onClick={() => setIsES13Expanded(v => !v)}
                 className="w-full flex items-center justify-between gap-3 px-4 py-3"
