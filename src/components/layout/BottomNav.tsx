@@ -8,9 +8,10 @@ interface BottomNavProps {
   darkMode?: boolean;
   theme?: string;
   onPlusPress?: () => void;
+  isNavHidden?: boolean;
 }
 
-const BottomNav = ({ activeTab, setActiveTab, darkMode, theme, onPlusPress }: BottomNavProps) => {
+const BottomNav = ({ activeTab, setActiveTab, darkMode, theme, onPlusPress, isNavHidden }: BottomNavProps) => {
   const isPro = theme === 'pro-light' || theme === 'pro-dark';
   const isProLight = theme === 'pro-light';
   const isProDark = theme === 'pro-dark';
@@ -35,9 +36,10 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme, onPlusPress }: Bo
     { id: 'menu', label: 'Menù', icon: Settings },
   ];
 
+  const hideTranslate = isNavHidden ? 'translateY(110%)' : 'translateY(0)';
   const containerStyle: import('react').CSSProperties = isPro
-    ? { position: 'fixed', bottom: '16px', left: '16px', right: '16px', width: 'auto', zIndex: 30, pointerEvents: 'none' }
-    : { position: 'fixed', bottom: 0, left: 0, right: 0, width: '100vw', padding: 0, zIndex: 30, pointerEvents: 'none' };
+    ? { position: 'fixed', bottom: '16px', left: '16px', right: '16px', width: 'auto', zIndex: 30, pointerEvents: 'none', transform: hideTranslate, transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }
+    : { position: 'fixed', bottom: 0, left: 0, right: 0, width: '100vw', padding: 0, zIndex: 30, pointerEvents: 'none', transform: hideTranslate, transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' };
 
   const navClass = isPro
     ? 'flex items-center justify-around'

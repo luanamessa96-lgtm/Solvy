@@ -98,6 +98,8 @@ function AppInner() {
   const [userId, setUserId] = useState<string | null>(null);
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
   const activeProfileRef = useRef(activeProfile);
+  const mainRef = useRef<HTMLElement>(null);
+  const [isNavHidden, setIsNavHidden] = useState(false);
   const profileCache = useRef<Record<string, { documents: Document[], deadlines: Deadline[], accountant: Accountant | null }>>({});
   const { showToast } = useToast();
 
@@ -477,6 +479,21 @@ function AppInner() {
     }
   }, [activeTab, isProfilePage, isSettingsPage, isAccountantPage, isFiscalPage, isMediaLibraryPage, isGuidaFiscalePage, isGuiaFiscalESPage]);
 
+  // Hide BottomNav on scroll down, show on scroll up
+  useEffect(() => {
+    const el = mainRef.current;
+    if (!el) return;
+    let lastY = 0;
+    const onScroll = () => {
+      const y = el.scrollTop;
+      if (y - lastY > 8) setIsNavHidden(true);
+      else if (lastY - y > 8) setIsNavHidden(false);
+      lastY = y;
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [isAuthenticated]); // re-attach when auth changes (main mounts)
+
   const resetSubPages = () => { setIsProfilePage(false); setIsSettingsPage(false); setIsAccountantPage(false); setIsFiscalPage(false); setIsMediaLibraryPage(false); setIsGuidaFiscalePage(false); setIsGuiaFiscalESPage(false); };
   const handleProfileClick = () => { resetSubPages(); setIsProfilePage(true); setActiveTab('menu'); };
   const handleSettingsClick = () => { resetSubPages(); setIsSettingsPage(true); setActiveTab('menu'); };
@@ -485,7 +502,7 @@ function AppInner() {
   const handleMediaLibraryClick = () => { resetSubPages(); setIsMediaLibraryPage(true); setActiveTab('docs'); };
   const handleGuidaFiscaleClick = () => { resetSubPages(); setIsGuidaFiscalePage(true); setActiveTab('menu'); };
   const handleGuiaFiscalESClick = () => { resetSubPages(); setIsGuiaFiscalESPage(true); setActiveTab('menu'); };
-  const handleTabChange = (tab: string) => { resetSubPages(); setActiveTab(tab); };
+  const handleTabChange = (tab: string) => { resetSubPages(); setActiveTab(tab); setIsNavHidden(false); };
 
   const handlePlusPress = () => {
     if (activeTab === 'docs') setDocChoiceTrigger(n => n + 1);
@@ -736,7 +753,7 @@ function AppInner() {
         <NotificationsPanel isOpen={isNotificationsOpen} deadlines={deadlines} onClose={() => setIsNotificationsOpen(false)} onUpdateDeadline={handleUpdateDeadline} darkMode={darkMode} />
       </Suspense>
 
-      <main className={`flex-1 overflow-y-auto ${darkMode ? 'bg-slate-950' : ''}`}>
+      <main ref={mainRef} className={`flex-1 overflow-y-auto ${darkMode ? 'bg-slate-950' : ''}`}>
         <Suspense fallback={<div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>}>
           {isProfilePage ? (
             <ProfileView
@@ -775,7 +792,7 @@ function AppInner() {
       </main>
 
     </div>
-    <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage || isFiscalPage || isGuidaFiscalePage || isGuiaFiscalESPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} theme={theme} onPlusPress={handlePlusPress} />
+    <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage || isFiscalPage || isGuidaFiscalePage || isGuiaFiscalESPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} theme={theme} onPlusPress={handlePlusPress} isNavHidden={isNavHidden} />
     <AnimatePresence>
       {swRegistration && (
         <UpdateBanner
