@@ -45,7 +45,7 @@
   --color-text-muted: #6b7280;
   --color-text-label: #9ca3af;
   --color-positive: #2dd4bf;
-  --color-negative: #c855f7;
+  --color-negative: #f43f5e;
   --color-nav-bg: rgba(255, 255, 255, 0.85);
   --color-nav-icon: #c855f7;
   --color-nav-icon-bg: rgba(200, 85, 247, 0.12);
@@ -65,7 +65,7 @@
   --color-text-muted: #8e8e93;
   --color-text-label: #636366;
   --color-positive: #2dd4bf;
-  --color-negative: #c855f7;
+  --color-negative: #fb7185;
   --color-nav-bg: #141414;
   --color-nav-icon: #c855f7;
   --color-nav-icon-bg: rgba(200, 85, 247, 0.12);
@@ -136,12 +136,6 @@
 
 /* ─── Pro light: valori negativi → var(--color-negative) ─────────────────── */
 
-:root[data-theme="pro-light"] .text-red-500,
-:root[data-theme="pro-light"] .text-red-400,
-:root[data-theme="pro-light"] .text-rose-500,
-:root[data-theme="pro-light"] .text-rose-400 {
-  color: var(--color-negative) !important;
-}
 :root[data-theme="pro-light"] .bg-rose-400 {
   background-color: var(--color-negative) !important;
 }
@@ -175,12 +169,6 @@
 
 /* ─── Pro dark: negative monetary values → var(--color-negative) ────────── */
 
-:root[data-theme="pro-dark"] .text-red-500,
-:root[data-theme="pro-dark"] .text-red-400,
-:root[data-theme="pro-dark"] .text-rose-500,
-:root[data-theme="pro-dark"] .text-rose-400 {
-  color: var(--color-negative) !important;
-}
 :root[data-theme="pro-dark"] .bg-red-500\/10 {
   background-color: rgba(200, 85, 247, 0.1) !important;
 }
