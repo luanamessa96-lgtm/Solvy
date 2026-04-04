@@ -185,7 +185,7 @@ export default function ResumenTrimestralModal({
   };
 
   const fmtPreview = (n: number) =>
-    `€${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    `${n < 0 ? '-' : ''}€${Math.abs(n).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const dm = darkMode;
   const isWorking = isGenerating || isSending;

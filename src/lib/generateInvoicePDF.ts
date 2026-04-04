@@ -16,7 +16,7 @@ const RITENUTA_RATE = 0.20;
 const INPS_RATE = 0.04;
 
 function fmt(n: number) {
-  return `€${n.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `${n < 0 ? '-' : ''}€${Math.abs(n).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 /**

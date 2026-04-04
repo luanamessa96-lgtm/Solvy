@@ -87,7 +87,8 @@ function calcIRPEF(imponibile: number): number {
 }
 
 function fmt(n: number) {
-  return `€${Math.round(n).toLocaleString('it-IT')}`;
+  const abs = Math.abs(Math.round(n));
+  return `${n < 0 ? '-' : ''}€${abs.toLocaleString('it-IT')}`;
 }
 
 type DashTab = 'overview' | 'taxes' | 'expenses';
@@ -321,7 +322,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
               <div className={`px-6 py-5 flex items-center justify-between border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
                 <div className="space-y-0.5">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('dashboard.net_margin')}</p>
-                  <p className={`text-2xl font-bold ${income - expenses >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>€{(income - expenses).toLocaleString()}</p>
+                  <p className={`text-2xl font-bold ${income - expenses >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{income - expenses < 0 ? '-' : ''}€{Math.abs(income - expenses).toLocaleString()}</p>
                 </div>
                 <div className={`px-3 py-1.5 rounded-full text-xs font-bold ${income - expenses >= 0 ? (darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600') : (darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600')}`}>
                   {income > 0 ? `${Math.round(((income - expenses) / income) * 100)}%` : '0%'}
@@ -449,7 +450,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   <div className={`pt-3 border-t space-y-1.5 ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
                     <div className="flex justify-between">
                       <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Neto estimado</span>
-                      <span className={`text-sm font-bold ${spTaxes.netIncome >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>€{Math.round(spTaxes.netIncome).toLocaleString()}</span>
+                      <span className={`text-sm font-bold ${spTaxes.netIncome >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{spTaxes.netIncome < 0 ? '-' : ''}€{Math.abs(Math.round(spTaxes.netIncome)).toLocaleString()}</span>
                     </div>
                     <div className={`w-full h-2 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                       <div className="bg-emerald-400 h-full rounded-full" style={{ width: `${Math.min(barNetES, 100)}%` }} />
