@@ -2,7 +2,7 @@ import { useState } from 'react';
 import JSZip from 'jszip';
 import { todayLocalISO } from '../utils/date';
 import { motion } from 'motion/react';
-import { Sun, Moon, Languages, Trash2, RotateCcw, Loader2, CheckCircle2, AlertCircle, Sparkles, Lock, Download } from 'lucide-react';
+import { Sun, Moon, Languages, Trash2, RotateCcw, Loader2, CheckCircle2, AlertCircle, Sparkles, Lock, Download, ChevronRight, X, CreditCard, Calendar, XCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getClient } from '../lib/supabase';
 import PaywallModal from '../components/modals/PaywallModal';
@@ -36,6 +36,7 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
   type RefundStep = 'idle' | 'confirming' | 'loading' | 'success' | 'error';
   const [refundStep, setRefundStep] = useState<RefundStep>('idle');
   const [refundError, setRefundError] = useState('');
+  const [isSubModalOpen, setIsSubModalOpen] = useState(false);
 
   // Calcola giorni rimasti nel periodo di recesso
   const daysLeft = (() => {
@@ -227,45 +228,102 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
 
 
       {isPro && (
-        <motion.div variants={item} className="rounded-3xl border overflow-hidden transition-colors" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
-          <div className="px-5 pt-5 pb-3 flex items-center justify-between">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('settings.subscription_management')}</p>
-            <span className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-1 rounded-full border border-primary/20">{t('settings.subscription_active')}</span>
-          </div>
+        <motion.div variants={item}>
+          <button
+            onClick={() => setIsSubModalOpen(true)}
+            className="w-full flex items-center gap-4 p-4 rounded-3xl border transition-all active:scale-[0.98]"
+            style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
+          >
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <CreditCard size={18} className="text-primary" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('settings.subscription_management')}</p>
+              <p className="text-xs text-slate-400">{t('settings.subscription_active')}</p>
+            </div>
+            <ChevronRight size={18} className="text-slate-400 shrink-0" />
+          </button>
+        </motion.div>
+      )}
 
-          <div className="px-5 pb-5 space-y-3">
-            {refundStep === 'success' ? (
-              <div className={`flex items-start gap-3 p-4 rounded-2xl ${darkMode ? 'bg-green-900/20 border border-green-800' : 'bg-green-50 border border-green-200'}`}>
-                <CheckCircle2 size={18} className="text-green-500 shrink-0 mt-0.5" />
-                <p className={`text-sm font-medium ${darkMode ? 'text-green-300' : 'text-green-800'}`}>{t('settings.subscription_refund_success')}</p>
+      {/* Modal gestione abbonamento Pro */}
+      {isSubModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setIsSubModalOpen(false)} />
+          <div className={`relative w-full max-w-md rounded-t-[32px] p-6 pb-10 space-y-5 shadow-2xl ${darkMode ? 'bg-slate-900' : 'bg-white'}`}>
+            <div className="flex items-center justify-between">
+              <h2 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('settings.subscription_management')}</h2>
+              <button onClick={() => setIsSubModalOpen(false)} className={`p-2 rounded-full transition-all active:scale-90 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Piano attivo */}
+            <div className={`flex items-center gap-3 p-4 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Sparkles size={18} className="text-primary" />
               </div>
-            ) : refundStep === 'error' ? (
-              <div className={`flex items-start gap-3 p-4 rounded-2xl ${darkMode ? 'bg-red-900/20 border border-red-800' : 'bg-red-50 border border-red-200'}`}>
-                <AlertCircle size={18} className="text-red-500 shrink-0 mt-0.5" />
-                <p className={`text-sm font-medium ${darkMode ? 'text-red-300' : 'text-red-800'}`}>{refundError || t('settings.subscription_refund_error')}</p>
+              <div>
+                <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Solvy Pro</p>
+                <p className="text-xs text-slate-400">{t('settings.subscription_active')} ✓</p>
               </div>
-            ) : daysLeft !== null ? (
-              <>
+            </div>
+
+            {/* Data rinnovo */}
+            {profile.subscriptionStartedAt && (
+              <div className={`flex items-center gap-3 p-4 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Calendar size={18} className="text-primary" />
+                </div>
+                <div>
+                  <p className={`text-xs text-slate-400`}>Prossimo rinnovo stimato</p>
+                  <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                    {(() => {
+                      const d = new Date(profile.subscriptionStartedAt);
+                      d.setMonth(d.getMonth() + 1);
+                      return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+                    })()}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Come cancellare */}
+            <div className={`p-4 rounded-2xl space-y-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+              <div className="flex items-center gap-2 mb-2">
+                <XCircle size={15} className="text-slate-400 shrink-0" />
+                <p className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Come cancellare</p>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Per cancellare l'abbonamento vai su <span className={`font-semibold ${darkMode ? 'text-white' : 'text-slate-700'}`}>App Store → ID Apple → Abbonamenti → Solvy</span> e seleziona "Annulla abbonamento".
+              </p>
+            </div>
+
+            {/* Rimborso se nei 14 giorni */}
+            {daysLeft !== null && (
+              <div className="space-y-3">
                 <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                   {t('settings.subscription_refund_eligible', { days: daysLeft })}
                 </p>
-
-                {refundStep === 'confirming' ? (
-                  <div className={`p-4 rounded-2xl space-y-3 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                {refundStep === 'success' ? (
+                  <div className={`flex items-center gap-2 p-3 rounded-2xl ${darkMode ? 'bg-green-900/20 border border-green-800' : 'bg-green-50 border border-green-200'}`}>
+                    <CheckCircle2 size={16} className="text-green-500 shrink-0" />
+                    <p className={`text-xs font-medium ${darkMode ? 'text-green-300' : 'text-green-800'}`}>{t('settings.subscription_refund_success')}</p>
+                  </div>
+                ) : refundStep === 'error' ? (
+                  <div className={`flex items-center gap-2 p-3 rounded-2xl ${darkMode ? 'bg-red-900/20 border border-red-800' : 'bg-red-50 border border-red-200'}`}>
+                    <AlertCircle size={16} className="text-red-500 shrink-0" />
+                    <p className={`text-xs font-medium ${darkMode ? 'text-red-300' : 'text-red-800'}`}>{refundError || t('settings.subscription_refund_error')}</p>
+                  </div>
+                ) : refundStep === 'confirming' ? (
+                  <div className={`p-4 rounded-2xl space-y-3 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                     <p className={`text-xs font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('settings.subscription_refund_confirm_title')}</p>
                     <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{t('settings.subscription_refund_confirm_text')}</p>
-                    <div className="flex gap-2 pt-1">
-                      <button
-                        onClick={handleRefund}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold text-white bg-red-500 active:scale-95 transition-all"
-                      >
-                        <RotateCcw size={12} />
-                        {t('settings.subscription_refund_confirm_btn')}
+                    <div className="flex gap-2">
+                      <button onClick={handleRefund} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-red-500 active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                        <RotateCcw size={12} />{t('settings.subscription_refund_confirm_btn')}
                       </button>
-                      <button
-                        onClick={() => setRefundStep('idle')}
-                        className={`flex-1 py-2.5 rounded-xl text-xs font-bold active:scale-95 transition-all ${darkMode ? 'bg-slate-700 text-slate-200' : 'bg-white text-slate-600 border border-slate-200'}`}
-                      >
+                      <button onClick={() => setRefundStep('idle')} className={`flex-1 py-2.5 rounded-xl text-xs font-bold active:scale-95 transition-all ${darkMode ? 'bg-slate-700 text-slate-200' : 'bg-white text-slate-600 border border-slate-200'}`}>
                         {t('settings.subscription_refund_cancel_btn')}
                       </button>
                     </div>
@@ -273,21 +331,17 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
                 ) : refundStep === 'loading' ? (
                   <div className="flex items-center justify-center gap-2 py-3">
                     <Loader2 size={16} className="text-primary animate-spin" />
-                    <span className="text-sm text-slate-500">Elaborazione rimborso…</span>
+                    <span className="text-sm text-slate-500">Elaborazione…</span>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => setRefundStep('confirming')}
-                    className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold text-red-500 border active:scale-[0.98] transition-all ${darkMode ? 'border-red-900 hover:bg-red-900/20' : 'border-red-200 hover:bg-red-50'}`}
-                  >
-                    <RotateCcw size={14} />
-                    {t('settings.subscription_refund_btn')}
+                  <button onClick={() => setRefundStep('confirming')} className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold text-red-500 border active:scale-[0.98] transition-all ${darkMode ? 'border-red-900 hover:bg-red-900/20' : 'border-red-200 hover:bg-red-50'}`}>
+                    <RotateCcw size={14} />{t('settings.subscription_refund_btn')}
                   </button>
                 )}
-              </>
-            ) : null}
+              </div>
+            )}
           </div>
-        </motion.div>
+        </div>
       )}
 
       <motion.div variants={item} className="p-6 rounded-3xl space-y-2 transition-colors" style={isProLight ? { backgroundColor: '#ffffff', border: '1.5px solid rgba(200,85,247,0.35)' } : { backgroundColor: 'var(--color-card-bg)' }}>
