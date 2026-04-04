@@ -425,6 +425,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                       status: 'pending',
                       invoiceNumber: nextNum,
                       date: todayLocalISO(),
+                      validezDate: undefined,
                     };
                     onAddDocument(converted);
                     onUpdateProfile({ ...profile, invoiceCounters: { ...(profile.invoiceCounters ?? {}), [yearStr]: current + 1 } });
