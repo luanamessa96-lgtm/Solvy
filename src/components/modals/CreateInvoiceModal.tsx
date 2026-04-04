@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
-import { Plus, FileText, CheckCircle2 } from 'lucide-react';
+import { Plus, FileText, CheckCircle2, Search } from 'lucide-react';
 import { Document, Profile } from '../../types';
 import { todayLocalISO } from '../../utils/date';
 import InfoTooltip from '../ui/InfoTooltip';
@@ -37,11 +37,21 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
       const count = documents.filter(d => d.type === 'proforma' && new Date(d.date).getFullYear() === year).length + 1;
       return `PRO${String(count).padStart(3, '0')}/${year}`;
     }
-    // IT-35: use stored counter if available, else fall back to count for backwards compat
     const existingCount = documents.filter(d => d.type === 'invoice' && new Date(d.date).getFullYear() === year).length;
     const counter = profile.invoiceCounters?.[yearStr] ?? existingCount;
     return `${String(counter + 1).padStart(3, '0')}/${year}`;
   }, [documents, isProforma, profile.invoiceCounters]);
+
+  // ─── Ricerca intelligente clienti esistenti ────────────────────────────────
+  // Mappa client → ultimo documento (ordinata per data desc) per auto-fill
+  const clientHistory = useMemo(() => {
+    const seen = new Map<string, Document>();
+    [...documents]
+      .filter(d => d.client && (d.type === 'invoice' || d.type === 'proforma'))
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .forEach(d => { if (d.client && !seen.has(d.client)) seen.set(d.client, d); });
+    return Array.from(seen.values());
+  }, [documents]);
 
   const [form, setForm] = useState({
     invoiceNumber: '',
@@ -60,7 +70,11 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
     ivaRate: 22,
   });
 
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
   const set = <K extends keyof typeof form>(key: K, value: typeof form[K]) => setForm(f => ({ ...f, [key]: value }));
+  const touch = (key: string) => setTouched(t => ({ ...t, [key]: true }));
 
   const reset = () => {
     setForm({
@@ -80,11 +94,31 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
       ivaRate: 22,
     });
     setTouched({});
+    setShowSuggestions(false);
+  };
+
+  const clientSuggestions = useMemo(() => {
+    if (!form.client.trim() || !showSuggestions) return [];
+    const q = form.client.toLowerCase();
+    return clientHistory.filter(d => d.client!.toLowerCase().includes(q)).slice(0, 5);
+  }, [form.client, clientHistory, showSuggestions]);
+
+  const applyClient = (d: Document) => {
+    setForm(f => ({
+      ...f,
+      client: d.client || f.client,
+      clientAddress: d.clientAddress || f.clientAddress,
+      clientPiva: d.clientPiva || f.clientPiva,
+      clientCf: d.clientCf || f.clientCf,
+      clientSdi: d.clientSdi || f.clientSdi,
+      clientPec: d.clientPec || f.clientPec,
+    }));
+    setShowSuggestions(false);
   };
 
   const amount = parseFloat(form.amount.replace(',', '.')) || 0;
 
-  // Calcoli fiscali
+  // Calcoli fiscali (mostrati anche per proforma)
   const rivalsaAmount = regime === 'ordinario' && form.rivalsaInps ? amount * INPS_RATE : 0;
   const totaleImponibile = amount + rivalsaAmount;
   const ivaAmount = regime === 'ordinario' ? totaleImponibile * (form.ivaRate / 100) : 0;
@@ -92,49 +126,6 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
   const marcaBollo = regime === 'forfettario' && amount > MARCA_BOLLO_THRESHOLD;
   const totaleFattura = totaleImponibile + ivaAmount + (marcaBollo ? MARCA_BOLLO_AMOUNT : 0);
   const totaleDaRicevere = totaleFattura - ritenutaAmount;
-
-  const handleSubmit = () => {
-    setTouched({ client: true, title: true, amount: true, clientSdi: true });
-    if (!form.client.trim() || !form.title.trim() || amount <= 0) return;
-    if (sdiValue.length > 0 && !/^[A-Z0-9]{7}$/.test(sdiValue)) return;
-    // IT-35: increment counter on every new invoice (not proforma)
-    if (!isProforma) {
-      const year = new Date().getFullYear();
-      const yearStr = String(year);
-      const existingCount = documents.filter(d => d.type === 'invoice' && new Date(d.date).getFullYear() === year).length;
-      const current = profile.invoiceCounters?.[yearStr] ?? existingCount;
-      onUpdateProfile({
-        ...profile,
-        invoiceCounters: { ...(profile.invoiceCounters ?? {}), [yearStr]: current + 1 },
-      });
-    }
-    onSave({
-      id: Math.random().toString(36).substr(2, 9),
-      type: isProforma ? 'proforma' : 'invoice',
-      status: isProforma ? 'pending' : form.status,
-      invoiceNumber: form.invoiceNumber || nextInvoiceNumber,
-      date: form.date,
-      client: form.client,
-      clientAddress: form.clientAddress,
-      clientPiva: form.clientPiva,
-      clientCf: form.clientCf,
-      clientSdi: form.clientPiva !== 'Privato' && profile.country === 'Italy' ? (sdiValue || '0000000') : undefined,
-      clientPec: form.clientPiva !== 'Privato' && profile.country === 'Italy' && form.clientPec.trim() ? form.clientPec.trim() : undefined,
-      title: form.title,
-      amount,
-      ritenuta: form.ritenuta,
-      marcaBollo,
-      ivaRate: regime === 'ordinario' ? form.ivaRate : 0,
-      rivalsaInps: regime === 'ordinario' && form.rivalsaInps,
-      docRegime: (regime === 'ordinario' ? 'ordinario' : 'forfettario') as 'forfettario' | 'ordinario',
-    });
-    reset();
-    onClose();
-  };
-
-  const dragControls = useDragControls();
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const touch = (key: string) => setTouched(t => ({ ...t, [key]: true }));
 
   const sdiValue = form.clientSdi.trim().toUpperCase();
   const errors = {
@@ -146,6 +137,61 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
 
   const hasErrors = Object.values(errors).some(Boolean);
   const isItaly = profile.country === 'Italy';
+
+  const buildDoc = (overrideType?: 'invoice'): Document => ({
+    id: Math.random().toString(36).substr(2, 9),
+    type: overrideType ?? (isProforma ? 'proforma' : 'invoice'),
+    status: (overrideType === 'invoice' || !isProforma) ? form.status : 'pending',
+    invoiceNumber: form.invoiceNumber || nextInvoiceNumber,
+    date: form.date,
+    client: form.client,
+    clientAddress: form.clientAddress,
+    clientPiva: form.clientPiva,
+    clientCf: form.clientCf,
+    clientSdi: form.clientPiva !== 'Privato' && isItaly ? (sdiValue || '0000000') : undefined,
+    clientPec: form.clientPiva !== 'Privato' && isItaly && form.clientPec.trim() ? form.clientPec.trim() : undefined,
+    title: form.title,
+    amount,
+    ritenuta: form.ritenuta,
+    marcaBollo,
+    ivaRate: regime === 'ordinario' ? form.ivaRate : 0,
+    rivalsaInps: regime === 'ordinario' && form.rivalsaInps,
+    docRegime: (regime === 'ordinario' ? 'ordinario' : 'forfettario') as 'forfettario' | 'ordinario',
+  });
+
+  const incrementCounter = () => {
+    const year = new Date().getFullYear();
+    const yearStr = String(year);
+    const existingCount = documents.filter(d => d.type === 'invoice' && new Date(d.date).getFullYear() === year).length;
+    const current = profile.invoiceCounters?.[yearStr] ?? existingCount;
+    onUpdateProfile({ ...profile, invoiceCounters: { ...(profile.invoiceCounters ?? {}), [yearStr]: current + 1 } });
+  };
+
+  const validate = () => {
+    setTouched({ client: true, title: true, amount: true, clientSdi: true });
+    if (!form.client.trim() || !form.title.trim() || amount <= 0) return false;
+    if (sdiValue.length > 0 && !/^[A-Z0-9]{7}$/.test(sdiValue)) return false;
+    return true;
+  };
+
+  const handleSubmit = () => {
+    if (!validate()) return;
+    if (!isProforma) incrementCounter();
+    onSave(buildDoc());
+    reset();
+    onClose();
+  };
+
+  // Converti in fattura definitiva: salva direttamente come fattura (non come proforma)
+  const handleConvertToInvoice = () => {
+    if (!validate()) return;
+    incrementCounter();
+    onSave(buildDoc('invoice'));
+    reset();
+    onClose();
+  };
+
+  const dragControls = useDragControls();
 
   const ic = (err?: string) => `w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all ${
     err
@@ -186,10 +232,10 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
 
               {/* Dati Fattura */}
               <div className="space-y-3">
-                <label className={lc}>Dati Fattura</label>
+                <label className={lc}>Dati {isProforma ? 'Proforma' : 'Fattura'}</label>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className={lc}>N° Fattura</label>
+                    <label className={lc}>N° {isProforma ? 'Proforma' : 'Fattura'}</label>
                     <input type="text" value={form.invoiceNumber || nextInvoiceNumber} onChange={e => set('invoiceNumber', e.target.value)} className={ic()} />
                   </div>
                   <div className="space-y-1.5">
@@ -199,9 +245,10 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 </div>
               </div>
 
-              {/* Dati Cliente */}
+              {/* Dati Cliente — con ricerca intelligente */}
               <div className="space-y-3">
                 <label className={lc}>Dati Cliente</label>
+
                 {/* Toggle Azienda / Privato */}
                 <div className={`p-1 rounded-2xl flex gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                   {(['Azienda', 'Privato'] as const).map(t => (
@@ -212,11 +259,51 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                     </button>
                   ))}
                 </div>
-                <div className="space-y-1.5">
+
+                {/* Campo cliente con autocomplete intelligente */}
+                <div className="space-y-1.5 relative">
                   <label className={lc}>Ragione Sociale / Nome</label>
-                  <input type="text" value={form.client} onChange={e => set('client', e.target.value)} onBlur={() => touch('client')} placeholder={form.clientPiva === 'Privato' ? 'Es. Mario Rossi' : 'Es. Acme Srl'} className={ic(errors.client)} />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={form.client}
+                      onChange={e => { set('client', e.target.value); setShowSuggestions(true); }}
+                      onFocus={() => setShowSuggestions(true)}
+                      onBlur={() => { touch('client'); setTimeout(() => setShowSuggestions(false), 150); }}
+                      placeholder={form.clientPiva === 'Privato' ? 'Es. Mario Rossi' : 'Es. Acme Srl'}
+                      className={ic(errors.client)}
+                      autoComplete="off"
+                    />
+                    {clientHistory.length > 0 && (
+                      <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    )}
+                  </div>
                   {errMsg(errors.client)}
+
+                  {/* Dropdown suggerimenti */}
+                  {showSuggestions && clientSuggestions.length > 0 && (
+                    <div className={`absolute z-20 w-full mt-1 rounded-2xl border shadow-xl overflow-hidden ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                      {clientSuggestions.map(d => (
+                        <button
+                          key={d.id}
+                          type="button"
+                          onMouseDown={() => applyClient(d)}
+                          className={`w-full px-4 py-3 text-left flex items-start gap-3 transition-colors ${darkMode ? 'hover:bg-slate-700' : 'hover:bg-slate-50'}`}
+                        >
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${darkMode ? 'bg-primary/20 text-primary' : 'bg-primary/10 text-primary'}`}>
+                            <FileText size={14} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className={`text-sm font-bold truncate ${darkMode ? 'text-white' : 'text-slate-900'}`}>{d.client}</p>
+                            {d.clientAddress && <p className="text-[11px] text-slate-400 truncate">{d.clientAddress}</p>}
+                            {d.clientPiva && d.clientPiva !== 'Privato' && <p className="text-[11px] text-slate-400">P.IVA {d.clientPiva}</p>}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
+
                 <div className="space-y-1.5">
                   <label className={lc}>Indirizzo</label>
                   <input type="text" value={form.clientAddress} onChange={e => set('clientAddress', e.target.value)} placeholder="Via Roma 1, 20100 Milano" className={ic()} />
@@ -234,8 +321,8 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   </div>
                 </div>
 
-                {/* SDI / PEC — solo IT + Azienda */}
-                {isItaly && !isProforma && form.clientPiva !== 'Privato' && (
+                {/* SDI / PEC — solo IT + Azienda (anche su proforma) */}
+                {isItaly && form.clientPiva !== 'Privato' && (
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <label className={lc}>Codice SDI</label>
@@ -280,7 +367,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 </div>
               </div>
 
-              {/* Opzioni Fiscali */}
+              {/* Opzioni Fiscali — visibili anche su proforma */}
               <div className="space-y-3">
                 <label className={lc}>Opzioni Fiscali</label>
 
@@ -302,8 +389,8 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   </div>
                 )}
 
-                {/* Rivalsa INPS — solo ordinario, non su proforma */}
-                {regime === 'ordinario' && !isProforma && (
+                {/* Rivalsa INPS — solo ordinario */}
+                {regime === 'ordinario' && (
                   <div className={`flex items-center gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
                     <div className="flex-1">
                       <p className={`text-sm font-bold flex items-center ${darkMode ? 'text-white' : 'text-slate-900'}`}>
@@ -318,33 +405,31 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   </div>
                 )}
 
-                {/* Ritenuta — forfettario IT: badge informativo; altri: checkbox */}
-                {!isProforma && (
-                  regime === 'forfettario' && isItaly ? (
-                    <div className={`flex items-start gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'}`}>
-                      <span className="text-base leading-none mt-0.5">ℹ️</span>
-                      <p className={`text-xs leading-relaxed ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-                        <span className="font-bold">Regime forfettario</span> — non soggetto a ritenuta d&apos;acconto (art. 1, co. 67, L.190/2014)
+                {/* Ritenuta — forfettario IT: badge informativo; ordinario: checkbox */}
+                {regime === 'forfettario' && isItaly ? (
+                  <div className={`flex items-start gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'}`}>
+                    <span className="text-base leading-none mt-0.5">ℹ️</span>
+                    <p className={`text-xs leading-relaxed ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+                      <span className="font-bold">Regime forfettario</span> — non soggetto a ritenuta d&apos;acconto (art. 1, co. 67, L.190/2014)
+                    </p>
+                  </div>
+                ) : (
+                  <div className={`flex items-center gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                    <div className="flex-1">
+                      <p className={`text-sm font-bold flex items-center ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                        Ritenuta d&apos;acconto 20%
+                        <InfoTooltip text="Il cliente trattiene il 20% del compenso e lo versa per te all'Agenzia delle Entrate. I forfettari ne sono esenti per legge." darkMode={darkMode} />
                       </p>
+                      {amount > 0 && form.ritenuta && (
+                        <p className="text-xs text-slate-400 mt-0.5">−€{ritenutaAmount.toFixed(2)} trattenuti dal cliente</p>
+                      )}
                     </div>
-                  ) : (
-                    <div className={`flex items-center gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
-                      <div className="flex-1">
-                        <p className={`text-sm font-bold flex items-center ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                          Ritenuta d&apos;acconto 20%
-                          <InfoTooltip text="Il cliente trattiene il 20% del compenso e lo versa per te all'Agenzia delle Entrate. I forfettari ne sono esenti per legge." darkMode={darkMode} />
-                        </p>
-                        {amount > 0 && form.ritenuta && (
-                          <p className="text-xs text-slate-400 mt-0.5">−€{ritenutaAmount.toFixed(2)} trattenuti dal cliente</p>
-                        )}
-                      </div>
-                      <input type="checkbox" checked={form.ritenuta} onChange={e => set('ritenuta', e.target.checked)} className="w-5 h-5 rounded-lg text-primary focus:ring-primary" />
-                    </div>
-                  )
+                    <input type="checkbox" checked={form.ritenuta} onChange={e => set('ritenuta', e.target.checked)} className="w-5 h-5 rounded-lg text-primary focus:ring-primary" />
+                  </div>
                 )}
 
-                {/* Marca da bollo — solo forfettario, non su proforma */}
-                {!isProforma && regime === 'forfettario' && amount > 0 && (
+                {/* Marca da bollo — solo forfettario */}
+                {regime === 'forfettario' && amount > 0 && (
                   <div className={`flex items-center gap-3 p-4 rounded-2xl border ${marcaBollo ? (darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-100') : (darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100')}`}>
                     <div className="flex-1">
                       <p className={`text-sm font-bold flex items-center ${marcaBollo ? 'text-amber-500' : 'text-slate-400'}`}>
@@ -359,8 +444,8 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   </div>
                 )}
 
-                {/* Nota legale forfettario — non su proforma */}
-                {!isProforma && regime === 'forfettario' && (
+                {/* Nota legale — solo forfettario (anche su proforma) */}
+                {regime === 'forfettario' && (
                   <div className={`p-4 rounded-2xl border ${darkMode ? 'bg-primary/5 border-primary/20' : 'bg-primary/5 border-primary/10'}`}>
                     <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">Nota legale automatica</p>
                     <p className="text-[10px] text-slate-400 leading-relaxed">{FORFETTARIO_NOTE}</p>
@@ -368,7 +453,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 )}
               </div>
 
-              {/* Riepilogo */}
+              {/* Riepilogo importi */}
               {amount > 0 && (
                 <div className={`rounded-2xl p-4 space-y-2 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
                   <div className="flex justify-between">
@@ -406,21 +491,21 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 </div>
               )}
 
-              {/* Stato pagamento — non su proforma */}
-              {!isProforma && <div className={`flex items-center gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
-                <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white"><CheckCircle2 size={20} /></div>
-                <div className="flex-1">
-                  <p className={`text-xs font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-900'}`}>Segna come Pagata</p>
-                  <p className={`text-[10px] ${darkMode ? 'text-emerald-500/60' : 'text-emerald-600'}`}>Aggiornerà le entrate in Home</p>
+              {/* Stato pagamento — solo fattura definitiva */}
+              {!isProforma && (
+                <div className={`flex items-center gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
+                  <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white"><CheckCircle2 size={20} /></div>
+                  <div className="flex-1">
+                    <p className={`text-xs font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-900'}`}>Segna come Pagata</p>
+                    <p className={`text-[10px] ${darkMode ? 'text-emerald-500/60' : 'text-emerald-600'}`}>Aggiornerà le entrate in Home</p>
+                  </div>
+                  <input type="checkbox" checked={form.status === 'paid'} onChange={e => set('status', e.target.checked ? 'paid' : 'pending')} className="w-5 h-5 rounded-lg border-emerald-200 text-emerald-500 focus:ring-emerald-500" />
                 </div>
-                <input type="checkbox" checked={form.status === 'paid'} onChange={e => set('status', e.target.checked ? 'paid' : 'pending')} className="w-5 h-5 rounded-lg border-emerald-200 text-emerald-500 focus:ring-emerald-500" />
-              </div>}
+              )}
 
-              {/* Disclaimer IT-18 / ES-12 */}
+              {/* Disclaimer */}
               <p className="text-[10px] text-slate-400 leading-relaxed">
-                {profile.country === 'Spain'
-                  ? 'Los cálculos mostrados son estimaciones basadas en los datos introducidos y los tipos fiscales estándar. No constituyen asesoramiento fiscal profesional. Consulta siempre con tu gestor o asesor fiscal.'
-                  : 'I calcoli mostrati sono stime indicative basate sui dati inseriti e sulle aliquote fiscali standard. Non costituiscono consulenza fiscale professionale. Consulta sempre il tuo commercialista.'}
+                I calcoli mostrati sono stime indicative basate sui dati inseriti e sulle aliquote fiscali standard. Non costituiscono consulenza fiscale professionale. Consulta sempre il tuo commercialista.
               </p>
 
               {/* Azioni */}
@@ -428,8 +513,18 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 <button onClick={handleSubmit} disabled={hasErrors && Object.keys(touched).length > 0}
                   className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-40 flex items-center justify-center gap-2">
                   <FileText size={18} />
-                  Crea Fattura
+                  {isProforma ? 'Crea Proforma' : 'Crea Fattura'}
                 </button>
+
+                {/* Converti in fattura definitiva con un click — solo proforma */}
+                {isProforma && (
+                  <button onClick={handleConvertToInvoice} disabled={hasErrors && Object.keys(touched).length > 0}
+                    className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-40 ${darkMode ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}>
+                    <CheckCircle2 size={18} />
+                    Converti in Fattura
+                  </button>
+                )}
+
                 <button onClick={onClose} className={`w-full py-4 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>Annulla</button>
               </div>
 
