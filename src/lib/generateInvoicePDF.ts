@@ -50,10 +50,6 @@ export async function buildInvoicePage(
   pdf.setTextColor(...black);
   if (isProforma) {
     pdf.text('FATTURA PROFORMA', M, 18);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(9);
-    pdf.setTextColor(...grey);
-    pdf.text('NON FISCALMENTE VALIDA', M, 24);
   } else if (isPresupuesto) {
     pdf.text('PRESUPUESTO', M, 18);
     pdf.setFont('helvetica', 'normal');
@@ -93,6 +89,7 @@ export async function buildInvoicePage(
     ? ((doc.docRegime ?? profile.regime ?? 'forfettario') === 'ordinario' ? 'REGIME ORDINARIO' : 'REGIME FORFETTARIO')
     : isRectificativa ? 'ESTIMACIÓN DIRECTA SIMPLIFICADA'
     : isPresupuesto ? ''
+    : isProforma ? 'Non fiscalmente valida'
     : isSpain ? 'ESTIMACIÓN DIRECTA SIMPLIFICADA'
     : (profile.regime === 'ordinario' ? 'Regime Ordinario' : 'Regime Forfettario').toUpperCase();
   if (regimeLabel) pdf.text(regimeLabel, M, 24);
