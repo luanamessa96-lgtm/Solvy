@@ -24,7 +24,7 @@ export default function DashboardChart({ data, darkMode, theme, year }: Dashboar
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <AreaChart data={data} margin={{ top: 4, right: 16, left: isPro ? -24 : -8, bottom: 0 }}>
+      <AreaChart data={data} margin={{ top: 4, right: 16, left: -24, bottom: 0 }}>
         <defs>
           {/* Gradients */}
           <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
@@ -82,14 +82,12 @@ export default function DashboardChart({ data, darkMode, theme, year }: Dashboar
           }}
         />
 
-        {isPro && (
-          <YAxis
-            axisLine={false}
-            tickLine={false}
-            tick={{ fontSize: 11, fill: tickColor }}
-            tickFormatter={(v) => v >= 1000 ? `€${(v / 1000).toFixed(0)}k` : `€${v}`}
-          />
-        )}
+        <YAxis
+          axisLine={false}
+          tickLine={false}
+          tick={{ fontSize: 11, fill: tickColor }}
+          tickFormatter={(v) => v >= 1000 ? `€${(v / 1000).toFixed(0)}k` : `€${v}`}
+        />
 
         <Tooltip content={({ active, payload }) => {
           if (active && payload && payload.length) {

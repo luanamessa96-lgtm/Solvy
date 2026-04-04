@@ -182,25 +182,6 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-8" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 7rem)' }}>
-      {profile.country !== 'Spain' && (
-        <div className="flex items-center gap-3 px-4 py-3 border rounded-2xl transition-all" style={{ backgroundColor: 'var(--color-card)', borderColor: searchQuery ? undefined : 'var(--color-border)' }}>
-          <Search size={16} className={searchQuery ? 'text-primary shrink-0' : 'text-slate-400 shrink-0'} />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder={t('documents.search_placeholder')}
-            autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
-            className="flex-1 bg-transparent text-sm outline-none"
-            style={{ color: 'var(--color-text)', caretColor: 'var(--color-primary)' }}
-          />
-          {searchQuery && (
-            <button onClick={() => setSearchQuery('')} className="text-slate-400 active:scale-90 transition-all shrink-0">
-              <Plus className="rotate-45" size={16} />
-            </button>
-          )}
-        </div>
-      )}
 
       {profile.country !== 'Spain' && <motion.button variants={item} onClick={() => setIsExportOpen(true)} className={`w-full p-6 border rounded-3xl flex items-center justify-between transition-all group active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5'}`}>
         <div className="flex items-center gap-4">
@@ -330,8 +311,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
       )}
 
       <motion.div variants={item} className="space-y-4">
-        {profile.country === 'Spain' && (
-          <div className="flex items-center gap-3 px-4 py-3 border rounded-2xl transition-all" style={{ backgroundColor: 'var(--color-card)', borderColor: searchQuery ? undefined : 'var(--color-border)' }}>
+        <div className="flex items-center gap-3 px-4 py-3 border rounded-2xl transition-all" style={{ backgroundColor: 'var(--color-card)', borderColor: searchQuery ? undefined : 'var(--color-border)' }}>
             <Search size={16} className={searchQuery ? 'text-primary shrink-0' : 'text-slate-400 shrink-0'} />
             <input
               type="text"
@@ -347,8 +327,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                 <Plus className="rotate-45" size={16} />
               </button>
             )}
-          </div>
-        )}
+        </div>
         <div className="flex items-center justify-between px-2">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
             {searchQuery.trim()
