@@ -33,6 +33,7 @@ export async function buildInvoicePage(
   const isCreditNote = doc.type === 'credit_note';
   const isRectificativa = doc.type === 'factura_rectificativa';
   const isProforma = doc.type === 'proforma';
+  const isPresupuesto = doc.type === 'presupuesto';
   const isSpain = profile.country === 'Spain';
   const W = 210;
   const M = 16;
@@ -53,6 +54,12 @@ export async function buildInvoicePage(
     pdf.setFontSize(9);
     pdf.setTextColor(...grey);
     pdf.text('NON FISCALMENTE VALIDA', M, 24);
+  } else if (isPresupuesto) {
+    pdf.text('PRESUPUESTO', M, 18);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    pdf.setTextColor(...grey);
+    pdf.text('DOCUMENTO NO FISCAL — ESTIMACIÓN PARA UN CLIENTE', M, 24);
   } else {
     pdf.text(isCreditNote ? 'NOTA DI CREDITO' : isRectificativa ? 'FACTURA RECTIFICATIVA' : isSpain ? 'FACTURA' : 'FATTURA', M, 18);
   }
@@ -61,7 +68,7 @@ export async function buildInvoicePage(
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(11);
   pdf.setTextColor(...grey);
-  const invoiceNum = isRectificativa
+  const invoiceNum = (isRectificativa || isPresupuesto)
     ? `Nº ${doc.invoiceNumber || '—'}`
     : isSpain
     ? (() => {
@@ -85,8 +92,10 @@ export async function buildInvoicePage(
   const regimeLabel = isCreditNote
     ? ((doc.docRegime ?? profile.regime ?? 'forfettario') === 'ordinario' ? 'REGIME ORDINARIO' : 'REGIME FORFETTARIO')
     : isRectificativa ? 'ESTIMACIÓN DIRECTA SIMPLIFICADA'
-    : isSpain ? 'ESTIMACIÓN DIRECTA SIMPLIFICADA' : (profile.regime === 'ordinario' ? 'Regime Ordinario' : 'Regime Forfettario').toUpperCase();
-  pdf.text(regimeLabel, M, 24);
+    : isPresupuesto ? ''
+    : isSpain ? 'ESTIMACIÓN DIRECTA SIMPLIFICADA'
+    : (profile.regime === 'ordinario' ? 'Regime Ordinario' : 'Regime Forfettario').toUpperCase();
+  if (regimeLabel) pdf.text(regimeLabel, M, 24);
 
   // Divider
   pdf.setDrawColor(...lightGrey);
@@ -165,13 +174,14 @@ export async function buildInvoicePage(
   const docRegime = doc.docRegime ?? (profile.regime ?? 'forfettario');
   const isOrdinario = docRegime === 'ordinario';
   const ivaRate = doc.ivaRate ?? 0;
-  const rivalsaInps = (isCreditNote || isRectificativa) ? false : (doc.rivalsaInps ?? false);
-  const ritenuta = (isCreditNote || isRectificativa) ? (doc.ritenuta ?? false) : (doc.ritenuta ?? false);
-  const marcaBollo = (isSpain || isCreditNote || isRectificativa) ? false : (!isOrdinario && (doc.marcaBollo ?? (doc.amount > MARCA_BOLLO_THRESHOLD)));
+  const rivalsaInps = (isCreditNote || isRectificativa || isPresupuesto) ? false : (doc.rivalsaInps ?? false);
+  const ritenuta = (isCreditNote || isRectificativa || isPresupuesto) ? false : (doc.ritenuta ?? false);
+  const marcaBollo = (isSpain || isCreditNote || isRectificativa || isPresupuesto) ? false : (!isOrdinario && (doc.marcaBollo ?? (doc.amount > MARCA_BOLLO_THRESHOLD)));
 
   const rivalsaAmount = rivalsaInps ? doc.amount * INPS_RATE : 0;
   const totaleImponibile = doc.amount + rivalsaAmount;
-  const ivaAmount = isRectificativa && ivaRate > 0
+  const ivaAmount = isPresupuesto ? 0
+    : isRectificativa && ivaRate > 0
     ? doc.amount * (ivaRate / 100)
     : (isOrdinario && !isCreditNote) ? totaleImponibile * (ivaRate / 100) : 0;
   const ritenutaApplicata = ritenuta && (isOrdinario || isSpain || isRectificativa);
@@ -212,7 +222,9 @@ export async function buildInvoicePage(
   const summaryX = W - M - 72;
   const summaryW = 72;
 
-  const summaryRows: [string, string, boolean][] = isRectificativa
+  const summaryRows: [string, string, boolean][] = isPresupuesto
+    ? [['Importe estimado', fmt(doc.amount), false]]
+    : isRectificativa
     ? [
         ['Base imponible', fmt(-doc.amount), false],
         ...(ivaRate > 0 ? [[`Cuota IVA ${ivaRate}%`, `- ${fmt(ivaAmount)}`, false] as [string, string, boolean]] : []),
@@ -252,7 +264,7 @@ export async function buildInvoicePage(
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(10);
   pdf.setTextColor(...black);
-  pdf.text(isRectificativa ? 'TOTAL A DEVOLVER' : isCreditNote ? 'TOTALE DA STORNARE' : isSpain ? 'TOTAL A COBRAR' : 'TOTALE DA RICEVERE', summaryX, y + 5);
+  pdf.text(isPresupuesto ? 'TOTAL ESTIMADO' : isRectificativa ? 'TOTAL A DEVOLVER' : isCreditNote ? 'TOTALE DA STORNARE' : isSpain ? 'TOTAL A COBRAR' : 'TOTALE DA RICEVERE', summaryX, y + 5);
   pdf.setFontSize(11);
   pdf.setTextColor(...primary);
   pdf.text(fmt(displayTotale), summaryX + summaryW, y + 5, { align: 'right' });
@@ -260,7 +272,29 @@ export async function buildInvoicePage(
   y += 14;
 
   // ─── Nota legale ───────────────────────────────────────────────────────────
-  if (isSpain) {
+  if (isPresupuesto) {
+    pdf.setDrawColor(...lightGrey);
+    pdf.line(M, y, R, y);
+    y += 5;
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(8);
+    pdf.setTextColor(...primary);
+    pdf.text('Este presupuesto tiene validez de 30 días', M, y);
+    y += 5;
+    if (doc.validezDate) {
+      const validez = new Date(doc.validezDate).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(...grey);
+      pdf.text(`Válido hasta: ${validez}`, M, y);
+      y += 5;
+    }
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(7);
+    pdf.setTextColor(...grey);
+    pdf.text('Documento no fiscal. No contabilizado en facturación. Sujeto a aceptación por escrito del cliente.', M, y);
+    y += 6;
+  } else if (isSpain) {
     pdf.setDrawColor(...lightGrey);
     pdf.line(M, y, R, y);
     y += 5;
@@ -327,6 +361,8 @@ export async function buildInvoicePDFBlob(doc: Document, profile: Profile): Prom
     ? `factura_rectificativa_${numPart}_${namePart}.pdf`
     : doc.type === 'credit_note'
     ? `nota_credito_${numPart}_${namePart}.pdf`
+    : doc.type === 'presupuesto'
+    ? `presupuesto_${numPart}_${namePart}.pdf`
     : isSpain
     ? `factura_${numPart}_${namePart}.pdf`
     : `fattura_${numPart}_${namePart}.pdf`;
