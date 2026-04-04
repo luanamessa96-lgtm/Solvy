@@ -264,7 +264,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   {doc.type === 'credit_note' && doc.category && <span className="text-[10px] font-medium text-slate-400">· rif. {doc.category}</span>}
                   {doc.type === 'expense' && doc.category && <span className="text-[10px] font-medium text-slate-400">· {doc.category}</span>}
                   {doc.type === 'expense' && (doc.ivaRate ?? 0) > 0 && <span className="text-[10px] font-bold text-primary">· {doc.ivaRate}% IVA</span>}
-                  {doc.type === 'invoice' && (!doc.title || !doc.clientAddress || (!doc.clientPiva && doc.clientPiva !== 'Privato')) && (
+                  {profile.country === 'Italy' && doc.type === 'invoice' && (!doc.title || !doc.clientAddress || (!doc.clientPiva && doc.clientPiva !== 'Privato')) && (
                     <AlertTriangle size={11} className="text-amber-400 shrink-0" />
                   )}
                 </div>
