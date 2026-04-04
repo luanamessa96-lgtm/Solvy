@@ -27,6 +27,7 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
   const { t } = useTranslation();
   const isPro = useProStatus(profile);
   const darkMode = theme === 'dark' || theme === 'pro-dark';
+  const isProLight = theme === 'pro-light';
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -289,7 +290,7 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
         </motion.div>
       )}
 
-      <motion.div variants={item} className="p-6 rounded-3xl space-y-2 transition-colors" style={{ backgroundColor: 'var(--color-card-bg)' }}>
+      <motion.div variants={item} className="p-6 rounded-3xl space-y-2 transition-colors" style={isProLight ? { backgroundColor: 'rgba(255,255,255,0.7)', border: '1px solid rgba(200,85,247,0.2)' } : { backgroundColor: 'var(--color-card-bg)' }}>
         <p className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('settings.app_version')}</p>
         <p className="text-xs text-slate-500">v2.5.0 (Build 2026.03)</p>
         <div className="pt-4 flex gap-4">
@@ -305,6 +306,7 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
             onClick={handleGdprExport}
             disabled={isExporting}
             className={`w-full flex items-center gap-4 p-4 rounded-3xl border transition-all active:scale-[0.98] disabled:opacity-60 ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20'}`}
+            style={isProLight ? { backgroundColor: 'rgba(255,255,255,0.7)', border: '1px solid rgba(200,85,247,0.2)' } : undefined}
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${darkMode ? 'bg-slate-800 text-primary' : 'bg-primary/10 text-primary'}`}>
               {isExporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
@@ -322,6 +324,7 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
             onClick={handleGdprExportES}
             disabled={isExporting}
             className={`w-full flex items-center gap-4 p-4 rounded-3xl border transition-all active:scale-[0.98] disabled:opacity-60 ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20'}`}
+            style={isProLight ? { backgroundColor: 'rgba(255,255,255,0.7)', border: '1px solid rgba(200,85,247,0.2)' } : undefined}
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${darkMode ? 'bg-slate-800 text-primary' : 'bg-primary/10 text-primary'}`}>
               {isExporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
