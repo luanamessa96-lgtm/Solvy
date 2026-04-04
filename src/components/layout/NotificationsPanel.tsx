@@ -13,6 +13,8 @@ interface NotificationsPanelProps {
 
 const NotificationsPanel = ({ isOpen, deadlines, onClose, onUpdateDeadline, darkMode, theme }: NotificationsPanelProps) => {
   const isProDark = theme === 'pro-dark';
+  const isProLight = theme === 'pro-light';
+  const isPro = isProDark || isProLight;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -49,7 +51,7 @@ const NotificationsPanel = ({ isOpen, deadlines, onClose, onUpdateDeadline, dark
             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             className={`relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl`}
-            style={isProDark ? { background: '#1c1c1e', boxShadow: '0 0 0 1px rgba(200,85,247,0.15), 0 32px 64px rgba(200,85,247,0.2), 0 8px 24px rgba(0,0,0,0.6)' } : { backgroundColor: darkMode ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)' }}
+            style={isProDark ? { background: '#1c1c1e', boxShadow: '0 0 0 1px rgba(200,85,247,0.15), 0 32px 64px rgba(200,85,247,0.2), 0 8px 24px rgba(0,0,0,0.6)' } : isProLight ? { background: 'rgba(255,255,255,0.98)', boxShadow: '0 0 0 1px rgba(200,85,247,0.15), 0 32px 64px rgba(200,85,247,0.15), 0 8px 24px rgba(200,85,247,0.08)' } : { backgroundColor: darkMode ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)' }}
           >
             <div className="p-8 space-y-6">
               <div className="flex justify-between items-start">
@@ -59,7 +61,7 @@ const NotificationsPanel = ({ isOpen, deadlines, onClose, onUpdateDeadline, dark
                     {activeCount > 0 ? `${activeCount} scadenz${activeCount === 1 ? 'a' : 'e'} nei prossimi 30 giorni` : 'Tutto in ordine'}
                   </p>
                 </div>
-                <button onClick={onClose} className={`p-2 rounded-full transition-all active:scale-90 ${isProDark ? 'text-slate-400' : darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`} style={isProDark ? { background: 'rgba(255,255,255,0.08)' } : undefined}>
+                <button onClick={onClose} className={`p-2 rounded-full transition-all active:scale-90 ${isPro ? 'text-slate-400' : darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`} style={isProDark ? { background: 'rgba(255,255,255,0.08)' } : isProLight ? { background: 'rgba(200,85,247,0.08)' } : undefined}>
                   <Plus className="rotate-45" size={24} />
                 </button>
               </div>
@@ -78,8 +80,8 @@ const NotificationsPanel = ({ isOpen, deadlines, onClose, onUpdateDeadline, dark
                       <p className={`text-[10px] font-bold uppercase tracking-widest ${group.accent}`}>{group.label}</p>
                     </div>
                     {group.items.map(n => (
-                      <div key={n.id} className={`flex items-center gap-3 p-4 rounded-2xl transition-all ${n.completed ? 'opacity-50' : ''}`} style={{ background: isProDark ? 'rgba(255,255,255,0.05)' : darkMode ? '#1e293b' : '#f8fafc', border: isProDark ? '1px solid rgba(200,85,247,0.12)' : undefined }}>
-                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-lg shrink-0`} style={{ background: isProDark ? 'rgba(200,85,247,0.1)' : darkMode ? '#334155' : '#ffffff' }}>{typeIcon(n.type)}</div>
+                      <div key={n.id} className={`flex items-center gap-3 p-4 rounded-2xl transition-all ${n.completed ? 'opacity-50' : ''}`} style={{ background: isProDark ? 'rgba(255,255,255,0.05)' : isProLight ? 'rgba(200,85,247,0.04)' : darkMode ? '#1e293b' : '#f8fafc', border: isPro ? '1px solid rgba(200,85,247,0.12)' : undefined }}>
+                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-lg shrink-0`} style={{ background: isPro ? 'rgba(200,85,247,0.1)' : darkMode ? '#334155' : '#ffffff' }}>{typeIcon(n.type)}</div>
                         <div className="flex-1 min-w-0">
                           <p className={`text-sm font-bold truncate ${n.completed ? 'line-through text-slate-400' : (darkMode ? 'text-white' : 'text-slate-900')}`}>{n.title}</p>
                           <p className="text-xs text-slate-400">
