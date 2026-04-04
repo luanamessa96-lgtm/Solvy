@@ -457,13 +457,12 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                     const nextNum = `${String(current + 1).padStart(3, '0')}/${year}`;
                     const converted: Document = {
                       ...selectedDoc,
-                      id: Math.random().toString(36).substr(2, 9),
                       type: 'invoice',
                       status: 'pending',
                       invoiceNumber: nextNum,
                       date: todayLocalISO(),
                     };
-                    onAddDocument(converted);
+                    onUpdateDocument(converted);
                     onUpdateProfile({ ...profile, invoiceCounters: { ...(profile.invoiceCounters ?? {}), [yearStr]: current + 1 } });
                     showToast(`Fattura ${converted.invoiceNumber} creata`, 'success');
                     setSelectedDoc(null);
