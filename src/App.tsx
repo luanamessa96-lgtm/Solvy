@@ -481,18 +481,16 @@ function AppInner() {
 
   // Hide BottomNav on scroll down, show on scroll up
   useEffect(() => {
-    const el = mainRef.current;
-    if (!el) return;
-    let lastY = 0;
+    let lastY = window.scrollY;
     const onScroll = () => {
-      const y = el.scrollTop;
+      const y = window.scrollY;
       if (y - lastY > 8) setIsNavHidden(true);
       else if (lastY - y > 8) setIsNavHidden(false);
       lastY = y;
     };
-    el.addEventListener('scroll', onScroll, { passive: true });
-    return () => el.removeEventListener('scroll', onScroll);
-  }, [isAuthenticated, isLoading]); // re-attach when main element mounts (after loading)
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const resetSubPages = () => { setIsProfilePage(false); setIsSettingsPage(false); setIsAccountantPage(false); setIsFiscalPage(false); setIsMediaLibraryPage(false); setIsGuidaFiscalePage(false); setIsGuiaFiscalESPage(false); };
   const handleProfileClick = () => { resetSubPages(); setIsProfilePage(true); setActiveTab('menu'); };
