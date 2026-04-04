@@ -37,6 +37,7 @@ const DocumentsView = lazy(() => import('./views/DocumentsView'));
 const CalendarView = lazy(() => import('./views/CalendarView'));
 const ProfileView = lazy(() => import('./views/ProfileView'));
 const SettingsView = lazy(() => import('./views/SettingsView'));
+const SubscriptionView = lazy(() => import('./views/SubscriptionView'));
 const AccountantView = lazy(() => import('./views/AccountantView'));
 const FiscalView = lazy(() => import('./views/FiscalView'));
 const MediaLibraryView = lazy(() => import('./views/MediaLibraryView'));
@@ -68,6 +69,7 @@ function AppInner() {
   const [activeProfile, setActiveProfile] = useState<Profile>(MOCK_PROFILES[0]);
   const [isProfilePage, setIsProfilePage] = useState(false);
   const [isSettingsPage, setIsSettingsPage] = useState(false);
+  const [isSubscriptionPage, setIsSubscriptionPage] = useState(false);
   const [isAccountantPage, setIsAccountantPage] = useState(false);
   const [isFiscalPage, setIsFiscalPage] = useState(false);
   const [isMediaLibraryPage, setIsMediaLibraryPage] = useState(false);
@@ -474,6 +476,7 @@ function AppInner() {
   const viewTitle = useMemo(() => {
     if (isProfilePage) return 'Profilo';
     if (isSettingsPage) return 'Impostazioni';
+    if (isSubscriptionPage) return 'Il mio abbonamento';
     if (isAccountantPage) return 'Commercialista';
     if (isFiscalPage) return 'Fiscalità';
     if (isMediaLibraryPage) return 'Libreria';
@@ -486,7 +489,7 @@ function AppInner() {
       case 'menu': return 'Menu';
       default: return 'Dashboard';
     }
-  }, [activeTab, isProfilePage, isSettingsPage, isAccountantPage, isFiscalPage, isMediaLibraryPage, isGuidaFiscalePage, isGuiaFiscalESPage]);
+  }, [activeTab, isProfilePage, isSettingsPage, isSubscriptionPage, isAccountantPage, isFiscalPage, isMediaLibraryPage, isGuidaFiscalePage, isGuiaFiscalESPage]);
 
   // Hide BottomNav on scroll down, show on scroll up
   useEffect(() => {
@@ -501,9 +504,10 @@ function AppInner() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const resetSubPages = () => { setIsProfilePage(false); setIsSettingsPage(false); setIsAccountantPage(false); setIsFiscalPage(false); setIsMediaLibraryPage(false); setIsGuidaFiscalePage(false); setIsGuiaFiscalESPage(false); };
+  const resetSubPages = () => { setIsProfilePage(false); setIsSettingsPage(false); setIsSubscriptionPage(false); setIsAccountantPage(false); setIsFiscalPage(false); setIsMediaLibraryPage(false); setIsGuidaFiscalePage(false); setIsGuiaFiscalESPage(false); };
   const handleProfileClick = () => { resetSubPages(); setIsProfilePage(true); setActiveTab('menu'); };
   const handleSettingsClick = () => { resetSubPages(); setIsSettingsPage(true); setActiveTab('menu'); };
+  const handleSubscriptionClick = () => { resetSubPages(); setIsSubscriptionPage(true); setActiveTab('menu'); };
   const handleAccountantClick = () => { resetSubPages(); setIsAccountantPage(true); setActiveTab('menu'); };
   const handleFiscalClick = () => { resetSubPages(); setIsFiscalPage(true); setActiveTab('menu'); };
   const handleMediaLibraryClick = () => { resetSubPages(); setIsMediaLibraryPage(true); setActiveTab('docs'); };
@@ -742,7 +746,7 @@ function AppInner() {
         onProfileClick={handleProfileClick}
         onBellClick={() => setIsNotificationsOpen(true)}
         notificationCount={notificationCount}
-        showBack={isProfilePage || isSettingsPage || isAccountantPage || isFiscalPage || isMediaLibraryPage || isGuidaFiscalePage || isGuiaFiscalESPage}
+        showBack={isProfilePage || isSettingsPage || isSubscriptionPage || isAccountantPage || isFiscalPage || isMediaLibraryPage || isGuidaFiscalePage || isGuiaFiscalESPage}
         onBack={handleBack}
         darkMode={darkMode}
       />
@@ -779,19 +783,21 @@ function AppInner() {
             <Suspense fallback={null}><GuidaFiscaleView darkMode={darkMode} /></Suspense>
           ) : isGuiaFiscalESPage ? (
             <Suspense fallback={null}><GuiaFiscalESView darkMode={darkMode} /></Suspense>
+          ) : isSubscriptionPage ? (
+            <Suspense fallback={null}><SubscriptionView profile={activeProfile} darkMode={darkMode} /></Suspense>
           ) : (
             <>
               <div style={{ display: activeTab === 'home' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><DashboardView profile={activeProfile} onProfileClick={handleProfileClick} onAddDocumentClick={() => handleTabChange('docs')} income={totalIncome} expenses={totalExpenses} paidPercentage={paidPercentage} documents={documents} darkMode={darkMode} theme={theme} /></Suspense></div>
               <div style={{ display: activeTab === 'docs' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><DocumentsView documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} onUpdateProfile={handleUpdateProfile} accountant={accountant} profile={activeProfile} darkMode={darkMode} theme={theme} onMediaLibraryClick={handleMediaLibraryClick} onNavigateToProfile={handleProfileClick} openChoiceTrigger={docChoiceTrigger} /></Suspense></div>
               <div style={{ display: activeTab === 'calendar' ? 'block' : 'none' }}><Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}><CalendarView deadlines={deadlines} onAddDeadline={handleAddDeadline} onUpdateDeadline={handleUpdateDeadline} onDeleteDeadline={handleDeleteDeadline} darkMode={darkMode} profile={activeProfile} openAddTrigger={calAddTrigger} income={totalIncome} expenses={totalExpenses} documents={documents} /></Suspense></div>
-              <div style={{ display: activeTab === 'menu' ? 'block' : 'none' }}><Suspense fallback={null}><MenuView activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onAccountantClick={handleAccountantClick} onFiscalClick={handleFiscalClick} onGuidaFiscaleClick={handleGuidaFiscaleClick} onGuiaFiscalESClick={handleGuiaFiscalESClick} onLogout={handleLogout} darkMode={darkMode} /></Suspense></div>
+              <div style={{ display: activeTab === 'menu' ? 'block' : 'none' }}><Suspense fallback={null}><MenuView activeProfile={activeProfile} onProfileClick={handleProfileClick} onSettingsClick={handleSettingsClick} onSubscriptionClick={handleSubscriptionClick} onAccountantClick={handleAccountantClick} onFiscalClick={handleFiscalClick} onGuidaFiscaleClick={handleGuidaFiscaleClick} onGuiaFiscalESClick={handleGuiaFiscalESClick} onLogout={handleLogout} darkMode={darkMode} /></Suspense></div>
             </>
           )}
         </Suspense>
       </main>
 
     </div>
-    <BottomNav activeTab={(isProfilePage || isSettingsPage || isAccountantPage || isFiscalPage || isGuidaFiscalePage || isGuiaFiscalESPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} theme={theme} onPlusPress={handlePlusPress} isNavHidden={isNavHidden} />
+    <BottomNav activeTab={(isProfilePage || isSettingsPage || isSubscriptionPage || isAccountantPage || isFiscalPage || isGuidaFiscalePage || isGuiaFiscalESPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} theme={theme} onPlusPress={handlePlusPress} isNavHidden={isNavHidden} />
     <AnimatePresence>
       {swRegistration && (
         <UpdateBanner
