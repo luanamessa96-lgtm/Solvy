@@ -408,7 +408,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                 <div className={`px-6 pt-5 pb-4 border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Estimación Fiscal {displayYear}</p>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>Estimación Directa</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-0.5 ${darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>Estimación Directa<InfoTooltip text="Régimen fiscal estándar para autónomos: pagas impuestos sobre tus ingresos reales menos gastos." darkMode={darkMode} /></span>
                   </div>
                   <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{Math.round(spTaxes.irpf + spTaxes.reta).toLocaleString()}</p>
                   <p className="text-xs text-slate-400 mt-0.5">IRPF + RETA estimados</p>
@@ -420,7 +420,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
-                      <span className="text-xs font-bold text-slate-400">IRPF estimado</span>
+                      <span className="text-xs font-bold text-slate-400">IRPF estimado<InfoTooltip text="Impuesto sobre la Renta de las Personas Físicas. El impuesto principal para autónomos en España." darkMode={darkMode} /></span>
                       <span className="text-xs font-bold text-rose-500">€{Math.round(spTaxes.irpf).toLocaleString()}</span>
                     </div>
                     <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
@@ -430,11 +430,14 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-bold text-slate-400">RETA anual</span>
+                        <span className="text-xs font-bold text-slate-400">RETA anual<InfoTooltip text="Régimen Especial de Trabajadores Autónomos. La cuota mensual a la Seguridad Social." darkMode={darkMode} /></span>
                         {isTarifaPlana && (
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${darkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
-                            Tarifa Plana €{spTaxes.monthlyRETA}/mes
-                          </span>
+                          <>
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${darkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                              Tarifa Plana €{spTaxes.monthlyRETA}/mes
+                            </span>
+                            <InfoTooltip text="Cuota reducida de €80/mes para nuevos autónomos durante el primer año." darkMode={darkMode} />
+                          </>
                         )}
                       </div>
                       <span className="text-xs font-bold text-amber-500">€{Math.round(spTaxes.reta).toLocaleString()}</span>
@@ -468,7 +471,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
               {retencionesDocs.length > 0 && (
                 <div className={`rounded-3xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
                   <div className={`px-6 pt-5 pb-4 border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Retenciones IRPF subidas {displayYear}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center">Retenciones IRPF subidas {displayYear}<InfoTooltip text="El cliente retiene el 7% o 15% de tu factura y lo ingresa a la AEAT por ti." darkMode={darkMode} /></p>
                     <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{Math.round(totalRetenciones).toLocaleString('es-ES')}</p>
                     <p className="text-xs text-slate-400 mt-0.5">Total retenido por clientes ({retencionRate}%)</p>
                   </div>

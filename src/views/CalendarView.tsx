@@ -464,11 +464,11 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                       return (
                         <div className="space-y-1.5 mt-2">
                           <div className="flex justify-between">
-                            <span className="text-xs text-slate-400">Mod. 130 — IRPF</span>
+                            <span className="text-xs text-slate-400">Mod. 130 — IRPF<InfoTooltip text="Pago fraccionado trimestral del IRPF. Se presenta el 20 de abril, julio, octubre y 30 de enero." darkMode={darkMode} /></span>
                             <span className="text-xs font-bold text-primary">~€{Math.round(spData.cuotaIRPF).toLocaleString('es-ES')}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-xs text-slate-400">Mod. 303 — IVA</span>
+                            <span className="text-xs text-slate-400">Mod. 303 — IVA<InfoTooltip text="Declaración trimestral del IVA. Se presenta junto al Modelo 130." darkMode={darkMode} /></span>
                             <span className={`text-xs font-bold ${spData.diferenciaIVA < 0 ? 'text-emerald-500' : 'text-primary'}`}>
                               {spData.diferenciaIVA < 0 ? `a devolver ~€${Math.round(Math.abs(spData.diferenciaIVA)).toLocaleString('es-ES')}` : `~€${Math.round(spData.diferenciaIVA).toLocaleString('es-ES')}`}
                             </span>
