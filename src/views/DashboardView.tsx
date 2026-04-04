@@ -87,7 +87,7 @@ function calcIRPEF(imponibile: number): number {
 }
 
 function fmt(n: number) {
-  return `€ ${Math.round(n).toLocaleString('it-IT')}`;
+  return `€${Math.round(n).toLocaleString('it-IT')}`;
 }
 
 type DashTab = 'overview' | 'taxes' | 'expenses';
