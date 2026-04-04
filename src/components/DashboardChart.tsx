@@ -69,8 +69,9 @@ export default function DashboardChart({ data, darkMode, theme, year }: Dashboar
           dataKey="name"
           axisLine={false}
           tickLine={false}
-          tick={{ fontSize: isPro ? 11 : 10, fontWeight: 'bold', fill: isPro ? tickColor : '#94a3b8' }}
+          tick={{ fontSize: 9, fontWeight: 'bold', fill: isPro ? tickColor : '#94a3b8' }}
           dy={10}
+          interval={0}
           tickFormatter={(value) => {
             const shortNames = {
               es: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
