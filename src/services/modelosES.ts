@@ -24,6 +24,7 @@ export interface ResumenTrimestral {
   cuotaAcumulada: number;       // baseImponible130 × 20%
   pagosAnteriores: number;      // cuotas già versate in T1..T(n-1)
   cuotaIRPF: number;            // netta = max(0, cuotaAcumulada − pagosAnteriores)
+  exentoMinimo: boolean;        // true se rendimiento neto cumulativo < €1.000 → cuota = 0
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -124,7 +125,8 @@ export function calcularTrimestre(
   const baseImponible130    = cumActual.base;
   const cuotaAcumulada      = cumActual.cuota;
   const pagosAnteriores     = cumPrev.cuota;
-  const cuotaIRPF           = Math.max(0, cuotaAcumulada - pagosAnteriores);
+  const exentoMinimo        = baseImponible130 < 1000;
+  const cuotaIRPF           = exentoMinimo ? 0 : Math.max(0, cuotaAcumulada - pagosAnteriores);
 
   return {
     quarter, year,
@@ -133,7 +135,7 @@ export function calcularTrimestre(
     ivaRepercutida, ivaSoportada,
     diferenciaIVA: ivaRepercutida - ivaSoportada,
     ingresosCumulativos, gastosCumulativos,
-    baseImponible130, cuotaAcumulada, pagosAnteriores, cuotaIRPF,
+    baseImponible130, cuotaAcumulada, pagosAnteriores, cuotaIRPF, exentoMinimo,
   };
 }
 
