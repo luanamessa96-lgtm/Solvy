@@ -81,6 +81,7 @@ export async function updateDocument(doc: Document): Promise<void> {
   const { error } = await getClient()
     .from('documents')
     .update({
+      type: doc.type,
       title: doc.title,
       amount: doc.amount,
       date: doc.date,
