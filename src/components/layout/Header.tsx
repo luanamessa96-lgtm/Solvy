@@ -20,9 +20,22 @@ const Header = ({ title, activeProfile, onProfileClick, onBellClick, notificatio
           <ArrowLeft size={20} />
         </button>
       ) : (
-        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-lg shadow-primary/20">
-          <div className="w-4 h-4 border-2 border-white rounded-sm transform rotate-45" />
-        </div>
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0 drop-shadow-md">
+          <defs>
+            <linearGradient id="solvy-grad" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#2DD4BF"/>
+              <stop offset="45%" stopColor="#E040FB"/>
+              <stop offset="100%" stopColor="#7C3AED"/>
+            </linearGradient>
+            <clipPath id="solvy-clip">
+              <circle cx="11" cy="11" r="10"/>
+              <circle cx="21" cy="11" r="10"/>
+              <circle cx="11" cy="21" r="10"/>
+              <circle cx="21" cy="21" r="10"/>
+            </clipPath>
+          </defs>
+          <rect x="0" y="0" width="32" height="32" fill="url(#solvy-grad)" clipPath="url(#solvy-clip)"/>
+        </svg>
       )}
       <h1 className={`text-xl font-bold tracking-tight transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>{title}</h1>
     </div>
