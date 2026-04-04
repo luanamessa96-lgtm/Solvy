@@ -731,15 +731,6 @@ function AppInner() {
       style={proBgStyle}
       className={`max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative overflow-hidden ${darkMode ? 'bg-slate-950 text-white' : isProLight ? 'text-slate-900' : 'bg-slate-50 text-slate-900'}`}
     >
-      {isProLight && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'radial-gradient(ellipse at center, rgba(100, 80, 140, 0.15) 0%, transparent 70%)',
-          pointerEvents: 'none',
-          zIndex: 0,
-        }} />
-      )}
       {isOffline && (
         <div className="bg-amber-500 text-white text-xs font-bold text-center py-2 px-4 flex items-center justify-center gap-2 z-50">
           <span>⚠️</span> Nessuna connessione — le modifiche verranno salvate quando torni online
