@@ -157,14 +157,14 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   }, [documents, yearDocuments, filter, statusFilter, searchQuery]);
 
   const monthGroups = useMemo(() => {
-    if (profile.country !== 'Spain') return null;
+    const locale = profile.country === 'Spain' ? 'es-ES' : 'it-IT';
     const groups: { key: string; label: string; income: number; expenses: number; docs: typeof filteredDocuments }[] = [];
     const map = new Map<string, typeof groups[0]>();
     for (const doc of filteredDocuments) {
       const d = parseLocalDate(doc.date);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       if (!map.has(key)) {
-        const label = d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+        const label = d.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
         const entry = { key, label: label.charAt(0).toUpperCase() + label.slice(1), income: 0, expenses: 0, docs: [] as typeof filteredDocuments };
         map.set(key, entry);
         groups.push(entry);
@@ -172,7 +172,8 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
       const g = map.get(key)!;
       g.docs.push(doc);
       if (doc.type === 'invoice' && doc.status === 'paid') g.income += doc.amount;
-      else if (doc.type === 'presupuesto') { /* no totals for estimates */ }
+      else if (doc.type === 'credit_note') g.income -= doc.amount;
+      else if (doc.type === 'presupuesto' || doc.type === 'proforma') { /* no totals */ }
       else if (doc.type === 'expense' || doc.type === 'factura_rectificativa') g.expenses += doc.amount;
     }
     return groups;
@@ -340,8 +341,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
         </div>
         <div className="space-y-3">
           {filteredDocuments.length > 0 ? (
-            profile.country === 'Spain' && monthGroups ? (
-              <div className="space-y-3">
+            <div className="space-y-3">
                 {monthGroups.map(group => {
                   const isOpen = openMonths.has(group.key);
                   return (
@@ -385,9 +385,6 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   );
                 })}
               </div>
-            ) : filteredDocuments.map(doc => (
-              <DocCard key={doc.id} doc={doc} darkMode={darkMode} profile={profile} i18nLanguage={i18n.language} t={t} onClick={() => setSelectedDoc(doc)} />
-            ))
           ) : (
             <div className="py-16 text-center space-y-4">
               {searchQuery.trim() ? (
