@@ -5,10 +5,11 @@ interface DashboardChartProps {
   data: { name: string; income: number; expenses: number }[];
   darkMode?: boolean;
   theme?: string;
+  year?: number;
 }
 
-export default function DashboardChart({ data, darkMode, theme }: DashboardChartProps) {
-  const { t } = useTranslation();
+export default function DashboardChart({ data, darkMode, theme, year }: DashboardChartProps) {
+  const { t, i18n } = useTranslation();
   const isPro = theme === 'pro-light' || theme === 'pro-dark';
   const isProDark = theme === 'pro-dark';
 
@@ -85,7 +86,16 @@ export default function DashboardChart({ data, darkMode, theme }: DashboardChart
           if (active && payload && payload.length) {
             return (
               <div className={`p-2 rounded-xl border shadow-xl backdrop-blur-md ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white/90 border-slate-100'}`}>
-                <p className={`text-[10px] font-bold mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{t('dashboard.tooltip_month', { month: payload[0].payload.name })}</p>
+                <p className={`text-[10px] font-bold mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{(() => {
+                    const monthNames = {
+                      es: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+                      it: ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'],
+                    };
+                    const lang = i18n.language.startsWith('it') ? 'it' : 'es';
+                    const monthIndex = parseInt(payload[0].payload.name) - 1;
+                    const monthLabel = monthNames[lang][monthIndex];
+                    return year ? `${monthLabel} ${year}` : monthLabel;
+                  })()}</p>
                 <div className="space-y-0.5">
                   {payload.map((entry: { name: string; value: number }, i: number) => (
                     <div key={i} className="flex items-center justify-between gap-4">

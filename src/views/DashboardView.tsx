@@ -360,7 +360,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
               </div>
               <div className="h-48 w-full">
                 <Suspense fallback={<div className="h-full w-full" />}>
-                  <DashboardChart data={chartData} darkMode={darkMode} theme={theme} />
+                  <DashboardChart data={chartData} darkMode={darkMode} theme={theme} year={displayYear} />
                 </Suspense>
               </div>
               <div className="flex gap-4 pt-2">
