@@ -729,7 +729,7 @@ function AppInner() {
     <div
       data-theme={theme}
       style={proBgStyle}
-      className={`max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative overflow-hidden transition-colors duration-500 ${darkMode ? 'bg-slate-950 text-white' : isProLight ? 'text-slate-900' : 'bg-slate-50 text-slate-900'}`}
+      className={`max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative overflow-hidden ${darkMode ? 'bg-slate-950 text-white' : isProLight ? 'text-slate-900' : 'bg-slate-50 text-slate-900'}`}
     >
       {isProLight && (
         <div style={{
