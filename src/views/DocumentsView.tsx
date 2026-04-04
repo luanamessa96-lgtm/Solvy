@@ -251,7 +251,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
           <div className="grid grid-cols-3 gap-3">
             <button
               onClick={() => setFilter('income')}
-              className={`p-4 rounded-3xl border transition-all text-left space-y-2 active:scale-[0.95] ${filter === 'income' ? (isProDark ? 'shadow-xl' : 'bg-emerald-500 border-emerald-500 text-white shadow-xl shadow-emerald-500/40') : (darkMode ? 'bg-slate-900 border-slate-800 text-emerald-500 hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/10' : 'bg-white border-slate-100 text-emerald-600 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5')}`}
+              className={`p-4 rounded-3xl border transition-all text-left space-y-2 active:scale-[0.95] ${filter === 'income' ? (isProDark ? 'shadow-xl' : 'bg-emerald-500 border-transparent text-white shadow-xl shadow-emerald-500/40') : (darkMode ? 'bg-slate-900 border-slate-800 text-emerald-500 hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/10' : 'bg-white border-slate-100 text-emerald-600 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5')}`}
               style={filter === 'income' && isProDark ? { background: 'rgba(45, 212, 191, 0.15)', border: '1px solid rgba(45, 212, 191, 0.35)', color: '#2dd4bf' } : undefined}
             >
               <p className={`text-[9px] font-bold uppercase tracking-wider ${filter === 'income' ? (isProDark ? 'opacity-60' : 'text-white/60') : (darkMode ? 'text-emerald-500/60' : 'text-emerald-600/60')}`}>Entrate</p>
@@ -281,7 +281,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
           <div className="grid grid-cols-3 gap-3">
             <button
               onClick={() => setFilter('income')}
-              className={`p-4 rounded-3xl border transition-all text-left space-y-2 active:scale-[0.95] ${filter === 'income' ? (isProDark ? 'shadow-xl' : 'bg-emerald-500 border-emerald-500 text-white shadow-xl shadow-emerald-500/40') : (darkMode ? 'bg-slate-900 border-slate-800 text-emerald-500 hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/10' : 'bg-white border-slate-100 text-emerald-600 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5')}`}
+              className={`p-4 rounded-3xl border transition-all text-left space-y-2 active:scale-[0.95] ${filter === 'income' ? (isProDark ? 'shadow-xl' : 'bg-emerald-500 border-transparent text-white shadow-xl shadow-emerald-500/40') : (darkMode ? 'bg-slate-900 border-slate-800 text-emerald-500 hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/10' : 'bg-white border-slate-100 text-emerald-600 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5')}`}
               style={filter === 'income' && isProDark ? { background: 'rgba(45, 212, 191, 0.15)', border: '1px solid rgba(45, 212, 191, 0.35)', color: '#2dd4bf' } : undefined}
             >
               <p className={`text-[9px] font-bold uppercase tracking-wider ${filter === 'income' ? (isProDark ? 'opacity-60' : 'text-white/60') : (darkMode ? 'text-emerald-500/60' : 'text-emerald-600/60')}`}>Ingresos</p>
