@@ -634,7 +634,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                     {!isPro && <Lock size={11} className="ml-auto text-slate-400" />}
                   </button>
                 )}
-                {selectedDoc.type === 'invoice' && selectedDoc.type !== 'credit_note' && (
+                {selectedDoc.type === 'invoice' && (
                   <button onClick={() => {
                     const year = new Date().getFullYear();
                     const yearStr = String(year);
@@ -661,7 +661,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                     if (profile.country === 'Spain' && selectedDoc.type === 'invoice') {
                       setDocToFacturaEdit(selectedDoc);
                     } else {
-                      setDocToEdit({ ...selectedDoc, docRegime: selectedDoc.docRegime ?? profile.regime ?? 'forfettario' });
+                      setDocToEdit({ ...selectedDoc, docRegime: selectedDoc.docRegime ?? (profile.regime === 'autonomo' ? 'forfettario' : profile.regime ?? 'forfettario') });
                     }
                     setSelectedDoc(null);
                   }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>

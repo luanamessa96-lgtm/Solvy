@@ -104,10 +104,10 @@ export default function DashboardChart({ data, darkMode, theme, year }: Dashboar
                     return year ? `${monthLabel} ${year}` : monthLabel;
                   })()}</p>
                 <div className="space-y-0.5">
-                  {payload.map((entry: { name: string; value: number }, i: number) => (
+                  {payload.map((entry, i: number) => (
                     <div key={i} className="flex items-center justify-between gap-4">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">{entry.name === 'income' ? t('dashboard.chart_income') : t('dashboard.chart_outflows')}</span>
-                      <span className="text-[10px] font-black" style={{ color: entry.name === 'income' ? incomeColor : expensesColor }}>€{Math.round(entry.value).toLocaleString()}</span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">{String(entry.name) === 'income' ? t('dashboard.chart_income') : t('dashboard.chart_outflows')}</span>
+                      <span className="text-[10px] font-black" style={{ color: String(entry.name) === 'income' ? incomeColor : expensesColor }}>€{Math.round(Number(entry.value)).toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
@@ -124,7 +124,6 @@ export default function DashboardChart({ data, darkMode, theme, year }: Dashboar
           strokeWidth={3}
           fillOpacity={1}
           fill="url(#colorIncome)"
-          tension={isPro ? 0.5 : undefined}
           style={isPro ? { filter: 'url(#glow-income)' } : undefined}
           dot={false}
         />
@@ -135,7 +134,6 @@ export default function DashboardChart({ data, darkMode, theme, year }: Dashboar
           strokeWidth={3}
           fillOpacity={1}
           fill="url(#colorExpenses)"
-          tension={isPro ? 0.5 : undefined}
           style={isPro ? { filter: 'url(#glow-expenses)' } : undefined}
           dot={false}
         />

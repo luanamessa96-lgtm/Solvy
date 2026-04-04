@@ -54,7 +54,7 @@ const CreateCreditNoteModal = ({ isOpen, onClose, onSave, profile, documents, da
       clientAddress: selectedInvoice.clientAddress,
       clientPiva: selectedInvoice.clientPiva,
       clientCf: selectedInvoice.clientCf,
-      docRegime: selectedInvoice.docRegime ?? profile.regime ?? 'forfettario',
+      docRegime: selectedInvoice.docRegime ?? (profile.regime === 'autonomo' ? 'forfettario' : profile.regime ?? 'forfettario'),
       category: selectedInvoice.invoiceNumber ?? selectedInvoice.id,
       title: `Storno fattura ${selectedInvoice.invoiceNumber ?? ''}`.trim(),
     };

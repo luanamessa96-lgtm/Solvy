@@ -108,7 +108,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
 
   const item = {
     hidden: { opacity: 0, y: 20, scale: 0.98 },
-    show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 260, damping: 20 } },
+    show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring' as const, stiffness: 260, damping: 20 } },
   };
 
   const chartData = Array.from({ length: 12 }, (_, i) => {
@@ -632,16 +632,16 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                           darkMode={darkMode}
                         />
                       </span>
-                      <span className="text-xs font-bold text-amber-500">{fmt(tasse.inpsLordo)}</span>
+                      <span className="text-xs font-bold text-amber-500">{fmt((tasse as TasseOrdinario).inpsLordo)}</span>
                     </div>
                     <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                       <div className="bg-amber-400 h-full rounded-full" style={{ width: `${Math.min(barInps, 100)}%` }} />
                     </div>
                   </div>
-                  {tasse.rivalsaInps > 0 && (
+                  {(tasse as TasseOrdinario).rivalsaInps > 0 && (
                     <div className="flex justify-between">
                       <span className="text-xs font-bold text-emerald-600">Rivalsa INPS ricevuta (4%)</span>
-                      <span className="text-xs font-bold text-emerald-600">−{fmt(tasse.rivalsaInps)}</span>
+                      <span className="text-xs font-bold text-emerald-600">−{fmt((tasse as TasseOrdinario).rivalsaInps)}</span>
                     </div>
                   )}
                 </>)}

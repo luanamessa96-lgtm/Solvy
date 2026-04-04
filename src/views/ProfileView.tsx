@@ -198,7 +198,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     }`;
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.05 } } };
-  const item = { hidden: { opacity: 0, y: 20, scale: 0.98 }, show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 260, damping: 20 } } };
+  const item = { hidden: { opacity: 0, y: 20, scale: 0.98 }, show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring' as const, stiffness: 260, damping: 20 } } };
 
   const hasFiscalData = activeProfile.piva || activeProfile.codiceFiscale || activeProfile.address;
 
@@ -327,7 +327,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Régimen Fiscal</label>
-                        <select value={editData.regimenFiscal} onChange={e => setEditData({ ...editData, regimenFiscal: e.target.value })} className={inputClass()}>
+                        <select value={editData.regimenFiscal} onChange={e => setEditData({ ...editData, regimenFiscal: e.target.value as Profile['regimenFiscal'] })} className={inputClass()}>
                           <option value="simplificada">Estimación Directa Simplificada</option>
                           <option value="normal">Estimación Directa Normal</option>
                           <option value="modulos">Estimación Objetiva / Módulos</option>
