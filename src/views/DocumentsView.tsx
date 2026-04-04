@@ -9,6 +9,7 @@ import CreateExpenseModal from '../components/modals/CreateExpenseModal';
 import CreateCreditNoteModal from '../components/modals/CreateCreditNoteModal';
 import CreateFacturaRectificativaModal from '../components/modals/CreateFacturaRectificativaModal';
 import CreatePresupuestoModal from '../components/modals/CreatePresupuestoModal';
+import CreateFacturaModal from '../components/modals/CreateFacturaModal';
 import SearchOverlay from '../components/modals/SearchOverlay';
 import ExportModal from '../components/modals/ExportModal';
 import ResumenTrimestralModal from '../components/modals/ResumenTrimestralModal';
@@ -379,7 +380,8 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
       </AnimatePresence>
 
       {/* ─── Modal comuni ───────────────────────────────────────────── */}
-      <CreateInvoiceModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} onSave={onAddDocument} onUpdateProfile={onUpdateProfile} profile={profile} documents={documents} darkMode={darkMode} />
+      {profile.country !== 'Spain' && <CreateInvoiceModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} onSave={onAddDocument} onUpdateProfile={onUpdateProfile} profile={profile} documents={documents} darkMode={darkMode} />}
+      {profile.country === 'Spain' && <CreateFacturaModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} onSave={onAddDocument} onUpdateProfile={onUpdateProfile} profile={profile} documents={documents} darkMode={darkMode} />}
       <CreateExpenseModal isOpen={isExpenseOpen} onClose={() => setIsExpenseOpen(false)} onSave={onAddDocument} darkMode={darkMode} profile={profile} />
       {/* ─── Modal Italia ───────────────────────────────────────────── */}
       {profile.country === 'Italy' && <CreateCreditNoteModal isOpen={isCreditNoteOpen} onClose={() => setIsCreditNoteOpen(false)} onSave={onAddDocument} profile={profile} documents={documents} darkMode={darkMode} />}
