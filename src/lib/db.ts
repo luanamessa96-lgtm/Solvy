@@ -40,6 +40,7 @@ export async function getDocuments(profileId: string): Promise<Document[]> {
     docRegime: d.doc_regime,
     clientSdi: d.client_sdi,
     clientPec: d.client_pec,
+    validezDate: d.validez_date,
   }));
 }
 
@@ -68,6 +69,7 @@ export async function addDocument(doc: Document, profileId: string): Promise<voi
       doc_regime: doc.docRegime,
       client_sdi: doc.clientSdi ?? null,
       client_pec: doc.clientPec ?? null,
+      validez_date: doc.validezDate ?? null,
       profile_id: profileId,
       updated_at: new Date().toISOString(),
     }], { onConflict: 'id' });
@@ -98,6 +100,7 @@ export async function updateDocument(doc: Document): Promise<void> {
       doc_regime: doc.docRegime,
       client_sdi: doc.clientSdi ?? null,
       client_pec: doc.clientPec ?? null,
+      validez_date: doc.validezDate ?? null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', doc.id);
