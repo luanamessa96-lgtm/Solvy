@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Mail, Camera, ChevronRight, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus, Download, Copy, AlertTriangle, FileCode, Lock, BarChart3, FileMinus } from 'lucide-react';
+import { Search, Mail, Camera, ChevronRight, ChevronDown, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus, Download, Copy, AlertTriangle, FileCode, Lock, BarChart3, FileMinus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { Document, Accountant, Profile } from '../types';
@@ -96,6 +96,11 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [docToEdit, setDocToEdit] = useState<Document | null>(null);
   const [pdfPreview, setPdfPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
+  const [openMonths, setOpenMonths] = useState<Set<string>>(() => {
+    const now = new Date();
+    const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    return new Set([key]);
+  });
 
   const initializedRef = useRef(false);
   const prevLengthRef = useRef(0);
@@ -336,22 +341,49 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
         <div className="space-y-3">
           {filteredDocuments.length > 0 ? (
             profile.country === 'Spain' && monthGroups ? (
-              <div className="space-y-6">
-                {monthGroups.map(group => (
-                  <div key={group.key} className="space-y-2">
-                    <div className="flex items-center gap-3 px-1 pb-1">
-                      <span className={`text-[11px] font-bold uppercase tracking-widest ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>{group.label}</span>
-                      <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800" />
-                      {group.income > 0 && <span className="text-[10px] font-bold text-emerald-500">+€{group.income.toLocaleString()}</span>}
-                      {group.expenses > 0 && <span className="text-[10px] font-bold text-red-500">-€{group.expenses.toLocaleString()}</span>}
+              <div className="space-y-3">
+                {monthGroups.map(group => {
+                  const isOpen = openMonths.has(group.key);
+                  return (
+                    <div key={group.key} className={`rounded-2xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                      <button
+                        onClick={() => setOpenMonths(prev => {
+                          const next = new Set(prev);
+                          if (next.has(group.key)) next.delete(group.key); else next.add(group.key);
+                          return next;
+                        })}
+                        className={`w-full flex items-center justify-between px-5 py-4 text-left transition-colors active:scale-[0.99] ${darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'}`}
+                      >
+                        <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{group.label}</span>
+                        <div className="flex items-center gap-3">
+                          {group.income > 0 && <span className="text-[11px] font-bold text-emerald-500">+€{group.income.toLocaleString()}</span>}
+                          {group.expenses > 0 && <span className="text-[11px] font-bold text-red-500">-€{group.expenses.toLocaleString()}</span>}
+                          <span className={`text-[11px] ${darkMode ? 'text-slate-600' : 'text-slate-400'}`}>{group.docs.length}</span>
+                          <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                            <ChevronDown size={16} className={darkMode ? 'text-slate-500' : 'text-slate-400'} />
+                          </motion.div>
+                        </div>
+                      </button>
+                      <AnimatePresence initial={false}>
+                        {isOpen && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className={`divide-y px-3 pb-3 pt-1 space-y-2 ${darkMode ? 'divide-slate-800' : 'divide-slate-50'}`}>
+                              {group.docs.map(doc => (
+                                <DocCard key={doc.id} doc={doc} darkMode={darkMode} profile={profile} i18nLanguage={i18n.language} t={t} onClick={() => setSelectedDoc(doc)} />
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-                    <div className="space-y-2">
-                      {group.docs.map(doc => (
-                        <DocCard key={doc.id} doc={doc} darkMode={darkMode} profile={profile} i18nLanguage={i18n.language} t={t} onClick={() => setSelectedDoc(doc)} />
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : filteredDocuments.map(doc => (
               <DocCard key={doc.id} doc={doc} darkMode={darkMode} profile={profile} i18nLanguage={i18n.language} t={t} onClick={() => setSelectedDoc(doc)} />
