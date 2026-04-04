@@ -379,12 +379,14 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
         )}
       </AnimatePresence>
 
+      {/* ─── Modal Italia ───────────────────────────────────────────── */}
       <CreateInvoiceModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} onSave={onAddDocument} onUpdateProfile={onUpdateProfile} profile={profile} documents={documents} darkMode={darkMode} />
       <CreateExpenseModal isOpen={isExpenseOpen} onClose={() => setIsExpenseOpen(false)} onSave={onAddDocument} darkMode={darkMode} profile={profile} />
-      <CreateCreditNoteModal isOpen={isCreditNoteOpen} onClose={() => setIsCreditNoteOpen(false)} onSave={onAddDocument} profile={profile} documents={documents} darkMode={darkMode} />
-      <CreateInvoiceModal isOpen={isProformaOpen} onClose={() => setIsProformaOpen(false)} onSave={onAddDocument} onUpdateProfile={onUpdateProfile} profile={profile} documents={documents} darkMode={darkMode} isProforma={true} />
-      <CreateFacturaRectificativaModal isOpen={isRectificativaOpen} onClose={() => setIsRectificativaOpen(false)} onSave={onAddDocument} profile={profile} documents={documents} darkMode={darkMode} />
-      <CreatePresupuestoModal isOpen={isPresupuestoOpen} onClose={() => setIsPresupuestoOpen(false)} onSave={onAddDocument} profile={profile} documents={documents} darkMode={darkMode} />
+      {profile.country === 'Italy' && <CreateCreditNoteModal isOpen={isCreditNoteOpen} onClose={() => setIsCreditNoteOpen(false)} onSave={onAddDocument} profile={profile} documents={documents} darkMode={darkMode} />}
+      {profile.country === 'Italy' && <CreateInvoiceModal isOpen={isProformaOpen} onClose={() => setIsProformaOpen(false)} onSave={onAddDocument} onUpdateProfile={onUpdateProfile} profile={profile} documents={documents} darkMode={darkMode} isProforma={true} />}
+      {/* ─── Modal Spain ────────────────────────────────────────────── */}
+      {profile.country === 'Spain' && <CreateFacturaRectificativaModal isOpen={isRectificativaOpen} onClose={() => setIsRectificativaOpen(false)} onSave={onAddDocument} profile={profile} documents={documents} darkMode={darkMode} />}
+      {profile.country === 'Spain' && <CreatePresupuestoModal isOpen={isPresupuestoOpen} onClose={() => setIsPresupuestoOpen(false)} onSave={onAddDocument} profile={profile} documents={documents} darkMode={darkMode} />}
 
       <AnimatePresence>
         {selectedDoc && (
