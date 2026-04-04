@@ -492,7 +492,7 @@ function AppInner() {
     };
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => el.removeEventListener('scroll', onScroll);
-  }, [isAuthenticated]); // re-attach when auth changes (main mounts)
+  }, [isAuthenticated, isLoading]); // re-attach when main element mounts (after loading)
 
   const resetSubPages = () => { setIsProfilePage(false); setIsSettingsPage(false); setIsAccountantPage(false); setIsFiscalPage(false); setIsMediaLibraryPage(false); setIsGuidaFiscalePage(false); setIsGuiaFiscalESPage(false); };
   const handleProfileClick = () => { resetSubPages(); setIsProfilePage(true); setActiveTab('menu'); };
