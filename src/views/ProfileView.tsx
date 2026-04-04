@@ -25,6 +25,7 @@ interface ProfileViewProps {
   onUpdateProfile: (p: Profile) => Promise<void> | void;
   onAddProfile?: () => void;
   darkMode?: boolean;
+  theme?: string;
   key?: string;
 }
 
@@ -79,7 +80,8 @@ function validateCF(v: string): string | null {
   return null;
 }
 
-const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile, onAddProfile, darkMode }: ProfileViewProps) => {
+const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile, onAddProfile, darkMode, theme }: ProfileViewProps) => {
+  const isProLight = theme === 'pro-light';
   const { t } = useTranslation();
   const keyboardPadding = useKeyboardPadding();
   const [isEditing, setIsEditing] = useState(false);
@@ -498,7 +500,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
 
           {/* IT-19 — Limiti app */}
           {activeProfile.country !== 'Spain' && (
-            <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'border-slate-800' : 'border-slate-100'}`} style={{ backgroundColor: 'var(--color-card-bg)' }}>
+            <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'border-slate-800' : 'border-slate-100'}`} style={isProLight ? { backgroundColor: 'rgba(255,255,255,0.7)', border: '1px solid rgba(200,85,247,0.2)' } : { backgroundColor: 'var(--color-card-bg)' }}>
               <button
                 onClick={() => setIsIT19Expanded(v => !v)}
                 className="w-full flex items-center justify-between gap-3 px-4 py-3"
@@ -510,7 +512,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                 <ChevronDown size={14} className={`text-slate-400 transition-transform ${isIT19Expanded ? 'rotate-180' : ''}`} />
               </button>
               {isIT19Expanded && (
-                <div className={`px-4 pb-4 border-t ${darkMode ? 'border-slate-800' : 'border-slate-100'}`}>
+                <div className={`px-4 pb-4 border-t ${darkMode ? 'border-slate-800' : 'border-slate-100'}`} style={isProLight ? { borderColor: 'rgba(200,85,247,0.15)' } : undefined}>
                   <p className="text-[10px] text-slate-400 leading-relaxed pt-3">
                     I calcoli di Solvy sono ottimizzati per i casi più comuni (forfettari e ordinari senza situazioni particolari). Se hai redditi da lavoro dipendente, immobili, investimenti o situazioni familiari complesse, i calcoli potrebbero non essere accurati. Consulta sempre il tuo commercialista per la dichiarazione definitiva.
                   </p>
@@ -521,7 +523,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
 
           {/* ES-13 — Límites app */}
           {activeProfile.country === 'Spain' && (
-            <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'border-slate-800' : 'border-slate-100'}`} style={{ backgroundColor: 'var(--color-card-bg)' }}>
+            <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'border-slate-800' : 'border-slate-100'}`} style={isProLight ? { backgroundColor: 'rgba(255,255,255,0.7)', border: '1px solid rgba(200,85,247,0.2)' } : { backgroundColor: 'var(--color-card-bg)' }}>
               <button
                 onClick={() => setIsES13Expanded(v => !v)}
                 className="w-full flex items-center justify-between gap-3 px-4 py-3"

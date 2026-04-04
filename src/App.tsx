@@ -761,6 +761,7 @@ function AppInner() {
               onUpdateProfile={handleUpdateProfile}
               onAddProfile={handleAddProfile}
               darkMode={darkMode}
+              theme={theme}
             />
           ) : isSettingsPage ? (
             <SettingsView theme={theme} setTheme={(t) => setProfileTheme(t, activeProfile.id)} profile={activeProfile} onUpdateProfile={handleUpdateProfile} profilesCount={profiles.length} documents={documents} deadlines={deadlines} />
