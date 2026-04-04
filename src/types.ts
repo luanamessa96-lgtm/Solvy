@@ -19,6 +19,7 @@ export interface Profile {
   iban?: string;
   isPro?: boolean;
   subscriptionStartedAt?: string;
+  subscriptionPlan?: 'monthly' | 'yearly';
   regimenFiscal?: 'simplificada' | 'normal' | 'modulos';
   ivaHabitual?: 21 | 10 | 4;
   street?: string;

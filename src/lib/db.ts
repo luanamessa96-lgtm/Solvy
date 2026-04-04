@@ -138,6 +138,7 @@ export async function getProfiles(userId: string, userEmail?: string): Promise<P
     iban: p.iban,
     isPro: p.is_pro ?? false,
     subscriptionStartedAt: p.subscription_started_at ?? undefined,
+    subscriptionPlan: (p.subscription_plan as 'monthly' | 'yearly') ?? undefined,
     regimenFiscal: p.regimen_fiscal ?? undefined,
     ivaHabitual: p.iva_habitual ?? undefined,
     region: p.region ?? undefined,

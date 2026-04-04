@@ -68,11 +68,24 @@ Deno.serve(async (req) => {
 
         const isFirstSubscription = !existing?.[0]?.subscription_started_at;
 
+        // Recupera il piano (monthly/yearly) dalla subscription Stripe
+        let subscriptionPlan: 'monthly' | 'yearly' | null = null;
+        if (session.subscription) {
+          try {
+            const sub = await stripe.subscriptions.retrieve(session.subscription as string);
+            const interval = sub.items.data[0]?.price?.recurring?.interval;
+            subscriptionPlan = interval === 'year' ? 'yearly' : 'monthly';
+          } catch (e) {
+            console.error('Failed to retrieve subscription for plan:', e);
+          }
+        }
+
         // Attiva Pro e salva data primo pagamento (solo al primo acquisto, non ai rinnovi)
         await supabaseAdmin
           .from('profiles')
           .update({
             is_pro: true,
+            ...(subscriptionPlan ? { subscription_plan: subscriptionPlan } : {}),
             ...(isFirstSubscription ? { subscription_started_at: new Date().toISOString() } : {}),
           })
           .eq('user_id', userId);
@@ -92,7 +105,7 @@ Deno.serve(async (req) => {
       }
 
       case 'invoice.payment_succeeded': {
-        // Rinnovo subscription — mantieni is_pro = true
+        // Rinnovo subscription — mantieni is_pro = true e aggiorna piano
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
 
@@ -103,9 +116,24 @@ Deno.serve(async (req) => {
           .limit(1);
 
         if (profiles?.[0]?.user_id) {
+          // Recupera il piano dalla subscription
+          let subscriptionPlan: 'monthly' | 'yearly' | null = null;
+          if (invoice.subscription) {
+            try {
+              const sub = await stripe.subscriptions.retrieve(invoice.subscription as string);
+              const interval = sub.items.data[0]?.price?.recurring?.interval;
+              subscriptionPlan = interval === 'year' ? 'yearly' : 'monthly';
+            } catch (e) {
+              console.error('Failed to retrieve subscription for plan:', e);
+            }
+          }
+
           await supabaseAdmin
             .from('profiles')
-            .update({ is_pro: true })
+            .update({
+              is_pro: true,
+              ...(subscriptionPlan ? { subscription_plan: subscriptionPlan } : {}),
+            })
             .eq('user_id', profiles[0].user_id);
         }
         break;
@@ -125,7 +153,7 @@ Deno.serve(async (req) => {
         if (profiles?.[0]?.user_id) {
           await supabaseAdmin
             .from('profiles')
-            .update({ is_pro: false, subscription_started_at: null })
+            .update({ is_pro: false, subscription_started_at: null, subscription_plan: null })
             .eq('user_id', profiles[0].user_id);
 
           console.log(`Pro revocato per customer: ${customerId}`);
