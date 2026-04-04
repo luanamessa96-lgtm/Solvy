@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Plus, FileText, CheckCircle2 } from 'lucide-react';
 import { Document, Profile } from '../../types';
@@ -8,17 +8,20 @@ interface CreateFacturaModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (doc: Document) => void;
+  onUpdate?: (doc: Document) => void;
   onUpdateProfile: (p: Profile) => void;
   profile: Profile;
   documents: Document[];
   darkMode?: boolean;
+  editDoc?: Document;
 }
 
 const IVA_OPTIONS = [0, 4, 10, 21] as const;
 
-const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile, documents, darkMode }: CreateFacturaModalProps) => {
+const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile, profile, documents, darkMode, editDoc }: CreateFacturaModalProps) => {
   const dragControls = useDragControls();
   const currentYear = new Date().getFullYear();
+  const isEditMode = !!editDoc;
 
   const nextInvoiceNumber = useMemo(() => {
     const yearStr = String(currentYear);
@@ -50,6 +53,39 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
 
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
+  // Sync form when modal opens — pre-fill in edit mode, reset in create mode
+  useEffect(() => {
+    if (!isOpen) return;
+    if (editDoc) {
+      setForm({
+        date: editDoc.date,
+        clientType: editDoc.clientPiva ? 'empresa' : 'particular',
+        client: editDoc.client ?? '',
+        clientNif: editDoc.clientPiva ?? editDoc.clientCf ?? '',
+        clientAddress: editDoc.clientAddress ?? '',
+        title: editDoc.title,
+        amount: String(editDoc.amount),
+        ivaRate: editDoc.ivaRate ?? (profile.ivaHabitual ?? 21),
+        retencionIrpf: editDoc.ritenuta ?? false,
+        status: (editDoc.status === 'paid' || editDoc.status === 'pending') ? editDoc.status : 'pending',
+      });
+    } else {
+      setForm({
+        date: todayLocalISO(),
+        clientType: 'particular',
+        client: '',
+        clientNif: '',
+        clientAddress: '',
+        title: '',
+        amount: '',
+        ivaRate: profile.ivaHabitual ?? 21,
+        retencionIrpf: false,
+        status: 'pending',
+      });
+    }
+    setTouched({});
+  }, [isOpen, editDoc]);
+
   const set = <K extends keyof typeof form>(key: K, value: typeof form[K]) => setForm(f => ({ ...f, [key]: value }));
   const touch = (key: string) => setTouched(t => ({ ...t, [key]: true }));
 
@@ -63,22 +99,6 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
     clientNif: touched.clientNif && form.clientType === 'empresa' && !form.clientNif.trim() ? 'Campo obligatorio' : '',
     title: touched.title && !form.title.trim() ? 'Campo obligatorio' : '',
     amount: touched.amount && (base <= 0 || isNaN(base)) ? 'Introduce un importe válido' : '',
-  };
-
-  const reset = () => {
-    setForm({
-      date: todayLocalISO(),
-      clientType: 'particular',
-      client: '',
-      clientNif: '',
-      clientAddress: '',
-      title: '',
-      amount: '',
-      ivaRate: defaultIva,
-      retencionIrpf: false,
-      status: 'pending',
-    });
-    setTouched({});
   };
 
   const validate = () => {
@@ -95,25 +115,32 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
     onUpdateProfile({ ...profile, invoiceCounters: { ...(profile.invoiceCounters ?? {}), [yearStr]: current + 1 } });
   };
 
+  const buildDocFields = () => ({
+    date: form.date,
+    client: form.client,
+    clientAddress: form.clientAddress,
+    clientPiva: form.clientType === 'empresa' ? form.clientNif : undefined,
+    clientCf: form.clientType === 'particular' && form.clientNif.trim() ? form.clientNif : undefined,
+    title: form.title,
+    amount: base,
+    ivaRate: form.ivaRate,
+    ritenuta: form.retencionIrpf,
+    status: form.status,
+  });
+
   const handleSubmit = () => {
     if (!validate()) return;
-    incrementCounter();
-    onSave({
-      id: Math.random().toString(36).substr(2, 9),
-      type: 'invoice',
-      status: form.status,
-      invoiceNumber: nextInvoiceNumber,
-      date: form.date,
-      client: form.client,
-      clientAddress: form.clientAddress,
-      clientPiva: form.clientType === 'empresa' ? form.clientNif : undefined,
-      clientCf: form.clientType === 'particular' && form.clientNif.trim() ? form.clientNif : undefined,
-      title: form.title,
-      amount: base,
-      ivaRate: form.ivaRate,
-      ritenuta: form.retencionIrpf,
-    });
-    reset();
+    if (isEditMode && editDoc && onUpdate) {
+      onUpdate({ ...editDoc, ...buildDocFields() });
+    } else {
+      incrementCounter();
+      onSave({
+        id: Math.random().toString(36).substr(2, 9),
+        type: 'invoice',
+        invoiceNumber: nextInvoiceNumber,
+        ...buildDocFields(),
+      });
+    }
     onClose();
   };
 
@@ -129,6 +156,8 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
   }`;
   const lc = 'text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1';
   const errMsg = (msg: string) => msg ? <p className="text-[10px] text-red-500 font-semibold ml-1 mt-0.5">{msg}</p> : null;
+
+  const displayNumber = isEditMode ? (editDoc!.invoiceNumber ?? '') : nextInvoiceNumber;
 
   return (
     <AnimatePresence>
@@ -151,8 +180,10 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
               {/* Header */}
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Nueva Factura</h2>
-                  <p className="text-sm text-slate-500">{nextInvoiceNumber}</p>
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                    {isEditMode ? 'Editar Factura' : 'Nueva Factura'}
+                  </h2>
+                  <p className="text-sm text-slate-500">{displayNumber}</p>
                 </div>
                 <button onClick={onClose} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
                   <Plus className="rotate-45" size={24} />
@@ -167,7 +198,7 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                     <label className={lc}>Número factura</label>
                     <input
                       type="text"
-                      value={nextInvoiceNumber}
+                      value={displayNumber}
                       readOnly
                       className={`${ic()} opacity-60 cursor-default`}
                     />
@@ -183,7 +214,6 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
               <div className="space-y-3">
                 <label className={lc}>Datos del cliente</label>
 
-                {/* Selector Particular / Empresa */}
                 <div className={`p-1 rounded-2xl flex gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                   {(['particular', 'empresa'] as const).map(t => (
                     <button key={t} type="button"
@@ -359,7 +389,7 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
               >
                 <FileText size={18} />
-                Crear Factura
+                {isEditMode ? 'Guardar Cambios' : 'Crear Factura'}
               </button>
 
             </div>
