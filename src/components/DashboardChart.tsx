@@ -86,7 +86,7 @@ export default function DashboardChart({ data, darkMode, theme, year }: Dashboar
             axisLine={false}
             tickLine={false}
             tick={{ fontSize: 11, fill: tickColor }}
-            tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`}
+            tickFormatter={(v) => v >= 1000 ? `€${(v / 1000).toFixed(0)}k` : `€${v}`}
           />
         )}
 
