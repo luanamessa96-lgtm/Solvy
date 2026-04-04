@@ -37,7 +37,7 @@
 
 :root[data-theme="pro-light"] {
   --color-bg: transparent;
-  --color-card: rgba(255, 255, 255, 0.88);
+  --color-card: rgba(255, 255, 255, 1);
   --color-card-border: rgba(255, 255, 255, 0.95);
   --color-primary: #c855f7;
   --color-accent: #2dd4bf;
