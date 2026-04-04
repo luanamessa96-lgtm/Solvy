@@ -85,7 +85,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
     const years = new Set(documents.map(d => getLocalYear(d.date)));
     years.add(currentYear);
     years.add(currentYear + 1);
-    return Array.from(years).sort((a, b) => b - a);
+    return Array.from(years).sort((a, b) => a - b);
   }, [documents]);
 
   const yearDocuments = useMemo(() => documents.filter(d => getLocalYear(d.date) === selectedYear), [documents, selectedYear]);
