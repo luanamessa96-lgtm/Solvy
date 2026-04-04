@@ -52,6 +52,15 @@ function migrateTheme(t: string | null | undefined): string {
   return t;
 }
 
+// Imposta data-theme su <html> in modo sincrono prima del primo render
+{
+  const savedTheme = localStorage.getItem('theme');
+  const base = savedTheme || (JSON.parse(localStorage.getItem('darkMode') || 'false') ? 'dark' : null);
+  const initialTheme = migrateTheme(base);
+  const initialRootTheme = initialTheme === 'light' ? 'free-light' : initialTheme === 'dark' ? 'free-dark' : initialTheme;
+  document.documentElement.setAttribute('data-theme', initialRootTheme);
+}
+
 function AppInner() {
   const [activeTab, setActiveTab] = useState('home');
   const [docChoiceTrigger, setDocChoiceTrigger] = useState(0);
