@@ -71,6 +71,14 @@ export default function DashboardChart({ data, darkMode, theme, year }: Dashboar
           tickLine={false}
           tick={{ fontSize: isPro ? 11 : 10, fontWeight: 'bold', fill: isPro ? tickColor : '#94a3b8' }}
           dy={10}
+          tickFormatter={(value) => {
+            const shortNames = {
+              es: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+              it: ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'],
+            };
+            const lang = i18n.language.startsWith('it') ? 'it' : 'es';
+            return shortNames[lang][parseInt(value) - 1] ?? value;
+          }}
         />
 
         {isPro && (
