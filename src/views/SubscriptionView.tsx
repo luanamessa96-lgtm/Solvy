@@ -9,7 +9,9 @@ interface SubscriptionViewProps {
   darkMode?: boolean;
 }
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+// Usa lo stesso URL del client Supabase (Dev in preview, Production in prod)
+// così il JWT e la edge function appartengono sempre allo stesso progetto
+const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL_DEV ?? import.meta.env.VITE_SUPABASE_URL) as string;
 
 const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
   const [portalLoading, setPortalLoading] = useState(false);
