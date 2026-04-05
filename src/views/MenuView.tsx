@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Profile } from '../types';
 import LogoutModal from '../components/modals/LogoutModal';
 import PaywallModal from '../components/modals/PaywallModal';
+import DiceBearAvatar from '../components/ui/DiceBearAvatar';
 
 interface MenuViewProps {
   activeProfile: Profile;
@@ -42,12 +43,7 @@ const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onSubscripti
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-6 pb-24">
       <motion.button variants={item} onClick={onProfileClick} className={`w-full p-6 rounded-[32px] border flex items-center gap-5 active:scale-[0.98] transition-all shadow-sm hover:shadow-xl ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}>
-        <div className="relative">
-          <div className={`w-16 h-16 rounded-full flex items-center justify-center overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-[#E8D5C4]'}`}>
-            <img src={activeProfile.avatar} alt={activeProfile.name} width="64" height="64" className={`w-full h-full object-cover ${darkMode ? 'opacity-90' : 'mix-blend-multiply opacity-80'}`} />
-          </div>
-          <div className={`absolute inset-0 rounded-full border-2 ${darkMode ? 'border-slate-700/50' : 'border-white/50'}`} />
-        </div>
+        <DiceBearAvatar name={activeProfile.name} email={activeProfile.email} size={64} borderWidth={2} />
         <div className="text-left">
           <div className="flex items-center gap-2">
             <h2 className={`text-xl font-bold leading-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>{activeProfile.name}</h2>

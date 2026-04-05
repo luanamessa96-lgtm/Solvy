@@ -1,5 +1,6 @@
 import { ArrowLeft, Bell } from 'lucide-react';
 import { Profile } from '../../types';
+import DiceBearAvatar from '../ui/DiceBearAvatar';
 
 interface HeaderProps {
   title: string;
@@ -48,8 +49,8 @@ const Header = ({ title, activeProfile, onProfileClick, onBellClick, notificatio
           )}
         </button>
       )}
-      <button onClick={onProfileClick} aria-label={`Profilo di ${activeProfile.name}`} className={`w-9 h-9 rounded-full border-2 overflow-hidden transition-all active:scale-90 hover:shadow-lg ${darkMode ? 'border-slate-800 hover:border-primary hover:shadow-primary/20' : 'border-slate-100 hover:border-primary hover:shadow-slate-200'}`}>
-        <img src={activeProfile.avatar} alt={activeProfile.name} width="36" height="36" className="w-full h-full object-cover" />
+      <button onClick={onProfileClick} aria-label={`Profilo di ${activeProfile.name}`} className="rounded-full transition-all active:scale-90 hover:shadow-lg hover:shadow-primary/20">
+        <DiceBearAvatar name={activeProfile.name} email={activeProfile.email} size={36} borderWidth={2} />
       </button>
     </div>
   </header>
