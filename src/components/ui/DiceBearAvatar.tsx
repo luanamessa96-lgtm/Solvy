@@ -21,8 +21,8 @@ function buildUrl(name?: string, email?: string): string {
   const seed = encodeURIComponent(
     (name?.trim() || email?.trim() || 'solvy').toLowerCase()
   );
-  // URL minimo — nessun parametro extra che possa causare errori API
-  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+  // PNG invece di SVG: evita il blocco browser su SVG cross-origin con risorse esterne
+  return `https://api.dicebear.com/7.x/avataaars/png?seed=${seed}&size=128`;
 }
 
 export default function DiceBearAvatar({
