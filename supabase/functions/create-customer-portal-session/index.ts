@@ -24,15 +24,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const token = authHeader.replace('Bearer ', '');
-
-    // Use service role to verify JWT — più affidabile nelle edge functions
-    const supabaseAdmin = createClient(
+    // Stesso pattern di create-checkout-session: anon key + auth header globale
+    const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       console.error('Auth error:', authError?.message);
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -40,6 +39,12 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // Service role per bypassare RLS nella query DB
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
     const { data: profiles } = await supabaseAdmin
       .from('profiles')
@@ -50,7 +55,9 @@ Deno.serve(async (req) => {
     const stripeCustomerId = profiles?.[0]?.stripe_customer_id;
 
     if (!stripeCustomerId) {
-      return new Response(JSON.stringify({ error: 'Nessun cliente Stripe trovato' }), {
+      return new Response(JSON.stringify({
+        error: 'Abbonamento attivato manualmente — nessun ID Stripe nel DB. Aggiorna stripe_customer_id su Supabase o contatta support@solvyapp.com.',
+      }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
