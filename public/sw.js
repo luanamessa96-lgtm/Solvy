@@ -1,4 +1,4 @@
-const VERSION = 'v4';
+const VERSION = 'v5';
 const CACHE = `freelance-${VERSION}`;
 
 self.addEventListener('install', () => { /* wait for SKIP_WAITING message */ });
