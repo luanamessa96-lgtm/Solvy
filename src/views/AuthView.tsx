@@ -13,7 +13,8 @@ interface AuthViewProps {
 }
 
 export default function AuthView({ darkMode, onResetPassword, initialScreen }: AuthViewProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isES = i18n.language?.startsWith('es');
   const [screen, setScreen] = useState<Screen>(initialScreen ?? 'login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -92,53 +93,43 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     <div className="max-w-md mx-auto min-h-screen flex flex-col" style={{ backgroundColor: 'var(--color-card-bg)' }}>
       <div className="flex-1 flex flex-col justify-center px-8 py-12">
 
-        {/* Logo / Brand */}
+        {/* Brand */}
         <div className="mb-10">
-          <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center shadow-xl shadow-primary/30 mb-5">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="16" y1="13" x2="8" y2="13" />
-              <line x1="16" y1="17" x2="8" y2="17" />
-              <polyline points="10 9 9 9 8 9" />
-            </svg>
-          </div>
-
+          <h1 style={{ fontWeight: 300, letterSpacing: '0.15em', color: darkMode ? '#ffffff' : '#1a1a2e', fontSize: '2.75rem', lineHeight: 1, marginBottom: '0.5rem' }}>
+            SOLVY
+          </h1>
           <AnimatePresence mode="wait">
             {screen === 'login' && (
-              <motion.div key="login-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.login_title')}</h1>
-                <p className="text-slate-500 mt-1 text-sm">{t('auth.login_subtitle')}</p>
-              </motion.div>
+              <motion.p key="login-tag" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="text-slate-400 text-sm">
+                {isES ? 'tu gestoría fiscal en el bolsillo' : 'il tuo studio fiscale in tasca'}
+              </motion.p>
             )}
             {screen === 'register' && (
-              <motion.div key="register-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.register_title')}</h1>
-                <p className="text-slate-500 mt-1 text-sm">{t('auth.register_subtitle')}</p>
+              <motion.div key="register-tag" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}>
+                <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.register_title')}</p>
+                <p className="text-slate-400 text-sm mt-0.5">{t('auth.register_subtitle')}</p>
               </motion.div>
             )}
             {screen === 'forgot' && (
-              <motion.div key="forgot-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.forgot_title')}</h1>
-                <p className="text-slate-500 mt-1 text-sm">{t('auth.forgot_subtitle')}</p>
+              <motion.div key="forgot-tag" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}>
+                <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.forgot_title')}</p>
+                <p className="text-slate-400 text-sm mt-0.5">{t('auth.forgot_subtitle')}</p>
               </motion.div>
             )}
-            {(screen === 'forgot-sent') && (
-              <motion.div key="sent-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.forgot_sent_title')}</h1>
-                <p className="text-slate-500 mt-1 text-sm">{t('auth.forgot_sent_subtitle')}</p>
+            {screen === 'forgot-sent' && (
+              <motion.div key="sent-tag" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}>
+                <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.forgot_sent_title')}</p>
               </motion.div>
             )}
             {screen === 'register-sent' && (
-              <motion.div key="register-sent-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.register_sent_title')}</h1>
-                <p className="text-slate-500 mt-1 text-sm">{t('auth.register_sent_subtitle')}</p>
+              <motion.div key="register-sent-tag" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}>
+                <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.register_sent_title')}</p>
               </motion.div>
             )}
             {screen === 'reset' && (
-              <motion.div key="reset-title" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.reset_title')}</h1>
-                <p className="text-slate-500 mt-1 text-sm">{t('auth.reset_subtitle')}</p>
+              <motion.div key="reset-tag" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}>
+                <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.reset_title')}</p>
+                <p className="text-slate-400 text-sm mt-0.5">{t('auth.reset_subtitle')}</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -188,8 +179,18 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
                 <div className="flex-1 h-px" style={{ backgroundColor: 'var(--color-border)' }} />
               </div>
 
-              <button type="button" onClick={() => { clearError(); setScreen('register'); }} className="w-full py-4 rounded-2xl font-bold transition-all active:scale-[0.98] border-2" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}>
-                {t('auth.create_account_btn')}
+              <button
+                type="button"
+                onClick={() => { clearError(); setScreen('register'); }}
+                className="w-full py-4 rounded-2xl font-bold transition-all active:scale-[0.98]"
+                style={{
+                  border: '2px solid transparent',
+                  background: `linear-gradient(var(--color-card-bg, #f8fafc) 0 0) padding-box, linear-gradient(to right, #C060A0, #4CD9D0) border-box`,
+                }}
+              >
+                <span style={{ background: 'linear-gradient(to right, #C060A0, #4CD9D0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                  {t('auth.create_account_btn')}
+                </span>
               </button>
             </motion.div>
           )}
