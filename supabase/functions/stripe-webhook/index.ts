@@ -41,9 +41,14 @@ Deno.serve(async (req) => {
   let event: Stripe.Event;
   try {
     const body = await req.text();
+    if (!webhookSecret) {
+      console.error('STRIPE_WEBHOOK_SECRET is empty — set it in Supabase Edge Function secrets');
+      return new Response('Webhook secret not configured', { status: 500 });
+    }
     event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
+    console.log(`Webhook received: ${event.type} (id: ${event.id}, livemode: ${event.livemode})`);
   } catch (err) {
-    console.error('Webhook signature verification failed:', err);
+    console.error('Webhook signature verification failed — wrong STRIPE_WEBHOOK_SECRET?', (err as Error).message);
     return new Response(`Webhook Error: ${(err as Error).message}`, { status: 400 });
   }
 
@@ -57,7 +62,11 @@ Deno.serve(async (req) => {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
         const userId = session.metadata?.user_id;
-        if (!userId) break;
+        console.log(`checkout.session.completed — session_id: ${session.id}, customer: ${session.customer}, user_id metadata: ${userId ?? 'MISSING'}`);
+        if (!userId) {
+          console.error('user_id missing from session metadata — is_pro will NOT be updated');
+          break;
+        }
 
         // Controlla se subscription_started_at è già impostato (rinnovo vs primo acquisto)
         const { data: existing } = await supabaseAdmin
@@ -81,7 +90,7 @@ Deno.serve(async (req) => {
         }
 
         // Attiva Pro, salva stripe_customer_id e data primo pagamento
-        await supabaseAdmin
+        const { error: updateError, count } = await supabaseAdmin
           .from('profiles')
           .update({
             is_pro: true,
@@ -89,9 +98,14 @@ Deno.serve(async (req) => {
             ...(subscriptionPlan ? { subscription_plan: subscriptionPlan } : {}),
             ...(isFirstSubscription ? { subscription_started_at: new Date().toISOString() } : {}),
           })
-          .eq('user_id', userId);
+          .eq('user_id', userId)
+          .select('id', { count: 'exact', head: true });
 
-        console.log(`Pro attivato per user_id: ${userId}, primo acquisto: ${isFirstSubscription}`);
+        if (updateError) {
+          console.error(`DB update failed for user_id ${userId}:`, updateError.message);
+        } else {
+          console.log(`Pro attivato per user_id: ${userId}, righe aggiornate: ${count}, primo acquisto: ${isFirstSubscription}`);
+        }
 
         // Invia email upgrade_pro (fire-and-forget)
         if (existing?.[0]?.email) {
