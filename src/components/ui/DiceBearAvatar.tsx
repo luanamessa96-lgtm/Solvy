@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 interface DiceBearAvatarProps {
   name?: string;
   email?: string;
@@ -6,13 +8,21 @@ interface DiceBearAvatarProps {
   className?: string;
 }
 
-// Genera URL DiceBear avataaars dal nome (o email come fallback).
-// Il seed è deterministico: stesso nome → stesso avatar sempre.
+function getInitials(name?: string, email?: string): string {
+  const src = name?.trim() || email?.trim() || '?';
+  return src
+    .split(/\s+/)
+    .map(w => w[0]?.toUpperCase() ?? '')
+    .slice(0, 2)
+    .join('');
+}
+
 function buildUrl(name?: string, email?: string): string {
   const seed = encodeURIComponent(
     (name?.trim() || email?.trim() || 'solvy').toLowerCase()
   );
-  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&backgroundType=solid`;
+  // URL minimo — nessun parametro extra che possa causare errori API
+  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
 }
 
 export default function DiceBearAvatar({
@@ -22,8 +32,10 @@ export default function DiceBearAvatar({
   borderWidth = 2,
   className = '',
 }: DiceBearAvatarProps) {
+  const [failed, setFailed] = useState(false);
   const innerSize = size - borderWidth * 2;
   const url = buildUrl(name, email);
+  const initials = getInitials(name, email);
 
   return (
     <div
@@ -43,17 +55,37 @@ export default function DiceBearAvatar({
           height: innerSize,
           borderRadius: '50%',
           overflow: 'hidden',
-          background: '#e0f2fe',
+          background: 'linear-gradient(135deg, #e0f2fe, #ede9fe)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
-        <img
-          src={url}
-          alt={name || 'avatar'}
-          width={innerSize}
-          height={innerSize}
-          loading="lazy"
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        />
+        {failed ? (
+          // Fallback: iniziali con gradiente
+          <span
+            style={{
+              fontSize: innerSize * 0.35,
+              fontWeight: 700,
+              background: 'linear-gradient(135deg, #4FD1C5, #C855F7)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              userSelect: 'none',
+            }}
+          >
+            {initials}
+          </span>
+        ) : (
+          <img
+            src={url}
+            alt={initials}
+            width={innerSize}
+            height={innerSize}
+            loading="lazy"
+            onError={() => setFailed(true)}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+        )}
       </div>
     </div>
   );
