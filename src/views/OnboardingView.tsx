@@ -162,25 +162,25 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
 
           {/* WELCOME */}
           {step === 0 && (
-            <motion.div key="welcome" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-8">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <h1 style={{ fontWeight: 300, letterSpacing: '0.15em', color: darkMode ? '#ffffff' : '#1a1a2e', fontSize: '2.75rem', lineHeight: 1 }}>
-                    SOLVY
-                  </h1>
-                  <p className="text-slate-400 text-sm">il tuo studio fiscale in tasca</p>
-                </div>
-                <div className={`flex justify-center gap-6 pt-2 text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <motion.div key="welcome" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col justify-between px-8 py-12 text-center">
+              <div className="space-y-2 mt-10">
+                <h1 style={{ fontWeight: 300, letterSpacing: '0.15em', color: darkMode ? '#ffffff' : '#1a1a2e', fontSize: '2.75rem', lineHeight: 1 }}>
+                  SOLVY
+                </h1>
+                <p className="text-slate-400 text-sm">il tuo studio fiscale in tasca</p>
+              </div>
+              <div className="space-y-8">
+                <div className={`flex justify-center gap-6 text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                   {['🧾 Fatture', '📅 Scadenze', '📊 Tasse'].map(item => (
                     <span key={item} className="font-medium">{item}</span>
                   ))}
                 </div>
-              </div>
-              <div className="w-full space-y-3">
-                <button onClick={() => goNext('country')} className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-base shadow-xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                  Inizia <ChevronRight size={20} />
-                </button>
-                <p className="text-[11px] text-slate-400 text-center">pochi passaggi · meno di 2 minuti</p>
+                <div className="space-y-3">
+                  <button onClick={() => goNext('country')} className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-base shadow-xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                    Inizia <ChevronRight size={20} />
+                  </button>
+                  <p className="text-[11px] text-slate-400">pochi passaggi · meno di 2 minuti</p>
+                </div>
               </div>
             </motion.div>
           )}
