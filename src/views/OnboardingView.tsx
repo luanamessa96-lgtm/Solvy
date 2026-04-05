@@ -162,16 +162,16 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
 
           {/* WELCOME */}
           {step === 0 && (
-            <motion.div key="welcome" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col px-8 py-12 text-center">
-              {/* Brand — occupa il 45% superiore dello schermo */}
-              <div className="flex flex-col items-center justify-center space-y-2" style={{ minHeight: '45vh' }}>
+            <motion.div key="welcome" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col items-center justify-center px-8 py-12 text-center gap-16">
+              {/* Brand */}
+              <div className="space-y-2">
                 <h1 style={{ fontWeight: 300, letterSpacing: '0.15em', color: darkMode ? '#ffffff' : '#1a1a2e', fontSize: '2.75rem', lineHeight: 1 }}>
                   SOLVY
                 </h1>
                 <p className="text-slate-400 text-sm">il tuo studio fiscale in tasca</p>
               </div>
-              {/* Pills + bottone — ancorati in basso */}
-              <div className="mt-auto space-y-6 pb-2">
+              {/* Pills + bottone */}
+              <div className="w-full space-y-6">
                 <div className={`flex justify-center gap-6 text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                   {['🧾 Fatture', '📅 Scadenze', '📊 Tasse'].map(item => (
                     <span key={item} className="font-medium">{item}</span>
