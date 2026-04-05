@@ -42,6 +42,9 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
     setPortalLoading(true);
     setPortalError('');
     try {
+      // getUser() forza un refresh del token se scaduto (getSession() usa solo la cache)
+      const { data: { user } } = await getClient().auth.getUser();
+      if (!user) throw new Error('Sessione non trovata');
       const { data: { session } } = await getClient().auth.getSession();
       if (!session) throw new Error('Sessione non trovata');
       const res = await fetch(`${SUPABASE_URL}/functions/v1/create-customer-portal-session`, {
