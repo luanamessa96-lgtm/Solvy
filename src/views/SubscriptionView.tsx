@@ -50,7 +50,11 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
         body: JSON.stringify({ return_url: window.location.href }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Errore apertura portale');
+      if (!res.ok) {
+        console.error('Portal error:', data);
+        throw new Error(data.error ?? `Errore ${res.status} apertura portale`);
+      }
+      if (!data.url) throw new Error('URL portale non ricevuto');
       window.open(data.url, '_blank');
     } catch (err) {
       setPortalError((err as Error).message);

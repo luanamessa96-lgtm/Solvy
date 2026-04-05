@@ -80,11 +80,12 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Attiva Pro e salva data primo pagamento (solo al primo acquisto, non ai rinnovi)
+        // Attiva Pro, salva stripe_customer_id e data primo pagamento
         await supabaseAdmin
           .from('profiles')
           .update({
             is_pro: true,
+            stripe_customer_id: session.customer as string,
             ...(subscriptionPlan ? { subscription_plan: subscriptionPlan } : {}),
             ...(isFirstSubscription ? { subscription_started_at: new Date().toISOString() } : {}),
           })
