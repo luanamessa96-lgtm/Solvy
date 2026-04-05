@@ -164,17 +164,11 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
           {step === 0 && (
             <motion.div key="welcome" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-8">
               <div className="space-y-4">
-                <div className="w-24 h-24 bg-primary rounded-3xl flex items-center justify-center mx-auto shadow-2xl shadow-primary/30">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                  </svg>
-                </div>
-                <div className="space-y-3">
-                  <h1 className={`text-3xl font-black ${darkMode ? 'text-white' : 'text-slate-900'}`}>Benvenuto</h1>
-                  <p className="text-slate-500 text-base leading-relaxed">Il tuo assistente fiscale per freelance. Fatture, scadenze e tasse — tutto in un posto.</p>
+                <div className="space-y-2">
+                  <h1 style={{ fontWeight: 300, letterSpacing: '0.15em', color: darkMode ? '#ffffff' : '#1a1a2e', fontSize: '2.75rem', lineHeight: 1 }}>
+                    SOLVY
+                  </h1>
+                  <p className="text-slate-400 text-sm">il tuo studio fiscale in tasca</p>
                 </div>
                 <div className={`flex justify-center gap-6 pt-2 text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                   {['🧾 Fatture', '📅 Scadenze', '📊 Tasse'].map(item => (
