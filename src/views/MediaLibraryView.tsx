@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, X, FileText, Image as ImageIcon, Pencil } from 'lucide-react';
+import { X, FileText, Image as ImageIcon, Pencil } from 'lucide-react';
 import { Document } from '../types';
 import { uploadFile } from '../lib/db';
 import { todayLocalISO } from '../utils/date';
@@ -11,6 +11,7 @@ interface MediaLibraryViewProps {
   onDeleteDocument: (id: string) => void;
   onUpdateDocument: (doc: Document) => void;
   darkMode?: boolean;
+  addTrigger?: number;
 }
 
 const categories = [
@@ -134,7 +135,7 @@ function FileThumbnail({ doc, darkMode }: { doc: Document; darkMode?: boolean })
   );
 }
 
-export default function MediaLibraryView({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, darkMode }: MediaLibraryViewProps) {
+export default function MediaLibraryView({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, darkMode, addTrigger }: MediaLibraryViewProps) {
   const items = documents.filter(d => d.imageData || d.fileName);
   const groups = groupByMonth(items);
   const monthKeys = Object.keys(groups);
@@ -154,6 +155,11 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
   const [pdfLoading, setPdfLoading] = React.useState(false);
   const imageRef = React.useRef<HTMLInputElement>(null);
   const fileRef = React.useRef<HTMLInputElement>(null);
+
+  // Trigger dal + della BottomNav
+  React.useEffect(() => {
+    if (addTrigger) setIsAdding(true);
+  }, [addTrigger]);
 
   // Auto-upload base64 PDF to Storage when detail modal opens
   React.useEffect(() => {
@@ -290,15 +296,6 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
           ))}
         </div>
       )}
-
-      {/* FAB */}
-      <div className="fixed bottom-24 left-0 right-0 px-6 pointer-events-none">
-        <div className="max-w-md mx-auto flex justify-end">
-          <button onClick={() => setIsAdding(true)} className="w-14 h-14 bg-primary rounded-full shadow-xl shadow-primary/30 flex items-center justify-center text-white active:scale-90 transition-all pointer-events-auto">
-            <Plus size={28} strokeWidth={2.5} />
-          </button>
-        </div>
-      </div>
 
       {/* Add modal */}
       <AnimatePresence>

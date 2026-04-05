@@ -66,6 +66,7 @@ function AppInner() {
   const [activeTab, setActiveTab] = useState('home');
   const [docChoiceTrigger, setDocChoiceTrigger] = useState(0);
   const [calAddTrigger, setCalAddTrigger] = useState(0);
+  const [mediaLibAddTrigger, setMediaLibAddTrigger] = useState(0);
   const [activeProfile, setActiveProfile] = useState<Profile>(MOCK_PROFILES[0]);
   const [isProfilePage, setIsProfilePage] = useState(false);
   const [isSettingsPage, setIsSettingsPage] = useState(false);
@@ -516,7 +517,8 @@ function AppInner() {
   const handleTabChange = (tab: string) => { resetSubPages(); setActiveTab(tab); setIsNavHidden(false); };
 
   const handlePlusPress = () => {
-    if (activeTab === 'docs') setDocChoiceTrigger(n => n + 1);
+    if (isMediaLibraryPage) setMediaLibAddTrigger(n => n + 1);
+    else if (activeTab === 'docs') setDocChoiceTrigger(n => n + 1);
     else if (activeTab === 'calendar') setCalAddTrigger(n => n + 1);
   };
   const handleSwitchProfile = (p: Profile) => {
@@ -778,7 +780,7 @@ function AppInner() {
               darkMode={darkMode}
             />
           ) : isMediaLibraryPage ? (
-            <MediaLibraryView documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} darkMode={darkMode} />
+            <MediaLibraryView documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onUpdateDocument={handleUpdateDocument} darkMode={darkMode} addTrigger={mediaLibAddTrigger} />
           ) : isGuidaFiscalePage ? (
             <Suspense fallback={null}><GuidaFiscaleView darkMode={darkMode} /></Suspense>
           ) : isGuiaFiscalESPage ? (
