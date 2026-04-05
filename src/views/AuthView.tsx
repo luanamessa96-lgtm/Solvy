@@ -94,7 +94,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
       <div className="flex-1 flex flex-col justify-center px-8 py-12">
 
         {/* Brand */}
-        <div className="mb-10">
+        <div className="mb-10 text-center">
           <h1 style={{ fontWeight: 300, letterSpacing: '0.15em', color: darkMode ? '#ffffff' : '#1a1a2e', fontSize: '2.75rem', lineHeight: 1, marginBottom: '0.5rem' }}>
             SOLVY
           </h1>
