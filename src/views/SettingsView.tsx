@@ -2,7 +2,8 @@ import { useState } from 'react';
 import JSZip from 'jszip';
 import { todayLocalISO } from '../utils/date';
 import { motion } from 'motion/react';
-import { Sun, Moon, Languages, Trash2, RotateCcw, Loader2, CheckCircle2, AlertCircle, Sparkles, Lock, Download, ChevronRight, X, CreditCard, Calendar, XCircle } from 'lucide-react';
+import { Sun, Moon, Languages, Trash2, RotateCcw, CheckCircle2, AlertCircle, Sparkles, Lock, Download, ChevronRight, X, CreditCard, Calendar, XCircle } from 'lucide-react';
+import Spinner from '../components/ui/Spinner';
 import { useTranslation } from 'react-i18next';
 import { getClient } from '../lib/supabase';
 import PaywallModal from '../components/modals/PaywallModal';
@@ -247,7 +248,7 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
             style={isProLight ? { backgroundColor: '#ffffff', border: '1.5px solid rgba(200,85,247,0.35)' } : undefined}
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${darkMode ? 'bg-slate-800 text-primary' : 'bg-primary/10 text-primary'}`}>
-              {isExporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+              {isExporting ? <Spinner size={18} /> : <Download size={18} />}
             </div>
             <div className="text-left flex-1">
               <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{isExporting ? 'Generazione ZIP…' : 'Esporta dati personali'}</p>
@@ -265,7 +266,7 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
             style={isProLight ? { backgroundColor: '#ffffff', border: '1.5px solid rgba(200,85,247,0.35)' } : undefined}
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${darkMode ? 'bg-slate-800 text-primary' : 'bg-primary/10 text-primary'}`}>
-              {isExporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+              {isExporting ? <Spinner size={18} /> : <Download size={18} />}
             </div>
             <div className="text-left flex-1">
               <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{isExporting ? 'Generando ZIP…' : 'Descargar mis datos'}</p>

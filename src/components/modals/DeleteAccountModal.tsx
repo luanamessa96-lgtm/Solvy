@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AlertTriangle, X, Loader2, Trash2 } from 'lucide-react';
+import { AlertTriangle, X, Trash2 } from 'lucide-react';
+import Spinner from '../ui/Spinner';
 import { getClient } from '../../lib/supabase';
 import { Profile } from '../../types';
 
@@ -195,7 +196,7 @@ export default function DeleteAccountModal({ isOpen, onClose, darkMode, profile,
                 >
                   {loading ? (
                     <>
-                      <Loader2 size={15} className="animate-spin" />
+                      <Spinner size={15} />
                       Cancellazione in corso…
                     </>
                   ) : (

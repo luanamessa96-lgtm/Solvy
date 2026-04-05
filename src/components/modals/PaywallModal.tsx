@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Check, Sparkles, Loader2 } from 'lucide-react';
+import { X, Check, Sparkles } from 'lucide-react';
+import Spinner from '../ui/Spinner';
 import { getClient } from '../../lib/supabase';
 
 interface PaywallModalProps {
@@ -194,7 +195,7 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
               >
                 {loading ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" />
+                    <Spinner size={16} />
                     Reindirizzamento…
                   </>
                 ) : (

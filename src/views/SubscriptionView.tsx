@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Sparkles, Calendar, Shield, CreditCard, XCircle, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Sparkles, Calendar, Shield, CreditCard, XCircle, CheckCircle2, AlertCircle } from 'lucide-react';
+import Spinner from '../components/ui/Spinner';
 import { Profile } from '../types';
 import { getClient } from '../lib/supabase';
 
@@ -145,7 +146,7 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
           className={`w-full flex items-center gap-4 p-5 rounded-3xl border transition-all active:scale-[0.98] disabled:opacity-60 ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20'}`}
         >
           <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-            {portalLoading ? <Loader2 size={22} className="text-primary animate-spin" /> : <CreditCard size={22} className="text-primary" />}
+            {portalLoading ? <Spinner size={22} /> : <CreditCard size={22} className="text-primary" />}
           </div>
           <div className="text-left">
             <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Gestisci pagamento</p>
@@ -201,7 +202,7 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
             </div>
           ) : cancelStep === 'loading' ? (
             <div className="flex items-center justify-center gap-2 py-4">
-              <Loader2 size={18} className="text-primary animate-spin" />
+              <Spinner size={18} />
               <span className="text-sm text-slate-500">Cancellazione in corso…</span>
             </div>
           ) : (

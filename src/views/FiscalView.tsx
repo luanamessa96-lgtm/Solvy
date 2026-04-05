@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
-import { Info, Download, Loader2 } from 'lucide-react';
+import { Info, Download } from 'lucide-react';
+import Spinner from '../components/ui/Spinner';
 import { Profile, Document } from '../types';
 import { todayLocalISO } from '../utils/date';
 import { IT_ADDIZIONALI_REGIONALI } from '../lib/it/addizionali';
@@ -381,7 +382,7 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
                 style={{ backgroundColor: '#7c3aed' }}
               >
                 {isExportingZipES
-                  ? <><Loader2 size={16} className="animate-spin" /> Generando…</>
+                  ? <><Spinner size={16} /> Generando…</>
                   : <><Download size={16} /> Exportar backup PDF</>}
               </button>
               {paidInvoices.length === 0 && (
@@ -542,7 +543,7 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
             style={{ backgroundColor: '#7c3aed' }}
           >
             {isExportingZip
-              ? <><Loader2 size={16} className="animate-spin" /> Generazione in corso…</>
+              ? <><Spinner size={16} /> Generazione in corso…</>
               : <><Download size={16} /> Esporta backup PDF</>}
           </button>
 
