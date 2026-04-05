@@ -105,10 +105,9 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
               </motion.p>
             )}
             {screen === 'register' && (
-              <motion.div key="register-tag" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}>
-                <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('auth.register_title')}</p>
-                <p className="text-slate-400 text-sm mt-0.5">{t('auth.register_subtitle')}</p>
-              </motion.div>
+              <motion.p key="register-tag" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="text-slate-400 text-sm">
+                {isES ? 'tu gestoría fiscal en el bolsillo' : 'il tuo studio fiscale in tasca'}
+              </motion.p>
             )}
             {screen === 'forgot' && (
               <motion.div key="forgot-tag" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}>
