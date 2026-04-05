@@ -24,21 +24,24 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Stesso pattern di create-checkout-session: anon key + auth header globale
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      console.error('Auth error:', authError?.message);
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    // Estrae user_id dal payload JWT senza chiamata di rete
+    // Il gateway Supabase ha già verificato la firma — ci fidiamo del payload
+    const token = authHeader.replace('Bearer ', '');
+    let userId: string;
+    try {
+      const [, payloadB64] = token.split('.');
+      const payload = JSON.parse(atob(payloadB64));
+      userId = payload.sub;
+      if (!userId) throw new Error('sub missing');
+    } catch (e) {
+      console.error('JWT decode failed:', e);
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    console.log(`Portal request for user_id: ${userId}`);
 
     // Service role per bypassare RLS nella query DB
     const supabaseAdmin = createClient(
@@ -49,7 +52,7 @@ Deno.serve(async (req) => {
     const { data: profiles } = await supabaseAdmin
       .from('profiles')
       .select('stripe_customer_id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .limit(1);
 
     const stripeCustomerId = profiles?.[0]?.stripe_customer_id;
