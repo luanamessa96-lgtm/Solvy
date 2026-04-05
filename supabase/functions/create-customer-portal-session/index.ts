@@ -56,11 +56,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { return_url } = await req.json().catch(() => ({}));
-
     const session = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
-      return_url: return_url ?? Deno.env.get('SITE_URL') ?? 'https://solvy.app',
+      return_url: 'https://solvyapp.com',
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
