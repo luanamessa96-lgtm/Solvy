@@ -8,7 +8,7 @@ export interface Profile {
   country: Country;
   currency: Currency;
   jobType: string;
-  avatar: string;
+  avatar?: string;
   address?: string;
   piva?: string;
   nie?: string;

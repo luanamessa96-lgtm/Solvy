@@ -8,7 +8,6 @@ export const MOCK_PROFILES: Profile[] = [
     country: 'Italy',
     currency: 'EUR',
     jobType: 'Freelance Designer',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Luana'
   },
   {
     id: '2',
@@ -17,7 +16,6 @@ export const MOCK_PROFILES: Profile[] = [
     country: 'Italy',
     currency: 'EUR',
     jobType: 'Agency',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Studio'
   }
 ];
 

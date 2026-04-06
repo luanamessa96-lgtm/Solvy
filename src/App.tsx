@@ -261,7 +261,6 @@ function AppInner() {
           jobType: '',
           country: 'Italy' as Profile['country'], // placeholder UI — verrà sovrascritto in onboarding
           currency: 'EUR' as Profile['currency'],
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`,
           regime: 'forfettario',
         };
         setProfiles([shell]);
@@ -652,7 +651,6 @@ function AppInner() {
       jobType: '',
       country: 'Italy' as Profile['country'],
       currency: 'EUR' as Profile['currency'],
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`,
       regime: 'forfettario',
       isPro: activeProfile.isPro ?? false,
     };
