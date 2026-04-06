@@ -394,6 +394,18 @@ Deno.serve(async (req) => {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
         body: JSON.stringify({ type: 'new_user', email: payload.email, name: payload.name, country: payload.lang === 'es' ? 'Spain' : 'Italy' }),
       }).catch(e => console.error('telegram-alert (new_user) failed:', e));
+
+      // Loops signup sync — fire-and-forget
+      fetch(`${supabaseUrl}/functions/v1/loops-sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
+        body: JSON.stringify({
+          action: 'signup',
+          email: payload.email,
+          name: payload.name,
+          paese: payload.lang === 'es' ? 'Spain' : 'Italy',
+        }),
+      }).catch(e => console.error('loops-sync (signup) failed:', e));
     }
 
     return new Response(JSON.stringify({ success: true, id: resData.id }), {

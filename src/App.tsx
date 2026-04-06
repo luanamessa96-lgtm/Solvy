@@ -135,6 +135,17 @@ function AppInner() {
         } else if (event === 'SIGNED_IN') {
           setIsPasswordRecovery(false);
           setIsAuthenticated(true);
+          // Loops last_active — fire-and-forget
+          if (session?.user?.email) {
+            fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/loops-sync`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+              },
+              body: JSON.stringify({ action: 'update_active', email: session.user.email }),
+            }).catch(() => {});
+          }
         } else if (event === 'SIGNED_OUT') {
           setIsAuthenticated(false);
         }
@@ -409,6 +420,22 @@ function AppInner() {
 
     try {
       await addDocument(docToSave, activeProfile.id);
+      // Loops fatture_count — fire-and-forget (conta solo fatture e note di credito)
+      if (activeProfile.email) {
+        const fattureCount = documents.filter(d =>
+          d.type === 'invoice' || d.type === 'credit_note' || d.type === 'factura_rectificativa'
+        ).length + (
+          doc.type === 'invoice' || doc.type === 'credit_note' || doc.type === 'factura_rectificativa' ? 1 : 0
+        );
+        getClient().auth.getSession().then(({ data: { session } }) => {
+          if (!session) return;
+          fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/loops-sync`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+            body: JSON.stringify({ action: 'update_fatture', email: activeProfile.email, fattureCount }),
+          }).catch(() => {});
+        }).catch(() => {});
+      }
     } catch (e) { console.error('[handleAddDocument] Salvataggio fallito:', e); showToast('Errore nel salvataggio', 'error'); }
   };
 

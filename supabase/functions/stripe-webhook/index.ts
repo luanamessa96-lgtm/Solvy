@@ -116,6 +116,13 @@ Deno.serve(async (req) => {
             lang: langFromCountry(existing[0].country),
           });
 
+          // Loops update_pro — fire-and-forget
+          fetch(`${supabaseUrl}/functions/v1/loops-sync`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
+            body: JSON.stringify({ action: 'update_pro', email: existing[0].email, isPro: true }),
+          }).catch(e => console.error('loops-sync (update_pro) failed:', e));
+
           // Alert Telegram nuovo Pro — fire-and-forget
           fetch(`${supabaseUrl}/functions/v1/telegram-alert`, {
             method: 'POST',
