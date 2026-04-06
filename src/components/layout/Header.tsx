@@ -14,7 +14,7 @@ interface HeaderProps {
 }
 
 const Header = ({ title, activeProfile, onProfileClick, onBellClick, notificationCount, showBack, onBack, darkMode }: HeaderProps) => (
-  <header className="sticky top-0 z-20 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b transition-colors duration-500" style={{ backgroundColor: 'var(--color-header-bg)', borderColor: 'var(--color-border)' }}>
+  <header className="sticky top-0 z-20 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b transition-colors duration-500" style={{ backgroundColor: 'var(--color-header-bg)', borderColor: 'var(--color-border)', borderBottomLeftRadius: '1.25rem', borderBottomRightRadius: '1.25rem' }}>
     <div className="flex items-center gap-3">
       {showBack ? (
         <button onClick={onBack} aria-label="Torna indietro" className={`p-2 -ml-2 rounded-xl active:scale-90 transition-all hover:shadow-lg ${darkMode ? 'text-slate-300 hover:shadow-primary/10' : 'text-slate-600 hover:shadow-slate-200'}`} style={{ backgroundColor: 'var(--color-card-bg)' }}>
