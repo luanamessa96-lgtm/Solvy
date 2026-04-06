@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft, Search, Plus, FileText, FileEdit } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Document } from '../../types';
 
 interface SearchOverlayProps {
@@ -11,6 +12,7 @@ interface SearchOverlayProps {
 }
 
 const SearchOverlay = ({ documents, onClose, onSelectDoc, darkMode }: SearchOverlayProps) => {
+  const { t } = useTranslation();
   const [query, setQuery] = React.useState('');
   const inputRef = React.useRef<HTMLInputElement>(null);
 
@@ -37,7 +39,7 @@ const SearchOverlay = ({ documents, onClose, onSelectDoc, darkMode }: SearchOver
         </button>
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
-          <input ref={inputRef} type="text" placeholder="Cerca fatture e spese..." value={query} onChange={e => setQuery(e.target.value)} autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} className={`w-full pl-9 pr-9 py-2.5 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 text-white placeholder:text-slate-500' : 'bg-white text-slate-900 placeholder:text-slate-400 border border-slate-200'}`} />
+          <input ref={inputRef} type="text" placeholder={t('documents.search_placeholder')} value={query} onChange={e => setQuery(e.target.value)} autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} className={`w-full pl-9 pr-9 py-2.5 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 text-white placeholder:text-slate-500' : 'bg-white text-slate-900 placeholder:text-slate-400 border border-slate-200'}`} />
           {query.length > 0 && (
             <button type="button" onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
               <Plus className="rotate-45" size={17} />
@@ -49,11 +51,11 @@ const SearchOverlay = ({ documents, onClose, onSelectDoc, darkMode }: SearchOver
         {query.trim() === '' ? (
           <div className="py-16 text-center space-y-2">
             <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${darkMode ? 'bg-slate-800 text-slate-600' : 'bg-slate-100 text-slate-300'}`}><Search size={28} /></div>
-            <p className={`text-sm font-bold ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Inizia a digitare per cercare</p>
+            <p className={`text-sm font-bold ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{t('documents.search_start_typing')}</p>
           </div>
         ) : results.length > 0 ? (
           <>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 pb-1">{results.length} risultat{results.length === 1 ? 'o' : 'i'}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 pb-1">{results.length} {results.length === 1 ? 'risultato' : 'risultati'}</p>
             {results.map(doc => (
               <button key={doc.id} type="button" onClick={() => onSelectDoc(doc)} className="w-full p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] text-left hover:border-primary/30 hover:shadow-md" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${doc.type === 'invoice' ? (darkMode ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600') : (darkMode ? 'bg-red-500/10 text-red-500' : 'bg-red-50 text-red-600')}`}>
@@ -65,7 +67,7 @@ const SearchOverlay = ({ documents, onClose, onSelectDoc, darkMode }: SearchOver
                     <p className={`text-sm font-bold shrink-0 ${doc.type === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>{doc.type === 'expense' ? '-' : '+'}€{doc.amount.toLocaleString()}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-medium text-slate-400">{new Date(doc.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    <span className="text-[10px] font-medium text-slate-400">{new Date(doc.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                     {doc.category && <span className="text-[10px] font-medium text-slate-400">· {doc.category}</span>}
                   </div>
                 </div>
@@ -75,8 +77,8 @@ const SearchOverlay = ({ documents, onClose, onSelectDoc, darkMode }: SearchOver
         ) : (
           <div className="py-16 text-center space-y-2">
             <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${darkMode ? 'bg-slate-800 text-slate-600' : 'bg-slate-100 text-slate-300'}`}><Search size={28} /></div>
-            <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-700'}`}>Nessun risultato per "{query}"</p>
-            <p className="text-xs text-slate-400">Prova con un termine diverso</p>
+            <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-700'}`}>{t('documents.no_results_title', { query })}</p>
+            <p className="text-xs text-slate-400">{t('documents.no_results_subtitle')}</p>
           </div>
         )}
       </div>

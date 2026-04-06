@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Camera, FileText as FileIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { todayLocalISO } from '../../utils/date';
 
 interface ImportDocumentModalProps {
@@ -22,6 +23,7 @@ const categories = [
 ];
 
 const ImportDocumentModal = ({ isOpen, onClose, onSave, darkMode }: ImportDocumentModalProps) => {
+  const { t } = useTranslation();
   const [step, setStep] = React.useState<Step>('source');
   const [preview, setPreview] = React.useState<string | null>(null);
   const [fileName, setFileName] = React.useState<string | null>(null);
@@ -112,10 +114,10 @@ const ImportDocumentModal = ({ isOpen, onClose, onSave, darkMode }: ImportDocume
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
                   <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                    {step === 'source' ? 'Aggiungi Documento' : 'Dettagli Documento'}
+                    {step === 'source' ? t('import_document.add_title') : t('import_document.details_title')}
                   </h2>
                   <p className="text-sm text-slate-500">
-                    {step === 'source' ? 'Scegli come importare' : 'Compila le informazioni'}
+                    {step === 'source' ? t('import_document.add_subtitle') : t('import_document.details_subtitle')}
                   </p>
                 </div>
                 <button onClick={step === 'form' ? () => setStep('source') : handleClose} className={`p-2 rounded-full transition-all active:scale-90 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
@@ -138,8 +140,8 @@ const ImportDocumentModal = ({ isOpen, onClose, onSave, darkMode }: ImportDocume
                       <Camera size={22} />
                     </div>
                     <div className="text-left">
-                      <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>📷 Fotocamera</p>
-                      <p className="text-sm text-slate-500">Scatta una foto al documento</p>
+                      <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('import_document.camera_label')}</p>
+                      <p className="text-sm text-slate-500">{t('import_document.camera_hint')}</p>
                     </div>
                   </button>
 
@@ -151,8 +153,8 @@ const ImportDocumentModal = ({ isOpen, onClose, onSave, darkMode }: ImportDocume
                       <FileIcon size={22} />
                     </div>
                     <div className="text-left">
-                      <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>📄 File</p>
-                      <p className="text-sm text-slate-500">Importa un PDF o documento</p>
+                      <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('import_document.file_label')}</p>
+                      <p className="text-sm text-slate-500">{t('import_document.file_hint')}</p>
                     </div>
                   </button>
                 </div>
@@ -188,13 +190,13 @@ const ImportDocumentModal = ({ isOpen, onClose, onSave, darkMode }: ImportDocume
                       onClick={() => setDocType('invoice')}
                       className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${docType === 'invoice' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}
                     >
-                      Fattura
+                      {t('import_document.toggle_invoice')}
                     </button>
                     <button
                       onClick={() => setDocType('expense')}
                       className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${docType === 'expense' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}
                     >
-                      Spesa
+                      {t('import_document.toggle_expense')}
                     </button>
                   </div>
 
@@ -202,10 +204,10 @@ const ImportDocumentModal = ({ isOpen, onClose, onSave, darkMode }: ImportDocume
                   <div className="space-y-3">
                     {docType === 'invoice' && (
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Cliente</label>
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.client')}</label>
                         <input
                           type="text"
-                          placeholder="Es. Mario Rossi"
+                          placeholder={t('import_document.client_placeholder')}
                           value={form.client}
                           onChange={e => setForm(p => ({ ...p, client: e.target.value }))}
                           className={inputClass()}
@@ -214,10 +216,10 @@ const ImportDocumentModal = ({ isOpen, onClose, onSave, darkMode }: ImportDocume
                     )}
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Descrizione</label>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.description')}</label>
                       <input
                         type="text"
-                        placeholder="Es. Scontrino pranzo"
+                        placeholder={t('import_document.description_placeholder')}
                         value={form.title}
                         onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
                         className={inputClass()}
@@ -227,7 +229,7 @@ const ImportDocumentModal = ({ isOpen, onClose, onSave, darkMode }: ImportDocume
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
                         <label className={`text-xs font-bold uppercase tracking-wider ${amountError ? 'text-red-500' : 'text-slate-400'}`}>
-                          Importo €
+                          {t('common.amount')}
                         </label>
                         <input
                           type="text"
@@ -237,10 +239,10 @@ const ImportDocumentModal = ({ isOpen, onClose, onSave, darkMode }: ImportDocume
                           onChange={e => { setAmountError(false); setForm(p => ({ ...p, amount: e.target.value })); }}
                           className={inputClass(amountError)}
                         />
-                        {amountError && <p className="text-xs font-bold text-red-500">⚠️ Inserisci un importo valido</p>}
+                        {amountError && <p className="text-xs font-bold text-red-500">{t('import_document.amount_error')}</p>}
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Data</label>
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.date')}</label>
                         <input
                           type="date"
                           value={form.date}
@@ -251,7 +253,7 @@ const ImportDocumentModal = ({ isOpen, onClose, onSave, darkMode }: ImportDocume
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Categoria</label>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.category')}</label>
                       <div className="flex flex-wrap gap-2">
                         {categories.map(c => (
                           <button
@@ -278,7 +280,7 @@ const ImportDocumentModal = ({ isOpen, onClose, onSave, darkMode }: ImportDocume
                       docType === 'invoice' ? 'bg-emerald-500 shadow-emerald-500/30' : 'bg-indigo-500 shadow-indigo-500/30'
                     }`}
                   >
-                    Salva {docType === 'invoice' ? 'Fattura' : 'Spesa'}
+                    {docType === 'invoice' ? t('import_document.save_invoice_btn') : t('import_document.save_expense_btn')}
                   </button>
                 </div>
               )}

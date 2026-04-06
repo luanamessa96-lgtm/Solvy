@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AlertTriangle, X, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import Spinner from '../ui/Spinner';
 import { getClient } from '../../lib/supabase';
 import { Profile } from '../../types';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const CONFIRM_WORD = 'ELIMINA';
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -17,6 +17,8 @@ interface DeleteAccountModalProps {
 }
 
 export default function DeleteAccountModal({ isOpen, onClose, darkMode, profile, profilesCount }: DeleteAccountModalProps) {
+  const { t } = useTranslation();
+  const CONFIRM_WORD = t('delete_account.confirm_word');
   const [confirmText, setConfirmText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +35,7 @@ export default function DeleteAccountModal({ isOpen, onClose, darkMode, profile,
     try {
       const { data: { session } } = await getClient().auth.getSession();
       if (!session) {
-        setError('Sessione scaduta. Rieffettua il login e riprova.');
+        setError(t('delete_account.session_expired'));
         setLoading(false);
         return;
       }
@@ -116,31 +118,31 @@ export default function DeleteAccountModal({ isOpen, onClose, darkMode, profile,
               {/* Title */}
               <div>
                 <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                  {isProfileOnly ? 'Elimina profilo' : 'Elimina account'}
+                  {isProfileOnly ? t('delete_account.title_profile') : t('delete_account.title_account')}
                 </h2>
                 <p className={`text-sm mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Questa operazione è <strong>irreversibile</strong> e non può essere annullata.
+                  <strong>{t('delete_account.irreversible')}</strong>
                 </p>
               </div>
 
               {/* What gets deleted */}
               <div className={`rounded-2xl p-4 space-y-2 ${darkMode ? 'bg-slate-800' : 'bg-red-50'}`}>
                 <p className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-red-400' : 'text-red-700'}`}>
-                  Verrà cancellato permanentemente:
+                  {t('delete_account.permanent_label')}
                 </p>
                 <ul className={`text-sm space-y-1 ${darkMode ? 'text-slate-300' : 'text-red-800'}`}>
                   {(isProfileOnly ? [
-                    `Il profilo "${profile.name}"`,
-                    'Tutte le fatture e le spese del profilo',
-                    'Tutte le scadenze del profilo',
-                    'I dati del commercialista del profilo',
+                    t('delete_account.profile_item_0', { name: profile.name }),
+                    t('delete_account.profile_item_1'),
+                    t('delete_account.profile_item_2'),
+                    t('delete_account.profile_item_3'),
                   ] : [
-                    'Il tuo account e le credenziali di accesso',
-                    'Tutti i profili fiscali',
-                    'Tutte le fatture e le spese',
-                    'Tutte le scadenze',
-                    'I dati del commercialista',
-                    'L\'abbonamento Pro (se attivo)',
+                    t('delete_account.account_item_0'),
+                    t('delete_account.account_item_1'),
+                    t('delete_account.account_item_2'),
+                    t('delete_account.account_item_3'),
+                    t('delete_account.account_item_4'),
+                    t('delete_account.account_item_5'),
                   ]).map(item => (
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-0.5 shrink-0 text-red-500">✕</span>
@@ -150,21 +152,21 @@ export default function DeleteAccountModal({ isOpen, onClose, darkMode, profile,
                 </ul>
                 {isProfileOnly && (
                   <p className={`text-xs mt-2 pt-2 border-t ${darkMode ? 'border-slate-700 text-slate-400' : 'border-red-100 text-red-600'}`}>
-                    Gli altri profili e il tuo account rimarranno intatti.
+                    {t('delete_account.other_profiles_safe')}
                   </p>
                 )}
               </div>
 
               {/* Confirmation input */}
               <div className="space-y-2">
-                <label className={`text-xs font-semibold ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                  Digita <span className={`font-black tracking-widest ${darkMode ? 'text-red-400' : 'text-red-600'}`}>ELIMINA</span> per confermare
-                </label>
+                <label className={`text-xs font-semibold ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}
+                  dangerouslySetInnerHTML={{ __html: t('delete_account.confirm_instruction') }}
+                />
                 <input
                   type="text"
                   value={confirmText}
                   onChange={e => { setConfirmText(e.target.value.toUpperCase()); setError(null); }}
-                  placeholder="ELIMINA"
+                  placeholder={t('delete_account.confirm_placeholder')}
                   autoComplete="off"
                   autoCorrect="off"
                   autoCapitalize="characters"
@@ -197,12 +199,12 @@ export default function DeleteAccountModal({ isOpen, onClose, darkMode, profile,
                   {loading ? (
                     <>
                       <Spinner size={15} />
-                      Cancellazione in corso…
+                      {t('delete_account.btn_loading')}
                     </>
                   ) : (
                     <>
                       <Trash2 size={15} />
-                      {isProfileOnly ? 'Elimina profilo' : 'Elimina definitivamente'}
+                      {isProfileOnly ? t('delete_account.btn_profile') : t('delete_account.btn_account')}
                     </>
                   )}
                 </button>
@@ -211,7 +213,7 @@ export default function DeleteAccountModal({ isOpen, onClose, darkMode, profile,
                   disabled={loading}
                   className={`w-full py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] ${darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-700'}`}
                 >
-                  Annulla
+                  {t('common.cancel')}
                 </button>
               </div>
             </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { Accountant } from '../types';
 
 interface AccountantViewProps {
@@ -10,6 +11,7 @@ interface AccountantViewProps {
 }
 
 const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({ ...accountant });
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -26,13 +28,13 @@ const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) =
   };
 
   const fields = [
-    { label: 'Nome', key: 'firstName', placeholder: 'Nome del commercialista' },
-    { label: 'Cognome', key: 'lastName', placeholder: 'Cognome' },
-    { label: 'Email', key: 'email', placeholder: 'email@studio.it' },
-    { label: 'Telefono', key: 'phone', placeholder: '+39 02 1234567' },
-    { label: 'Studio / Sede', key: 'office', placeholder: 'Studio e indirizzo' },
-    { label: 'Contratto', key: 'contractDetails', placeholder: 'Tipo di contratto e scadenza' },
-    { label: 'Istruzioni Invio Fatture', key: 'sendingInstructions', placeholder: 'Come e quando inviare i documenti' },
+    { label: t('accountant_view.field_firstname'), key: 'firstName', placeholder: t('accountant_view.ph_firstname') },
+    { label: t('accountant_view.field_lastname'), key: 'lastName', placeholder: t('accountant_view.ph_lastname') },
+    { label: t('accountant_view.field_email'), key: 'email', placeholder: 'email@studio.it' },
+    { label: t('accountant_view.field_phone'), key: 'phone', placeholder: t('accountant_view.ph_phone') },
+    { label: t('accountant_view.field_office'), key: 'office', placeholder: t('accountant_view.ph_office') },
+    { label: t('accountant_view.field_contract'), key: 'contractDetails', placeholder: t('accountant_view.ph_contract') },
+    { label: t('accountant_view.field_instructions'), key: 'sendingInstructions', placeholder: t('accountant_view.ph_instructions') },
   ];
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.15 } } };
@@ -46,7 +48,7 @@ const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) =
         </div>
         <div>
           <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{formData.firstName} {formData.lastName}</p>
-          <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Commercialista</p>
+          <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{t('accountant_view.role')}</p>
         </div>
       </motion.div>
 
@@ -65,7 +67,7 @@ const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) =
 
       <motion.button variants={item} onClick={handleSave} disabled={isSaving} className={`w-full py-4 rounded-2xl font-bold shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70 ${saved ? 'bg-emerald-500 shadow-emerald-500/30 text-white' : 'bg-primary shadow-primary/30 text-white'}`}>
         {isSaving && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-        {saved ? '✓ Salvato!' : isSaving ? 'Salvataggio…' : 'Salva Modifiche'}
+        {saved ? t('accountant_view.saved') : isSaving ? t('accountant_view.saving') : t('accountant_view.save_btn')}
       </motion.button>
     </motion.div>
   );

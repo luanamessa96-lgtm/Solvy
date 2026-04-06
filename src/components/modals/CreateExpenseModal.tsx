@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Plus, FileText, CreditCard, Calendar } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { getItDeductibilityRate } from '../../lib/it/deductibility';
 import { getEsDeductibilityRate } from '../../lib/es/deductibility';
 import { todayLocalISO } from '../../utils/date';
@@ -16,6 +17,7 @@ interface CreateExpenseModalProps {
 const IVA_RATES = [0, 4, 10, 21] as const;
 
 const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: CreateExpenseModalProps) => {
+  const { t } = useTranslation();
   const isSpain = profile?.country === 'Spain';
   const isItaly = profile?.country === 'Italy';
   const isOrdinario = isItaly && profile?.regime === 'ordinario';
@@ -102,8 +104,8 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
               <div className="flex justify-between items-start">
                 <div className="space-y-0.5">
-                  <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Nuova Spesa</h2>
-                  <p className="text-sm text-slate-500">Registra un'uscita deducibile</p>
+                  <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('create_expense.title')}</h2>
+                  <p className="text-sm text-slate-500">{t('create_expense.subtitle')}</p>
                 </div>
                 <button onClick={onClose} className={`p-2 rounded-full transition-all active:scale-90 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
                   <Plus className="rotate-45" size={22} />
@@ -111,7 +113,7 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
               </div>
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Categoria</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('common.category')}</label>
                   <div className={`grid gap-1.5 ${isOrdinario ? 'grid-cols-5' : isItaly ? 'grid-cols-3' : 'grid-cols-5'}`}>
                     {categories.map(cat => (
                       <button key={cat.value} onClick={() => setFormData({ ...formData, category: cat.value })} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl border text-center transition-all active:scale-95 ${formData.category === cat.value ? 'bg-indigo-500 border-indigo-500 text-white' : (darkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-600')}`}>
@@ -121,7 +123,7 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
                     ))}
                   </div>
                   {isOrdinario && (
-                    <p className="text-[10px] text-slate-400 ml-1">💻 Software include abbonamenti a software e servizi digitali</p>
+                    <p className="text-[10px] text-slate-400 ml-1">{t('create_expense.software_hint')}</p>
                   )}
                   {(isOrdinario || isSpain) && (
                     <div className="space-y-1">
@@ -136,15 +138,15 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Descrizione (opzionale)</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('create_expense.description_label')}</label>
                   <div className="relative">
                     <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                    <input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="Es: Abbonamento Adobe Creative" className={`w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`} />
+                    <input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder={t('create_expense.description_placeholder')} className={`w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`} />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Importo</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('common.amount')}</label>
                     <div className="relative">
                       <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                       <input type="number" inputMode="decimal" value={formData.amount} onChange={e => setFormData({ ...formData, amount: e.target.value })} onBlur={() => setAmountTouched(true)} placeholder="0.00" className={`w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 font-bold transition-all ${amountError ? 'border-red-400 bg-red-50 text-red-900 focus:ring-red-200 placeholder:text-red-300' : (darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600 focus:ring-indigo-500/20' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400 focus:ring-indigo-500/20')}`} />
@@ -152,7 +154,7 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Data</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('common.date')}</label>
                     <div className="relative">
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                       <input type="date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} className={`w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
@@ -182,8 +184,8 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
               </div>
             </div>
             <div className="shrink-0 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 space-y-2.5">
-              <button onClick={handleSubmit} className="w-full bg-indigo-500 text-white py-3.5 rounded-2xl font-bold shadow-xl shadow-indigo-500/30 active:scale-[0.98] transition-all hover:bg-indigo-600">Registra Spesa</button>
-              <button onClick={onClose} className={`w-full py-3 rounded-2xl font-bold active:scale-[0.98] transition-all ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>Annulla</button>
+              <button onClick={handleSubmit} className="w-full bg-indigo-500 text-white py-3.5 rounded-2xl font-bold shadow-xl shadow-indigo-500/30 active:scale-[0.98] transition-all hover:bg-indigo-600">{t('create_expense.submit_btn')}</button>
+              <button onClick={onClose} className={`w-full py-3 rounded-2xl font-bold active:scale-[0.98] transition-all ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>{t('common.cancel')}</button>
             </div>
           </motion.div>
         </div>

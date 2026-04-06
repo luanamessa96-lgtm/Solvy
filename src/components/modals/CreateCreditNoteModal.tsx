@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Plus, CheckCircle2, ChevronDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Document, Profile } from '../../types';
 import { todayLocalISO } from '../../utils/date';
 
@@ -14,6 +15,7 @@ interface CreateCreditNoteModalProps {
 }
 
 const CreateCreditNoteModal = ({ isOpen, onClose, onSave, profile, documents, darkMode }: CreateCreditNoteModalProps) => {
+  const { t } = useTranslation();
   const dragControls = useDragControls();
 
   const invoices = useMemo(() => documents.filter(d => d.type === 'invoice'), [documents]);
@@ -84,25 +86,25 @@ const CreateCreditNoteModal = ({ isOpen, onClose, onSave, profile, documents, da
             <div className="overflow-y-auto max-h-[90vh] px-8 pb-8 pt-4 space-y-5 [padding-bottom:max(2rem,calc(env(safe-area-inset-bottom)+1rem))]">
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Nota di credito</h2>
-                  <p className="text-sm text-slate-500">Storno di una fattura esistente</p>
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('create_credit_note.title')}</h2>
+                  <p className="text-sm text-slate-500">{t('create_credit_note.subtitle')}</p>
                 </div>
                 <button onClick={onClose} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
               </div>
 
               <div className="space-y-1.5">
-                <label className={lc}>N° Nota di Credito</label>
+                <label className={lc}>{t('create_credit_note.number_label')}</label>
                 <div className={`${ic} opacity-60 cursor-not-allowed`}>{nextCreditNoteNumber}</div>
               </div>
 
               <div className="space-y-1.5">
-                <label className={lc}>Data</label>
+                <label className={lc}>{t('common.date')}</label>
                 <input type="date" value={date} onChange={e => setDate(e.target.value)} className={ic} />
               </div>
 
               {/* Custom invoice picker — iOS-safe (no native <select>) */}
               <div className="space-y-1.5">
-                <label className={lc}>Fattura originale *</label>
+                <label className={lc}>{t('create_credit_note.invoice_label')}</label>
 
                 {/* Trigger button */}
                 <button
@@ -113,7 +115,7 @@ const CreateCreditNoteModal = ({ isOpen, onClose, onSave, profile, documents, da
                   <span className={selectedInvoice ? '' : 'text-slate-400'}>
                     {selectedInvoice
                       ? `${selectedInvoice.invoiceNumber ? selectedInvoice.invoiceNumber + ' — ' : ''}${selectedInvoice.client || selectedInvoice.title}`
-                      : 'Seleziona una fattura…'}
+                      : t('create_credit_note.select_invoice')}
                   </span>
                   <ChevronDown size={16} className={`text-slate-400 transition-transform ${pickerOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -122,7 +124,7 @@ const CreateCreditNoteModal = ({ isOpen, onClose, onSave, profile, documents, da
                 {pickerOpen && (
                   <div className={`rounded-xl border overflow-hidden ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} shadow-lg`}>
                     {invoices.length === 0 ? (
-                      <p className="px-4 py-3 text-sm text-slate-400">Nessuna fattura disponibile</p>
+                      <p className="px-4 py-3 text-sm text-slate-400">{t('create_credit_note.no_invoices')}</p>
                     ) : (
                       invoices.map(inv => (
                         <button
@@ -136,7 +138,7 @@ const CreateCreditNoteModal = ({ isOpen, onClose, onSave, profile, documents, da
                               {inv.invoiceNumber ? `${inv.invoiceNumber} — ` : ''}{inv.client || inv.title || 'Fattura'}
                             </p>
                             <p className="text-xs text-slate-400">
-                              {new Date(inv.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })} · €{inv.amount.toLocaleString('it-IT')}
+                              {new Date(inv.date).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })} · €{inv.amount.toLocaleString()}
                             </p>
                           </div>
                           {inv.id === selectedInvoiceId && <CheckCircle2 size={16} className="text-primary shrink-0 ml-2" />}
@@ -146,17 +148,17 @@ const CreateCreditNoteModal = ({ isOpen, onClose, onSave, profile, documents, da
                   </div>
                 )}
 
-                {touched && !selectedInvoiceId && <p className="text-xs text-red-500 ml-1">Campo obbligatorio</p>}
+                {touched && !selectedInvoiceId && <p className="text-xs text-red-500 ml-1">{t('common.required')}</p>}
               </div>
 
               {selectedInvoice && (
                 <>
                   <div className="space-y-1.5">
-                    <label className={lc}>Importo stornato</label>
+                    <label className={lc}>{t('create_credit_note.reversed_amount_label')}</label>
                     <div className={`${ic} opacity-60 cursor-not-allowed text-red-500 font-bold`}>
-                      -€{selectedInvoice.amount.toLocaleString('it-IT')}
+                      -€{selectedInvoice.amount.toLocaleString()}
                     </div>
-                    <p className="text-[10px] text-slate-400 ml-1">Importo negativo automatico — storna l'intera fattura</p>
+                    <p className="text-[10px] text-slate-400 ml-1">{t('create_credit_note.auto_negative_hint')}</p>
                   </div>
                   <div className={`px-4 py-3 rounded-xl text-xs ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
                     Regime: <span className="font-bold">{(selectedInvoice.docRegime ?? profile.regime ?? 'forfettario') === 'ordinario' ? 'Ordinario' : 'Forfettario'}</span>
@@ -168,7 +170,7 @@ const CreateCreditNoteModal = ({ isOpen, onClose, onSave, profile, documents, da
                 onClick={handleSave}
                 className="w-full py-4 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-primary/30 active:scale-[0.98] transition-all"
               >
-                Crea Nota di Credito
+                {t('create_credit_note.create_btn')}
               </button>
             </div>
           </motion.div>

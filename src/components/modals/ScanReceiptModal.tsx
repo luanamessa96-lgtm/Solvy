@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Image } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { todayLocalISO } from '../../utils/date';
 
 interface ScanReceiptModalProps {
@@ -11,6 +12,7 @@ interface ScanReceiptModalProps {
 }
 
 const ScanReceiptModal = ({ isOpen, onClose, onSave, darkMode }: ScanReceiptModalProps) => {
+  const { t } = useTranslation();
   const [preview, setPreview] = React.useState<string | null>(null);
   const [form, setForm] = React.useState({ title: '', amount: '', date: todayLocalISO(), category: 'altro' });
   const [amountError, setAmountError] = React.useState(false);
@@ -69,8 +71,8 @@ const ScanReceiptModal = ({ isOpen, onClose, onSave, darkMode }: ScanReceiptModa
             <div className="overflow-y-auto max-h-[85vh] p-8 space-y-6">
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
-                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Aggiungi Foto</h2>
-                  <p className="text-sm text-slate-500">Salva un'immagine con la spesa</p>
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('scan_receipt.title')}</h2>
+                  <p className="text-sm text-slate-500">{t('scan_receipt.subtitle')}</p>
                 </div>
                 <button onClick={handleClose} className={`p-2 rounded-full transition-all active:scale-90 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
                   <Plus className="rotate-45" size={24} />
@@ -87,27 +89,27 @@ const ScanReceiptModal = ({ isOpen, onClose, onSave, darkMode }: ScanReceiptModa
               ) : (
                 <button onClick={() => fileInputRef.current?.click()} className={`w-full h-40 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-3 transition-all active:scale-[0.98] ${darkMode ? 'border-slate-700 hover:border-primary/50 bg-slate-800/50' : 'border-slate-200 hover:border-primary/40 bg-slate-50'}`}>
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${darkMode ? 'bg-primary/10 text-primary' : 'bg-primary/5 text-primary'}`}><Image size={22} /></div>
-                  <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Scegli dalla libreria</p>
-                  <p className="text-xs text-slate-400">Scontrino, ricevuta o documento</p>
+                  <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('scan_receipt.choose_from_library')}</p>
+                  <p className="text-xs text-slate-400">{t('scan_receipt.file_hint')}</p>
                 </button>
               )}
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Descrizione</label>
-                  <input type="text" placeholder="Es. Cena con cliente" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} className={`w-full px-4 py-3 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 border ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`} />
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('scan_receipt.description_label')}</label>
+                  <input type="text" placeholder={t('scan_receipt.description_placeholder')} value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} className={`w-full px-4 py-3 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 border ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className={`text-xs font-bold uppercase tracking-wider ${amountError ? 'text-red-500' : 'text-slate-400'}`}>Importo €{amountError ? ' — obbligatorio' : ''}</label>
+                    <label className={`text-xs font-bold uppercase tracking-wider ${amountError ? 'text-red-500' : 'text-slate-400'}`}>{t('scan_receipt.amount_label')}{amountError ? t('scan_receipt.required_suffix') : ''}</label>
                     <input type="text" inputMode="decimal" placeholder="0.00" value={form.amount} onChange={e => { setAmountError(false); setForm(p => ({ ...p, amount: e.target.value })); }} className={`w-full px-4 py-3 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 border ${amountError ? 'border-red-400 focus:ring-red-400/20' : 'focus:ring-primary/20 ' + (darkMode ? 'border-slate-700' : 'border-slate-100')} ${darkMode ? 'bg-slate-800 text-white placeholder:text-slate-600' : 'bg-slate-50 text-slate-900'}`} />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Data</label>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('scan_receipt.date_label')}</label>
                     <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className={`w-full px-4 py-3 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 border ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Categoria</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('scan_receipt.category_label')}</label>
                   <div className="flex flex-wrap gap-2">
                     {categories.map(c => (
                       <button key={c.value} type="button" onClick={() => setForm(p => ({ ...p, category: c.value }))} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 ${form.category === c.value ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500')}`}>
@@ -117,7 +119,7 @@ const ScanReceiptModal = ({ isOpen, onClose, onSave, darkMode }: ScanReceiptModa
                   </div>
                 </div>
               </div>
-              <button type="button" onClick={handleSave} className="w-full py-4 rounded-2xl font-bold bg-primary text-white shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">Salva Spesa</button>
+              <button type="button" onClick={handleSave} className="w-full py-4 rounded-2xl font-bold bg-primary text-white shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">{t('scan_receipt.save_btn')}</button>
             </div>
           </motion.div>
         </div>

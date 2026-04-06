@@ -1,30 +1,25 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Check, Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import Spinner from '../ui/Spinner';
 import { getClient } from '../../lib/supabase';
-
-interface PaywallModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  darkMode?: boolean;
-}
-
-const features = [
-  'Fatture illimitate',
-  'Profili multipli illimitati',
-  'Clienti ricorrenti',
-  'Preventivi convertibili in fattura',
-  'Export completo per il commercialista',
-  'Report avanzati',
-  'Promemoria pagamento automatici',
-  'OCR scontrini',
-  'Temi glassmorphism (Pro Light & Dark)',
-];
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
 export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
+  const { t } = useTranslation();
+  const features = [
+    t('paywall.feature_unlimited_invoices'),
+    t('paywall.feature_unlimited_profiles'),
+    t('paywall.feature_recurring'),
+    t('paywall.feature_proforma'),
+    t('paywall.feature_export'),
+    t('paywall.feature_reports'),
+    t('paywall.feature_reminders'),
+    t('paywall.feature_ocr'),
+    t('paywall.feature_themes'),
+  ];
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +35,7 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
     try {
       const { data: { session } } = await getClient().auth.getSession();
       if (!session) {
-        setError('Devi essere autenticato per procedere.');
+        setError(t('paywall.error_not_auth'));
         return;
       }
 
@@ -49,7 +44,7 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
         : import.meta.env.VITE_STRIPE_PRICE_YEARLY;
 
       if (!priceId || priceId.startsWith('price_YOUR_')) {
-        setError('Configurazione pagamento non disponibile. Riprova più tardi.');
+        setError(t('paywall.error_config'));
         return;
       }
 
@@ -71,7 +66,7 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
 
       const data = await res.json();
       if (!res.ok || !data.url) {
-        throw new Error(data.error ?? 'Errore nel creare la sessione di pagamento.');
+        throw new Error(data.error ?? t('paywall.error_payment'));
       }
 
       window.location.href = data.url;
@@ -121,7 +116,7 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
 
               {/* Titolo */}
               <h2 className="text-2xl font-bold text-white mb-1">Solvy Pro</h2>
-              <p className="text-slate-400 text-sm mb-6">Sblocca tutte le funzionalità premium</p>
+              <p className="text-slate-400 text-sm mb-6">{t('paywall.subtitle')}</p>
 
               {/* Toggle mensile / annuale */}
               <div className="flex items-center bg-white/5 rounded-2xl p-1 mb-6">
@@ -133,7 +128,7 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  Mensile
+                  {t('paywall.billing_monthly')}
                 </button>
                 <button
                   onClick={() => setBilling('yearly')}
@@ -143,7 +138,7 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  Annuale
+                  {t('paywall.billing_yearly')}
                   <span className="absolute -top-2 -right-1 bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                     -37%
                   </span>
@@ -167,16 +162,16 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
                 {billing === 'monthly' ? (
                   <div className="flex items-end gap-1">
                     <span className="text-4xl font-bold text-white">{priceMonthly}</span>
-                    <span className="text-slate-400 text-sm mb-1">/mese</span>
+                    <span className="text-slate-400 text-sm mb-1">{t('paywall.per_month')}</span>
                   </div>
                 ) : (
                   <div>
                     <div className="flex items-end gap-1">
                       <span className="text-4xl font-bold text-white">{priceYearly}</span>
-                      <span className="text-slate-400 text-sm mb-1">/anno</span>
+                      <span className="text-slate-400 text-sm mb-1">{t('paywall.per_year')}</span>
                     </div>
                     <p className="text-green-400 text-sm mt-1">
-                      Solo {priceYearlyMonthly}/mese — risparmi €35,88
+                      {t('paywall.yearly_saving', { price: priceYearlyMonthly })}
                     </p>
                   </div>
                 )}
@@ -196,14 +191,14 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
                 {loading ? (
                   <>
                     <Spinner size={16} />
-                    Reindirizzamento…
+                    {t('paywall.redirecting')}
                   </>
                 ) : (
-                  'Passa a Pro'
+                  t('paywall.upgrade_btn')
                 )}
               </button>
               <p className="text-center text-xs text-slate-500 mt-3">
-                Pagamento sicuro via Stripe · Cancella quando vuoi
+                {t('paywall.disclaimer')}
               </p>
             </div>
           </motion.div>

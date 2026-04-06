@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Sparkles, Calendar, Shield, CreditCard, XCircle, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import Spinner from '../components/ui/Spinner';
 import { Profile } from '../types';
 import { getClient } from '../lib/supabase';
@@ -15,6 +16,7 @@ interface SubscriptionViewProps {
 const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL_DEV ?? import.meta.env.VITE_SUPABASE_URL) as string;
 
 const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
+  const { t } = useTranslation();
   const [portalLoading, setPortalLoading] = useState(false);
   const [portalError, setPortalError] = useState('');
 
@@ -23,8 +25,8 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
   const [cancelError, setCancelError] = useState('');
   const [cancelDate, setCancelDate] = useState('');
 
-  const planLabel = profile.subscriptionPlan === 'yearly' ? 'Annuale' : 'Mensile';
-  const planPrice = profile.subscriptionPlan === 'yearly' ? '€59,99/anno' : '€7,99/mese';
+  const planLabel = profile.subscriptionPlan === 'yearly' ? t('subscription_view.plan_yearly') : t('subscription_view.plan_monthly');
+  const planPrice = profile.subscriptionPlan === 'yearly' ? t('subscription_view.price_yearly') : t('subscription_view.price_monthly');
 
   const renewalDate = (() => {
     if (!profile.subscriptionStartedAt) return null;
@@ -34,11 +36,11 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
     } else {
       d.setMonth(d.getMonth() + 1);
     }
-    return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
   })();
 
   const startDate = profile.subscriptionStartedAt
-    ? new Date(profile.subscriptionStartedAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+    ? new Date(profile.subscriptionStartedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
     : null;
 
   const handleOpenPortal = async () => {
@@ -82,7 +84,7 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Errore cancellazione');
       const date = data.current_period_end
-        ? new Date(data.current_period_end).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+        ? new Date(data.current_period_end).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
         : '';
       setCancelDate(date);
       setCancelStep('success');
@@ -106,11 +108,11 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Solvy Pro attivo</p>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 text-[10px] font-bold uppercase tracking-wide">Attivo</span>
+              <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('subscription_view.pro_active')}</p>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 text-[10px] font-bold uppercase tracking-wide">{t('subscription_view.active_badge')}</span>
             </div>
             <p className="text-sm text-slate-400 mt-0.5">{planLabel} · {planPrice}</p>
-            {startDate && <p className="text-xs text-slate-500 mt-0.5">Attivo dal {startDate}</p>}
+            {startDate && <p className="text-xs text-slate-500 mt-0.5">{t('subscription_view.active_since', { date: startDate })}</p>}
           </div>
         </div>
       </motion.div>
@@ -122,7 +124,7 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
             <Calendar size={22} className="text-primary" />
           </div>
           <div>
-            <p className="text-xs text-slate-400 mb-0.5">Prossimo rinnovo</p>
+            <p className="text-xs text-slate-400 mb-0.5">{t('subscription_view.next_renewal')}</p>
             <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{renewalDate}</p>
           </div>
         </motion.div>
@@ -133,7 +135,7 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
         <motion.div variants={item} className={`flex items-center gap-3 p-4 rounded-2xl ${darkMode ? 'bg-amber-900/20 border border-amber-800' : 'bg-amber-50 border border-amber-200'}`}>
           <CheckCircle2 size={18} className="text-amber-500 shrink-0" />
           <p className={`text-sm font-medium ${darkMode ? 'text-amber-300' : 'text-amber-800'}`}>
-            Abbonamento cancellato. Resterai Pro fino al {cancelDate}.
+            {t('subscription_view.cancel_success', { date: cancelDate })}
           </p>
         </motion.div>
       )}
@@ -149,8 +151,8 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
             {portalLoading ? <Spinner size={22} /> : <CreditCard size={22} className="text-primary" />}
           </div>
           <div className="text-left">
-            <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Gestisci pagamento</p>
-            <p className="text-xs text-slate-400">Modifica metodo di pagamento, fatture e dati</p>
+            <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('subscription_view.payment_title')}</p>
+            <p className="text-xs text-slate-400">{t('subscription_view.payment_subtitle')}</p>
           </div>
         </button>
         {portalError && (
@@ -166,51 +168,51 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
         <motion.div variants={item} className={`p-5 rounded-3xl border space-y-4 ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
           <div className="flex items-center gap-2">
             <XCircle size={16} className="text-slate-400 shrink-0" />
-            <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Cancella abbonamento</p>
+            <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('subscription_view.cancel_title')}</p>
           </div>
           <p className={`text-xs leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-            Il tuo abbonamento rimarrà attivo fino alla fine del periodo corrente. Non verrà emesso un rimborso automatico.
+            {t('subscription_view.cancel_body')}
           </p>
 
           {cancelStep === 'error' && (
             <div className={`flex items-center gap-2 p-3 rounded-2xl ${darkMode ? 'bg-red-900/20 border border-red-800' : 'bg-red-50 border border-red-200'}`}>
               <AlertCircle size={15} className="text-red-500 shrink-0" />
-              <p className={`text-xs font-medium ${darkMode ? 'text-red-300' : 'text-red-800'}`}>{cancelError || 'Errore durante la cancellazione.'}</p>
+              <p className={`text-xs font-medium ${darkMode ? 'text-red-300' : 'text-red-800'}`}>{cancelError || t('subscription_view.cancel_error')}</p>
             </div>
           )}
 
           {cancelStep === 'confirming' ? (
             <div className={`p-4 rounded-2xl space-y-3 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
-              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Sei sicuro?</p>
+              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('subscription_view.cancel_confirm_title')}</p>
               <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                L'abbonamento non si rinnoverà automaticamente alla scadenza.
+                {t('subscription_view.cancel_confirm_body')}
               </p>
               <div className="flex gap-2 pt-1">
                 <button
                   onClick={handleCancelSubscription}
                   className="flex-1 py-3 rounded-2xl text-sm font-bold text-white bg-red-500 active:scale-95 transition-all"
                 >
-                  Sì, cancella
+                  {t('subscription_view.cancel_yes')}
                 </button>
                 <button
                   onClick={() => setCancelStep('idle')}
                   className={`flex-1 py-3 rounded-2xl text-sm font-bold active:scale-95 transition-all ${darkMode ? 'bg-slate-700 text-slate-200' : 'bg-white text-slate-600 border border-slate-200'}`}
                 >
-                  Annulla
+                  {t('subscription_view.cancel_no')}
                 </button>
               </div>
             </div>
           ) : cancelStep === 'loading' ? (
             <div className="flex items-center justify-center gap-2 py-4">
               <Spinner size={18} />
-              <span className="text-sm text-slate-500">Cancellazione in corso…</span>
+              <span className="text-sm text-slate-500">{t('subscription_view.cancel_loading')}</span>
             </div>
           ) : (
             <button
               onClick={() => setCancelStep('confirming')}
               className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-bold text-red-500 border active:scale-[0.98] transition-all ${darkMode ? 'border-red-900 hover:bg-red-900/20' : 'border-red-200 hover:bg-red-50'}`}
             >
-              <XCircle size={16} /> Cancella abbonamento
+              <XCircle size={16} /> {t('subscription_view.cancel_btn')}
             </button>
           )}
         </motion.div>
@@ -219,7 +221,7 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
       {/* Footer sicurezza */}
       <motion.div variants={item} className="flex items-center justify-center gap-2 pt-2">
         <Shield size={13} className="text-slate-400" />
-        <p className="text-xs text-slate-400">Pagamento sicuro via Stripe</p>
+        <p className="text-xs text-slate-400">{t('subscription_view.secure_payment')}</p>
       </motion.div>
 
     </motion.div>

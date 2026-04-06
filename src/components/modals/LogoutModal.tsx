@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { LogOut } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface LogoutModalProps {
   isOpen: boolean;
@@ -8,7 +9,9 @@ interface LogoutModalProps {
   darkMode?: boolean;
 }
 
-const LogoutModal = ({ isOpen, onClose, onConfirm, darkMode }: LogoutModalProps) => (
+const LogoutModal = ({ isOpen, onClose, onConfirm, darkMode }: LogoutModalProps) => {
+  const { t } = useTranslation();
+  return (
   <AnimatePresence>
     {isOpen && (
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
@@ -20,18 +23,19 @@ const LogoutModal = ({ isOpen, onClose, onConfirm, darkMode }: LogoutModalProps)
               <LogOut size={40} strokeWidth={1.5} />
             </div>
             <div className="space-y-2">
-              <h3 className={`text-xl font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>Vuoi uscire veramente?</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">Dovrai reinserire le tue credenziali per accedere nuovamente al tuo account.</p>
+              <h3 className={`text-xl font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('logout_modal.title')}</h3>
+              <p className="text-sm text-slate-500 leading-relaxed">{t('logout_modal.subtitle')}</p>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 pt-2">
-            <button onClick={onClose} className={`py-4 rounded-2xl font-bold transition-all active:scale-95 ${darkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>Annulla</button>
-            <button onClick={onConfirm} className="py-4 bg-red-500 text-white rounded-2xl font-bold shadow-xl shadow-red-500/40 hover:bg-red-600 transition-all active:scale-95">Sì, Esci</button>
+            <button onClick={onClose} className={`py-4 rounded-2xl font-bold transition-all active:scale-95 ${darkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>{t('logout_modal.cancel')}</button>
+            <button onClick={onConfirm} className="py-4 bg-red-500 text-white rounded-2xl font-bold shadow-xl shadow-red-500/40 hover:bg-red-600 transition-all active:scale-95">{t('logout_modal.confirm')}</button>
           </div>
         </motion.div>
       </div>
     )}
   </AnimatePresence>
-);
+  );
+};
 
 export default LogoutModal;

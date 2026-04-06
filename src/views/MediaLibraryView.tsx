@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, FileText, Image as ImageIcon, Pencil } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Document } from '../types';
 import { uploadFile } from '../lib/db';
 import { todayLocalISO } from '../utils/date';
@@ -36,7 +37,7 @@ const fileColors: Record<string, { bg: string; text: string }> = {
 function ext(name: string) { return name.split('.').pop()?.toLowerCase() || 'file'; }
 
 function monthLabel(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+  return new Date(dateStr).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 }
 
 function groupByMonth(items: Document[]) {
@@ -52,7 +53,7 @@ function groupByMonth(items: Document[]) {
 }
 
 function PdfPreview({ url, fileName, loading }: { url: string | null; fileName?: string; loading?: boolean }) {
-
+  const { t } = useTranslation();
   return (
     <div className="w-64 rounded-3xl overflow-hidden shadow-2xl bg-white flex flex-col">
       {/* PDF icon area */}
@@ -68,16 +69,16 @@ function PdfPreview({ url, fileName, loading }: { url: string | null; fileName?:
       {/* Open button */}
       {loading ? (
         <div className="w-full py-4 bg-red-400 text-white font-bold text-sm tracking-wide text-center opacity-80">
-          Preparazione...
+          {t('common.preparing')}
         </div>
       ) : url ? (
         <a href={url} target="_blank" rel="noopener noreferrer"
           className="block w-full py-4 bg-red-500 text-white font-bold text-sm tracking-wide text-center active:scale-[0.98] transition-all">
-          Apri PDF
+          {t('pdf_preview.open_btn')}
         </a>
       ) : (
         <div className="w-full py-4 bg-red-400 text-white font-bold text-sm tracking-wide text-center opacity-80">
-          Preparazione...
+          {t('common.preparing')}
         </div>
       )}
     </div>
@@ -85,19 +86,20 @@ function PdfPreview({ url, fileName, loading }: { url: string | null; fileName?:
 }
 
 function TextPreview({ imageData, fileName }: { imageData: string; fileName?: string }) {
+  const { t } = useTranslation();
   const [content, setContent] = React.useState('');
 
   React.useEffect(() => {
     if (imageData.startsWith('http')) {
-      fetch(imageData).then(r => r.text()).then(setContent).catch(() => setContent('(Contenuto non leggibile)'));
+      fetch(imageData).then(r => r.text()).then(setContent).catch(() => setContent(t('media_library.content_unreadable')));
     } else {
       try {
         const b64 = imageData.split(',')[1] || '';
         const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
         setContent(new TextDecoder('utf-8').decode(bytes));
-      } catch { setContent('(Contenuto non leggibile)'); }
+      } catch { setContent(t('media_library.content_unreadable')); }
     }
-  }, [imageData]);
+  }, [imageData, t]);
 
   return (
     <div className="w-full max-h-72 bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
@@ -136,6 +138,7 @@ function FileThumbnail({ doc, darkMode }: { doc: Document; darkMode?: boolean })
 }
 
 export default function MediaLibraryView({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, darkMode, addTrigger }: MediaLibraryViewProps) {
+  const { t } = useTranslation();
   const items = documents.filter(d => d.imageData || d.fileName);
   const groups = groupByMonth(items);
   const monthKeys = Object.keys(groups);
@@ -216,7 +219,7 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
       reset();
     } catch (err: unknown) {
       setUploading(false);
-      setUploadError(err instanceof Error ? err.message : 'Errore durante il salvataggio.');
+      setUploadError(err instanceof Error ? err.message : t('media_library.save_error'));
     }
   };
 
@@ -251,11 +254,11 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
             <ImageIcon size={36} />
           </div>
           <div>
-            <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Nessun file</p>
-            <p className="text-sm text-slate-400 mt-1">Aggiungi foto, scontrini e documenti</p>
+            <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('media_library.no_files_title')}</p>
+            <p className="text-sm text-slate-400 mt-1">{t('media_library.no_files_subtitle')}</p>
           </div>
           <button onClick={() => setIsAdding(true)} className="px-6 py-3 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/30 active:scale-95 transition-all">
-            Aggiungi
+            {t('media_library.add_btn')}
           </button>
         </div>
       ) : (
@@ -281,7 +284,7 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-semibold truncate ${darkMode ? 'text-white' : 'text-slate-900'}`}>{item.title}</p>
                       <p className="text-xs text-slate-400 mt-0.5">
-                        {new Date(item.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {new Date(item.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                         {item.fileName && ` · ${item.fileName.split('.').pop()?.toUpperCase()}`}
                       </p>
                     </div>
@@ -306,8 +309,8 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
               <div className="overflow-y-auto max-h-[92vh] p-8 space-y-5">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{preview ? 'Dettagli' : 'Aggiungi file'}</h2>
-                    <p className="text-sm text-slate-500">{preview ? 'Compila le informazioni' : 'Scegli il tipo di file'}</p>
+                    <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{preview ? t('media_library.details_title') : t('media_library.add_title')}</h2>
+                    <p className="text-sm text-slate-500">{preview ? t('media_library.fill_subtitle') : t('media_library.add_subtitle')}</p>
                   </div>
                   <button onClick={reset} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-400'}`}><X size={22} /></button>
                 </div>
@@ -316,11 +319,11 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
                   <div className="grid grid-cols-2 gap-3">
                     <button onClick={() => { setAddType('image'); imageRef.current?.click(); }} className={`h-32 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all active:scale-[0.97] ${darkMode ? 'border-slate-700 bg-slate-800/50' : 'border-slate-200 bg-slate-50'}`}>
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}><ImageIcon size={22} /></div>
-                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Foto</p>
+                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('media_library.type_image')}</p>
                     </button>
                     <button onClick={() => { setAddType('file'); fileRef.current?.click(); }} className={`h-32 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all active:scale-[0.97] ${darkMode ? 'border-slate-700 bg-slate-800/50' : 'border-slate-200 bg-slate-50'}`}>
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${darkMode ? 'bg-primary/10 text-primary' : 'bg-primary/5 text-primary'}`}><FileText size={22} /></div>
-                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Documento</p>
+                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('media_library.type_file')}</p>
                     </button>
                   </div>
                 ) : (
@@ -338,34 +341,34 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
                     </div>
 
                     <div className="p-1 rounded-2xl flex" style={{ backgroundColor: 'var(--color-card-bg)' }}>
-                      <button onClick={() => setDocType('invoice')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${docType === 'invoice' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>Fattura</button>
-                      <button onClick={() => setDocType('expense')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${docType === 'expense' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>Spesa</button>
+                      <button onClick={() => setDocType('invoice')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${docType === 'invoice' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>{t('media_library.toggle_invoice')}</button>
+                      <button onClick={() => setDocType('expense')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${docType === 'expense' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>{t('media_library.toggle_expense')}</button>
                     </div>
 
                     <div className="space-y-3">
                       {docType === 'invoice' && (
                         <div className="space-y-1.5">
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Cliente</label>
-                          <input type="text" placeholder="Es. Mario Rossi" value={form.client} onChange={e => setForm(p => ({ ...p, client: e.target.value }))} className={inputClass()} />
+                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.client')}</label>
+                          <input type="text" placeholder={t('media_library.client_placeholder')} value={form.client} onChange={e => setForm(p => ({ ...p, client: e.target.value }))} className={inputClass()} />
                         </div>
                       )}
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Descrizione</label>
-                        <input type="text" placeholder="Es. Scontrino pranzo" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} className={inputClass()} />
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.description')}</label>
+                        <input type="text" placeholder={t('media_library.description_placeholder')} value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} className={inputClass()} />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
-                          <label className={`text-xs font-bold uppercase tracking-wider ${amountError ? 'text-red-500' : 'text-slate-400'}`}>Importo €</label>
+                          <label className={`text-xs font-bold uppercase tracking-wider ${amountError ? 'text-red-500' : 'text-slate-400'}`}>{t('common.amount')}</label>
                           <input type="text" inputMode="decimal" placeholder="0.00" value={form.amount} onChange={e => { setAmountError(false); setForm(p => ({ ...p, amount: e.target.value })); }} className={inputClass(amountError)} />
-                          {amountError && <p className="text-xs font-bold text-red-500">⚠️ Obbligatorio</p>}
+                          {amountError && <p className="text-xs font-bold text-red-500">{t('media_library.amount_error')}</p>}
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Data</label>
+                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.date')}</label>
                           <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className={inputClass()} />
                         </div>
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Categoria</label>
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.category')}</label>
                         <div className="flex flex-wrap gap-2">
                           {categories.map(c => (
                             <button key={c.value} type="button" onClick={() => setForm(p => ({ ...p, category: c.value }))} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 ${form.category === c.value ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500')}`}>
@@ -380,7 +383,7 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
                       <p className="text-xs font-bold text-red-500 text-center px-2">⚠️ {uploadError}</p>
                     )}
                     <button onClick={handleSave} disabled={uploading} className={`w-full py-4 rounded-2xl font-bold text-white shadow-xl active:scale-[0.98] transition-all disabled:opacity-60 ${docType === 'invoice' ? 'bg-emerald-500 shadow-emerald-500/30' : 'bg-indigo-500 shadow-indigo-500/30'}`}>
-                      {uploading ? 'Caricamento...' : `Salva ${docType === 'invoice' ? 'Fattura' : 'Spesa'}`}
+                      {uploading ? t('media_library.uploading') : (docType === 'invoice' ? t('media_library.save_invoice_btn') : t('media_library.save_expense_btn'))}
                     </button>
                   </div>
                 )}
@@ -418,7 +421,7 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
                 <div className="flex justify-between items-start">
                   <div className="flex-1 min-w-0 pr-4">
                     <p className={`text-lg font-bold truncate ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedItem.title}</p>
-                    {selectedItem.client && <p className="text-sm text-slate-500 mt-0.5">Cliente: <span className="font-semibold">{selectedItem.client}</span></p>}
+                    {selectedItem.client && <p className="text-sm text-slate-500 mt-0.5">{t('common.client')}: <span className="font-semibold">{selectedItem.client}</span></p>}
                     {selectedItem.fileName && <p className="text-xs text-slate-400 mt-0.5">{selectedItem.fileName}</p>}
                   </div>
                   <p className={`text-xl font-bold shrink-0 ${selectedItem.type === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>
@@ -427,30 +430,30 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
                 </div>
                 <div className="rounded-2xl p-3 grid grid-cols-2 gap-2" style={{ backgroundColor: 'var(--color-card-bg)' }}>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Data</p>
-                    <p className={`text-sm font-semibold mt-0.5 ${darkMode ? 'text-white' : 'text-slate-800'}`}>{new Date(selectedItem.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('media_library.detail_date')}</p>
+                    <p className={`text-sm font-semibold mt-0.5 ${darkMode ? 'text-white' : 'text-slate-800'}`}>{new Date(selectedItem.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tipo</p>
-                    <p className={`text-sm font-semibold mt-0.5 ${selectedItem.type === 'expense' ? 'text-indigo-500' : 'text-emerald-500'}`}>{selectedItem.type === 'invoice' ? 'Fattura' : 'Spesa'}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('media_library.detail_type')}</p>
+                    <p className={`text-sm font-semibold mt-0.5 ${selectedItem.type === 'expense' ? 'text-indigo-500' : 'text-emerald-500'}`}>{selectedItem.type === 'invoice' ? t('media_library.type_invoice') : t('media_library.type_expense')}</p>
                   </div>
                   {selectedItem.category && (
                     <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Categoria</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('media_library.detail_category')}</p>
                       <p className={`text-sm font-semibold mt-0.5 capitalize ${darkMode ? 'text-white' : 'text-slate-800'}`}>{selectedItem.category}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Stato</p>
-                    <p className={`text-sm font-semibold mt-0.5 ${selectedItem.status === 'paid' ? 'text-emerald-500' : 'text-amber-500'}`}>{selectedItem.status === 'paid' ? 'Saldato' : 'In attesa'}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('media_library.detail_status')}</p>
+                    <p className={`text-sm font-semibold mt-0.5 ${selectedItem.status === 'paid' ? 'text-emerald-500' : 'text-amber-500'}`}>{selectedItem.status === 'paid' ? t('media_library.status_paid') : t('media_library.status_pending')}</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={() => setSelectedItem(null)} className={`flex-1 py-3 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>Chiudi</button>
+                  <button onClick={() => setSelectedItem(null)} className={`flex-1 py-3 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>{t('media_library.btn_close')}</button>
                   <button onClick={() => { setEditItem({ ...selectedItem }); setSelectedItem(null); }} className="flex-1 py-3 rounded-2xl font-bold bg-primary text-white shadow-lg shadow-primary/30 flex items-center justify-center gap-2">
-                    <Pencil size={16} /> Modifica
+                    <Pencil size={16} /> {t('media_library.btn_edit')}
                   </button>
-                  <button onClick={() => handleDelete(selectedItem)} className="py-3 px-4 rounded-2xl font-bold bg-red-500 text-white shadow-lg shadow-red-500/30">Elimina</button>
+                  <button onClick={() => handleDelete(selectedItem)} className="py-3 px-4 rounded-2xl font-bold bg-red-500 text-white shadow-lg shadow-red-500/30">{t('media_library.btn_delete')}</button>
                 </div>
               </div>
             </motion.div>
@@ -466,32 +469,32 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="relative w-full max-w-md rounded-t-[32px] shadow-2xl" style={{ backgroundColor: 'var(--color-card)' }}>
               <div className="overflow-y-auto max-h-[90vh] p-8 space-y-5">
                 <div className="flex justify-between items-center">
-                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Modifica</h2>
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('media_library.edit_title')}</h2>
                   <button onClick={() => setEditItem(null)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-400'}`}><X size={22} /></button>
                 </div>
                 <div className="space-y-3">
                   {editItem.type === 'invoice' && (
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Cliente</label>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.client')}</label>
                       <input type="text" value={editItem.client || ''} onChange={e => setEditItem({ ...editItem, client: e.target.value })} className={inputClass()} />
                     </div>
                   )}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Descrizione</label>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.description')}</label>
                     <input type="text" value={editItem.title} onChange={e => setEditItem({ ...editItem, title: e.target.value })} className={inputClass()} />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Importo €</label>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.amount')}</label>
                       <input type="number" value={editItem.amount} onChange={e => setEditItem({ ...editItem, amount: parseFloat(e.target.value) || 0 })} className={inputClass()} />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Data</label>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.date')}</label>
                       <input type="date" value={editItem.date} onChange={e => setEditItem({ ...editItem, date: e.target.value })} className={inputClass()} />
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Categoria</label>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.category')}</label>
                     <div className="flex flex-wrap gap-2">
                       {categories.map(c => (
                         <button key={c.value} type="button" onClick={() => setEditItem({ ...editItem, category: c.value })} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 ${editItem.category === c.value ? 'bg-primary text-white' : (darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500')}`}>
@@ -502,13 +505,13 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
                   </div>
                   {editItem.type === 'invoice' && (
                     <div className={`flex items-center gap-3 p-4 rounded-2xl border ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
-                      <p className={`text-xs font-bold flex-1 ${darkMode ? 'text-emerald-400' : 'text-emerald-900'}`}>Saldato</p>
+                      <p className={`text-xs font-bold flex-1 ${darkMode ? 'text-emerald-400' : 'text-emerald-900'}`}>{t('media_library.edit_paid')}</p>
                       <input type="checkbox" checked={editItem.status === 'paid'} onChange={e => setEditItem({ ...editItem, status: e.target.checked ? 'paid' : 'pending' })} className="w-5 h-5 rounded-lg border-emerald-200 text-emerald-500" />
                     </div>
                   )}
                 </div>
                 <button onClick={() => { onUpdateDocument(editItem); setEditItem(null); }} className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all">
-                  Salva Modifiche
+                  {t('media_library.save_changes_btn')}
                 </button>
               </div>
             </motion.div>

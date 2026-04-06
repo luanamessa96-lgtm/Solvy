@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Globe, FileText, Mail } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Accountant } from '../../types';
 
 interface AccountantModalProps {
@@ -9,7 +10,10 @@ interface AccountantModalProps {
   darkMode?: boolean;
 }
 
-const AccountantModal = ({ isOpen, onClose, accountant, darkMode }: AccountantModalProps) => (
+const AccountantModal = ({ isOpen, onClose, accountant, darkMode }: AccountantModalProps) => {
+  const { t } = useTranslation();
+
+  return (
   <AnimatePresence>
     {isOpen && (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
@@ -18,8 +22,8 @@ const AccountantModal = ({ isOpen, onClose, accountant, darkMode }: AccountantMo
           <div className="p-8 space-y-6 overflow-y-auto max-h-[90vh]">
             <div className="flex justify-between items-start">
               <div className="space-y-1">
-                <h2 className={`text-2xl font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>Il tuo Commercialista</h2>
-                <p className="text-sm text-slate-500">Dettagli del contatto e invio documenti</p>
+                <h2 className={`text-2xl font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('accountant_modal.title')}</h2>
+                <p className="text-sm text-slate-500">{t('accountant_modal.subtitle')}</p>
               </div>
               <button onClick={onClose} className={`p-2 rounded-full transition-all active:scale-90 hover:shadow-lg ${darkMode ? 'bg-slate-800 text-slate-400 hover:text-slate-200 hover:shadow-primary/10' : 'bg-slate-50 text-slate-400 hover:text-slate-600 hover:shadow-slate-200'}`}>
                 <Plus className="rotate-45" size={24} />
@@ -31,26 +35,26 @@ const AccountantModal = ({ isOpen, onClose, accountant, darkMode }: AccountantMo
               </div>
               <div>
                 <p className={`text-lg font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>{accountant.firstName} {accountant.lastName}</p>
-                <p className="text-sm text-slate-500">Commercialista Abilitato</p>
+                <p className="text-sm text-slate-500">{t('accountant_modal.designation')}</p>
               </div>
             </div>
             <div className="space-y-4">
               <div className="space-y-1">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Studio / Sede</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('accountant_modal.office_label')}</p>
                 <div className="flex items-start gap-2">
                   <Globe size={16} className="text-slate-400 mt-0.5" />
                   <p className={`text-sm font-medium transition-colors ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{accountant.office}</p>
                 </div>
               </div>
               <div className="space-y-1">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Contratto</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('accountant_modal.contract_label')}</p>
                 <div className="flex items-start gap-2">
                   <FileText size={16} className="text-slate-400 mt-0.5" />
                   <p className={`text-sm font-medium transition-colors ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{accountant.contractDetails}</p>
                 </div>
               </div>
               <div className="space-y-1">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Istruzioni Invio Fatture</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('accountant_modal.instructions_label')}</p>
                 <div className={`p-4 rounded-xl border transition-colors ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
                   <p className={`text-sm leading-relaxed font-medium transition-colors ${darkMode ? 'text-emerald-400' : 'text-emerald-800'}`}>{accountant.sendingInstructions}</p>
                 </div>
@@ -59,7 +63,7 @@ const AccountantModal = ({ isOpen, onClose, accountant, darkMode }: AccountantMo
             <div className="pt-2">
               <a href={`mailto:${accountant.email}`} className={`flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm shadow-xl active:scale-[0.98] transition-all ${darkMode ? 'bg-white text-slate-900 shadow-white/10 hover:bg-slate-100' : 'bg-slate-900 text-white shadow-slate-900/20 hover:bg-slate-800'}`}>
                 <Mail size={18} />
-                Invia Email
+                {t('accountant_modal.send_email_btn')}
               </a>
             </div>
           </div>
@@ -67,6 +71,7 @@ const AccountantModal = ({ isOpen, onClose, accountant, darkMode }: AccountantMo
       </div>
     )}
   </AnimatePresence>
-);
+  );
+};
 
 export default AccountantModal;

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { X, Share2, FileText, ExternalLink } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface PdfPreviewModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface PdfPreviewModalProps {
 }
 
 export default function PdfPreviewModal({ isOpen, onClose, blob, fileName, darkMode }: PdfPreviewModalProps) {
+  const { t } = useTranslation();
   const [blocked, setBlocked] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
 
@@ -71,7 +73,7 @@ export default function PdfPreviewModal({ isOpen, onClose, blob, fileName, darkM
         </div>
         <p className={`text-sm font-bold text-center ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fileName}</p>
         <p className="text-xs text-slate-400 text-center leading-relaxed">
-          Il browser ha bloccato l'apertura automatica. Usa i bottoni qui sotto.
+          {t('pdf_preview.blocked_msg')}
         </p>
       </div>
 
@@ -82,14 +84,14 @@ export default function PdfPreviewModal({ isOpen, onClose, blob, fileName, darkM
           className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-all ${darkMode ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-900'}`}
         >
           <ExternalLink size={18} />
-          Apri PDF
+          {t('pdf_preview.open_btn')}
         </button>
         <button
           onClick={handleShare}
           className="w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
         >
           <Share2 size={18} />
-          Scarica / Condividi
+          {t('pdf_preview.download_btn')}
         </button>
       </div>
     </div>
