@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -26,22 +26,80 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
   const [ricordami, setRicordami] = useState(true);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
+  // Rate limiting: 5 tentativi falliti → blocco 15 minuti
+  const [failCount, setFailCount] = useState(() => {
+    const locked = parseInt(localStorage.getItem('auth_locked_until') || '0', 10);
+    if (locked && Date.now() >= locked) {
+      localStorage.removeItem('auth_fail_count');
+      localStorage.removeItem('auth_locked_until');
+      return 0;
+    }
+    return parseInt(localStorage.getItem('auth_fail_count') || '0', 10);
+  });
+  const [lockedUntil, setLockedUntil] = useState(() => {
+    const ts = parseInt(localStorage.getItem('auth_locked_until') || '0', 10);
+    return ts > Date.now() ? ts : 0;
+  });
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    if (!lockedUntil) { setCountdown(0); return; }
+    const tick = () => {
+      const remaining = Math.ceil((lockedUntil - Date.now()) / 1000);
+      if (remaining <= 0) {
+        setLockedUntil(0);
+        setFailCount(0);
+        setCountdown(0);
+        localStorage.removeItem('auth_fail_count');
+        localStorage.removeItem('auth_locked_until');
+      } else {
+        setCountdown(remaining);
+      }
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [lockedUntil]);
+
+  const isLocked = countdown > 0;
+  const formatCountdown = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
   const clearError = () => setError('');
 
   const handleLogin = async () => {
+    if (isLocked) return;
     setLoading(true);
     clearError();
     const { error } = await getClient().auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
     setLoading(false);
     if (error) {
-      if (error.message.includes('Invalid login') || error.message.includes('invalid_grant') || error.message.includes('Invalid credentials')) setError(t('auth.error_invalid_credentials'));
-      else if (error.message.includes('Email not confirmed')) setError(t('auth.error_email_not_confirmed'));
-      else setError(`Errore: ${error.message}`);
-    } else if (!ricordami) {
-      document.cookie.split(';').forEach(c => {
-        const key = c.trim().split('=')[0];
-        if (key.startsWith('sb-')) document.cookie = `${key}=;max-age=0;path=/;SameSite=Lax`;
-      });
+      const newCount = failCount + 1;
+      if (newCount >= 5) {
+        const lockTime = Date.now() + 15 * 60 * 1000;
+        setFailCount(newCount);
+        setLockedUntil(lockTime);
+        localStorage.setItem('auth_fail_count', String(newCount));
+        localStorage.setItem('auth_locked_until', String(lockTime));
+        setError(isES ? 'Demasiados intentos. Bloqueado 15 minutos.' : 'Troppi tentativi. Bloccato per 15 minuti.');
+      } else {
+        setFailCount(newCount);
+        localStorage.setItem('auth_fail_count', String(newCount));
+        if (error.message.includes('Invalid login') || error.message.includes('invalid_grant') || error.message.includes('Invalid credentials')) setError(t('auth.error_invalid_credentials'));
+        else if (error.message.includes('Email not confirmed')) setError(t('auth.error_email_not_confirmed'));
+        else setError(`Errore: ${error.message}`);
+      }
+    } else {
+      // Login riuscito — reset tentativi
+      setFailCount(0);
+      setLockedUntil(0);
+      localStorage.removeItem('auth_fail_count');
+      localStorage.removeItem('auth_locked_until');
+      if (!ricordami) {
+        document.cookie.split(';').forEach(c => {
+          const key = c.trim().split('=')[0];
+          if (key.startsWith('sb-')) document.cookie = `${key}=;max-age=0;path=/;SameSite=Lax`;
+        });
+      }
     }
   };
 
@@ -168,8 +226,12 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
                 </button>
               </div>
 
-              <button type="button" onClick={handleLogin} disabled={loading} className={btnPrimary}>
-                {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : t('auth.login_btn')}
+              <button type="button" onClick={handleLogin} disabled={loading || isLocked} className={btnPrimary}>
+                {loading
+                  ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
+                  : isLocked
+                    ? `${isES ? 'Bloqueado' : 'Bloccato'} · ${formatCountdown(countdown)}`
+                    : t('auth.login_btn')}
               </button>
 
               <div className="flex items-center gap-3 py-1">

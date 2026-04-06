@@ -110,6 +110,7 @@ function AppInner() {
   const [isOffline, setIsOffline] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
+  const dismissedWaiting = useRef<ServiceWorker | null>(null);
   const activeProfileRef = useRef(activeProfile);
   const mainRef = useRef<HTMLElement>(null);
   const [isNavHidden, setIsNavHidden] = useState(false);
@@ -146,11 +147,17 @@ function AppInner() {
 
   // PWA update detection
   useEffect(() => {
+    const shouldShow = (reg: ServiceWorkerRegistration) =>
+      reg.waiting != null && reg.waiting !== dismissedWaiting.current;
+
     // Pick up registration if event fired before React mounted (race condition on PWA reopen)
     const pending = (window as { __swPendingReg?: ServiceWorkerRegistration }).__swPendingReg;
-    if (pending) setSwRegistration(pending);
+    if (pending && shouldShow(pending)) setSwRegistration(pending);
 
-    const handler = (e: Event) => setSwRegistration((e as CustomEvent).detail.registration);
+    const handler = (e: Event) => {
+      const reg = (e as CustomEvent).detail.registration as ServiceWorkerRegistration;
+      if (shouldShow(reg)) setSwRegistration(reg);
+    };
     window.addEventListener('swUpdateReady', handler);
     return () => window.removeEventListener('swUpdateReady', handler);
   }, []);
@@ -800,7 +807,10 @@ function AppInner() {
             swRegistration.waiting?.postMessage({ type: 'SKIP_WAITING' });
             window.location.reload();
           }}
-          onDismiss={() => setSwRegistration(null)}
+          onDismiss={() => {
+            dismissedWaiting.current = swRegistration?.waiting ?? null;
+            setSwRegistration(null);
+          }}
         />
       )}
     </AnimatePresence>
