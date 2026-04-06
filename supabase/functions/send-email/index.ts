@@ -385,6 +385,17 @@ Deno.serve(async (req) => {
 
     console.log(`Email inviata [${payload.type}] → ${payload.email} (id: ${resData.id})`);
 
+    // Alert Telegram su nuovo utente — fire-and-forget
+    if (payload.type === 'welcome') {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+      const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+      fetch(`${supabaseUrl}/functions/v1/telegram-alert`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
+        body: JSON.stringify({ type: 'new_user', email: payload.email, name: payload.name, country: payload.lang === 'es' ? 'Spain' : 'Italy' }),
+      }).catch(e => console.error('telegram-alert (new_user) failed:', e));
+    }
+
     return new Response(JSON.stringify({ success: true, id: resData.id }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

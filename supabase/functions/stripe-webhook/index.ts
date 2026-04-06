@@ -115,6 +115,19 @@ Deno.serve(async (req) => {
             name: existing[0].name ?? 'utente',
             lang: langFromCountry(existing[0].country),
           });
+
+          // Alert Telegram nuovo Pro — fire-and-forget
+          fetch(`${supabaseUrl}/functions/v1/telegram-alert`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
+            body: JSON.stringify({
+              type: 'new_pro',
+              email: existing[0].email,
+              name: existing[0].name ?? 'utente',
+              country: existing[0].country,
+              plan: session.metadata?.plan ?? 'monthly',
+            }),
+          }).catch(e => console.error('telegram-alert (new_pro) failed:', e));
         }
         break;
       }
