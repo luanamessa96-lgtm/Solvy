@@ -1,7 +1,7 @@
-const VERSION = 'v6';
+const VERSION = 'v7';
 const CACHE = `freelance-${VERSION}`;
 
-self.addEventListener('install', () => { /* wait for SKIP_WAITING message */ });
+self.addEventListener('install', () => { self.skipWaiting(); });
 
 self.addEventListener('message', event => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
@@ -17,6 +17,9 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
+  // Solo risorse same-origin — le richieste cross-origin (GA4, fonts, DiceBear, Supabase)
+  // vengono gestite direttamente dal browser senza passare per il service worker.
+  if (!event.request.url.startsWith(self.location.origin)) return;
   event.respondWith(
     fetch(event.request)
       .then(res => {
