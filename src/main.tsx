@@ -1,9 +1,28 @@
 import './lib/i18n';
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
+import * as Sentry from '@sentry/react';
 import App from './App.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import './index.css';
+
+if (import.meta.env.VITE_SENTRY_DSN) {
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    environment: import.meta.env.MODE,
+    // Cattura solo in produzione e preview — non in dev locale
+    enabled: import.meta.env.PROD,
+    integrations: [
+      Sentry.browserTracingIntegration(),
+      Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true }),
+    ],
+    // Performance: campiona 10% delle sessioni in produzione
+    tracesSampleRate: 0.1,
+    // Session Replay: 5% delle sessioni normali, 100% degli errori
+    replaysSessionSampleRate: 0.05,
+    replaysOnErrorSampleRate: 1.0,
+  });
+}
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(registration => {
