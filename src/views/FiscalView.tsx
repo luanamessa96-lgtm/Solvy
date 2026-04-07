@@ -356,6 +356,16 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
             </motion.div>
           )}
 
+          {/* Aviso situaciones fiscales particulares */}
+          <motion.div variants={item}>
+            <div className={`flex items-start gap-3 px-4 py-3.5 rounded-2xl border ${darkMode ? 'bg-slate-800/60 border-slate-700 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
+              <Info size={15} className="mt-0.5 shrink-0 text-slate-400" />
+              <p className="text-[11px] leading-relaxed">
+                ¿Tienes una situación fiscal especial (deporte, cooperativa, jubilación, menor de 35 años)? Las previsiones podrían no ser precisas. Consulta con un asesor fiscal.
+              </p>
+            </div>
+          </motion.div>
+
           <motion.div variants={item} className="space-y-3">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Backup Documentos</p>
             <div className="p-5 rounded-3xl border space-y-4 transition-colors" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
@@ -510,6 +520,16 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
           </div>
         </motion.div>
       )}
+
+      {/* Avviso situazioni fiscali particolari */}
+      <motion.div variants={item}>
+        <div className={`flex items-start gap-3 px-4 py-3.5 rounded-2xl border ${darkMode ? 'bg-slate-800/60 border-slate-700 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
+          <Info size={15} className="mt-0.5 shrink-0 text-slate-400" />
+          <p className="text-[11px] leading-relaxed">
+            Hai una situazione fiscale particolare (sport, CoCoCo, pensione, under 35)? Le previsioni potrebbero non essere accurate. Consulta un commercialista.
+          </p>
+        </div>
+      </motion.div>
 
       {/* Backup Documenti */}
       <motion.div variants={item} className="space-y-3">
