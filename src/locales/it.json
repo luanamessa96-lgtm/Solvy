@@ -144,6 +144,8 @@
     "cat_commerce_intermediaries": "Intermediari del commercio — 62%",
     "cat_commerce": "Commercio e ristorazione — 40%",
     "activity_start_year": "Anno Inizio Attività",
+    "ostativa_label": "Ho un rapporto di lavoro dipendente con un cliente che supera il 30% del mio fatturato (causa ostativa forfettario)",
+    "ostativa_warning": "Attenzione: se un singolo cliente rappresenta più del 30% del tuo fatturato ed è anche il tuo datore di lavoro, potresti non poter applicare il regime forfettario. Verifica con un commercialista.",
     "save_btn": "Salva Modifiche",
     "save_error": "Correggi gli errori per salvare",
     "save_success": "✓ Salvato!",

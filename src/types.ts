@@ -30,6 +30,7 @@ export interface Profile {
   redditoN1?: number;
   invoiceCounters?: Record<string, number>;
   deletedInvoiceNumbers?: string[];
+  hasOstativaCause?: boolean;
 }
 
 export interface Document {

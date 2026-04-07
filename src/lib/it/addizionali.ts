@@ -1,4 +1,6 @@
-/** Aliquote addizionale regionale IRPEF 2024 (aliquota base) */
+/** Aliquote addizionale regionale IRPEF 2025/2026 (aliquota base — fonte: MEF/ADER)
+ *  Nota: alcune regioni applicano aliquote progressive per scaglione IRPEF;
+ *  qui si usa l'aliquota base applicabile al reddito complessivo standard. */
 export const IT_ADDIZIONALI_REGIONALI: Record<string, number> = {
   "Abruzzo": 0.0173,
   "Basilicata": 0.0123,

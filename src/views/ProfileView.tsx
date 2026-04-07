@@ -115,6 +115,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     retaMensile: profileStorage.get(`reta_${activeProfile.id}`) || '500',
     regimenFiscal: activeProfile.regimenFiscal || 'simplificada',
     ivaHabitual: activeProfile.ivaHabitual?.toString() || '21',
+    hasOstativaCause: activeProfile.hasOstativaCause || false,
   });
 
   const isSpain = editData.country === 'Spain';
@@ -173,6 +174,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
         annoInizioAttivita: editData.annoInizioAttivita ? parseInt(editData.annoInizioAttivita) : undefined,
         regimenFiscal: isSpain ? (editData.regimenFiscal as 'simplificada' | 'normal' | 'modulos') : undefined,
         ivaHabitual: isSpain && editData.ivaHabitual ? parseInt(editData.ivaHabitual) as 21 | 10 | 4 : undefined,
+        hasOstativaCause: !isSpain && editData.regime === 'forfettario' ? editData.hasOstativaCause : undefined,
       };
 
       // Safety: ensure no non-DB keys sneak in
@@ -409,6 +411,25 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('profile.activity_start_year')}</label>
                         <input type="number" min="2000" max={new Date().getFullYear()} value={editData.annoInizioAttivita} onChange={e => setEditData({ ...editData, annoInizioAttivita: e.target.value })} placeholder="Es. 2022" className={inputClass()} />
                       </div>
+                      {editData.regime === 'forfettario' && (
+                        <div className="space-y-2">
+                          <label className="flex items-start gap-3 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={editData.hasOstativaCause}
+                              onChange={e => setEditData({ ...editData, hasOstativaCause: e.target.checked })}
+                              className="mt-0.5 w-4 h-4 rounded accent-primary flex-shrink-0"
+                            />
+                            <span className="text-xs text-slate-500 leading-relaxed">{t('profile.ostativa_label')}</span>
+                          </label>
+                          {editData.hasOstativaCause && (
+                            <div className="rounded-xl p-3 bg-amber-50 border border-amber-200 flex gap-2">
+                              <span className="text-amber-500 text-sm flex-shrink-0">⚠️</span>
+                              <p className="text-xs text-amber-700 leading-relaxed">{t('profile.ostativa_warning')}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
