@@ -16,7 +16,7 @@ const DB_PROFILE_FIELDS: (keyof Profile)[] = [
   'id', 'name', 'email', 'jobType', 'country', 'currency', 'avatar',
   'address', 'piva', 'nie', 'codiceFiscale', 'iban', 'regime', 'coefficiente',
   'annoInizioAttivita', 'isPro', 'regimenFiscal', 'ivaHabitual',
-  'street', 'cap', 'city', 'province', 'region',
+  'street', 'cap', 'city', 'province', 'region', 'hasOstativaCause',
 ];
 
 interface ProfileViewProps {

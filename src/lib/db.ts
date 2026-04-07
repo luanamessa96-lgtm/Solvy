@@ -149,6 +149,7 @@ export async function getProfiles(userId: string, userEmail?: string): Promise<P
     redditoN1: p.reddito_n1 ?? undefined,
     invoiceCounters: p.invoice_counters ?? undefined,
     deletedInvoiceNumbers: p.deleted_invoice_numbers ?? undefined,
+    hasOstativaCause: p.has_ostativa_cause ?? undefined,
   }));
 }
 
@@ -184,6 +185,7 @@ export async function createProfile(profile: Profile): Promise<void> {
       reddito_n1: profile.redditoN1 ?? null,
       invoice_counters: profile.invoiceCounters ?? null,
       deleted_invoice_numbers: profile.deletedInvoiceNumbers ?? null,
+      has_ostativa_cause: profile.hasOstativaCause ?? null,
     });
 
   if (error) throw error;
@@ -220,6 +222,7 @@ export async function updateProfile(profile: Profile): Promise<void> {
       reddito_n1: profile.redditoN1 ?? null,
       invoice_counters: profile.invoiceCounters ?? null,
       deleted_invoice_numbers: profile.deletedInvoiceNumbers ?? null,
+      has_ostativa_cause: profile.hasOstativaCause ?? null,
     });
 
   if (error) throw error;
