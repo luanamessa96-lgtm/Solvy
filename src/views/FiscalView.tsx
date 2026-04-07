@@ -366,6 +366,13 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
             </div>
           </motion.div>
 
+          {/* Disclaimer legal */}
+          <motion.div variants={item}>
+            <p className="text-[10px] text-slate-400 leading-relaxed px-1">
+              Las previsiones se calculan en base a los datos introducidos y los tipos vigentes. No constituyen asesoramiento fiscal. Para situaciones particulares, consulta un asesor fiscal.
+            </p>
+          </motion.div>
+
           <motion.div variants={item} className="space-y-3">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Backup Documentos</p>
             <div className="p-5 rounded-3xl border space-y-4 transition-colors" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
@@ -529,6 +536,13 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
             Le previsioni coprono forfettario e ordinario standard. Situazioni particolari (sport, CoCoCo, pensione)? Alcune stime potrebbero variare — ci stiamo lavorando. Parlane con il tuo commercialista.
           </p>
         </div>
+      </motion.div>
+
+      {/* Disclaimer legale */}
+      <motion.div variants={item}>
+        <p className="text-[10px] text-slate-400 leading-relaxed px-1">
+          Le previsioni sono calcolate sulla base dei dati inseriti e delle aliquote vigenti. Non costituiscono consulenza fiscale. Per situazioni particolari consulta un commercialista.
+        </p>
       </motion.div>
 
       {/* Backup Documenti */}
