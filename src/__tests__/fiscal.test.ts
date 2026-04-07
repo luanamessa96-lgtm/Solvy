@@ -108,23 +108,31 @@ describe('Italy — IRPEF Forfettario', () => {
 describe('Italy — IRPEF Ordinario (scaglioni)', () => {
   it('scaglione ≤ 28.000 → 23%', () => {
     const result = italyModule.calculateTax({ grossIncome: 20000, regime: 'ordinario' });
-    // IRPEF lorda: 20000 * 23% = 4600 + addizionale regionale 2.3% = 460
-    const expectedIRPEF = 20000 * 0.23;
-    const expectedAddl = 20000 * 0.023;
+    // INPS deducibile ex art. 10 TUIR: base IRPEF = 20000 - (20000 * 0.24) = 15200
+    const inps = 20000 * 0.24;
+    const base = 20000 - inps;
+    const expectedIRPEF = base * 0.23;
+    const expectedAddl = base * 0.023;
     expect(result.incomeTax).toBeCloseTo(expectedIRPEF + expectedAddl, 0);
   });
 
-  it('scaglione 28.001–50.000 → 23% + 35%', () => {
+  it('scaglione 28.001–50.000 → 23% + 35% (IRPEF su base netta INPS)', () => {
     const result = italyModule.calculateTax({ grossIncome: 40000, regime: 'ordinario' });
-    const irpef = 28000 * 0.23 + (40000 - 28000) * 0.35;
-    const addl = 40000 * 0.023;
+    // INPS deducibile ex art. 10 TUIR: base IRPEF = 40000 - (40000 * 0.24) = 30400
+    const inps = 40000 * 0.24;
+    const base = 40000 - inps;
+    const irpef = 28000 * 0.23 + (base - 28000) * 0.35;
+    const addl = base * 0.023;
     expect(result.incomeTax).toBeCloseTo(irpef + addl, 0);
   });
 
-  it('scaglione oltre 50.000 → 23% + 35% + 43%', () => {
+  it('scaglione oltre 50.000 → 23% + 35% + 43% (IRPEF su base netta INPS)', () => {
     const result = italyModule.calculateTax({ grossIncome: 70000, regime: 'ordinario' });
-    const irpef = 28000 * 0.23 + 22000 * 0.35 + (70000 - 50000) * 0.43;
-    const addl = 70000 * 0.023;
+    // INPS deducibile ex art. 10 TUIR: base IRPEF = 70000 - (70000 * 0.24) = 53200
+    const inps = 70000 * 0.24;
+    const base = 70000 - inps;
+    const irpef = 28000 * 0.23 + 22000 * 0.35 + (base - 50000) * 0.43;
+    const addl = base * 0.023;
     expect(result.incomeTax).toBeCloseTo(irpef + addl, 0);
   });
 

@@ -89,18 +89,19 @@ export const italyModule: CountryModule = {
         },
       };
     } else {
-      // Regime ordinario — IRPEF brackets (mirrors calcIRPEF in DashboardView)
-      let incomeTax = 0;
-      if (grossIncome <= 28000) incomeTax = grossIncome * 0.23;
-      else if (grossIncome <= 50000) incomeTax = 28000 * 0.23 + (grossIncome - 28000) * 0.35;
-      else incomeTax = 28000 * 0.23 + 22000 * 0.35 + (grossIncome - 50000) * 0.43;
-      const regionalAddl = grossIncome * 0.023;
-      const totalIncomeTax = incomeTax + regionalAddl;
+      // Regime ordinario — INPS deducibile ex art. 10 TUIR prima del calcolo IRPEF
       const inps = grossIncome * 0.24;
+      const irpefBase = grossIncome - inps;
+      let incomeTax = 0;
+      if (irpefBase <= 28000) incomeTax = irpefBase * 0.23;
+      else if (irpefBase <= 50000) incomeTax = 28000 * 0.23 + (irpefBase - 28000) * 0.35;
+      else incomeTax = 28000 * 0.23 + 22000 * 0.35 + (irpefBase - 50000) * 0.43;
+      const regionalAddl = irpefBase * 0.023;
+      const totalIncomeTax = incomeTax + regionalAddl;
       const netIncome = grossIncome - totalIncomeTax - inps;
       return {
         grossIncome,
-        taxableIncome: grossIncome,
+        taxableIncome: irpefBase,
         incomeTax: totalIncomeTax,
         socialContributions: inps,
         vatRate: 22,
