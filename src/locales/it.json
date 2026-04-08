@@ -637,5 +637,22 @@
     "generating": "Generazione in corso…",
     "export_btn": "Esporta backup PDF",
     "no_invoices": "Nessuna fattura pagata da esportare"
+  },
+  "notifications": {
+    "title": "Notifiche",
+    "active_deadlines_one": "1 scadenza nei prossimi 30 giorni",
+    "active_deadlines_other": "{{count}} scadenze nei prossimi 30 giorni",
+    "all_clear": "Tutto in ordine",
+    "group_today": "Oggi",
+    "group_week": "Questa settimana",
+    "group_month": "Questo mese",
+    "empty_title": "Tutto in ordine!",
+    "empty_subtitle": "Nessuna scadenza nei prossimi 30 giorni",
+    "expires_today": "Scade oggi",
+    "expires_tomorrow": "Scade domani",
+    "expires_in_days_one": "Tra 1 giorno",
+    "expires_in_days_other": "Tra {{count}} giorni",
+    "push_title": "Notifiche push",
+    "push_subtitle": "Ricevi avvisi sul telefono prima delle scadenze"
   }
 }

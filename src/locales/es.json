@@ -630,5 +630,22 @@
     "generating": "Generando…",
     "export_btn": "Exportar backup PDF",
     "no_invoices": "No hay facturas pagadas para exportar"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "active_deadlines_one": "1 vencimiento en los próximos 30 días",
+    "active_deadlines_other": "{{count}} vencimientos en los próximos 30 días",
+    "all_clear": "Todo al día",
+    "group_today": "Hoy",
+    "group_week": "Esta semana",
+    "group_month": "Este mes",
+    "empty_title": "¡Todo al día!",
+    "empty_subtitle": "Ningún vencimiento en los próximos 30 días",
+    "expires_today": "Vence hoy",
+    "expires_tomorrow": "Vence mañana",
+    "expires_in_days_one": "En 1 día",
+    "expires_in_days_other": "En {{count}} días",
+    "push_title": "Notificaciones push",
+    "push_subtitle": "Recibe alertas en el móvil antes de los vencimientos"
   }
 }

@@ -788,7 +788,7 @@ function AppInner() {
       />
 
       <Suspense fallback={null}>
-        <NotificationsPanel isOpen={isNotificationsOpen} deadlines={deadlines} onClose={() => setIsNotificationsOpen(false)} onUpdateDeadline={handleUpdateDeadline} darkMode={darkMode} theme={theme} />
+        <NotificationsPanel isOpen={isNotificationsOpen} deadlines={deadlines} onClose={() => setIsNotificationsOpen(false)} onUpdateDeadline={handleUpdateDeadline} darkMode={darkMode} theme={theme} isPro={activeProfile?.isPro ?? false} />
       </Suspense>
 
       <main ref={mainRef} className="flex-1 overflow-y-auto min-h-screen" style={{ backgroundColor: 'var(--color-bg)' }}>
