@@ -101,7 +101,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     country: activeProfile.country,
     currency: activeProfile.currency,
     address: activeProfile.address || '',
-    street: activeProfile.street || activeProfile.address || '',
+    street: activeProfile.street || '',
     cap: activeProfile.cap || '',
     city: activeProfile.city || '',
     province: activeProfile.province || '',
