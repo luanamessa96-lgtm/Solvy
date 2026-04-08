@@ -314,7 +314,7 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
                     value={redditoN1Input}
                     onChange={e => { setRedditoN1Input(e.target.value); setRedditoN1Saved(false); }}
                     placeholder="ej. 25000"
-                    className={`flex-1 text-sm font-bold bg-transparent focus:outline-none ${darkMode ? 'text-white placeholder:text-slate-600' : 'text-slate-900 placeholder:text-slate-400'}`}
+                    className={`flex-1 text-sm font-bold bg-transparent focus:outline-none py-0 ${darkMode ? 'text-white placeholder:text-slate-600' : 'text-slate-900 placeholder:text-slate-400'}`}
                   />
                 </div>
                 <button
@@ -324,7 +324,7 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
                     setRedditoN1Saved(true);
                     setTimeout(() => setRedditoN1Saved(false), 2000);
                   }}
-                  className={`h-11 px-4 rounded-xl text-xs font-bold transition-all active:scale-95 ${redditoN1Saved ? 'bg-emerald-500 text-white' : 'bg-primary text-white'}`}
+                  className={`appearance-none h-11 px-4 rounded-xl text-xs font-bold transition-all active:scale-95 ${redditoN1Saved ? 'bg-emerald-500 text-white' : 'bg-primary text-white'}`}
                 >
                   {redditoN1Saved ? '✓' : 'Guardar'}
                 </button>
@@ -475,7 +475,7 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
                 value={redditoN1Input}
                 onChange={e => { setRedditoN1Input(e.target.value); setRedditoN1Saved(false); }}
                 placeholder="es. 28000"
-                className={`flex-1 text-sm font-bold bg-transparent focus:outline-none ${darkMode ? 'text-white placeholder:text-slate-600' : 'text-slate-900 placeholder:text-slate-400'}`}
+                className={`flex-1 text-sm font-bold bg-transparent focus:outline-none py-0 ${darkMode ? 'text-white placeholder:text-slate-600' : 'text-slate-900 placeholder:text-slate-400'}`}
               />
             </div>
             <button
@@ -485,7 +485,7 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
                 setRedditoN1Saved(true);
                 setTimeout(() => setRedditoN1Saved(false), 2000);
               }}
-              className={`h-11 px-4 rounded-xl text-xs font-bold transition-all active:scale-95 ${redditoN1Saved ? 'bg-emerald-500 text-white' : 'bg-primary text-white'}`}
+              className={`appearance-none h-11 px-4 rounded-xl text-xs font-bold transition-all active:scale-95 ${redditoN1Saved ? 'bg-emerald-500 text-white' : 'bg-primary text-white'}`}
             >
               {redditoN1Saved ? '✓' : 'Salva'}
             </button>
