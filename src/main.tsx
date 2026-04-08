@@ -14,7 +14,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
     enabled: import.meta.env.PROD,
     integrations: [
       Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true }),
+      // replayIntegration caricata dopo il boot per non rallentare il LCP
     ],
     // Performance: campiona 10% delle sessioni in produzione
     tracesSampleRate: 0.1,
@@ -22,6 +22,13 @@ if (import.meta.env.VITE_SENTRY_DSN) {
     replaysSessionSampleRate: 0.05,
     replaysOnErrorSampleRate: 1.0,
   });
+
+  // Carica Session Replay 4s dopo il caricamento — è pesante e non è critica per il boot
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      Sentry.addIntegration(Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true }));
+    }, 4000);
+  }, { once: true });
 }
 
 if ('serviceWorker' in navigator) {
