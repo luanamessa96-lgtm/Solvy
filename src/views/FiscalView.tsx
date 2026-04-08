@@ -303,8 +303,8 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
                 <p className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Rendimiento neto año anterior</p>
                 <p className="text-[10px] text-slate-400 mt-0.5">Para calcular la cuota mensual RETA</p>
               </div>
-              <div className="flex gap-2 items-center">
-                <div className={`flex-1 flex items-center gap-2 px-3 h-11 rounded-xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+              <div className="flex flex-col gap-2">
+                <div className={`flex items-center gap-2 px-3 h-11 rounded-xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                   <span className="text-sm font-bold text-slate-400">€</span>
                   <input
                     type="number"
@@ -324,7 +324,7 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
                     setRedditoN1Saved(true);
                     setTimeout(() => setRedditoN1Saved(false), 2000);
                   }}
-                  className={`appearance-none h-11 px-4 rounded-xl text-xs font-bold transition-all active:scale-95 ${redditoN1Saved ? 'bg-emerald-500 text-white' : 'bg-primary text-white'}`}
+                  className={`w-full appearance-none h-11 px-4 rounded-xl text-xs font-bold transition-all active:scale-95 ${redditoN1Saved ? 'bg-emerald-500 text-white' : 'bg-primary text-white'}`}
                 >
                   {redditoN1Saved ? '✓' : 'Guardar'}
                 </button>
@@ -464,8 +464,8 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
             <p className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Reddito anno precedente</p>
             <p className="text-[10px] text-slate-400 mt-0.5">Per calcolo acconti più preciso</p>
           </div>
-          <div className="flex gap-2 items-center">
-            <div className={`flex-1 flex items-center gap-2 px-3 h-11 rounded-xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+          <div className="flex flex-col gap-2">
+            <div className={`flex items-center gap-2 px-3 h-11 rounded-xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
               <span className="text-sm font-bold text-slate-400">€</span>
               <input
                 type="number"
@@ -485,7 +485,7 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
                 setRedditoN1Saved(true);
                 setTimeout(() => setRedditoN1Saved(false), 2000);
               }}
-              className={`appearance-none h-11 px-4 rounded-xl text-xs font-bold transition-all active:scale-95 ${redditoN1Saved ? 'bg-emerald-500 text-white' : 'bg-primary text-white'}`}
+              className={`w-full appearance-none h-11 px-4 rounded-xl text-xs font-bold transition-all active:scale-95 ${redditoN1Saved ? 'bg-emerald-500 text-white' : 'bg-primary text-white'}`}
             >
               {redditoN1Saved ? '✓' : 'Salva'}
             </button>
