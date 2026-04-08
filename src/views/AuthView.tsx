@@ -109,7 +109,11 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     if (password.length < 8) { setError(t('auth.error_password_length')); return; }
     setLoading(true);
     clearError();
-    const { error } = await getClient().auth.signUp({ email, password });
+    const { error } = await getClient().auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: window.location.origin },
+    });
     setLoading(false);
     if (error) {
       if (error.message.includes('already registered')) setError(t('auth.error_already_registered'));
