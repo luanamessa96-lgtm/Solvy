@@ -109,7 +109,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     if (password.length < 8) { setError(t('auth.error_password_length')); return; }
     setLoading(true);
     clearError();
-    const { error } = await getClient().auth.signUp({
+    const { data, error } = await getClient().auth.signUp({
       email,
       password,
       options: { emailRedirectTo: window.location.origin },
@@ -118,6 +118,11 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     if (error) {
       if (error.message.includes('already registered')) setError(t('auth.error_already_registered'));
       else setError(`Errore: ${error.message}`);
+    } else if (data.session) {
+      // Email confirmation disabled in Supabase → user is already logged in.
+      // Sign out immediately so they confirm via email first.
+      await getClient().auth.signOut();
+      setScreen('register-sent');
     } else {
       setScreen('register-sent');
     }
@@ -153,7 +158,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
   const btnPrimary = `w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-60`;
 
   return (
-    <div className="max-w-md mx-auto min-h-screen flex flex-col" style={{ backgroundColor: 'var(--color-card-bg)' }}>
+    <div className="max-w-md mx-auto min-h-screen flex flex-col" style={{ backgroundColor: darkMode ? '#08080f' : '#f8fafc' }}>
       <div className="flex-1 flex flex-col justify-center px-8 py-12">
 
         {/* Brand */}
