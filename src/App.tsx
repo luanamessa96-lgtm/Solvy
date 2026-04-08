@@ -65,7 +65,7 @@ function migrateTheme(t: string | null | undefined): string {
 }
 
 function AppInner() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState('home');
   const [docChoiceTrigger, setDocChoiceTrigger] = useState(0);
   const [calAddTrigger, setCalAddTrigger] = useState(0);
@@ -526,7 +526,7 @@ function AppInner() {
       case 'menu': return t('page_titles.menu');
       default: return t('page_titles.dashboard');
     }
-  }, [activeTab, isProfilePage, isSettingsPage, isSubscriptionPage, isAccountantPage, isFiscalPage, isMediaLibraryPage, isGuidaFiscalePage, isGuiaFiscalESPage, t]);
+  }, [activeTab, isProfilePage, isSettingsPage, isSubscriptionPage, isAccountantPage, isFiscalPage, isMediaLibraryPage, isGuidaFiscalePage, isGuiaFiscalESPage, t, i18n.language]);
 
   // Hide BottomNav on scroll down, show on scroll up
   useEffect(() => {
