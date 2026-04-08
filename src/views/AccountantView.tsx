@@ -129,7 +129,7 @@ const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) =
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.15 }}
                     >
-                      <p className={`pl-7 pr-4 pb-4 text-sm leading-relaxed ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                      <p className={`pl-7 pr-4 pb-4 text-sm leading-relaxed break-words ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                         {value}
                       </p>
                     </motion.div>
