@@ -118,12 +118,10 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     if (error) {
       if (error.message.includes('already registered')) setError(t('auth.error_already_registered'));
       else setError(`Errore: ${error.message}`);
-    } else if (data.session) {
-      // Email confirmation disabled in Supabase → user is already logged in.
-      // Sign out immediately so they confirm via email first.
-      await getClient().auth.signOut();
-      setScreen('register-sent');
     } else {
+      // Always sign out after signup — user must confirm email before accessing the app.
+      // Supabase sometimes creates a session immediately even with "Confirm email" enabled.
+      await getClient().auth.signOut();
       setScreen('register-sent');
     }
   };
