@@ -231,7 +231,7 @@ export default function ResumenTrimestralModal({
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] shadow-2xl max-h-[90vh] flex flex-col"
+            className="relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
             style={{ backgroundColor: 'var(--color-card)' }}
           >
             {/* Header */}
@@ -245,7 +245,7 @@ export default function ResumenTrimestralModal({
               </button>
             </div>
 
-            <div className="p-6 space-y-5 overflow-y-auto [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
+            <div className="flex-1 min-h-0 p-6 space-y-5 overflow-y-auto [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
 
               {/* Quarter selector */}
               <div className="space-y-2">
