@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Mail, Phone, Building2, FileText, MessageSquare, Pencil } from 'lucide-react';
+import { Mail, Phone, Building2, FileText, MessageSquare, Pencil, ChevronDown } from 'lucide-react';
 import { Accountant } from '../types';
 
 interface AccountantViewProps {
@@ -11,12 +11,15 @@ interface AccountantViewProps {
   key?: string;
 }
 
+const EXPANDABLE_KEYS = new Set(['office', 'contractDetails', 'sendingInstructions']);
+
 const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) => {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ ...accountant });
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [expandedField, setExpandedField] = useState<string | null>(null);
 
   const handleEdit = () => {
     setFormData({ ...accountant });
@@ -38,11 +41,11 @@ const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) =
   const item = { hidden: { opacity: 0 }, show: { opacity: 1 } };
 
   const readOnlyRows = [
-    { icon: Mail,         label: t('accountant_view.field_email'),        value: accountant.email },
-    { icon: Phone,        label: t('accountant_view.field_phone'),        value: accountant.phone },
-    { icon: Building2,    label: t('accountant_view.field_office'),       value: accountant.office },
-    { icon: FileText,     label: t('accountant_view.field_contract'),     value: accountant.contractDetails },
-    { icon: MessageSquare,label: t('accountant_view.field_instructions'), value: accountant.sendingInstructions },
+    { icon: Mail,          key: 'email',               label: t('accountant_view.field_email'),        value: accountant.email },
+    { icon: Phone,         key: 'phone',               label: t('accountant_view.field_phone'),        value: accountant.phone },
+    { icon: Building2,     key: 'office',              label: t('accountant_view.field_office'),       value: accountant.office },
+    { icon: FileText,      key: 'contractDetails',     label: t('accountant_view.field_contract'),     value: accountant.contractDetails },
+    { icon: MessageSquare, key: 'sendingInstructions', label: t('accountant_view.field_instructions'), value: accountant.sendingInstructions },
   ];
 
   const editFields = [
@@ -58,7 +61,7 @@ const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) =
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-6 pb-24">
 
-      {/* Header card — avatar + nome + bottone modifica */}
+      {/* Header card */}
       <motion.div variants={item} className={`flex items-center justify-between gap-4 p-5 rounded-3xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
         <div className="flex items-center gap-4 min-w-0">
           <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-primary/20 shrink-0">
@@ -82,23 +85,57 @@ const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) =
       {/* READ-ONLY */}
       {!isEditing && (
         <motion.div variants={item} className="rounded-2xl border overflow-hidden" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
-          {readOnlyRows.map(({ icon: Icon, label, value }, i, arr) => (
-            <div
-              key={label}
-              className={`w-full p-4 flex items-center justify-between gap-3 ${i < arr.length - 1 ? 'border-b' : ''}`}
-              style={i < arr.length - 1 ? { borderColor: 'var(--color-border)' } : undefined}
-            >
-              <div className="flex items-center gap-3 shrink-0">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400" style={{ backgroundColor: 'var(--color-card-bg)' }}>
-                  <Icon size={18} />
+          {readOnlyRows.map(({ icon: Icon, key, label, value }, i, arr) => {
+            const expandable = EXPANDABLE_KEYS.has(key);
+            const isExpanded = expandedField === key;
+            return (
+              <div
+                key={key}
+                className={i < arr.length - 1 ? 'border-b' : ''}
+                style={i < arr.length - 1 ? { borderColor: 'var(--color-border)' } : undefined}
+              >
+                {/* Row header */}
+                <div
+                  className={`w-full p-4 flex items-center justify-between gap-3 ${expandable && value ? 'cursor-pointer active:opacity-70' : ''}`}
+                  onClick={() => expandable && value && setExpandedField(isExpanded ? null : key)}
+                >
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400" style={{ backgroundColor: 'var(--color-card-bg)' }}>
+                      <Icon size={18} />
+                    </div>
+                    <span className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-900'}`}>{label}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className={`text-sm text-right truncate max-w-[45%] ${value ? 'text-slate-400' : 'text-slate-300'}`}>
+                      {value || '—'}
+                    </span>
+                    {expandable && value && (
+                      <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }} className="shrink-0">
+                        <ChevronDown size={15} className="text-slate-400" />
+                      </motion.div>
+                    )}
+                  </div>
                 </div>
-                <span className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-900'}`}>{label}</span>
+
+                {/* Expanded content */}
+                <AnimatePresence initial={false}>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <p className={`px-4 pb-4 text-sm leading-relaxed ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                        {value}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-              <span className={`text-sm text-right max-w-[55%] truncate ${value ? 'text-slate-400' : 'text-slate-300'}`}>
-                {value || '—'}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </motion.div>
       )}
 
