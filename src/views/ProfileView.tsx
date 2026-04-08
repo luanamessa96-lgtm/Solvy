@@ -507,7 +507,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400" style={{ backgroundColor: 'var(--color-card-bg)' }}><Icon size={18} /></div>
                   <span className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-900'}`}>{label}</span>
                 </div>
-                <span className={`text-sm ${value === '—' ? 'text-slate-300' : 'text-slate-400'}`}>{value}</span>
+                <span className={`text-sm text-right max-w-[55%] ${value === '—' ? 'text-slate-300' : 'text-slate-400'}`}>{value}</span>
               </div>
             ))}
           </div>
