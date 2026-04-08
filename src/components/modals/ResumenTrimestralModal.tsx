@@ -245,7 +245,7 @@ export default function ResumenTrimestralModal({
               </button>
             </div>
 
-            <div className="p-6 space-y-5 overflow-y-auto [padding-bottom:max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))]">
+            <div className="p-6 space-y-5 overflow-y-auto [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
 
               {/* Quarter selector */}
               <div className="space-y-2">

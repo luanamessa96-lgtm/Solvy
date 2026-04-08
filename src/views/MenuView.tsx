@@ -28,7 +28,7 @@ const MenuView = ({ activeProfile, onProfileClick, onSettingsClick, onSubscripti
   const isPro = activeProfile.isPro ?? false;
 
   const menuItems: { label: string; icon: LucideIcon; onClick: () => void; color?: string }[] = [
-    { label: 'Fiscalità', icon: BarChart2, onClick: onFiscalClick },
+    { label: activeProfile.country === 'Spain' ? 'Fiscalidad' : 'Fiscalità', icon: BarChart2, onClick: onFiscalClick },
     ...(activeProfile.country !== 'Spain' ? [{ label: '📚 Guida Fiscale', icon: BookOpen, onClick: onGuidaFiscaleClick }] : []),
     ...(activeProfile.country === 'Spain' ? [{ label: '📚 Guía Fiscal', icon: BookOpen, onClick: onGuiaFiscalESClick }] : []),
     { label: t('menu.accountant'), icon: Briefcase, onClick: onAccountantClick },
