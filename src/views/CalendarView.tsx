@@ -264,7 +264,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   </div>
                 </div>
                 <h3 className="text-lg font-bold leading-tight">{nextDeadline.title}</h3>
-                {nextDeadline.amount && <p className="text-2xl font-bold pt-2">€{nextDeadline.amount.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</p>}
+                {nextDeadline.amount && <p className="text-2xl font-bold pt-2">€{nextDeadline.amount.toLocaleString(isSpain ? 'es-ES' : 'it-IT', { minimumFractionDigits: 2 })}</p>}
               </div>
             </motion.div>
           )}
@@ -419,7 +419,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                 <div className="space-y-3">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('calendar.field_title')}</label>
-                    <input type="text" value={newDeadline.title} onChange={e => setNewDeadline({ ...newDeadline, title: e.target.value })} placeholder="Es: IVA Trimestrale" className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`} />
+                    <input type="text" value={newDeadline.title} onChange={e => setNewDeadline({ ...newDeadline, title: e.target.value })} placeholder={t('calendar.deadline_placeholder')} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`} />
                   </div>
                   <div className="flex flex-col gap-3">
                     <div className="space-y-1.5">
@@ -571,7 +571,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                         </div>
                         {amt != null && amt > 0 && (
                           <div className="text-right shrink-0">
-                            <p className="text-sm font-bold text-red-500">~€{amt.toLocaleString('it-IT')}</p>
+                            <p className="text-sm font-bold text-red-500">~€{amt.toLocaleString(isSpain ? 'es-ES' : 'it-IT')}</p>
                             {FISCAL_ESTIMATE_TITLES.has(s.title) && <p className="text-[9px] text-slate-400 leading-tight">stimato · può variare</p>}
                           </div>
                         )}

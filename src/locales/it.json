@@ -240,7 +240,8 @@
     "add_all_btn": "Aggiungi tutte al calendario",
     "toast_deadline_completed": "Scadenza completata",
     "toast_deadline_updated": "Scadenza aggiornata",
-    "toast_deadline_added": "Scadenza aggiunta"
+    "toast_deadline_added": "Scadenza aggiunta",
+    "deadline_placeholder": "Es: IVA Trimestrale"
   },
   "settings": {
     "appearance": "Aspetto",
@@ -614,5 +615,27 @@
     "done_item_2": "Calcolo tasse sempre aggiornato",
     "done_btn": "Vai alla Dashboard",
     "saving": "Salvataggio…"
+  },
+  "page_titles": {
+    "profile": "Profilo",
+    "settings": "Impostazioni",
+    "subscription": "Il mio abbonamento",
+    "accountant": "Commercialista",
+    "fiscal": "Fiscalità",
+    "media_library": "Libreria",
+    "fiscal_guide_it": "Guida Fiscale",
+    "fiscal_guide_es": "Guía Fiscal",
+    "dashboard": "Dashboard",
+    "documents": "Documenti",
+    "calendar": "Calendario",
+    "menu": "Menu"
+  },
+  "fiscal_view": {
+    "backup_section": "Backup Documenti",
+    "archive_title": "Archivio Solvy",
+    "archive_subtitle": "Backup delle tue fatture · Dal 2026 ad oggi",
+    "generating": "Generazione in corso…",
+    "export_btn": "Esporta backup PDF",
+    "no_invoices": "Nessuna fattura pagata da esportare"
   }
 }
