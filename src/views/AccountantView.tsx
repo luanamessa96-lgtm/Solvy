@@ -99,14 +99,14 @@ const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) =
                   className={`w-full p-4 flex items-center justify-between gap-3 ${expandable && value ? 'cursor-pointer active:opacity-70' : ''}`}
                   onClick={() => expandable && value && setExpandedField(isExpanded ? null : key)}
                 >
-                  <div className="flex items-center gap-3 shrink-0">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400" style={{ backgroundColor: 'var(--color-card-bg)' }}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 shrink-0" style={{ backgroundColor: 'var(--color-card-bg)' }}>
                       <Icon size={18} />
                     </div>
                     <span className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-900'}`}>{label}</span>
                   </div>
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <span className={`text-sm text-right truncate max-w-[45%] ${value ? 'text-slate-400' : 'text-slate-300'}`}>
+                    <span className={`text-sm text-right truncate min-w-0 flex-1 ${value ? 'text-slate-400' : 'text-slate-300'}`}>
                       {value || '—'}
                     </span>
                     {expandable && value && (

@@ -35,9 +35,9 @@ export const MOCK_DEADLINES: Deadline[] = [
 export const MOCK_ACCOUNTANT: Accountant = {
   firstName: 'Marco',
   lastName: 'Rossi',
-  office: 'Studio Associato Rossi & Partners - Via Roma 12, Milano',
-  contractDetails: 'Consulenza Fiscale Forfettaria - Rinnovo annuale (Scad. 31/12)',
-  sendingInstructions: 'Inviare le fatture in formato PDF via email entro il 5 di ogni mese. Per le spese, caricare direttamente nel portale dello studio.',
+  office: '',
+  contractDetails: '',
+  sendingInstructions: '',
   email: 'm.rossi@studiorossi.it',
   phone: '+39 02 1234567'
 };
