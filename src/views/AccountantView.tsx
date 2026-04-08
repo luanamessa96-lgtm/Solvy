@@ -128,7 +128,6 @@ const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) =
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
                     >
                       <p className={`pl-7 pr-4 pb-4 text-sm leading-relaxed ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                         {value}
