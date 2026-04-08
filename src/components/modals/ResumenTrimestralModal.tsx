@@ -222,7 +222,7 @@ export default function ResumenTrimestralModal({
     <>
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}
@@ -231,7 +231,7 @@ export default function ResumenTrimestralModal({
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
+            className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
             style={{ backgroundColor: 'var(--color-card)' }}
           >
             {/* Header */}
