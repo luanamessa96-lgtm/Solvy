@@ -16,6 +16,13 @@ html, body, #root {
   background-color: var(--color-bg);
 }
 
+/* Pro-light: apply gradient to html/body so iOS overscroll rubber-band area
+   shows the gradient instead of the browser default white */
+html[data-theme="pro-light"],
+html[data-theme="pro-light"] body {
+  background: linear-gradient(135deg, #ddd6fe 0%, #bfdbfe 55%, #a5f3fc 100%);
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--color-bg);
