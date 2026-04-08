@@ -329,16 +329,16 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                 </div>
               </div>
               <div className="grid grid-cols-2 divide-x divide-slate-100 dark:divide-slate-800">
-                <div className="px-5 py-4 space-y-1">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('dashboard.total_expenses')}</p>
-                  <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{expenses.toLocaleString()}</p>
+                <div className="px-5 py-4 flex flex-col items-start gap-1.5">
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">{t('dashboard.total_expenses')}</p>
+                  <p className={`text-base font-bold leading-none ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{expenses.toLocaleString()}</p>
                   <div className={`w-full h-1 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                     <div className="bg-red-400 h-full rounded-full" style={{ width: income > 0 ? `${Math.min((expenses / income) * 100, 100)}%` : '0%' }} />
                   </div>
                 </div>
-                <div className="px-5 py-4 space-y-1">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('dashboard.estimated_taxes')}</p>
-                  <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fmt(totaleTasse)}</p>
+                <div className="px-5 py-4 flex flex-col items-start gap-1.5">
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">{t('dashboard.estimated_taxes')}</p>
+                  <p className={`text-base font-bold leading-none ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fmt(totaleTasse)}</p>
                   <div className={`w-full h-1 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                     <div className="bg-primary h-full rounded-full" style={{ width: income > 0 ? `${Math.min((totaleTasse / income) * 100, 100)}%` : '0%' }} />
                   </div>
