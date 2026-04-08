@@ -303,7 +303,7 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
                 <p className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Rendimiento neto año anterior</p>
                 <p className="text-[10px] text-slate-400 mt-0.5">Para calcular la cuota mensual RETA</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-stretch">
                 <div className={`flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                   <span className="text-sm font-bold text-slate-400">€</span>
                   <input
