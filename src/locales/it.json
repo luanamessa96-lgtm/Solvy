@@ -110,7 +110,25 @@
     "delete_doc_body2": "? L'operazione non può essere annullata.",
     "toggle_company": "Azienda",
     "toggle_private": "Privato",
-    "search_start_typing": "Inizia a digitare per cercare"
+    "search_start_typing": "Inizia a digitare per cercare",
+    "new_proforma": "Nuova Proforma",
+    "field_client_data": "Dati Cliente",
+    "create_invoice": "Crea Fattura",
+    "create_proforma": "Crea Proforma",
+    "convert_to_invoice": "Converti in Fattura",
+    "toast_invoice_added": "Fattura aggiunta",
+    "toast_credit_note_added": "Nota di credito aggiunta",
+    "toast_factura_rectificativa_added": "Nota di credito rettificativa aggiunta",
+    "toast_expense_added": "Spesa aggiunta",
+    "toast_deleted": "Documento eliminato",
+    "toast_save_error": "Errore nel salvataggio",
+    "toast_attachment_error": "Allegato non caricato — documento salvato senza file",
+    "toast_updated": "Documento aggiornato",
+    "credit_note_label": "Nota di credito",
+    "download_pdf_credit_note": "Scarica PDF Nota di Credito",
+    "edit_subtitle_invoice": "Fattura",
+    "edit_subtitle_credit_note": "Nota di credito",
+    "edit_subtitle_expense": "Spesa"
   },
   "profile": {
     "vat": "Partita IVA",
@@ -211,7 +229,10 @@
     "edit_deadline_title": "Modifica Scadenza",
     "restore_modal_title": "Ripristina Scadenze",
     "preload_disclaimer": "Verifica le date sul sito dell'Agenzia delle Entrate — possono variare per proroghe o festività.",
-    "add_all_btn": "Aggiungi tutte al calendario"
+    "add_all_btn": "Aggiungi tutte al calendario",
+    "toast_deadline_completed": "Scadenza completata",
+    "toast_deadline_updated": "Scadenza aggiornata",
+    "toast_deadline_added": "Scadenza aggiunta"
   },
   "settings": {
     "appearance": "Aspetto",

@@ -10,6 +10,7 @@ import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines
 import { supabaseReady, getClient } from './lib/supabase';
 import { Profile, Document, Deadline, Accountant } from './types';
 import { setLanguageByCountry } from './lib/i18n';
+import { useTranslation } from 'react-i18next';
 import { parseLocalDate, getLocalYear } from './utils/date';
 import { getItDeductibilityRate } from './lib/it/deductibility';
 import { getEsDeductibilityRate } from './lib/es/deductibility';
@@ -64,6 +65,7 @@ function migrateTheme(t: string | null | undefined): string {
 }
 
 function AppInner() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('home');
   const [docChoiceTrigger, setDocChoiceTrigger] = useState(0);
   const [calAddTrigger, setCalAddTrigger] = useState(0);
@@ -399,7 +401,7 @@ function AppInner() {
 
   const handleAddDocument = async (doc: Document) => {
     setDocuments(prev => markOverdue([doc, ...prev]));
-    showToast(doc.type === 'invoice' ? 'Fattura aggiunta' : doc.type === 'credit_note' ? 'Nota di credito aggiunta' : doc.type === 'factura_rectificativa' ? 'Factura rectificativa creada' : 'Spesa aggiunta');
+    showToast(doc.type === 'invoice' ? t('documents.toast_invoice_added') : doc.type === 'credit_note' ? t('documents.toast_credit_note_added') : doc.type === 'factura_rectificativa' ? t('documents.toast_factura_rectificativa_added') : t('documents.toast_expense_added'));
 
     let docToSave = doc;
 
@@ -413,7 +415,7 @@ function AppInner() {
         // Upload allegato fallito: salva il documento senza file
         console.error('[handleAddDocument] Upload allegato fallito:', e);
         docToSave = { ...doc, imageData: undefined };
-        showToast('Allegato non caricato — documento salvato senza file', 'error');
+        showToast(t('documents.toast_attachment_error'), 'error');
       }
     }
 
@@ -435,30 +437,30 @@ function AppInner() {
           }).catch(() => {});
         }).catch(() => {});
       }
-    } catch (e) { console.error('[handleAddDocument] Salvataggio fallito:', e); showToast('Errore nel salvataggio', 'error'); }
+    } catch (e) { console.error('[handleAddDocument] Salvataggio fallito:', e); showToast(t('documents.toast_save_error'), 'error'); }
   };
 
   const handleDeleteDocument = async (id: string) => {
     setDocuments(prev => prev.filter(d => d.id !== id));
-    showToast('Documento eliminato', 'error');
+    showToast(t('documents.toast_deleted'), 'error');
     try { await deleteDocument(id); } catch (e) { showToast(dbError(e), 'error'); }
   };
 
   const handleUpdateDocument = async (doc: Document) => {
     setDocuments(prev => prev.map(d => d.id === doc.id ? doc : d));
-    showToast('Documento aggiornato');
+    showToast(t('documents.toast_updated'));
     try { await updateDocument(doc); } catch (e) { console.error('[handleUpdateDocument] Salvataggio fallito:', e); showToast('Errore nel salvataggio', 'error'); }
   };
 
   const handleAddDeadline = async (d: Deadline) => {
     setDeadlines(prev => [...prev, d].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
-    showToast('Scadenza aggiunta');
+    showToast(t('calendar.toast_deadline_added'));
     try { await addDeadline(d, activeProfile.id); } catch (e) { console.error('[handleAddDeadline] Salvataggio fallito:', e); showToast('Errore nel salvataggio', 'error'); }
   };
 
   const handleUpdateDeadline = async (d: Deadline) => {
     setDeadlines(prev => prev.map(x => x.id === d.id ? d : x));
-    showToast(d.completed ? 'Scadenza completata' : 'Scadenza aggiornata');
+    showToast(d.completed ? t('calendar.toast_deadline_completed') : t('calendar.toast_deadline_updated'));
     try { await updateDeadline(d); } catch (e) { console.error('[handleUpdateDeadline] Salvataggio fallito:', e); showToast('Errore nel salvataggio', 'error'); }
   };
 

@@ -7,6 +7,12 @@ import { getClient } from '../../lib/supabase';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
+interface PaywallModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  darkMode?: boolean;
+}
+
 export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
   const { t } = useTranslation();
   const features = [

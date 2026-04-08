@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Plus, FileText, CheckCircle2, Search } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Document, Profile } from '../../types';
 import { todayLocalISO } from '../../utils/date';
 import InfoTooltip from '../ui/InfoTooltip';
@@ -28,6 +29,7 @@ const FORFETTARIO_NOTE =
 const IVA_OPTIONS = [4, 5, 10, 22];
 
 const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile, documents, darkMode, isProforma = false }: CreateInvoiceModalProps) => {
+  const { t } = useTranslation();
   const regime = profile.regime ?? 'forfettario';
 
   const nextInvoiceNumber = useMemo(() => {
@@ -222,7 +224,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
               {/* Header */}
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{isProforma ? 'Nuova Proforma' : 'Nuova Fattura'}</h2>
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{isProforma ? t('documents.new_proforma') : t('documents.new_invoice')}</h2>
                   <p className="text-sm text-slate-500">{form.invoiceNumber || nextInvoiceNumber}</p>
                 </div>
                 <button onClick={onClose} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
@@ -247,7 +249,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
 
               {/* Dati Cliente — con ricerca intelligente */}
               <div className="space-y-3">
-                <label className={lc}>Dati Cliente</label>
+                <label className={lc}>{t('documents.field_client_data')}</label>
 
                 {/* Toggle Azienda / Privato */}
                 <div className={`p-1 rounded-2xl flex gap-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
@@ -513,7 +515,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 <button onClick={handleSubmit} disabled={hasErrors && Object.keys(touched).length > 0}
                   className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-40 flex items-center justify-center gap-2">
                   <FileText size={18} />
-                  {isProforma ? 'Crea Proforma' : 'Crea Fattura'}
+                  {isProforma ? t('documents.create_proforma') : t('documents.create_invoice')}
                 </button>
 
                 {/* Converti in fattura definitiva con un click — solo proforma */}
@@ -521,7 +523,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   <button onClick={handleConvertToInvoice} disabled={hasErrors && Object.keys(touched).length > 0}
                     className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-40 ${darkMode ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}>
                     <CheckCircle2 size={18} />
-                    Converti in Fattura
+                    {t('documents.convert_to_invoice')}
                   </button>
                 )}
 
