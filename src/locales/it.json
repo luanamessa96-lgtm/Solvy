@@ -123,7 +123,12 @@
     "toast_deleted": "Documento eliminato",
     "toast_save_error": "Errore nel salvataggio",
     "toast_attachment_error": "Allegato non caricato — documento salvato senza file",
-    "toast_updated": "Documento aggiornato"
+    "toast_updated": "Documento aggiornato",
+    "credit_note_label": "Nota di credito",
+    "download_pdf_credit_note": "Scarica PDF Nota di Credito",
+    "edit_subtitle_invoice": "Fattura",
+    "edit_subtitle_credit_note": "Nota di credito",
+    "edit_subtitle_expense": "Spesa"
   },
   "profile": {
     "vat": "Partita IVA",

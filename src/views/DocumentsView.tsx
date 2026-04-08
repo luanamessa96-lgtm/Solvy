@@ -51,7 +51,7 @@ function DocCard({ doc, darkMode, profile, i18nLanguage, t, onClick }: { doc: Do
           <span className="text-[10px] font-medium text-slate-400">{parseLocalDate(doc.date).toLocaleDateString(i18nLanguage, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
           {doc.type === 'proforma' && <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-200 text-slate-500'}`}>PROFORMA</span>}
           {doc.type === 'presupuesto' && <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}>PRESUPUESTO</span>}
-          {doc.type === 'credit_note' && <span className="text-[10px] font-bold uppercase tracking-wider text-violet-500">· Nota di credito</span>}
+          {doc.type === 'credit_note' && <span className="text-[10px] font-bold uppercase tracking-wider text-violet-500">· {t('documents.credit_note_label')}</span>}
           {doc.type === 'factura_rectificativa' && <span className="text-[10px] font-bold uppercase tracking-wider text-rose-500">· Factura rectificativa</span>}
           {doc.type === 'invoice' && doc.status === 'paid' && <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">· {t('documents.status_badge_paid')}</span>}
           {doc.type === 'invoice' && doc.status === 'pending' && <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500">· {t('documents.status_badge_pending')}</span>}
@@ -451,7 +451,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   <button onClick={() => { setIsChoiceOpen(false); setIsCreditNoteOpen(true); }} className={`w-full p-5 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-lg ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-violet-500/40 hover:shadow-violet-500/10' : 'bg-white border-slate-100 hover:border-violet-500/20 hover:shadow-violet-500/5'}`}>
                     <div className="w-12 h-12 bg-violet-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-violet-500/30"><FileMinus size={22} /></div>
                     <div className="text-left">
-                      <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Nota di credito</p>
+                      <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('documents.credit_note_label')}</p>
                       <p className="text-sm text-slate-500">Storno di una fattura</p>
                     </div>
                     <ChevronRight size={18} className="ml-auto text-slate-400" />
@@ -606,7 +606,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                 {(selectedDoc.type === 'invoice' || selectedDoc.type === 'credit_note' || selectedDoc.type === 'factura_rectificativa') && (
                   <button onClick={async () => { if (!isPro) { setIsPaywallOpen(true); return; } const result = await buildInvoicePDFBlob(selectedDoc, profile); setSelectedDoc(null); setPdfPreview(result); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-primary/10 border-primary/20' : 'bg-primary/5 border-primary/10'}`}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary text-white"><Download size={18} /></div>
-                    <span className="font-bold text-primary">{selectedDoc.type === 'credit_note' ? 'Scarica PDF Nota di Credito' : selectedDoc.type === 'factura_rectificativa' ? 'Scarica PDF Factura Rectificativa' : 'Scarica PDF Fattura'}</span>
+                    <span className="font-bold text-primary">{selectedDoc.type === 'credit_note' ? t('documents.download_pdf_credit_note') : selectedDoc.type === 'factura_rectificativa' ? 'Scarica PDF Factura Rectificativa' : t('documents.download_pdf')}</span>
                     {!isPro && <span className="ml-auto text-[10px] font-bold text-primary/60 uppercase tracking-wide">Pro</span>}
                   </button>
                 )}
@@ -690,7 +690,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                 <div className="flex justify-between items-start">
                   <div>
                     <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Modifica</h2>
-                    <p className="text-sm text-slate-500">{docToEdit.type === 'invoice' ? `Fattura ${docToEdit.invoiceNumber || ''}` : docToEdit.type === 'credit_note' ? `Nota di credito ${docToEdit.invoiceNumber || ''}` : 'Spesa'}</p>
+                    <p className="text-sm text-slate-500">{docToEdit.type === 'invoice' ? `${t('documents.edit_subtitle_invoice')} ${docToEdit.invoiceNumber || ''}` : docToEdit.type === 'credit_note' ? `${t('documents.edit_subtitle_credit_note')} ${docToEdit.invoiceNumber || ''}` : t('documents.edit_subtitle_expense')}</p>
                   </div>
                   <button onClick={() => setDocToEdit(null)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
                 </div>

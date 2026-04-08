@@ -120,7 +120,12 @@
     "toast_deleted": "Documento eliminado",
     "toast_save_error": "Error al guardar",
     "toast_attachment_error": "Adjunto no cargado — documento guardado sin archivo",
-    "toast_updated": "Documento actualizado"
+    "toast_updated": "Documento actualizado",
+    "credit_note_label": "Nota de crédito",
+    "download_pdf_credit_note": "Descargar PDF Nota de Crédito",
+    "edit_subtitle_invoice": "Factura",
+    "edit_subtitle_credit_note": "Nota de crédito",
+    "edit_subtitle_expense": "Gasto"
   },
   "profile": {
     "vat": "NIF",
