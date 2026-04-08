@@ -107,7 +107,20 @@
     "delete_doc_body2": "? Esta acción no se puede deshacer.",
     "toggle_company": "Empresa",
     "toggle_private": "Particular",
-    "search_start_typing": "Empieza a escribir para buscar"
+    "search_start_typing": "Empieza a escribir para buscar",
+    "new_proforma": "Nueva Proforma",
+    "field_client_data": "Datos del Cliente",
+    "create_invoice": "Crear Factura",
+    "create_proforma": "Crear Proforma",
+    "convert_to_invoice": "Convertir en Factura",
+    "toast_invoice_added": "Factura añadida",
+    "toast_credit_note_added": "Nota de crédito añadida",
+    "toast_factura_rectificativa_added": "Factura rectificativa creada",
+    "toast_expense_added": "Gasto añadido",
+    "toast_deleted": "Documento eliminado",
+    "toast_save_error": "Error al guardar",
+    "toast_attachment_error": "Adjunto no cargado — documento guardado sin archivo",
+    "toast_updated": "Documento actualizado"
   },
   "profile": {
     "vat": "NIF",
@@ -208,7 +221,10 @@
     "edit_deadline_title": "Editar Vencimiento",
     "restore_modal_title": "Restaurar Vencimientos",
     "preload_disclaimer": "Verifica las fechas en el sitio de la Agencia Tributaria — pueden variar por prórrogas o festivos.",
-    "add_all_btn": "Añadir todos al calendario"
+    "add_all_btn": "Añadir todos al calendario",
+    "toast_deadline_completed": "Fecha límite completada",
+    "toast_deadline_updated": "Fecha límite actualizada",
+    "toast_deadline_added": "Fecha límite añadida"
   },
   "settings": {
     "appearance": "Apariencia",
