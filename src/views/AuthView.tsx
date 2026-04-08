@@ -25,6 +25,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
   const [error, setError] = useState('');
   const [ricordami, setRicordami] = useState(true);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [legalModal, setLegalModal] = useState<'privacy' | 'terms' | null>(null);
 
   // Rate limiting: 5 tentativi falliti → blocco 15 minuti
   const [failCount, setFailCount] = useState(() => {
@@ -286,9 +287,9 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
                 />
                 <span className={`text-xs leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                   {t('auth.terms_text')}
-                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">{t('auth.privacy_policy')}</a>
+                  <button type="button" onClick={() => setLegalModal('privacy')} className="text-primary font-semibold hover:underline">{t('auth.privacy_policy')}</button>
                   {t('auth.terms_and')}
-                  <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">{t('auth.terms_of_service')}</a>
+                  <button type="button" onClick={() => setLegalModal('terms')} className="text-primary font-semibold hover:underline">{t('auth.terms_of_service')}</button>
                 </span>
               </label>
 
@@ -375,6 +376,50 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
 
         </AnimatePresence>
       </div>
+
+      {/* Legal modal — privacy / terms in-app, no navigazione */}
+      <AnimatePresence>
+        {legalModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex flex-col"
+            style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+            onClick={() => setLegalModal(null)}
+          >
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="mt-auto w-full rounded-t-[28px] overflow-hidden flex flex-col"
+              style={{ height: '90dvh', backgroundColor: darkMode ? '#0f0f1a' : '#f8fafc' }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Handle bar */}
+              <div className="flex justify-center pt-3 pb-1 shrink-0">
+                <div className="w-10 h-1 rounded-full bg-slate-300" />
+              </div>
+              {/* Close button */}
+              <div className="flex justify-end px-4 pb-2 shrink-0">
+                <button
+                  onClick={() => setLegalModal(null)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-semibold ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-200 text-slate-700'}`}
+                >
+                  Chiudi
+                </button>
+              </div>
+              {/* Iframe content */}
+              <iframe
+                src={`/${legalModal}.html`}
+                className="flex-1 w-full border-0"
+                title={legalModal === 'privacy' ? 'Privacy Policy' : 'Termini di Servizio'}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
