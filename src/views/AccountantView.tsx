@@ -59,7 +59,7 @@ const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) =
   ];
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-6 pb-24">
+    <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-4 pb-24">
 
       {/* Header card */}
       <motion.div variants={item} className={`flex items-center justify-between gap-4 p-5 rounded-3xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
@@ -96,25 +96,28 @@ const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) =
               >
                 {/* Row header */}
                 <div
-                  className={`w-full p-4 flex items-center justify-between gap-3 ${expandable && value ? 'cursor-pointer active:opacity-70' : ''}`}
+                  className={`w-full px-4 py-3.5 flex items-center justify-between gap-3 ${expandable && value ? 'cursor-pointer active:opacity-70' : ''}`}
                   onClick={() => expandable && value && setExpandedField(isExpanded ? null : key)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 shrink-0" style={{ backgroundColor: 'var(--color-card-bg)' }}>
-                      <Icon size={18} />
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 shrink-0" style={{ backgroundColor: 'var(--color-card-bg)' }}>
+                      <Icon size={16} />
                     </div>
                     <span className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-900'}`}>{label}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <span className={`text-sm text-right truncate min-w-0 flex-1 ${value ? 'text-slate-400' : 'text-slate-300'}`}>
+                  {expandable ? (
+                    value ? (
+                      <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }} className="shrink-0">
+                        <ChevronDown size={16} className="text-slate-400" />
+                      </motion.div>
+                    ) : (
+                      <span className={`text-sm ${darkMode ? 'text-slate-600' : 'text-slate-300'}`}>—</span>
+                    )
+                  ) : (
+                    <span className={`text-sm ${value ? (darkMode ? 'text-slate-400' : 'text-slate-500') : (darkMode ? 'text-slate-600' : 'text-slate-300')}`}>
                       {value || '—'}
                     </span>
-                    {expandable && value && (
-                      <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }} className="shrink-0">
-                        <ChevronDown size={15} className="text-slate-400" />
-                      </motion.div>
-                    )}
-                  </div>
+                  )}
                 </div>
 
                 {/* Expanded content */}
@@ -127,7 +130,7 @@ const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) =
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <p className={`px-4 pb-4 text-sm leading-relaxed ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                      <p className={`pl-7 pr-4 pb-4 text-sm leading-relaxed ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                         {value}
                       </p>
                     </motion.div>
