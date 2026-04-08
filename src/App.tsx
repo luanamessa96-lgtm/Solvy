@@ -135,6 +135,11 @@ function AppInner() {
           setIsPasswordRecovery(true);
           setIsAuthenticated(true);
         } else if (event === 'SIGNED_IN') {
+          // Block access if email not yet confirmed
+          if (!session?.user?.email_confirmed_at) {
+            sb.auth.signOut();
+            return;
+          }
           setIsPasswordRecovery(false);
           setIsAuthenticated(true);
           // Loops last_active — fire-and-forget
@@ -748,7 +753,16 @@ function AppInner() {
   }
 
   if (showOnboarding) {
-    return <OnboardingView profile={activeProfile} onComplete={handleOnboardingComplete} darkMode={darkMode} />;
+    return <OnboardingView
+      profile={activeProfile}
+      onComplete={handleOnboardingComplete}
+      darkMode={false}
+      onCancel={async () => {
+        await supabaseReady.then(sb => sb.auth.signOut());
+        setIsAuthenticated(false);
+        setShowOnboarding(false);
+      }}
+    />;
   }
 
   if (isAddingProfile && newProfileShell) {

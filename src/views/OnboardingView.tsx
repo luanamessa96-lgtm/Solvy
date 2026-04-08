@@ -141,7 +141,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
   const progressInfo = getProgressInfo();
 
   return (
-    <div className="fixed inset-0 z-[200] flex flex-col max-w-md mx-auto transition-colors" style={{ backgroundColor: 'var(--color-card)' }}>
+    <div className="fixed inset-0 z-[200] flex flex-col max-w-md mx-auto transition-colors" style={{ backgroundColor: '#ffffff' }}>
 
       {/* Progress bar */}
       {progressInfo && (
@@ -165,7 +165,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
             <motion.div key="welcome" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col items-center justify-center px-8 py-12 text-center gap-16">
               {/* Brand */}
               <div className="space-y-2">
-                <h1 style={{ fontWeight: 300, letterSpacing: '0.15em', color: darkMode ? '#ffffff' : '#1a1a2e', fontSize: '2.75rem', lineHeight: 1 }}>
+                <h1 style={{ fontWeight: 300, letterSpacing: '0.15em', color: '#1a1a2e', fontSize: '2.75rem', lineHeight: 1 }}>
                   SOLVY
                 </h1>
                 <p className="text-slate-400 text-sm">il tuo studio fiscale in tasca</p>
@@ -182,6 +182,11 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                     Inizia <ChevronRight size={20} />
                   </button>
                   <p className="text-[11px] text-slate-400">pochi passaggi · meno di 2 minuti</p>
+                  {onCancel && (
+                    <button onClick={onCancel} className="w-full py-2 text-sm text-slate-400 underline underline-offset-2 active:opacity-60">
+                      Esci
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>
