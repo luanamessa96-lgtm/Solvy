@@ -128,7 +128,15 @@
     "download_pdf_credit_note": "Scarica PDF Nota di Credito",
     "edit_subtitle_invoice": "Fattura",
     "edit_subtitle_credit_note": "Nota di credito",
-    "edit_subtitle_expense": "Spesa"
+    "edit_subtitle_expense": "Spesa",
+    "proforma": "Fattura Proforma",
+    "download_pdf_proforma": "Scarica PDF Proforma",
+    "invoice_created_toast": "Fattura",
+    "duplicate_invoice": "Duplica Fattura",
+    "field_invoice_data": "Dati Fattura",
+    "field_proforma_data": "Dati Proforma",
+    "field_invoice_number_short": "N° Fattura",
+    "field_proforma_number_short": "N° Proforma"
   },
   "profile": {
     "vat": "Partita IVA",

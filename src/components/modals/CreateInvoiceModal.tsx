@@ -234,10 +234,10 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
 
               {/* Dati Fattura */}
               <div className="space-y-3">
-                <label className={lc}>Dati {isProforma ? 'Proforma' : 'Fattura'}</label>
+                <label className={lc}>{isProforma ? t('documents.field_proforma_data') : t('documents.field_invoice_data')}</label>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className={lc}>N° {isProforma ? 'Proforma' : 'Fattura'}</label>
+                    <label className={lc}>{isProforma ? t('documents.field_proforma_number_short') : t('documents.field_invoice_number_short')}</label>
                     <input type="text" value={form.invoiceNumber || nextInvoiceNumber} onChange={e => set('invoiceNumber', e.target.value)} className={ic()} />
                   </div>
                   <div className="space-y-1.5">
@@ -527,7 +527,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   </button>
                 )}
 
-                <button onClick={onClose} className={`w-full py-4 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>Annulla</button>
+                <button onClick={onClose} className={`w-full py-4 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>{t('documents.cancel')}</button>
               </div>
 
             </div>

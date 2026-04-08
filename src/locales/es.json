@@ -125,7 +125,15 @@
     "download_pdf_credit_note": "Descargar PDF Nota de Crédito",
     "edit_subtitle_invoice": "Factura",
     "edit_subtitle_credit_note": "Nota de crédito",
-    "edit_subtitle_expense": "Gasto"
+    "edit_subtitle_expense": "Gasto",
+    "proforma": "Proforma",
+    "download_pdf_proforma": "Descargar PDF Proforma",
+    "invoice_created_toast": "Factura",
+    "duplicate_invoice": "Duplicar Factura",
+    "field_invoice_data": "Datos Factura",
+    "field_proforma_data": "Datos Proforma",
+    "field_invoice_number_short": "N° Factura",
+    "field_proforma_number_short": "N° Proforma"
   },
   "profile": {
     "vat": "NIF",
