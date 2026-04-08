@@ -324,7 +324,7 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
                     setRedditoN1Saved(true);
                     setTimeout(() => setRedditoN1Saved(false), 2000);
                   }}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${redditoN1Saved ? 'bg-emerald-500 text-white' : 'bg-primary text-white'}`}
+                  className={`self-stretch px-4 rounded-xl text-xs font-bold transition-all active:scale-95 ${redditoN1Saved ? 'bg-emerald-500 text-white' : 'bg-primary text-white'}`}
                 >
                   {redditoN1Saved ? '✓' : 'Guardar'}
                 </button>

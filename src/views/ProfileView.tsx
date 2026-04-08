@@ -492,7 +492,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
             {[
               { icon: Receipt, label: activeProfile.country === 'Spain' ? (taxIdType === 'nie' ? 'NIE' : 'NIF') : t('profile.piva_label'), value: activeProfile.country === 'Spain' ? (taxIdType === 'nie' ? (activeProfile.nie || '—') : (activeProfile.piva || '—')) : (activeProfile.piva || '—') },
               ...(activeProfile.country !== 'Spain' ? [{ icon: User, label: t('profile.label_cf'), value: activeProfile.codiceFiscale || '—' }] : []),
-              { icon: MapPin, label: t('profile.label_address'), value: activeProfile.address || '—' },
+              { icon: MapPin, label: t('profile.label_address'), value: (() => { const parts = [activeProfile.street, activeProfile.cap && activeProfile.city ? `${activeProfile.cap} ${activeProfile.city}` : activeProfile.city].filter(Boolean); return parts.length > 0 ? parts.join(', ') : (activeProfile.address || '—'); })() },
               { icon: CreditCard, label: 'IBAN', value: activeProfile.iban || '—' },
               { icon: Briefcase, label: t('profile.label_regime'), value: activeProfile.country === 'Spain' ? ({ simplificada: 'Est. Directa Simplificada', normal: 'Est. Directa Normal', modulos: 'Est. Objetiva / Módulos' }[activeProfile.regimenFiscal || 'simplificada']) : (activeProfile.regime ? activeProfile.regime.charAt(0).toUpperCase() + activeProfile.regime.slice(1) : 'Forfettario') },
               ...(activeProfile.country !== 'Spain' && activeProfile.coefficiente ? [{ icon: Receipt, label: t('profile.label_category'), value: `${CATEGORIE_COEFFICIENTE[activeProfile.coefficiente] || activeProfile.coefficiente + '%'} (${activeProfile.coefficiente}%)` }] : []),
