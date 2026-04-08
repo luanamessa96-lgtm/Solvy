@@ -511,22 +511,22 @@ function AppInner() {
   }, [deadlines]);
 
   const viewTitle = useMemo(() => {
-    if (isProfilePage) return 'Profilo';
-    if (isSettingsPage) return 'Impostazioni';
-    if (isSubscriptionPage) return 'Il mio abbonamento';
-    if (isAccountantPage) return 'Commercialista';
-    if (isFiscalPage) return 'Fiscalità';
-    if (isMediaLibraryPage) return 'Libreria';
-    if (isGuidaFiscalePage) return 'Guida Fiscale';
-    if (isGuiaFiscalESPage) return 'Guía Fiscal';
+    if (isProfilePage) return t('page_titles.profile');
+    if (isSettingsPage) return t('page_titles.settings');
+    if (isSubscriptionPage) return t('page_titles.subscription');
+    if (isAccountantPage) return t('page_titles.accountant');
+    if (isFiscalPage) return t('page_titles.fiscal');
+    if (isMediaLibraryPage) return t('page_titles.media_library');
+    if (isGuidaFiscalePage) return t('page_titles.fiscal_guide_it');
+    if (isGuiaFiscalESPage) return t('page_titles.fiscal_guide_es');
     switch (activeTab) {
-      case 'home': return 'Dashboard';
-      case 'docs': return 'Documenti';
-      case 'calendar': return 'Calendario';
-      case 'menu': return 'Menu';
-      default: return 'Dashboard';
+      case 'home': return t('page_titles.dashboard');
+      case 'docs': return t('page_titles.documents');
+      case 'calendar': return t('page_titles.calendar');
+      case 'menu': return t('page_titles.menu');
+      default: return t('page_titles.dashboard');
     }
-  }, [activeTab, isProfilePage, isSettingsPage, isSubscriptionPage, isAccountantPage, isFiscalPage, isMediaLibraryPage, isGuidaFiscalePage, isGuiaFiscalESPage]);
+  }, [activeTab, isProfilePage, isSettingsPage, isSubscriptionPage, isAccountantPage, isFiscalPage, isMediaLibraryPage, isGuidaFiscalePage, isGuiaFiscalESPage, t]);
 
   // Hide BottomNav on scroll down, show on scroll up
   useEffect(() => {

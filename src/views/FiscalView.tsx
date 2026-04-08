@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import { Info, Download } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
@@ -16,6 +17,7 @@ interface FiscalViewProps {
 }
 
 const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: FiscalViewProps) => {
+  const { t } = useTranslation();
   const [redditoN1Input, setRedditoN1Input] = useState(
     profile.redditoN1 != null ? String(profile.redditoN1) : ''
   );
@@ -374,15 +376,15 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
           </motion.div>
 
           <motion.div variants={item} className="space-y-3">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Backup Documentos</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('fiscal_view.backup_section')}</p>
             <div className="p-5 rounded-3xl border space-y-4 transition-colors" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
               <div className="flex items-start gap-4">
                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                   📦
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Archivo Solvy</p>
-                  <p className="text-xs text-slate-400 mt-0.5">Backup de tus facturas · Organizadas por año</p>
+                  <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('fiscal_view.archive_title')}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{t('fiscal_view.archive_subtitle')}</p>
                   <p className={`text-xs font-bold mt-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                     {paidInvoices.length} factura{paidInvoices.length === 1 ? '' : 's'} totales
                   </p>
@@ -400,7 +402,7 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
               >
                 {isExportingZipES
                   ? <><Spinner size={16} /> Generando…</>
-                  : <><Download size={16} /> Exportar backup PDF</>}
+                  : <><Download size={16} /> {t('fiscal_view.export_btn')}</>}
               </button>
               {paidInvoices.length === 0 && (
                 <p className="text-[10px] text-slate-400 text-center">No hay facturas pagadas para exportar</p>
@@ -547,7 +549,7 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
 
       {/* Backup Documenti */}
       <motion.div variants={item} className="space-y-3">
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Backup Documenti</p>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('fiscal_view.backup_section')}</p>
         <div className="p-5 rounded-3xl border space-y-4 transition-colors" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
           {/* Header card */}
           <div className="flex items-start gap-4">
@@ -555,8 +557,8 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
               📦
             </div>
             <div className="flex-1 min-w-0">
-              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Archivio Solvy</p>
-              <p className="text-xs text-slate-400 mt-0.5">Backup delle tue fatture · Dal 2026 ad oggi</p>
+              <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('fiscal_view.archive_title')}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{t('fiscal_view.archive_subtitle')}</p>
               <p className={`text-xs font-bold mt-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                 {paidInvoices.length} fattur{paidInvoices.length === 1 ? 'a' : 'e'} totali
               </p>
@@ -577,8 +579,8 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
             style={{ backgroundColor: '#7c3aed' }}
           >
             {isExportingZip
-              ? <><Spinner size={16} /> Generazione in corso…</>
-              : <><Download size={16} /> Esporta backup PDF</>}
+              ? <><Spinner size={16} /> {t('fiscal_view.generating')}</>
+              : <><Download size={16} /> {t('fiscal_view.export_btn')}</>}
           </button>
 
           {paidInvoices.length === 0 && (
