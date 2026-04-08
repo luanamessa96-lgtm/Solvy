@@ -46,8 +46,9 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
   const handleOpenPortal = async () => {
     setPortalLoading(true);
     setPortalError('');
+    // Apre la finestra subito nel tick sincrono del tap — altrimenti iOS Safari la blocca come popup
+    const win = window.open('', '_blank');
     try {
-      // getUser() forza un refresh del token se scaduto (getSession() usa solo la cache)
       const { data: { user } } = await getClient().auth.getUser();
       if (!user) throw new Error('Sessione non trovata');
       const { data: { session } } = await getClient().auth.getSession();
@@ -59,11 +60,15 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
       });
       const data = await res.json();
       if (!res.ok) {
-        console.error('Portal error:', data);
+        win?.close();
         throw new Error(data.error ?? `Errore ${res.status} apertura portale`);
       }
-      if (!data.url) throw new Error('URL portale non ricevuto');
-      window.open(data.url, '_blank');
+      if (!data.url) { win?.close(); throw new Error('URL portale non ricevuto'); }
+      if (win) {
+        win.location.href = data.url;
+      } else {
+        window.location.href = data.url;
+      }
     } catch (err) {
       setPortalError((err as Error).message);
     } finally {
