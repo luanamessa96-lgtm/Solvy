@@ -124,13 +124,7 @@ function AppInner() {
     let subscription: { unsubscribe: () => void } | null = null;
     supabaseReady.then(sb => {
       sb.auth.getSession().then(({ data: { session } }) => {
-        // Block access if session exists but email is not yet confirmed
-        if (session && !session.user.email_confirmed_at) {
-          sb.auth.signOut();
-          setIsAuthenticated(false);
-        } else {
-          setIsAuthenticated(!!session);
-        }
+        setIsAuthenticated(!!session);
         // Rimuovi splash screen quando la sessione è nota
         const splash = document.getElementById('splash');
         if (splash) { splash.classList.add('hide'); setTimeout(() => splash.remove(), 280); }
@@ -141,11 +135,6 @@ function AppInner() {
           setIsPasswordRecovery(true);
           setIsAuthenticated(true);
         } else if (event === 'SIGNED_IN') {
-          // Block access if email not yet confirmed
-          if (!session?.user?.email_confirmed_at) {
-            sb.auth.signOut();
-            return;
-          }
           setIsPasswordRecovery(false);
           setIsAuthenticated(true);
           // Loops last_active — fire-and-forget
