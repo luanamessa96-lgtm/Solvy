@@ -407,11 +407,11 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   </div>
                   <div className="space-y-1">
                     <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>Nessun documento</p>
-                    <p className="text-xs text-slate-400">Aggiungi la tua prima fattura o spesa</p>
+                    <p className="text-xs text-slate-400">{t('documents.no_documents_subtitle')}</p>
                   </div>
                   <button onClick={() => setIsChoiceOpen(true)} className="mx-auto flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/30 active:scale-95 transition-all">
                     <Plus size={16} />
-                    Aggiungi documento
+                    {t('documents.add_document_btn')}
                   </button>
                 </>
               )}
@@ -434,7 +434,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                 <button onClick={() => { setIsChoiceOpen(false); setIsCreateOpen(true); }} className={`w-full p-5 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-lg ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}>
                   <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30"><FileText size={22} /></div>
                   <div className="text-left">
-                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Fattura</p>
+                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('documents.invoice')}</p>
                     <p className="text-sm text-slate-500">Entrata da un cliente</p>
                   </div>
                   <ChevronRight size={18} className="ml-auto text-slate-400" />
@@ -442,7 +442,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                 <button onClick={() => { setIsChoiceOpen(false); setIsExpenseOpen(true); }} className={`w-full p-5 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-lg ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-indigo-500/40 hover:shadow-indigo-500/10' : 'bg-white border-slate-100 hover:border-indigo-500/20 hover:shadow-indigo-500/5'}`}>
                   <div className="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30"><CreditCard size={22} /></div>
                   <div className="text-left">
-                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Spesa</p>
+                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('documents.expense')}</p>
                     <p className="text-sm text-slate-500">Abbonamento, materiale, software…</p>
                   </div>
                   <ChevronRight size={18} className="ml-auto text-slate-400" />
@@ -461,7 +461,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   <button onClick={() => { setIsChoiceOpen(false); setIsProformaOpen(true); }} className={`w-full p-5 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-lg ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-slate-500/40' : 'bg-white border-slate-100 hover:border-slate-300'}`}>
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${darkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600'}`}><FileText size={22} /></div>
                     <div className="text-left">
-                      <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Fattura Proforma</p>
+                      <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('documents.proforma')}</p>
                       <p className="text-sm text-slate-500">Non fiscalmente valida</p>
                     </div>
                     <ChevronRight size={18} className="ml-auto text-slate-400" />
@@ -564,7 +564,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                 {selectedDoc.type === 'proforma' && (<>
                   <button onClick={async () => { if (!isPro) { setIsPaywallOpen(true); return; } const result = await buildInvoicePDFBlob(selectedDoc, profile); setSelectedDoc(null); setPdfPreview(result); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-primary/10 border-primary/20' : 'bg-primary/5 border-primary/10'}`}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary text-white"><Download size={18} /></div>
-                    <span className="font-bold text-primary">Scarica PDF Proforma</span>
+                    <span className="font-bold text-primary">{t('documents.download_pdf_proforma')}</span>
                     {!isPro && <span className="ml-auto text-[10px] font-bold text-primary/60 uppercase tracking-wide">Pro</span>}
                   </button>
                   <button onClick={() => {
@@ -582,17 +582,17 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                     };
                     onUpdateDocument(converted);
                     onUpdateProfile({ ...profile, invoiceCounters: { ...(profile.invoiceCounters ?? {}), [yearStr]: current + 1 } });
-                    showToast(`Fattura ${converted.invoiceNumber} creata`, 'success');
+                    showToast(`${t('documents.invoice_created_toast')} ${converted.invoiceNumber} creata`, 'success');
                     setSelectedDoc(null);
                   }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-500 text-white"><FileText size={18} /></div>
-                    <span className="font-bold text-emerald-600">Converti in Fattura</span>
+                    <span className="font-bold text-emerald-600">{t('documents.convert_to_invoice')}</span>
                   </button>
                   <button onClick={() => { setDocToDelete(selectedDoc); setSelectedDoc(null); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-red-50 text-red-500"><Trash2 size={18} /></div>
                     <span className="font-bold text-red-500">Elimina</span>
                   </button>
-                  <button onClick={() => setSelectedDoc(null)} className={`w-full py-4 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>Annulla</button>
+                  <button onClick={() => setSelectedDoc(null)} className={`w-full py-4 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{t('documents.cancel')}</button>
                 </>)}
 
                 {/* ─── Action sheet standard ────────────────────────────── */}
@@ -653,7 +653,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                     setSelectedDoc(null);
                   }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${darkMode ? 'bg-slate-700 text-amber-400' : 'bg-amber-50 text-amber-500'}`}><Copy size={18} /></div>
-                    <span className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Duplica Fattura</span>
+                    <span className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('documents.duplicate_invoice')}</span>
                   </button>
                 )}
                 {selectedDoc.type !== 'credit_note' && selectedDoc.type !== 'factura_rectificativa' && (
@@ -673,7 +673,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-red-50 text-red-500"><Trash2 size={18} /></div>
                   <span className="font-bold text-red-500">Elimina</span>
                 </button>
-                <button onClick={() => setSelectedDoc(null)} className={`w-full py-4 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>Annulla</button>
+                <button onClick={() => setSelectedDoc(null)} className={`w-full py-4 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{t('documents.cancel')}</button>
                 </>)}
               </div>
             </motion.div>
@@ -703,7 +703,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                         <>
                           <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-1.5">
-                              <label className={lc}>N° Fattura</label>
+                              <label className={lc}>{t('documents.field_invoice_number')}</label>
                               <input type="text" value={docToEdit.invoiceNumber || ''} onChange={e => setDocToEdit({ ...docToEdit, invoiceNumber: e.target.value })} className={ic} />
                             </div>
                             <div className="space-y-1.5">
@@ -821,7 +821,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 pt-2">
-                  <button onClick={() => setDocToDelete(null)} className={`py-4 rounded-2xl font-bold active:scale-[0.98] transition-all ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>Annulla</button>
+                  <button onClick={() => setDocToDelete(null)} className={`py-4 rounded-2xl font-bold active:scale-[0.98] transition-all ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>{t('documents.cancel')}</button>
                   <button onClick={() => {
                     // IT-35: audit log per fatture eliminate (contatore non torna indietro)
                     if (docToDelete.type === 'invoice' && docToDelete.invoiceNumber) {
