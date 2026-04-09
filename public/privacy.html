@@ -132,7 +132,7 @@
     <div class="hero">
       <h1>Informativa sulla Privacy</h1>
       <div class="hero-meta">
-        <span class="meta-item">📅 Aggiornata: 26 marzo 2026</span>
+        <span class="meta-item">📅 Aggiornata: 9 aprile 2026</span>
         <span class="dot"></span>
         <span class="meta-item">⚖️ Conforme al Regolamento UE 2016/679 (GDPR)</span>
         <span class="dot"></span>
@@ -198,9 +198,10 @@
       <ul>
         <li><strong>Dati di sessione:</strong> token di autenticazione Supabase archiviati in localStorage e cookie per garantire la persistenza della sessione</li>
         <li><strong>Metadati tecnici:</strong> timestamp di creazione/modifica dei record</li>
-        <li><strong>Log di errore:</strong> errori applicativi anonimi per il miglioramento del servizio</li>
+        <li><strong>Log di errore:</strong> errori applicativi anonimi tramite Sentry per il miglioramento del servizio</li>
+        <li><strong>Dati di utilizzo aggregati:</strong> sessioni, eventi e pagine visitate raccolti in forma anonima tramite Google Analytics 4</li>
       </ul>
-      <p>Solvy <strong>non utilizza cookie di tracciamento</strong> di terze parti, non installa pixel pubblicitari e non effettua profilazione comportamentale. Per il dettaglio completo dei cookie tecnici utilizzati, consulta la <a href="/cookies">Cookie Policy</a>.</p>
+      <p>Solvy <strong>non utilizza cookie di profilazione pubblicitaria</strong>, non installa pixel di retargeting e non effettua profilazione comportamentale a fini commerciali. Per il dettaglio completo dei cookie tecnici e analytics utilizzati, consulta la <a href="/cookies">Cookie Policy</a>.</p>
     </section>
 
     <!-- 3 -->
@@ -267,6 +268,34 @@
           <td>ID utente (seed anonimo)</td>
           <td>UE</td>
           <td>Servizio stateless, nessuna archiviazione</td>
+        </tr>
+        <tr>
+          <td><strong>Loops.so</strong></td>
+          <td>Email marketing e comunicazioni transazionali (benvenuto, upgrade Pro, onboarding)</td>
+          <td>Email, nome, paese, stato abbonamento (isPro), conteggio fatture, ultimo accesso</td>
+          <td>USA</td>
+          <td>DPA, SCCs, conformità GDPR documentata</td>
+        </tr>
+        <tr>
+          <td><strong>Resend Inc.</strong></td>
+          <td>Email transazionali tecnici (conferma rimborso, cancellazione abbonamento)</td>
+          <td>Email destinatario</td>
+          <td>USA</td>
+          <td>DPA, SCCs, SOC 2 Type II</td>
+        </tr>
+        <tr>
+          <td><strong>Google LLC (Google Analytics 4)</strong></td>
+          <td>Analytics utilizzo app — metriche aggregate e anonime (sessioni, eventi, tipo dispositivo)</td>
+          <td>Dati di navigazione aggregati e anonimi (IP anonimizzato, cookie _ga)</td>
+          <td>USA</td>
+          <td>DPA, SCCs, EU-US Data Privacy Framework</td>
+        </tr>
+        <tr>
+          <td><strong>Functional Software Inc. (Sentry)</strong></td>
+          <td>Monitoraggio e tracciamento errori applicativi</td>
+          <td>Stack trace anonimi, informazioni browser, URL pagina in errore</td>
+          <td>USA</td>
+          <td>DPA, SCCs, SOC 2 Type II</td>
         </tr>
       </table>
       <p>Il titolare si assicura che tutti i sub-responsabili offrano garanzie adeguate ai sensi dell'art. 28 GDPR. I dati non vengono mai venduti a terzi né utilizzati per finalità pubblicitarie da parte dei fornitori.</p>
@@ -391,7 +420,7 @@
     <div class="hero">
       <h1>Política de Privacidad</h1>
       <div class="hero-meta">
-        <span class="meta-item">📅 Actualizada: 26 de marzo de 2026</span>
+        <span class="meta-item">📅 Actualizada: 9 de abril de 2026</span>
         <span class="dot"></span>
         <span class="meta-item">⚖️ Conforme al Reglamento UE 2016/679 (RGPD)</span>
       </div>
@@ -416,7 +445,7 @@
     </div>
     <div class="section">
       <h2><span class="section-num">4</span> Terceros subencargados</h2>
-      <p><strong>Supabase</strong> (base de datos, UE), <strong>Stripe</strong> (pagos, UE+USA con SCCs), <strong>Vercel</strong> (hosting, UE+USA con SCCs). Ningún dato se vende a terceros.</p>
+      <p><strong>Supabase</strong> (base de datos y autenticación, UE — AWS París), <strong>Stripe</strong> (pagos, UE+USA con SCCs), <strong>Vercel</strong> (hosting, UE+USA con SCCs), <strong>Loops.so</strong> (comunicaciones por email — bienvenida, Pro, onboarding — USA con SCCs), <strong>Resend Inc.</strong> (emails transaccionales técnicos — USA con SCCs), <strong>Google LLC / Google Analytics 4</strong> (analítica de uso anónima — USA, EU-US DPF), <strong>Functional Software Inc. / Sentry</strong> (monitorización de errores — USA con SCCs). Ningún dato se vende a terceros.</p>
     </div>
     <div class="section">
       <h2><span class="section-num">5</span> Sus derechos (arts. 15–22 RGPD)</h2>
