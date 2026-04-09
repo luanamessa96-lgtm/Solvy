@@ -95,11 +95,6 @@ function AppInner() {
   };
   const darkMode = theme === 'dark' || theme === 'pro-dark';
 
-  // Sync data-theme on <html> for CSS variable theming (themes.css)
-  useEffect(() => {
-    const rootTheme = theme === 'light' ? 'free-light' : theme === 'dark' ? 'free-dark' : theme;
-    document.documentElement.setAttribute('data-theme', rootTheme);
-  }, [theme]);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(() => !localStorage.getItem('onboardingComplete'));
   const [isAddingProfile, setIsAddingProfile] = useState(false);
   const [newProfileShell, setNewProfileShell] = useState<Profile | null>(null);
@@ -119,6 +114,16 @@ function AppInner() {
   const [isNavHidden, setIsNavHidden] = useState(false);
   const profileCache = useRef<Record<string, { documents: Document[], deadlines: Deadline[], accountant: Accountant | null }>>({});
   const { showToast } = useToast();
+
+  // Sync data-theme su <html>: auth/onboarding → pro-light; app → tema utente
+  useEffect(() => {
+    if (!isAuthenticated || showOnboarding) {
+      document.documentElement.setAttribute('data-theme', 'pro-light');
+      return;
+    }
+    const rootTheme = theme === 'light' ? 'free-light' : theme === 'dark' ? 'free-dark' : theme;
+    document.documentElement.setAttribute('data-theme', rootTheme);
+  }, [theme, isAuthenticated, showOnboarding]);
 
   // Auth: controlla sessione e ascolta eventi
   useEffect(() => {
@@ -696,15 +701,13 @@ function AppInner() {
     );
   }
 
-  // Non autenticato → schermata login (sempre pro-light)
+  // Non autenticato → schermata login (sempre pro-light, gestito dall'useEffect tema)
   if (!isAuthenticated) {
-    document.documentElement.setAttribute('data-theme', 'pro-light');
     return <AuthView darkMode={darkMode} />;
   }
 
-  // Recupero password → schermata nuova password (sempre pro-light)
+  // Recupero password → schermata nuova password (sempre pro-light, gestito dall'useEffect tema)
   if (isPasswordRecovery) {
-    document.documentElement.setAttribute('data-theme', 'pro-light');
     return <AuthView darkMode={darkMode} initialScreen="reset" onResetPassword={() => setIsPasswordRecovery(false)} />;
   }
 
