@@ -80,15 +80,16 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
     setCancelStep('loading');
     setCancelError('');
     try {
-      // Forza il refresh del token — getSession() restituisce il token dalla cache
-      // che può essere scaduto dopo ~1 ora senza attività. refreshSession() garantisce
-      // un access_token fresco prima di chiamare la edge function.
-      const { data: refreshData, error: refreshError } = await getClient().auth.refreshSession();
-      const session = refreshData?.session;
-      if (refreshError || !session) throw new Error('Sessione scaduta, effettua nuovamente l\'accesso');
+      // getUser() valida il token via rete (come fa il portal). Se ok, getSession()
+      // restituisce il token aggiornato dall'autoRefresh interno del client.
+      const { data: { user }, error: userError } = await getClient().auth.getUser();
+      if (userError || !user) throw new Error('Sessione scaduta, effettua nuovamente l\'accesso');
+      const { data: { session } } = await getClient().auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error('Token non disponibile, effettua nuovamente l\'accesso');
       const res = await fetch(`${SUPABASE_URL}/functions/v1/cancel-subscription-end-period`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Errore cancellazione');
