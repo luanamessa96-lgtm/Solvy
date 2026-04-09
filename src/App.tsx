@@ -95,7 +95,15 @@ function AppInner() {
   };
   const darkMode = theme === 'dark' || theme === 'pro-dark';
 
-  const [showOnboarding, setShowOnboarding] = useState<boolean>(() => !localStorage.getItem('onboardingComplete'));
+  const [showOnboarding, setShowOnboarding] = useState<boolean>(() => {
+    if (localStorage.getItem('onboardingComplete')) return false;
+    // Fallback: cookie sopravvive al reinstall PWA (localStorage viene svuotato)
+    if (/onboardingComplete=true/.test(document.cookie)) {
+      localStorage.setItem('onboardingComplete', 'true');
+      return false;
+    }
+    return true;
+  });
   const [isAddingProfile, setIsAddingProfile] = useState(false);
   const [newProfileShell, setNewProfileShell] = useState<Profile | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -221,6 +229,7 @@ function AppInner() {
       if (completeProfiles && completeProfiles.length > 0) {
         // Utente esistente con onboarding completato → dashboard
         localStorage.setItem('onboardingComplete', 'true');
+        document.cookie = 'onboardingComplete=true; path=/; max-age=31536000; SameSite=Lax';
         setShowOnboarding(false);
         setProfiles(completeProfiles);
         const savedId = localStorage.getItem('activeProfileId') || document.cookie.match(/activeProfileId=([^;]+)/)?.[1];
