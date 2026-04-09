@@ -107,16 +107,8 @@ Deno.serve(async (req) => {
           console.log(`Pro attivato per user_id: ${userId}, righe aggiornate: ${count}, primo acquisto: ${isFirstSubscription}`);
         }
 
-        // Invia email upgrade_pro (fire-and-forget)
+        // Loops update_pro — fire-and-forget
         if (existing?.[0]?.email) {
-          sendEmail(supabaseUrl, serviceRoleKey, {
-            type: 'upgrade_pro',
-            email: existing[0].email,
-            name: existing[0].name ?? 'utente',
-            lang: langFromCountry(existing[0].country),
-          });
-
-          // Loops update_pro — fire-and-forget
           fetch(`${supabaseUrl}/functions/v1/loops-sync`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
