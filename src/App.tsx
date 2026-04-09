@@ -204,10 +204,10 @@ function AppInner() {
       setUserId(user.id);
       const data = await getProfiles(user.id, user.email ?? undefined).catch(() => null);
 
-      // Profili completi = onboarding già completato (country impostato dal trigger+onboarding)
-      // country=NULL significa profilo creato dal trigger ma onboarding non ancora fatto
+      // Profili completi = onboarding già completato (jobType valorizzato dall'utente)
+      // jobType='' significa profilo creato dal trigger DB ma onboarding non ancora completato
       const completeProfiles = data
-        ? data.filter(p => !!(p as { country: string | null }).country)
+        ? data.filter(p => !!(p.jobType))
         : null;
 
       if (completeProfiles && completeProfiles.length > 0) {
