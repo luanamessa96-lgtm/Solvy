@@ -77,7 +77,7 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme, onPlusPress, isNa
 
   return (
     <div style={containerStyle}>
-      {isPro && (
+      {onPlusPress && (
         <button
           onClick={onPlusPress}
           aria-label="Aggiungi"
