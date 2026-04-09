@@ -633,24 +633,7 @@ function AppInner() {
     localStorage.setItem('onboardingComplete', 'true');
     setShowOnboarding(false);
 
-    // Email di benvenuto (fire-and-forget — non blocca l'onboarding)
-    if (session?.access_token) {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-      const lang = normalized.country === 'Spain' ? 'es' : 'it';
-      fetch(`${supabaseUrl}/functions/v1/send-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          type: 'welcome',
-          email: normalized.email,
-          name: normalized.name,
-          lang,
-        }),
-      }).catch(() => {}); // silent — la mancata email non impatta l'UX
-    }
+    // Email di benvenuto gestita da Loops (Onboarding IT/ES loop — trigger "Contact added")
   };
 
   const handleAddProfile = () => {
