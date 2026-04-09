@@ -24,14 +24,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Autentica l'utente tramite JWT Supabase (stesso pattern di cancel-subscription)
+    // Autentica l'utente passando il JWT direttamente a getUser(token).
+    // Usiamo --no-verify-jwt al deploy per bypassare la validazione gateway
+    // (che fallisce con le nuove API key sb_publishable_ su alcuni runtime Deno).
+    const token = authHeader.replace('Bearer ', '');
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (authError || !user) {
       console.error('Auth error:', authError?.message);
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
