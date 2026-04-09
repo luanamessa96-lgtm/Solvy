@@ -389,14 +389,13 @@ function AppInner() {
           setProfiles(prev => prev.map(p => p.id === updatedId ? { ...p, isPro: newIsPro } : p));
           setActiveProfile(prev => prev.id === updatedId ? { ...prev, isPro: newIsPro } : prev);
         }
-        // Se l'utente perde il Pro, declassa il tema pro → free
+        // Se l'utente perde il Pro, declassa il tema pro → free (solo se il tema attuale è pro)
         if (!newIsPro) {
           setTheme(prev => {
-            const next = prev === 'pro-light' ? 'light' : prev === 'pro-dark' ? 'dark' : prev;
-            if (next !== prev) {
-              themeStorage.setItem('theme', next);
-              themeStorage.setItem(`theme_${updatedId}`, next);
-            }
+            if (prev !== 'pro-light' && prev !== 'pro-dark') return prev;
+            const next = prev === 'pro-light' ? 'free-light' : 'free-dark';
+            themeStorage.setItem('theme', next);
+            themeStorage.setItem(`theme_${updatedId}`, next);
             return next;
           });
         }
@@ -419,7 +418,6 @@ function AppInner() {
     }
   }, [isLoading]);
 
-  useEffect(() => { themeStorage.setItem('theme', theme); }, [theme]);
   useEffect(() => {
     localStorage.setItem('activeProfileId', activeProfile.id);
     document.cookie = `activeProfileId=${activeProfile.id}; path=/; max-age=31536000; SameSite=Lax`;
