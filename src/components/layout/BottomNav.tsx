@@ -98,6 +98,7 @@ const BottomNav = ({ activeTab, setActiveTab, darkMode, theme, onPlusPress, isNa
             cursor: 'pointer',
             pointerEvents: 'auto',
             zIndex: 1,
+            touchAction: 'manipulation',
           }}
         >
           <Plus size={24} color="white" strokeWidth={2.5} />

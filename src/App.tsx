@@ -67,6 +67,7 @@ function migrateTheme(t: string | null | undefined): string {
 function AppInner() {
   const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState('home');
+  const lastTabChangeRef = useRef<number>(0);
   const [docChoiceTrigger, setDocChoiceTrigger] = useState(0);
   const [calAddTrigger, setCalAddTrigger] = useState(0);
   const [mediaLibAddTrigger, setMediaLibAddTrigger] = useState(0);
@@ -550,9 +551,11 @@ function AppInner() {
   const handleMediaLibraryClick = () => { resetSubPages(); setIsMediaLibraryPage(true); setActiveTab('docs'); };
   const handleGuidaFiscaleClick = () => { resetSubPages(); setIsGuidaFiscalePage(true); setActiveTab('menu'); };
   const handleGuiaFiscalESClick = () => { resetSubPages(); setIsGuiaFiscalESPage(true); setActiveTab('menu'); };
-  const handleTabChange = (tab: string) => { resetSubPages(); setActiveTab(tab); setIsNavHidden(false); };
+  const handleTabChange = (tab: string) => { lastTabChangeRef.current = Date.now(); resetSubPages(); setActiveTab(tab); setIsNavHidden(false); };
 
   const handlePlusPress = () => {
+    // Guard: ignora press accidentali durante navigazione tab (touch target overlap + button / tab)
+    if (Date.now() - lastTabChangeRef.current < 300) return;
     if (isMediaLibraryPage) setMediaLibAddTrigger(n => n + 1);
     else if (activeTab === 'docs') setDocChoiceTrigger(n => n + 1);
     else if (activeTab === 'calendar') setCalAddTrigger(n => n + 1);
