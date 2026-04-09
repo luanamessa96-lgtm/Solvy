@@ -153,7 +153,7 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
   const btnPrimary = `w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-60`;
 
   return (
-    <div className="max-w-md mx-auto min-h-screen flex flex-col" style={{ backgroundColor: '#f8fafc' }}>
+    <div data-theme="pro-light" className="max-w-md mx-auto min-h-screen flex flex-col" style={{ backgroundColor: '#f8fafc' }}>
       <div className="flex-1 flex flex-col justify-center px-8 py-12">
 
         {/* Brand */}

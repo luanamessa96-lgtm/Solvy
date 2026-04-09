@@ -693,13 +693,15 @@ function AppInner() {
     );
   }
 
-  // Non autenticato → schermata login
+  // Non autenticato → schermata login (sempre pro-light)
   if (!isAuthenticated) {
+    document.documentElement.setAttribute('data-theme', 'pro-light');
     return <AuthView darkMode={darkMode} />;
   }
 
-  // Recupero password → schermata nuova password
+  // Recupero password → schermata nuova password (sempre pro-light)
   if (isPasswordRecovery) {
+    document.documentElement.setAttribute('data-theme', 'pro-light');
     return <AuthView darkMode={darkMode} initialScreen="reset" onResetPassword={() => setIsPasswordRecovery(false)} />;
   }
 
