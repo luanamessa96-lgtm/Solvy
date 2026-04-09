@@ -45,14 +45,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Autentica l'utente tramite JWT Supabase
+    // Autentica l'utente passando il JWT direttamente a getUser(token)
+    const token = authHeader.replace('Bearer ', '');
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,

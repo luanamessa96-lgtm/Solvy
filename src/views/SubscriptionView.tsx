@@ -24,6 +24,14 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
   const [cancelStep, setCancelStep] = useState<CancelStep>('idle');
   const [cancelError, setCancelError] = useState('');
   const [cancelDate, setCancelDate] = useState('');
+  const [refundAmount, setRefundAmount] = useState('');
+
+  const REFUND_WINDOW_DAYS = 14;
+  const isWithinRefundWindow = (() => {
+    if (!profile.subscriptionStartedAt) return false;
+    const daysSince = (Date.now() - new Date(profile.subscriptionStartedAt).getTime()) / (1000 * 60 * 60 * 24);
+    return daysSince <= REFUND_WINDOW_DAYS;
+  })();
 
   const planLabel = profile.subscriptionPlan === 'yearly' ? t('subscription_view.plan_yearly') : t('subscription_view.plan_monthly');
   const planPrice = profile.subscriptionPlan === 'yearly' ? t('subscription_view.price_yearly') : t('subscription_view.price_monthly');
@@ -80,23 +88,29 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
     setCancelStep('loading');
     setCancelError('');
     try {
-      // getUser() valida il token via rete (come fa il portal). Se ok, getSession()
-      // restituisce il token aggiornato dall'autoRefresh interno del client.
       const { data: { user }, error: userError } = await getClient().auth.getUser();
       if (userError || !user) throw new Error('Sessione scaduta, effettua nuovamente l\'accesso');
       const { data: { session } } = await getClient().auth.getSession();
       const token = session?.access_token;
       if (!token) throw new Error('Token non disponibile, effettua nuovamente l\'accesso');
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/cancel-subscription-end-period`, {
+
+      // Entro 14 giorni → rimborso immediato; oltre → cancellazione a fine periodo
+      const endpoint = isWithinRefundWindow ? 'cancel-subscription' : 'cancel-subscription-end-period';
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Errore cancellazione');
-      const date = data.current_period_end
-        ? new Date(data.current_period_end).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
-        : '';
-      setCancelDate(date);
+      if (!res.ok) throw new Error(data.error ?? t('subscription_view.cancel_error'));
+
+      if (isWithinRefundWindow && data.refunded_amount_eur) {
+        setRefundAmount(data.refunded_amount_eur);
+      } else {
+        const date = data.current_period_end
+          ? new Date(data.current_period_end).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
+          : '';
+        setCancelDate(date);
+      }
       setCancelStep('success');
     } catch (err) {
       setCancelError((err as Error).message);
@@ -145,7 +159,9 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
         <motion.div variants={item} className={`flex items-center gap-3 p-4 rounded-2xl ${darkMode ? 'bg-amber-900/20 border border-amber-800' : 'bg-amber-50 border border-amber-200'}`}>
           <CheckCircle2 size={18} className="text-amber-500 shrink-0" />
           <p className={`text-sm font-medium ${darkMode ? 'text-amber-300' : 'text-amber-800'}`}>
-            {t('subscription_view.cancel_success', { date: cancelDate })}
+            {refundAmount
+              ? t('subscription_view.cancel_success_refund', { amount: refundAmount })
+              : t('subscription_view.cancel_success', { date: cancelDate })}
           </p>
         </motion.div>
       )}
@@ -181,7 +197,7 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
             <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('subscription_view.cancel_title')}</p>
           </div>
           <p className={`text-xs leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-            {t('subscription_view.cancel_body')}
+            {t(isWithinRefundWindow ? 'subscription_view.cancel_body_refund' : 'subscription_view.cancel_body')}
           </p>
 
           {cancelStep === 'error' && (
@@ -195,7 +211,7 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
             <div className={`p-4 rounded-2xl space-y-3 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
               <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('subscription_view.cancel_confirm_title')}</p>
               <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                {t('subscription_view.cancel_confirm_body')}
+                {t(isWithinRefundWindow ? 'subscription_view.cancel_confirm_body_refund' : 'subscription_view.cancel_confirm_body')}
               </p>
               <div className="flex gap-2 pt-1">
                 <button
