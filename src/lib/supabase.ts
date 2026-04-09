@@ -76,6 +76,8 @@ export const supabaseReady: Promise<SupabaseClient> = import('@supabase/supabase
       realtime: {
         params: { apikey: realtimeKey },
         headers: { apikey: realtimeKey },
+        // After 3 failed attempts, wait 30 min before retrying — silences console errors
+        reconnectAfterMs: (tries: number) => tries > 3 ? 30 * 60 * 1000 : [1000, 2000, 5000][tries - 1],
       },
     });
     return _client;
