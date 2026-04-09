@@ -193,6 +193,13 @@ Deno.serve(async (req) => {
               name: profiles[0].name ?? 'utente',
               lang: langFromCountry(profiles[0].country),
             });
+
+            // Loops update_pro false — fire-and-forget
+            fetch(`${supabaseUrl}/functions/v1/loops-sync`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
+              body: JSON.stringify({ action: 'update_pro', email: profiles[0].email, isPro: false }),
+            }).catch(e => console.error('loops-sync (update_pro false) failed:', e));
           }
         }
         break;
