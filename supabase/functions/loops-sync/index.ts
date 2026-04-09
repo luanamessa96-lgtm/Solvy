@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'signup') {
-      // Crea contatto in Loops
+      // Crea o aggiorna contatto in Loops
       await loopsRequest('/contacts/create', 'POST', {
         email,
         firstName: name ?? '',
@@ -56,6 +56,11 @@ Deno.serve(async (req) => {
         isPro: false,
         fattureCount: 0,
         lastActive: new Date().toISOString(),
+      });
+      // Spara evento signup — trigger affidabile indipendentemente dall'esistenza del contatto
+      await loopsRequest('/events/send', 'POST', {
+        email,
+        eventName: paese === 'Spain' ? 'signup_es' : 'signup_it',
       });
     } else if (action === 'update_pro') {
       await loopsRequest('/contacts/update', 'PUT', {
