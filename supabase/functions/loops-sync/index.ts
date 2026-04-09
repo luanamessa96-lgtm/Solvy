@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
         email,
         firstName: name ?? '',
         userGroup: paese === 'Spain' ? 'es' : 'it',
-        paese: paese ?? 'Italy',
+        paese: paese === 'Spain' ? 'es' : 'it',
         isPro: false,
         fattureCount: 0,
         lastActive: new Date().toISOString(),
