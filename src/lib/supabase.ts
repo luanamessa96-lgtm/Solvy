@@ -2,6 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL_DEV ?? import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY_DEV ?? import.meta.env.VITE_SUPABASE_KEY;
+// Realtime WebSocket v1 non accetta sb_publishable_ keys — usa la JWT anon legacy se disponibile
+const realtimeKey = import.meta.env.VITE_SUPABASE_ANON_KEY ?? supabaseKey;
 
 // Storage ibrido: localStorage + cookie di backup per iOS PWA
 // iOS Safari cancella localStorage quando la PWA è in background — il cookie persiste
@@ -72,8 +74,8 @@ export const supabaseReady: Promise<SupabaseClient> = import('@supabase/supabase
         detectSessionInUrl: true,
       },
       realtime: {
-        params: { apikey: supabaseKey },
-        headers: { apikey: supabaseKey },
+        params: { apikey: realtimeKey },
+        headers: { apikey: realtimeKey },
       },
     });
     return _client;
