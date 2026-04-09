@@ -116,7 +116,10 @@ function AppInner() {
   const { showToast } = useToast();
 
   // Sync data-theme su <html>: auth/onboarding → pro-light; app → tema utente
+  // Guard: se isAuthenticated è null l'auth è ancora in loading — theme-init.js
+  // ha già impostato il tema corretto da localStorage, non sovrascrivere.
   useEffect(() => {
+    if (isAuthenticated === null) return;
     if (!isAuthenticated || showOnboarding) {
       document.documentElement.setAttribute('data-theme', 'pro-light');
       return;
