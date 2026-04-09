@@ -71,6 +71,10 @@ export const supabaseReady: Promise<SupabaseClient> = import('@supabase/supabase
         autoRefreshToken: true,
         detectSessionInUrl: true,
       },
+      realtime: {
+        params: { apikey: supabaseKey },
+        headers: { apikey: supabaseKey },
+      },
     });
     return _client;
   }
