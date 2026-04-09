@@ -50,8 +50,8 @@ const GuiaFiscalESView = lazy(() => import('./views/GuiaFiscalESView'));
 
 // Migra i temi base al loro equivalente Pro (T31: Free ottiene la UI Pro)
 function migrateTheme(t: string | null | undefined): string {
-  if (!t || t === 'light') return 'pro-light';
-  if (t === 'dark') return 'pro-dark';
+  if (!t || t === 'light') return 'free-light';
+  if (t === 'dark') return 'free-dark';
   return t;
 }
 
