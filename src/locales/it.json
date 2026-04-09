@@ -130,6 +130,8 @@
     "edit_subtitle_credit_note": "Nota di credito",
     "edit_subtitle_expense": "Spesa",
     "proforma": "Fattura Proforma",
+    "download_pdf_factura_rectificativa": "Scarica PDF Factura Rectificativa",
+    "download_pdf_presupuesto": "Scarica PDF Presupuesto",
     "download_pdf_proforma": "Scarica PDF Proforma",
     "invoice_created_toast": "Fattura",
     "duplicate_invoice": "Duplica Fattura",
@@ -513,6 +515,11 @@
     "create_btn": "Crea Nota di Credito"
   },
   "media_library": {
+    "cat_abbonamento": "Abbonamento",
+    "cat_materiale": "Materiale",
+    "cat_software": "Software",
+    "cat_formazione": "Formazione",
+    "cat_altro": "Altro",
     "no_files_title": "Nessun file",
     "no_files_subtitle": "Aggiungi foto, scontrini e documenti",
     "add_btn": "Aggiungi",

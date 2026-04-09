@@ -372,7 +372,7 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
                         <div className="flex flex-wrap gap-2">
                           {categories.map(c => (
                             <button key={c.value} type="button" onClick={() => setForm(p => ({ ...p, category: c.value }))} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 ${form.category === c.value ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500')}`}>
-                              {c.emoji} {c.label}
+                              {c.emoji} {t(`media_library.cat_${c.value}`)}
                             </button>
                           ))}
                         </div>
@@ -498,7 +498,7 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
                     <div className="flex flex-wrap gap-2">
                       {categories.map(c => (
                         <button key={c.value} type="button" onClick={() => setEditItem({ ...editItem, category: c.value })} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 ${editItem.category === c.value ? 'bg-primary text-white' : (darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500')}`}>
-                          {c.emoji} {c.label}
+                          {c.emoji} {t(`media_library.cat_${c.value}`)}
                         </button>
                       ))}
                     </div>

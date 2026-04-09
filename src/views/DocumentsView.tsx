@@ -532,7 +532,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                 {selectedDoc.type === 'presupuesto' && (<>
                   <button onClick={async () => { if (!isPro) { setIsPaywallOpen(true); return; } const result = await buildInvoicePDFBlob(selectedDoc, profile); setSelectedDoc(null); setPdfPreview(result); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-100'}`}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-amber-500 text-white"><Download size={18} /></div>
-                    <span className="font-bold text-amber-600">Scarica PDF Presupuesto</span>
+                    <span className="font-bold text-amber-600">{t('documents.download_pdf_presupuesto')}</span>
                     {!isPro && <span className="ml-auto text-[10px] font-bold text-amber-600/60 uppercase tracking-wide">Pro</span>}
                   </button>
                   <button onClick={() => {
@@ -610,7 +610,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                 {(selectedDoc.type === 'invoice' || selectedDoc.type === 'credit_note' || selectedDoc.type === 'factura_rectificativa') && (
                   <button onClick={async () => { if (!isPro) { setIsPaywallOpen(true); return; } const result = await buildInvoicePDFBlob(selectedDoc, profile); setSelectedDoc(null); setPdfPreview(result); }} className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-primary/10 border-primary/20' : 'bg-primary/5 border-primary/10'}`}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary text-white"><Download size={18} /></div>
-                    <span className="font-bold text-primary">{selectedDoc.type === 'credit_note' ? t('documents.download_pdf_credit_note') : selectedDoc.type === 'factura_rectificativa' ? 'Scarica PDF Factura Rectificativa' : t('documents.download_pdf')}</span>
+                    <span className="font-bold text-primary">{selectedDoc.type === 'credit_note' ? t('documents.download_pdf_credit_note') : selectedDoc.type === 'factura_rectificativa' ? t('documents.download_pdf_factura_rectificativa') : t('documents.download_pdf')}</span>
                     {!isPro && <span className="ml-auto text-[10px] font-bold text-primary/60 uppercase tracking-wide">Pro</span>}
                   </button>
                 )}

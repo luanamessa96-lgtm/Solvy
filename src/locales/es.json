@@ -127,6 +127,8 @@
     "edit_subtitle_credit_note": "Nota de crédito",
     "edit_subtitle_expense": "Gasto",
     "proforma": "Proforma",
+    "download_pdf_factura_rectificativa": "Descargar PDF Factura Rectificativa",
+    "download_pdf_presupuesto": "Descargar PDF Presupuesto",
     "download_pdf_proforma": "Descargar PDF Proforma",
     "invoice_created_toast": "Factura",
     "duplicate_invoice": "Duplicar Factura",
@@ -510,6 +512,11 @@
     "create_btn": "Crear Nota de Crédito"
   },
   "media_library": {
+    "cat_abbonamento": "Suscripción",
+    "cat_materiale": "Material",
+    "cat_software": "Software",
+    "cat_formazione": "Formación",
+    "cat_altro": "Otro",
     "no_files_title": "No hay archivos",
     "no_files_subtitle": "Añade fotos, tickets y documentos",
     "add_btn": "Añadir",
