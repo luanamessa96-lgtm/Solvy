@@ -353,6 +353,7 @@ function AppInner() {
       .channel(`profiles-${userId}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${userId}` }, async (payload) => {
         const updatedId = (payload.new as Record<string, unknown>).id as string;
+        const newIsPro = ((payload.new as Record<string, unknown>).is_pro as boolean) ?? false;
         try {
           const fresh = await getProfiles(userId);
           const fp = fresh.find(p => p.id === updatedId);
@@ -362,9 +363,19 @@ function AppInner() {
           }
         } catch {
           // fallback: aggiorna solo isPro
-          const isPro = ((payload.new as Record<string, unknown>).is_pro as boolean) ?? false;
-          setProfiles(prev => prev.map(p => p.id === updatedId ? { ...p, isPro } : p));
-          setActiveProfile(prev => prev.id === updatedId ? { ...prev, isPro } : prev);
+          setProfiles(prev => prev.map(p => p.id === updatedId ? { ...p, isPro: newIsPro } : p));
+          setActiveProfile(prev => prev.id === updatedId ? { ...prev, isPro: newIsPro } : prev);
+        }
+        // Se l'utente perde il Pro, declassa il tema pro → free
+        if (!newIsPro) {
+          setTheme(prev => {
+            const next = prev === 'pro-light' ? 'light' : prev === 'pro-dark' ? 'dark' : prev;
+            if (next !== prev) {
+              localStorage.setItem('theme', next);
+              localStorage.setItem(`theme_${updatedId}`, next);
+            }
+            return next;
+          });
         }
       })
       .subscribe();
