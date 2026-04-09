@@ -77,8 +77,8 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
   const item = { hidden: { opacity: 0 }, show: { opacity: 1 } };
 
   const themes = [
-    { id: 'light', label: 'Light', icon: Sun, locked: false },
-    { id: 'dark', label: 'Dark', icon: Moon, locked: false },
+    { id: 'free-light', label: 'Light', icon: Sun, locked: false },
+    { id: 'free-dark', label: 'Dark', icon: Moon, locked: false },
     { id: 'pro-light', label: 'Pro Light', icon: Sun, locked: !isPro },
     { id: 'pro-dark', label: 'Pro Dark', icon: Moon, locked: !isPro },
   ];

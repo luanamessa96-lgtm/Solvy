@@ -94,7 +94,7 @@ function AppInner() {
     const id = profileId ?? activeProfile.id;
     if (id) themeStorage.setItem(`theme_${id}`, newTheme);
   };
-  const darkMode = theme === 'dark' || theme === 'pro-dark';
+  const darkMode = theme === 'dark' || theme === 'free-dark' || theme === 'pro-dark';
 
   const [showOnboarding, setShowOnboarding] = useState<boolean>(() => {
     if (localStorage.getItem('onboardingComplete')) return false;
