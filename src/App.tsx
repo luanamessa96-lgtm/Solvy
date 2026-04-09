@@ -127,14 +127,19 @@ function AppInner() {
   // Guard: se isAuthenticated è null l'auth è ancora in loading — theme-init.js
   // ha già impostato il tema corretto da localStorage, non sovrascrivere.
   useEffect(() => {
-    if (isAuthenticated === null) return;
-    if (!isAuthenticated || showOnboarding) {
+    if (isAuthenticated === null) return; // auth in caricamento
+    if (!isAuthenticated) {
+      document.documentElement.setAttribute('data-theme', 'pro-light');
+      return;
+    }
+    if (isLoading) return; // profilo ancora in caricamento — l'inline script mantiene il tema corretto
+    if (showOnboarding) {
       document.documentElement.setAttribute('data-theme', 'pro-light');
       return;
     }
     const rootTheme = theme === 'light' ? 'free-light' : theme === 'dark' ? 'free-dark' : theme;
     document.documentElement.setAttribute('data-theme', rootTheme);
-  }, [theme, isAuthenticated, showOnboarding]);
+  }, [theme, isAuthenticated, showOnboarding, isLoading]);
 
   // Auth: controlla sessione e ascolta eventi
   useEffect(() => {
@@ -236,7 +241,12 @@ function AppInner() {
         const profile = completeProfiles.find(p => p.id === savedId) || completeProfiles[0];
         setActiveProfile(profile);
         setLanguageByCountry(profile.country);
-        const profileTheme = migrateTheme(localStorage.getItem(`theme_${profile.id}`) || localStorage.getItem('theme'));
+        let profileTheme = migrateTheme(localStorage.getItem(`theme_${profile.id}`) || localStorage.getItem('theme'));
+        // Se localStorage ha ancora un tema Pro ma l'utente non è più Pro (es. cancellazione),
+        // declassa subito il tema per evitare il flash pro-light al reload
+        if (!profile.isPro && (profileTheme === 'pro-light' || profileTheme === 'pro-dark')) {
+          profileTheme = profileTheme === 'pro-light' ? 'free-light' : 'free-dark';
+        }
         setProfileTheme(profileTheme, profile.id);
         // Carica subito solo i documenti (critici per il Dashboard)
         getDocuments(profile.id)
