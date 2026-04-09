@@ -633,7 +633,20 @@ function AppInner() {
     localStorage.setItem('onboardingComplete', 'true');
     setShowOnboarding(false);
 
-    // Email di benvenuto gestita da Loops (Onboarding IT/ES loop — trigger "Contact added")
+    // Email di benvenuto via Loops — signup event
+    const loopsEmail = normalized.email || session?.user?.email;
+    if (loopsEmail && session) {
+      fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/loops-sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+        body: JSON.stringify({
+          action: 'signup',
+          email: loopsEmail,
+          name: normalized.name || '',
+          paese: normalized.country === 'Spain' ? 'Spain' : 'Italy',
+        }),
+      }).catch(() => {});
+    }
   };
 
   const handleAddProfile = () => {
