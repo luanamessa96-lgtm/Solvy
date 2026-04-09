@@ -5,7 +5,7 @@
 
 import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { AnimatePresence } from 'motion/react';
-import { MOCK_PROFILES, MOCK_DOCUMENTS, MOCK_DEADLINES, MOCK_ACCOUNTANT } from './constants';
+import { MOCK_PROFILES, MOCK_ACCOUNTANT } from './constants';
 import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, addDeadline, updateDeadline, deleteDeadline, getProfiles, createProfile, updateProfile, getAccountant, updateAccountant, uploadFile } from './lib/db';
 import { supabaseReady, getClient } from './lib/supabase';
 import { themeStorage } from './lib/themeStorage';
@@ -221,6 +221,9 @@ function AppInner() {
   useEffect(() => {
     if (!isAuthenticated) return;
     setIsLoading(true);
+    setDocuments([]);
+    setProfiles([]);
+    setDeadlines([]);
     getClient().auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
       setUserId(user.id);
@@ -251,14 +254,14 @@ function AppInner() {
         setProfileTheme(profileTheme, profile.id);
         // Carica subito solo i documenti (critici per il Dashboard)
         getDocuments(profile.id)
-          .catch(() => MOCK_DOCUMENTS)
+          .catch(() => [])
           .then(docs => {
             const freshDocs = markOverdue(docs ?? []);
             setDocuments(freshDocs);
             profileCache.current[profile.id] = { documents: freshDocs, deadlines: [], accountant: null };
 
             // Background: scadenze e commercialista (non bloccano il Dashboard)
-            getDeadlines(profile.id).catch(() => MOCK_DEADLINES).then(dl => {
+            getDeadlines(profile.id).catch(() => []).then(dl => {
               setDeadlines(dl);
               profileCache.current[profile.id].deadlines = dl;
             });
@@ -302,11 +305,8 @@ function AppInner() {
         setShowOnboarding(true);
         setIsLoading(false);
       } else {
-        // Errore di rete: usa dati mock
+        // Errore di rete: mostra dashboard vuota
         setShowOnboarding(false);
-        setProfiles(MOCK_PROFILES);
-        setDocuments(MOCK_DOCUMENTS);
-        setDeadlines(MOCK_DEADLINES);
         setIsLoading(false);
       }
     });
@@ -615,8 +615,8 @@ function AppInner() {
     themeStorage.setItem(`theme_${p.id}`, profileTheme);
     // Aggiorna in background e salva in cache
     Promise.all([
-      getDocuments(p.id).catch(() => MOCK_DOCUMENTS),
-      getDeadlines(p.id).catch(() => MOCK_DEADLINES),
+      getDocuments(p.id).catch(() => []),
+      getDeadlines(p.id).catch(() => []),
       getAccountant(p.id).catch(() => null),
     ]).then(([docs, deadlines, acc]) => {
       const freshDocs = markOverdue(docs);
@@ -645,6 +645,7 @@ function AppInner() {
     await getClient().auth.signOut().catch(() => {});
     localStorage.removeItem('onboardingComplete');
     localStorage.removeItem('activeProfileId');
+    document.cookie = 'activeProfileId=; path=/; max-age=0';
     window.location.reload();
   };
 

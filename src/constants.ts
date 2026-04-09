@@ -3,19 +3,19 @@ import { Profile, Document, Deadline, Accountant } from './types';
 export const MOCK_PROFILES: Profile[] = [
   {
     id: '1',
-    name: 'Luana Messa',
-    email: 'luanamessa96@gmail.com',
+    name: 'Utente',
+    email: '',
     country: 'Italy',
     currency: 'EUR',
-    jobType: 'Freelance Designer',
+    jobType: 'Freelance',
   },
   {
     id: '2',
-    name: 'Creative Studio',
-    email: 'studio@creative.it',
+    name: 'Profilo 2',
+    email: '',
     country: 'Italy',
     currency: 'EUR',
-    jobType: 'Agency',
+    jobType: 'Freelance',
   }
 ];
 
