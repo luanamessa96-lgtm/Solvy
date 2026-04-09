@@ -80,8 +80,12 @@ const SubscriptionView = ({ profile, darkMode }: SubscriptionViewProps) => {
     setCancelStep('loading');
     setCancelError('');
     try {
-      const { data: { session } } = await getClient().auth.getSession();
-      if (!session) throw new Error('Sessione non trovata');
+      // Forza il refresh del token — getSession() restituisce il token dalla cache
+      // che può essere scaduto dopo ~1 ora senza attività. refreshSession() garantisce
+      // un access_token fresco prima di chiamare la edge function.
+      const { data: refreshData, error: refreshError } = await getClient().auth.refreshSession();
+      const session = refreshData?.session;
+      if (refreshError || !session) throw new Error('Sessione scaduta, effettua nuovamente l\'accesso');
       const res = await fetch(`${SUPABASE_URL}/functions/v1/cancel-subscription-end-period`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
