@@ -43,7 +43,10 @@
     <script>
       (function(){
         try {
-          var t = localStorage.getItem('theme');
+          // Cookie prima (sopravvive a iOS Safari PWA localStorage clear)
+          // Chiave cookie: 'st_' + nome con caratteri non-alfanumerici → '_'
+          var ckMatch = document.cookie.match(/(?:^|; )st_theme=([^;]*)/);
+          var t = ckMatch ? decodeURIComponent(ckMatch[1]) : localStorage.getItem('theme');
           var dark = JSON.parse(localStorage.getItem('darkMode') || 'false');
           var resolved = t || (dark ? 'dark' : 'light');
           var map = { light: 'free-light', dark: 'free-dark' };

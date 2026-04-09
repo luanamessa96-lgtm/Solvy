@@ -8,6 +8,7 @@ import { AnimatePresence } from 'motion/react';
 import { MOCK_PROFILES, MOCK_DOCUMENTS, MOCK_DEADLINES, MOCK_ACCOUNTANT } from './constants';
 import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, addDeadline, updateDeadline, deleteDeadline, getProfiles, createProfile, updateProfile, getAccountant, updateAccountant, uploadFile } from './lib/db';
 import { supabaseReady, getClient } from './lib/supabase';
+import { themeStorage } from './lib/themeStorage';
 import { Profile, Document, Deadline, Accountant } from './types';
 import { setLanguageByCountry } from './lib/i18n';
 import { useTranslation } from 'react-i18next';
@@ -57,7 +58,7 @@ function migrateTheme(t: string | null | undefined): string {
 
 // Imposta data-theme su <html> in modo sincrono prima del primo render
 {
-  const savedTheme = localStorage.getItem('theme');
+  const savedTheme = themeStorage.getItem('theme');
   const base = savedTheme || (JSON.parse(localStorage.getItem('darkMode') || 'false') ? 'dark' : null);
   const initialTheme = migrateTheme(base);
   const initialRootTheme = initialTheme === 'light' ? 'free-light' : initialTheme === 'dark' ? 'free-dark' : initialTheme;
@@ -82,16 +83,16 @@ function AppInner() {
   const [isGuiaFiscalESPage, setIsGuiaFiscalESPage] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [theme, setTheme] = useState<string>(() => {
-    const saved = localStorage.getItem('theme');
+    const saved = themeStorage.getItem('theme');
     const base = saved || (JSON.parse(localStorage.getItem('darkMode') || 'false') ? 'dark' : null);
     return migrateTheme(base);
   });
 
   const setProfileTheme = (newTheme: string, profileId?: string) => {
     setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
+    themeStorage.setItem('theme', newTheme);
     const id = profileId ?? activeProfile.id;
-    if (id) localStorage.setItem(`theme_${id}`, newTheme);
+    if (id) themeStorage.setItem(`theme_${id}`, newTheme);
   };
   const darkMode = theme === 'dark' || theme === 'pro-dark';
 
@@ -241,7 +242,7 @@ function AppInner() {
         const profile = completeProfiles.find(p => p.id === savedId) || completeProfiles[0];
         setActiveProfile(profile);
         setLanguageByCountry(profile.country);
-        let profileTheme = migrateTheme(localStorage.getItem(`theme_${profile.id}`) || localStorage.getItem('theme'));
+        let profileTheme = migrateTheme(themeStorage.getItem(`theme_${profile.id}`) || themeStorage.getItem('theme'));
         // Se localStorage ha ancora un tema Pro ma l'utente non è più Pro (es. cancellazione),
         // declassa subito il tema per evitare il flash pro-light al reload
         if (!profile.isPro && (profileTheme === 'pro-light' || profileTheme === 'pro-dark')) {
@@ -393,8 +394,8 @@ function AppInner() {
           setTheme(prev => {
             const next = prev === 'pro-light' ? 'light' : prev === 'pro-dark' ? 'dark' : prev;
             if (next !== prev) {
-              localStorage.setItem('theme', next);
-              localStorage.setItem(`theme_${updatedId}`, next);
+              themeStorage.setItem('theme', next);
+              themeStorage.setItem(`theme_${updatedId}`, next);
             }
             return next;
           });
@@ -418,7 +419,7 @@ function AppInner() {
     }
   }, [isLoading]);
 
-  useEffect(() => { localStorage.setItem('theme', theme); }, [theme]);
+  useEffect(() => { themeStorage.setItem('theme', theme); }, [theme]);
   useEffect(() => {
     localStorage.setItem('activeProfileId', activeProfile.id);
     document.cookie = `activeProfileId=${activeProfile.id}; path=/; max-age=31536000; SameSite=Lax`;
@@ -608,10 +609,10 @@ function AppInner() {
     setAccountant(cached?.accountant || MOCK_ACCOUNTANT);
     resetSubPages();
     setActiveTab('home');
-    const profileTheme = migrateTheme(localStorage.getItem(`theme_${p.id}`) || localStorage.getItem('theme'));
+    const profileTheme = migrateTheme(themeStorage.getItem(`theme_${p.id}`) || themeStorage.getItem('theme'));
     setTheme(profileTheme);
-    localStorage.setItem('theme', profileTheme);
-    localStorage.setItem(`theme_${p.id}`, profileTheme);
+    themeStorage.setItem('theme', profileTheme);
+    themeStorage.setItem(`theme_${p.id}`, profileTheme);
     // Aggiorna in background e salva in cache
     Promise.all([
       getDocuments(p.id).catch(() => MOCK_DOCUMENTS),
