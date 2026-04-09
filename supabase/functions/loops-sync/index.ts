@@ -17,7 +17,8 @@ interface SyncPayload {
   fattureCount?: number;
 }
 
-async function loopsRequest(path: string, method: string, body: unknown): Promise<void> {
+async function loopsRequest(path: string, method: string, body: unknown): Promise<{ ok: boolean; status: number; body: string }> {
+  console.log(`Loops ${method} ${path}`, JSON.stringify(body));
   const res = await fetch(`${LOOPS_BASE}${path}`, {
     method,
     headers: {
@@ -26,10 +27,13 @@ async function loopsRequest(path: string, method: string, body: unknown): Promis
     },
     body: JSON.stringify(body),
   });
+  const text = await res.text();
   if (!res.ok) {
-    const text = await res.text();
     console.error(`Loops ${method} ${path} failed (${res.status}):`, text);
+  } else {
+    console.log(`Loops ${method} ${path} ok (${res.status}):`, text);
   }
+  return { ok: res.ok, status: res.status, body: text };
 }
 
 Deno.serve(async (req) => {
@@ -47,20 +51,31 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'signup') {
-      // Crea o aggiorna contatto in Loops
-      await loopsRequest('/contacts/create', 'POST', {
+      const paeseVal = paese === 'Spain' ? 'es' : 'it';
+      // Crea contatto — se già esiste (409) aggiorna paese/userGroup per garantire che l'audience filter passi
+      const contactRes = await loopsRequest('/contacts/create', 'POST', {
         email,
         firstName: name ?? '',
-        userGroup: paese === 'Spain' ? 'es' : 'it',
-        paese: paese === 'Spain' ? 'es' : 'it',
+        userGroup: paeseVal,
+        paese: paeseVal,
         isPro: false,
         fattureCount: 0,
         lastActive: new Date().toISOString(),
       });
+      if (!contactRes.ok) {
+        await loopsRequest('/contacts/update', 'PUT', {
+          email,
+          userGroup: paeseVal,
+          paese: paeseVal,
+        });
+      }
       // Spara evento signup — trigger affidabile indipendentemente dall'esistenza del contatto
-      await loopsRequest('/events/send', 'POST', {
+      const eventRes = await loopsRequest('/events/send', 'POST', {
         email,
         eventName: paese === 'Spain' ? 'signup_es' : 'signup_it',
+      });
+      return new Response(JSON.stringify({ ok: true, contactRes, eventRes }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     } else if (action === 'update_pro') {
       await loopsRequest('/contacts/update', 'PUT', {
