@@ -62,8 +62,9 @@ Deno.serve(async (req) => {
         fattureCount: 0,
         lastActive: new Date().toISOString(),
       });
+      let updateRes = null;
       if (!contactRes.ok) {
-        await loopsRequest('/contacts/update', 'PUT', {
+        updateRes = await loopsRequest('/contacts/update', 'PUT', {
           email,
           userGroup: paeseVal,
           paese: paeseVal,
@@ -74,7 +75,7 @@ Deno.serve(async (req) => {
         email,
         eventName: paese === 'Spain' ? 'signup_es' : 'signup_it',
       });
-      return new Response(JSON.stringify({ ok: true, contactRes, eventRes }), {
+      return new Response(JSON.stringify({ ok: true, contactRes, updateRes, eventRes }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     } else if (action === 'update_pro') {
