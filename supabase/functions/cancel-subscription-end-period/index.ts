@@ -24,14 +24,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const token = authHeader.replace('Bearer ', '');
-
-    const supabaseAdmin = createClient(
+    // Autentica l'utente tramite JWT Supabase (stesso pattern di cancel-subscription)
+    const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       console.error('Auth error:', authError?.message);
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -39,6 +39,11 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
     const { data: profiles } = await supabaseAdmin
       .from('profiles')
