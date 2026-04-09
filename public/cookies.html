@@ -62,7 +62,8 @@
     .greenbox { background: var(--green); border: 1px solid var(--green-border); border-radius: var(--radius); padding: 16px 20px; margin: 16px 0; font-size: 14px; color: var(--green-text); }
     .greenbox strong { display: block; margin-bottom: 4px; }
 
-    table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 480px; }
     th { background: var(--bg); font-weight: 700; text-align: left; padding: 10px 14px; border: 1px solid var(--border); color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
     td { padding: 10px 14px; border: 1px solid var(--border); vertical-align: top; color: #334155; }
     tr:hover td { background: #f8fafc; }
@@ -156,7 +157,7 @@
       <h2><span class="section-num">2</span> Cookie e storage utilizzati da Solvy</h2>
       <p>Solvy utilizza <strong>esclusivamente cookie tecnici necessari</strong>. Non sono presenti cookie di profilazione, analytics o marketing di alcun tipo.</p>
 
-      <table>
+      <div class="table-wrap"><table>
         <tr>
           <th>Nome / Chiave</th>
           <th>Fornitore</th>
@@ -192,7 +193,7 @@
           <td><code>__stripe_mid</code>: 1 anno — <code>__stripe_sid</code>: 30 min</td>
           <td>Cookie tecnici di Stripe necessari per la prevenzione delle frodi (machine ID e session ID) durante l'elaborazione dei pagamenti. Presenti solo quando si accede alla sezione abbonamento Pro. Non utilizzati per tracciamento pubblicitario.</td>
         </tr>
-      </table>
+      </table></div>
 
       <div class="infobox">
         <strong>Nota sulla PWA e iOS Safari</strong>
@@ -276,7 +277,7 @@
     <div class="section">
       <h2><span class="section-num">1</span> Cookies utilizadas por Solvy</h2>
       <p>Solvy utiliza <strong>exclusivamente cookies técnicas necesarias</strong>. No existen cookies de análisis, publicidad ni perfilado.</p>
-      <table>
+      <div class="table-wrap"><table>
         <tr>
           <th>Nombre / Clave</th>
           <th>Proveedor</th>
@@ -305,7 +306,7 @@
           <td>1 año / 30 min</td>
           <td>Prevención de fraude durante el procesamiento de pagos. Solo presentes en la sección de suscripción Pro.</td>
         </tr>
-      </table>
+      </table></div>
     </div>
 
     <div class="section">
