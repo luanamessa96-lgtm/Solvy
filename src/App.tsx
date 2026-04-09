@@ -777,6 +777,7 @@ function AppInner() {
           showBack={false}
           onBack={() => {}}
           darkMode={darkMode}
+          isLoading={true}
         />
         <main className={`flex-1 overflow-y-auto ${darkMode ? 'bg-slate-950' : ''}`}>
           <DashboardSkeleton darkMode={darkMode} />

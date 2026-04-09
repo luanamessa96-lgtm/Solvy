@@ -11,9 +11,10 @@ interface HeaderProps {
   showBack?: boolean;
   onBack?: () => void;
   darkMode?: boolean;
+  isLoading?: boolean;
 }
 
-const Header = ({ title, activeProfile, onProfileClick, onBellClick, notificationCount, showBack, onBack, darkMode }: HeaderProps) => (
+const Header = ({ title, activeProfile, onProfileClick, onBellClick, notificationCount, showBack, onBack, darkMode, isLoading }: HeaderProps) => (
   <header className="sticky top-0 z-20 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b transition-colors duration-500" style={{ backgroundColor: 'var(--color-header-bg)', borderColor: 'var(--color-border)', borderBottomLeftRadius: '1.25rem', borderBottomRightRadius: '1.25rem' }}>
     <div className="flex items-center gap-3">
       {showBack ? (
@@ -34,9 +35,13 @@ const Header = ({ title, activeProfile, onProfileClick, onBellClick, notificatio
           )}
         </button>
       )}
-      <button onClick={onProfileClick} aria-label={`Profilo di ${activeProfile.name}`} className="rounded-full transition-all active:scale-90 hover:shadow-lg hover:shadow-primary/20">
-        <DiceBearAvatar name={activeProfile.name} email={activeProfile.email} size={36} borderWidth={2} />
-      </button>
+      {isLoading ? (
+        <div className={`w-9 h-9 rounded-full animate-pulse ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+      ) : (
+        <button onClick={onProfileClick} aria-label={`Profilo di ${activeProfile.name}`} className="rounded-full transition-all active:scale-90 hover:shadow-lg hover:shadow-primary/20">
+          <DiceBearAvatar name={activeProfile.name} email={activeProfile.email} size={36} borderWidth={2} />
+        </button>
+      )}
     </div>
   </header>
 );
