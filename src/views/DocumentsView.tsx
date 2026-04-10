@@ -82,7 +82,13 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   );
   const [isChoiceOpen, setIsChoiceOpen] = useState(false);
 
-  useEffect(() => { if (openChoiceTrigger) setIsChoiceOpen(true); }, [openChoiceTrigger]);
+  const mountedChoiceTrigger = useRef(openChoiceTrigger);
+  useEffect(() => {
+    if (openChoiceTrigger !== mountedChoiceTrigger.current) {
+      mountedChoiceTrigger.current = openChoiceTrigger;
+      if (openChoiceTrigger) setIsChoiceOpen(true);
+    }
+  }, [openChoiceTrigger]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isExpenseOpen, setIsExpenseOpen] = useState(false);
   const [isCreditNoteOpen, setIsCreditNoteOpen] = useState(false);

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LayoutList, Grid, AlertCircle, Calendar, FileEdit, Trash2, Plus, ChevronRight, CheckCircle2, ChevronLeft, Search, X } from 'lucide-react';
 import { Deadline, Profile, Document } from '../types';
@@ -74,7 +74,13 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   const [deadlineToDelete, setDeadlineToDelete] = useState<Deadline | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
 
-  useEffect(() => { if (openAddTrigger) setIsAddOpen(true); }, [openAddTrigger]);
+  const mountedAddTrigger = useRef(openAddTrigger);
+  useEffect(() => {
+    if (openAddTrigger !== mountedAddTrigger.current) {
+      mountedAddTrigger.current = openAddTrigger;
+      if (openAddTrigger) setIsAddOpen(true);
+    }
+  }, [openAddTrigger]);
   const [isPreloadOpen, setIsPreloadOpen] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const isPro = useProStatus(profile);

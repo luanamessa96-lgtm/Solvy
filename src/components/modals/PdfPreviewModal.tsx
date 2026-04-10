@@ -21,10 +21,13 @@ export default function PdfPreviewModal({ isOpen, onClose, blob, fileName, darkM
     setBlobUrl(url);
     const win = window.open(url, '_blank');
     if (win) {
+      // Delay revocation so the new tab has time to fully load the PDF
+      // before the URL becomes invalid (prevents white pages race condition)
+      setTimeout(() => URL.revokeObjectURL(url), 30_000);
       onClose();
-    } else {
-      setBlocked(true);
+      return;
     }
+    setBlocked(true);
     return () => {
       URL.revokeObjectURL(url);
       setBlobUrl(null);
