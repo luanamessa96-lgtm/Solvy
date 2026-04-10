@@ -244,7 +244,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
           <div className="grid grid-cols-3 gap-3">
             {months.map((month, index) => {
               const hasDeadlines = yearDeadlines.some(d => getLocalMonth(d.date) === index);
-              const hasFiscalES = isSpain && scadenzeFiscaliRaw.some(s => getLocalMonth(s.date) === index && getLocalYear(s.date) === selectedYear);
+              const hasFiscalES = isSpain && scadenzeFiscaliRaw.some(s => getLocalMonth(s.date) === index);
               const hasFiscalIT = !isSpain && scadenzeFiscaliRaw.some(s => getLocalMonth(s.date) === index);
               const isSelected = selectedMonth === index;
               return (
