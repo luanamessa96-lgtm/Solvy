@@ -71,6 +71,7 @@ function calcCuotaAcumulada(
   const endDate   = getQuarterRange(upToQuarter, year).end;
 
   const inCum = (d: Document) => {
+    if (!d.date) return false;
     const parts = d.date.split('T')[0].split('-').map(Number);
     const date  = new Date(parts[0], parts[1] - 1, parts[2]);
     return date >= startDate && date <= endDate;
@@ -94,6 +95,7 @@ export function calcularTrimestre(
   const { start, end } = getQuarterRange(quarter, year);
 
   const inRange = (d: Document) => {
+    if (!d.date) return false;
     const parts = d.date.split('T')[0].split('-').map(Number);
     const date = new Date(parts[0], parts[1] - 1, parts[2]);
     return date >= start && date <= end;

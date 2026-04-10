@@ -116,7 +116,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
         const redditoLordo = Math.max(0, baseInc * coeff);
         inps = redditoLordo * 0.2607;
         const base = Math.max(0, redditoLordo - inps);
-        const isFive = annoInizio != null && Number.isFinite(annoInizio) && (currentYear - annoInizio) < 5;
+        const isFive = annoInizio != null && Number.isFinite(annoInizio) && (selectedYear - annoInizio) < 5;
         imposta = base * (isFive ? 0.05 : 0.15);
       } else {
         const redditoLordo = Math.max(0, baseInc - exp);
@@ -242,23 +242,20 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{t('calendar.select_month')}</span>
           </motion.div>
           <div className="grid grid-cols-3 gap-3">
-            {(() => {
-              const fiscalTitleSet = new Set(scadenzeFiscaliRaw.map(s => s.title));
-              return months.map((month, index) => {
-                const hasFiscalInMonth = scadenzeFiscaliRaw.some(s => getLocalMonth(s.date) === index);
-                const hasCustomInMonth = yearDeadlines.some(d => !fiscalTitleSet.has(d.title) && getLocalMonth(d.date) === index);
-                const isSelected = selectedMonth === index;
-                return (
-                  <motion.button variants={item} key={month} onClick={() => { setSelectedMonth(isSelected ? null : index); setViewMode('list'); }} className={`relative p-4 rounded-3xl border transition-all text-center space-y-1 active:scale-[0.95] ${isSelected ? 'bg-primary border-primary text-white shadow-xl shadow-primary/40' : (darkMode ? 'bg-slate-900 border-slate-800 text-slate-400 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10' : 'bg-white border-slate-100 text-slate-600 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5')}`}>
-                    <p className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? 'text-white/60' : 'text-slate-400'}`}>{month.substring(0, 3)}</p>
-                    <p className={`text-sm font-bold transition-colors ${isSelected ? 'text-white' : (darkMode ? 'text-slate-200' : 'text-slate-900')}`}>{index + 1}</p>
-                    {!isSpain && hasFiscalInMonth && !isSelected && <div className="absolute top-2 right-5 w-1.5 h-1.5 rounded-full bg-blue-400" />}
-                    {hasCustomInMonth && !isSelected && <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-primary" />}
-                    {isSpain && !isSelected && <div className="absolute top-2 right-5 w-1.5 h-1.5 rounded-full bg-cyan-400" />}
-                  </motion.button>
-                );
-              });
-            })()}
+            {months.map((month, index) => {
+              const hasDeadlines = yearDeadlines.some(d => getLocalMonth(d.date) === index);
+              const hasFiscalES = isSpain && scadenzeFiscaliRaw.some(s => getLocalMonth(s.date) === index && getLocalYear(s.date) === selectedYear);
+              const isSelected = selectedMonth === index;
+              return (
+                <motion.button variants={item} key={month} onClick={() => { setSelectedMonth(isSelected ? null : index); setViewMode('list'); }} className={`relative p-4 rounded-3xl border transition-all text-center space-y-1 active:scale-[0.95] ${isSelected ? 'bg-primary border-primary text-white shadow-xl shadow-primary/40' : (darkMode ? 'bg-slate-900 border-slate-800 text-slate-400 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10' : 'bg-white border-slate-100 text-slate-600 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5')}`}>
+                  <p className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? 'text-white/60' : 'text-slate-400'}`}>{month.substring(0, 3)}</p>
+                  <p className={`text-sm font-bold transition-colors ${isSelected ? 'text-white' : (darkMode ? 'text-slate-200' : 'text-slate-900')}`}>{index + 1}</p>
+                  {hasFiscalES && !isSelected && <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-red-500" />}
+                  {!isSpain && hasDeadlines && !isSelected && <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-primary" />}
+                  {isSpain && !isSelected && <div className="absolute top-2 right-5 w-1.5 h-1.5 rounded-full bg-cyan-400" />}
+                </motion.button>
+              );
+            })}
           </div>
         </motion.div>
       ) : (
