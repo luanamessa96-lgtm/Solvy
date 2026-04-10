@@ -379,9 +379,13 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
   y += 5;
 
   // ── Modelo 130 rows (left column) — valori cumulativi ─────────────────────
+  const gastosDificilPDF = Math.max(0, (ingresosCumulativos - gastosCumulativos) - baseImponible130);
   const rows130: [string, string][] = [
     ['Ingresos acumulados',  fmtES(ingresosCumulativos)],
     ['Gastos acumulados',    `- ${fmtES(gastosCumulativos)}`],
+    ...(gastosDificilPDF > 0 ? [
+      ['Gastos difícil just. (5%)', `- ${fmtES(gastosDificilPDF)}`] as [string, string],
+    ] : []),
     ['Rendimiento neto',     fmtES(baseImponible130)],
     ['Tipo pago fraccionado','20%'],
     ...(pagosAnteriores > 0 ? [
