@@ -65,7 +65,7 @@ const AccountantView = ({ accountant, onSave, darkMode }: AccountantViewProps) =
       <motion.div variants={item} className={`flex items-center justify-between gap-4 p-5 rounded-3xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
         <div className="flex items-center gap-4 min-w-0">
           <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-primary/20 shrink-0">
-            {accountant.firstName[0]}{accountant.lastName[0]}
+            {accountant.firstName?.[0] ?? '?'}{accountant.lastName?.[0] ?? ''}
           </div>
           <div className="min-w-0">
             <p className={`text-lg font-bold truncate ${darkMode ? 'text-white' : 'text-slate-900'}`}>{accountant.firstName} {accountant.lastName}</p>

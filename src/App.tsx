@@ -59,7 +59,9 @@ function migrateTheme(t: string | null | undefined): string {
 // Imposta data-theme su <html> in modo sincrono prima del primo render
 {
   const savedTheme = themeStorage.getItem('theme');
-  const base = savedTheme || (JSON.parse(localStorage.getItem('darkMode') || 'false') ? 'dark' : null);
+  let _legacyDark = false;
+  try { _legacyDark = JSON.parse(localStorage.getItem('darkMode') || 'false'); } catch {}
+  const base = savedTheme || (_legacyDark ? 'dark' : null);
   const initialTheme = migrateTheme(base);
   const initialRootTheme = initialTheme === 'light' ? 'free-light' : initialTheme === 'dark' ? 'free-dark' : initialTheme;
   document.documentElement.setAttribute('data-theme', initialRootTheme);
@@ -84,7 +86,9 @@ function AppInner() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [theme, setTheme] = useState<string>(() => {
     const saved = themeStorage.getItem('theme');
-    const base = saved || (JSON.parse(localStorage.getItem('darkMode') || 'false') ? 'dark' : null);
+    let legacyDark = false;
+    try { legacyDark = JSON.parse(localStorage.getItem('darkMode') || 'false'); } catch {}
+    const base = saved || (legacyDark ? 'dark' : null);
     return migrateTheme(base);
   });
 
