@@ -9,6 +9,7 @@ import InfoTooltip from '../components/ui/InfoTooltip';
 
 const DashboardChart = lazy(() => import('../components/DashboardChart'));
 import { calculateSpanishTaxes } from '../lib/countries/es';
+import { calcularTrimestre } from '../services/modelosES';
 import { parseLocalDate, getLocalYear } from '../utils/date';
 import { getItDeductibilityRate } from '../lib/it/deductibility';
 import { getEsDeductibilityRate } from '../lib/es/deductibility';
@@ -411,7 +412,6 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
           const currentMonthES = today.getMonth() + 1;
           const mesiRimastiES = Math.max(1, 12 - currentMonthES);
           const rataMensileES = Math.round((spTaxes.irpf + spTaxes.reta) / mesiRimastiES);
-          const quarterlyAmountES = Math.round(spTaxes.irpf / 4);
           const currentYearES = today.getFullYear();
           const quarterlyDeadlinesES = [
             { date: new Date(currentYearES, 3, 20), label: '20 de abril', modelo: 'Mod. 130 T1' },
@@ -420,6 +420,13 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
             { date: new Date(currentYearES + 1, 0, 20), label: '20 de enero', modelo: 'Mod. 130 T4' },
           ];
           const nextQuarterlyES = quarterlyDeadlinesES.find(d => d.date >= today) ?? quarterlyDeadlinesES[3];
+          const nextQIndex = quarterlyDeadlinesES.indexOf(nextQuarterlyES);
+          const nextQNum = (nextQIndex + 1) as 1 | 2 | 3 | 4;
+          // T4 deadline (Jan 30 year+1) belongs to fiscal year currentYearES-1
+          const nextQYear = nextQNum === 4 ? currentYearES - 1 : currentYearES;
+          const esRetencionRateDecimal = (yearsActiveES != null && yearsActiveES < 3 ? 7 : 15) / 100;
+          const nextQData = calcularTrimestre(documents ?? [], nextQNum, nextQYear, esRetencionRateDecimal);
+          const quarterlyAmountES = nextQData.cuotaIRPF;
           return (
             <motion.div key="taxes" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }} className="px-6 space-y-4">
               <div className={`rounded-3xl border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
