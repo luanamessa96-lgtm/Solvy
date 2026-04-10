@@ -4,11 +4,12 @@ export interface FiscalDeadline {
   amount?: number;
   type: string;
 }
-import { calculateRETA } from '../lib/countries/es';
+import { calculateRETA, calculateGastosDificilJustificacion } from '../lib/countries/es';
 
 export interface SpanishDeadlinesOptions {
   redditoN1?: number | null;
   annoInizioAttivita?: number | null;
+  currentIncome?: number | null;
 }
 
 /** Last day of month (month: 0-based). */
@@ -21,13 +22,18 @@ function lastDayOfMonth(year: number, month: number): string {
 export function getNextRetaDeadline(options?: SpanishDeadlinesOptions): { date: string; amount: number } {
   const annoInicio = options?.annoInizioAttivita;
   const redditoN1 = options?.redditoN1;
+  const currentIncome = options?.currentIncome;
   const currentYear = new Date().getFullYear();
 
-  // Tarifa plana €80/mes abolita dal 1°/01/2023 (RD-ley 13/2022).
-  // Per primo anno senza redditoN1: usa il tramo minimo (≤€670/mes → €206/mes).
-  let amount = redditoN1 != null && redditoN1 > 0
-    ? calculateRETA(redditoN1 / 12)
-    : calculateRETA(0);
+  // Priorità: redditoN1 (anno precedente dichiarato) → currentIncome (anno corrente, con gastosDificil) → minimo
+  let monthlyNet = 0;
+  if (redditoN1 != null && redditoN1 > 0) {
+    monthlyNet = redditoN1 / 12;
+  } else if (currentIncome != null && currentIncome > 0) {
+    const rendimientoNeto = currentIncome - calculateGastosDificilJustificacion(currentIncome);
+    monthlyNet = rendimientoNeto / 12;
+  }
+  let amount = calculateRETA(monthlyNet);
 
   const today = new Date();
   const year = today.getFullYear();
@@ -45,12 +51,17 @@ export function getNextRetaDeadline(options?: SpanishDeadlinesOptions): { date: 
 export function getAllRetaDeadlines(year: number, options?: SpanishDeadlinesOptions): Array<{ id: string; title: string; date: string; amount: number; type: 'tax' }> {
   const annoInicio = options?.annoInizioAttivita;
   const redditoN1 = options?.redditoN1;
+  const currentIncome = options?.currentIncome;
   const currentYear = new Date().getFullYear();
-  // Tarifa plana €80/mes abolita. Usa sempre il tramo per rendimiento neto.
-  // Senza redditoN1 (primo anno o dati mancanti): tramo minimo (€206/mes).
-  const amount = redditoN1 != null && redditoN1 > 0
-    ? calculateRETA(redditoN1 / 12)
-    : calculateRETA(0);
+  // Priorità: redditoN1 (anno precedente dichiarato) → currentIncome (anno corrente, con gastosDificil) → minimo
+  let monthlyNet = 0;
+  if (redditoN1 != null && redditoN1 > 0) {
+    monthlyNet = redditoN1 / 12;
+  } else if (currentIncome != null && currentIncome > 0) {
+    const rendimientoNeto = currentIncome - calculateGastosDificilJustificacion(currentIncome);
+    monthlyNet = rendimientoNeto / 12;
+  }
+  const amount = calculateRETA(monthlyNet);
   return Array.from({ length: 12 }, (_, i) => ({
     id: `reta-virtual-${year}-${i}`,
     title: 'Cuota RETA \u2014 Seguridad Social',

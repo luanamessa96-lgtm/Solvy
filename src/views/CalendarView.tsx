@@ -252,7 +252,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     // In month view, inject virtual RETA (ES) or virtual IT fiscal deadlines not yet saved in DB
     if (selectedMonth !== null) {
       if (isSpain) {
-        const retaForMonth = getAllRetaDeadlines(selectedYear, { redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined })
+        const retaForMonth = getAllRetaDeadlines(selectedYear, { redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined, currentIncome: income ?? undefined })
           .filter(d => getLocalMonth(d.date) === selectedMonth);
         base = [...base, ...retaForMonth as typeof base].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       } else {
@@ -270,7 +270,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   }, [selectedMonth, yearDeadlines, searchQuery, isSpain, selectedYear, redditoN1, annoInizio, scadenzeFiscaliRaw, fiscalAmounts]);
 
   const nextReta = isSpain
-    ? getNextRetaDeadline({ redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined })
+    ? getNextRetaDeadline({ redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined, currentIncome: income ?? undefined })
     : null;
 
   const nextDeadline = useMemo(() => {
