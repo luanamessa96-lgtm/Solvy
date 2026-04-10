@@ -492,9 +492,17 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                     </div>
                   </div>
                   {spTaxes.rendimientoNeto > 0 && (
-                    <div className={`pt-3 border-t flex items-start gap-2 ${darkMode ? 'border-slate-800 text-slate-400' : 'border-slate-50 text-slate-400'}`}>
-                      <Info size={13} className="mt-0.5 shrink-0" />
-                      <p className="text-[11px] leading-relaxed">Tipo efectivo (IRPF+RETA / rendimiento neto): <span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{Math.round((spTaxes.irpf + spTaxes.reta) / spTaxes.rendimientoNeto * 100)}%</span></p>
+                    <div className={`pt-3 border-t space-y-2 ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
+                      <div className={`flex items-start gap-2 ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>
+                        <Info size={13} className="mt-0.5 shrink-0" />
+                        <p className="text-[11px] leading-relaxed">Tipo efectivo (IRPF+RETA / rendimiento neto): <span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{Math.round((spTaxes.irpf + spTaxes.reta) / spTaxes.rendimientoNeto * 100)}%</span></p>
+                      </div>
+                      {(spTaxes.irpf + spTaxes.reta) / spTaxes.rendimientoNeto > 1 && (
+                        <div className={`flex items-start gap-2 px-3 py-2 rounded-xl ${darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-700'}`}>
+                          <Info size={12} className="mt-0.5 shrink-0" />
+                          <p className="text-[10px] leading-relaxed">El tipo efectivo incluye la cuota RETA (contribución a la Seguridad Social). Con ingresos bajos y RETA elevada, puede superar el 100% del rendimiento neto — no significa que debas más de lo que ganas.</p>
+                        </div>
+                      )}
                     </div>
                   )}
                   {/* Disclaimer ES-12 */}
