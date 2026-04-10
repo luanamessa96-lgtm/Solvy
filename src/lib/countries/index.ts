@@ -2,7 +2,6 @@ import type { CountryModule } from './types';
 import { italyModule } from './it';
 import { spainModule } from './es';
 
-// TODO: for future countries, add lazy loading with import()
 const COUNTRY_MODULES: Record<string, CountryModule> = {
   'Italy': italyModule,
   'Spain': spainModule,

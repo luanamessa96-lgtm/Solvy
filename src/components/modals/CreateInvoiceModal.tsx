@@ -227,7 +227,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{isProforma ? t('documents.new_proforma') : t('documents.new_invoice')}</h2>
                   <p className="text-sm text-slate-500">{form.invoiceNumber || nextInvoiceNumber}</p>
                 </div>
-                <button onClick={onClose} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
+                <button onClick={onClose} aria-label="Chiudi" className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
                   <Plus className="rotate-45" size={24} />
                 </button>
               </div>

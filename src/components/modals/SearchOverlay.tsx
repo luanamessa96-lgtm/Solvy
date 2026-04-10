@@ -17,7 +17,8 @@ const SearchOverlay = ({ documents, onClose, onSelectDoc, darkMode }: SearchOver
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-    setTimeout(() => inputRef.current?.focus(), 80);
+    const t = setTimeout(() => inputRef.current?.focus(), 80);
+    return () => clearTimeout(t);
   }, []);
 
   const results = useMemo(() => {
