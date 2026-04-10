@@ -28,10 +28,14 @@ const DEADLINE_TOOLTIPS: Record<string, string> = {
   '2° acconto INPS gestione separata': 'Secondo acconto INPS (60% del totale annuo stimato). Scade il 16 novembre.',
   'Dichiarazione dei redditi (Modello Redditi)': 'Presentazione del Modello Redditi PF. Scade il 31 ottobre.',
   'Acconto IVA dicembre': 'Acconto IVA annuale per regime ordinario. Scade il 16 dicembre.',
+  'Liquidazione IVA T1 (gen-mar)': 'Versamento IVA del 1° trimestre (gennaio-marzo). Scade il 16 aprile.',
+  'Liquidazione IVA T2 (apr-giu)': 'Versamento IVA del 2° trimestre (aprile-giugno). Scade il 16 luglio.',
+  'Liquidazione IVA T3 (lug-set)': 'Versamento IVA del 3° trimestre (luglio-settembre). Scade il 16 ottobre.',
+  'Liquidazione IVA T4 (ott-dic)': 'Versamento IVA del 4° trimestre (ottobre-dicembre). Scade il 16 gennaio dell\'anno successivo.',
 };
 
-function getScadenzeFiscali(year: number): Omit<Deadline, 'id'>[] {
-  return [
+function getScadenzeFiscali(year: number, regime?: string): Omit<Deadline, 'id'>[] {
+  const base: Omit<Deadline, 'id'>[] = [
     { title: 'Saldo imposta sostitutiva + 1° acconto', date: `${year}-06-30`, type: 'tax' },
     { title: '1° acconto INPS gestione separata', date: `${year}-06-16`, type: 'tax' },
     { title: '2° acconto imposta sostitutiva', date: `${year}-11-30`, type: 'tax' },
@@ -39,6 +43,15 @@ function getScadenzeFiscali(year: number): Omit<Deadline, 'id'>[] {
     { title: 'Dichiarazione dei redditi (Modello Redditi)', date: `${year}-10-31`, type: 'tax' },
     { title: 'Acconto IVA dicembre', date: `${year}-12-16`, type: 'tax' },
   ];
+  if (regime === 'ordinario') {
+    base.push(
+      { title: 'Liquidazione IVA T1 (gen-mar)', date: `${year}-04-16`, type: 'tax' },
+      { title: 'Liquidazione IVA T2 (apr-giu)', date: `${year}-07-16`, type: 'tax' },
+      { title: 'Liquidazione IVA T3 (lug-set)', date: `${year}-10-16`, type: 'tax' },
+      { title: 'Liquidazione IVA T4 (ott-dic)', date: `${year + 1}-01-16`, type: 'tax' },
+    );
+  }
+  return base;
 }
 
 interface CalendarViewProps {
@@ -152,7 +165,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
 
   const scadenzeFiscaliRaw = isSpain
     ? getSpanishDeadlines(selectedYear).map(s => ({ title: s.title, date: s.date, type: 'tax' as Deadline['type'] }))
-    : getScadenzeFiscali(selectedYear);
+    : getScadenzeFiscali(selectedYear, profile?.regime);
   const scadenzeFiscali = scadenzeFiscaliRaw;
   // Set dei titoli fiscali — usato sia per i dot griglia che per l'iniezione virtuale in filteredDeadlines
   const fiscalTitleSet = new Set(scadenzeFiscaliRaw.map(s => s.title));
@@ -171,7 +184,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     // (handles ES deadlines like T4/390 whose date falls in year+1)
     const templates = isSpain
       ? getSpanishDeadlines(selectedYear).map(s => ({ title: s.title, date: s.date }))
-      : getScadenzeFiscali(selectedYear);
+      : getScadenzeFiscali(selectedYear, profile?.regime);
     const templateMap = new Map(templates.map(s => [s.title, s.date]));
     return deadlines.filter(d => {
       const templateDate = templateMap.get(d.title);
