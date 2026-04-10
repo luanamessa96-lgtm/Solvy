@@ -182,15 +182,25 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
 
   const filteredDeadlines = useMemo(() => {
     let base = selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => getLocalMonth(d.date) === selectedMonth);
-    // In month view, inject the virtual RETA for that month
-    if (isSpain && selectedMonth !== null) {
-      const retaForMonth = getAllRetaDeadlines(selectedYear, { redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined })
-        .filter(d => getLocalMonth(d.date) === selectedMonth);
-      base = [...base, ...retaForMonth as typeof base].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    // In month view, inject virtual RETA (ES) or virtual IT fiscal deadlines not yet saved in DB
+    if (selectedMonth !== null) {
+      if (isSpain) {
+        const retaForMonth = getAllRetaDeadlines(selectedYear, { redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined })
+          .filter(d => getLocalMonth(d.date) === selectedMonth);
+        base = [...base, ...retaForMonth as typeof base].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      } else {
+        const saved = new Set(base.map(d => d.title + '|' + d.date));
+        const virtualFiscal = scadenzeFiscaliRaw
+          .filter(s => getLocalMonth(s.date) === selectedMonth && !saved.has(s.title + '|' + s.date))
+          .map(s => ({ id: `fiscal-virtual-${s.title}`, title: s.title, date: s.date, type: s.type, completed: false, amount: fiscalAmounts[s.title] ?? undefined }) as Deadline);
+        if (virtualFiscal.length) {
+          base = [...base, ...virtualFiscal].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        }
+      }
     }
     if (searchQuery.trim()) return base.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
     return base;
-  }, [selectedMonth, yearDeadlines, searchQuery, isSpain, selectedYear, redditoN1, annoInizio]);
+  }, [selectedMonth, yearDeadlines, searchQuery, isSpain, selectedYear, redditoN1, annoInizio, scadenzeFiscaliRaw, fiscalAmounts]);
 
   const nextReta = isSpain
     ? getNextRetaDeadline({ redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined })
@@ -339,7 +349,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
             </div>
             <div className="space-y-3">
               {filteredDeadlines.length > 0 ? filteredDeadlines.map(deadline => (
-                <motion.button variants={item} key={deadline.id} onClick={() => { if (!deadline.id.startsWith('reta-virtual-')) setSelectedDeadline(deadline); }} className={`w-full p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-xl text-left ${deadline.completed ? 'opacity-50' : ''} ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}>
+                <motion.button variants={item} key={deadline.id} onClick={() => { if (!deadline.id.startsWith('reta-virtual-') && !deadline.id.startsWith('fiscal-virtual-')) setSelectedDeadline(deadline); }} className={`w-full p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-xl text-left ${deadline.completed ? 'opacity-50' : ''} ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}>
                   <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center shrink-0 ${deadline.completed ? (darkMode ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400') : deadline.type === 'tax' ? (darkMode ? 'bg-red-500/10 text-red-500' : 'bg-red-50 text-red-600') : (darkMode ? 'bg-blue-500/10 text-blue-500' : 'bg-blue-50 text-blue-600')}`}>
                     <span className="text-[9px] font-bold uppercase tracking-tighter">{new Date(deadline.date).toLocaleDateString(isSpain ? 'es-ES' : 'it-IT', { month: 'short' })}</span>
                     <span className="text-lg font-black leading-none">{new Date(deadline.date).getDate()}</span>
