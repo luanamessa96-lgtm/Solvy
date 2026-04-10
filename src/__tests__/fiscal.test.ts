@@ -10,6 +10,7 @@ import {
   calculateRetenciones,
   getTarifaPlanaStatus,
   calculateRETA_withTarifaPlana,
+  calculateGastosDificilJustificacion,
   RETA_BRACKETS,
 } from '../lib/countries/es';
 import { getEsDeductibilityRate } from '../lib/es/deductibility';
@@ -272,6 +273,35 @@ describe('Spain — calculateIRPF', () => {
   it('risultato arrotondato a 2 decimali', () => {
     const res = calculateIRPF(25000);
     expect(res).toBe(Math.round(res * 100) / 100);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPAIN — Gastos difícil justificación (D2)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe('Spain — calculateGastosDificilJustificacion (art.30 RIRPF)', () => {
+  it('5% su rendimiento neto previo', () => {
+    expect(calculateGastosDificilJustificacion(10000)).toBeCloseTo(500, 2);
+  });
+
+  it('cap a €2.000 quando 5% supera il massimale', () => {
+    expect(calculateGastosDificilJustificacion(50000)).toBe(2000);
+    expect(calculateGastosDificilJustificacion(100000)).toBe(2000);
+  });
+
+  it('soglia esatta: 5% di €40.000 = €2.000 (al limite)', () => {
+    expect(calculateGastosDificilJustificacion(40000)).toBeCloseTo(2000, 2);
+  });
+
+  it('rendimento neto ≤ 0 → 0', () => {
+    expect(calculateGastosDificilJustificacion(0)).toBe(0);
+    expect(calculateGastosDificilJustificacion(-100)).toBe(0);
+  });
+
+  it('Scenario D2: ingresos €35.000 − gastos €4.000 → rend. previo €31.000 → gdf €1.550', () => {
+    // Rendimiento neto previo = 35000 - 4000 = 31000; 5% = 1550 < 2000
+    expect(calculateGastosDificilJustificacion(31000)).toBeCloseTo(1550, 2);
   });
 });
 

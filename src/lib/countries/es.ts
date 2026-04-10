@@ -76,6 +76,16 @@ export function calculateRETA_withTarifaPlana(
   return { monthly: calculateRETA(monthlyNetIncome), status: 'normal' };
 }
 
+/**
+ * Gastos de difícil justificación — EDS (art.30 RIRPF)
+ * 5% del rendimiento neto previo (ingresos − gastos analíticos), máximo €2.000.
+ * Tasso tornato al 5% nel 2024 (era 7% nel 2023). Manual IRPF 2024, p.16.
+ */
+export function calculateGastosDificilJustificacion(rendimientoNetoPrevio: number): number {
+  if (rendimientoNetoPrevio <= 0) return 0;
+  return Math.min(rendimientoNetoPrevio * 0.05, 2000);
+}
+
 export function calculateIRPF(grossIncome: number): number {
   if (grossIncome <= 0) return 0;
   let tax = 0;
@@ -106,16 +116,22 @@ export function calculateSpanishTaxes(
   isFirstThreeYears: boolean = false,
   applyRetenciones: boolean = false,
   startYear?: number,
-  currentYear: number = new Date().getFullYear()
-): SpanishTaxResult & { tarifaPlanaStatus: TarifaPlanaStatus; monthlyRETA: number } {
-  const irpf = calculateIRPF(grossIncome);
-  const monthlyNet = grossIncome / 12;
+  currentYear: number = new Date().getFullYear(),
+  deductibleExpenses: number = 0
+): SpanishTaxResult & { tarifaPlanaStatus: TarifaPlanaStatus; monthlyRETA: number; rendimientoNeto: number } {
+  // D2: rendimiento neto previo = ingresos − gastos analíticos
+  const rendimientoNetoPrevio = Math.max(0, grossIncome - deductibleExpenses);
+  // Gastos difícil justificación: 5% del rendimiento neto previo, máx €2.000 (art.30 RIRPF, Manual IRPF 2024)
+  const gastosDificil = calculateGastosDificilJustificacion(rendimientoNetoPrevio);
+  const rendimientoNeto = rendimientoNetoPrevio - gastosDificil;
+  const irpf = calculateIRPF(rendimientoNeto);
+  const monthlyNet = rendimientoNeto / 12;
   const { monthly: monthlyRETA, status: tarifaPlanaStatus } = calculateRETA_withTarifaPlana(
     monthlyNet, startYear, currentYear, grossIncome
   );
   const reta = monthlyRETA * 12;
   const retenciones = applyRetenciones ? calculateRetenciones(grossIncome, isFirstThreeYears) : 0;
-  const netIncome = grossIncome - irpf - reta;
+  const netIncome = rendimientoNeto - irpf - reta;
   const effectiveRate = grossIncome > 0 ? (irpf + reta) / grossIncome : 0;
 
   return {
@@ -127,6 +143,7 @@ export function calculateSpanishTaxes(
     effectiveRate,
     tarifaPlanaStatus,
     monthlyRETA,
+    rendimientoNeto,
   };
 }
 
@@ -210,17 +227,22 @@ export const spainModule: CountryModule = {
   calculateTax: (input: TaxInput): TaxResult => {
     const { grossIncome = 0, isFirstThreeYears = false, applyRetenciones = false, startYear } = input;
     const currentYear = new Date().getFullYear();
-    const irpf = calculateIRPF(grossIncome);
-    const monthlyNet = grossIncome / 12;
+    // D2: gastos analíticos → rendimiento neto previo → gastos difícil 5% (art.30 RIRPF)
+    const deductibleExpenses = Math.max(0, input.deductibleExpenses ?? 0);
+    const rendimientoNetoPrevio = Math.max(0, grossIncome - deductibleExpenses);
+    const gastosDificil = calculateGastosDificilJustificacion(rendimientoNetoPrevio);
+    const rendimientoNeto = rendimientoNetoPrevio - gastosDificil;
+    const irpf = calculateIRPF(rendimientoNeto);
+    const monthlyNet = rendimientoNeto / 12;
     const { monthly: monthlyRETA, status: tarifaPlanaStatus } = calculateRETA_withTarifaPlana(
       monthlyNet, startYear, currentYear, grossIncome
     );
     const reta = monthlyRETA * 12;
     const retenciones = applyRetenciones ? calculateRetenciones(grossIncome, isFirstThreeYears) : 0;
-    const netIncome = grossIncome - irpf - reta;
+    const netIncome = rendimientoNeto - irpf - reta;
     return {
       grossIncome,
-      taxableIncome: grossIncome,
+      taxableIncome: rendimientoNeto,
       incomeTax: irpf,
       socialContributions: reta,
       vatRate: 21,
@@ -233,6 +255,10 @@ export const spainModule: CountryModule = {
         monthlyRETA,
         tarifaPlanaStatus,
         retencionRate: isFirstThreeYears ? 0.07 : 0.15,
+        rendimientoNetoPrevio,
+        gastosDificilJustificacion: gastosDificil,
+        rendimientoNeto,
+        deductibleExpenses,
       },
     };
   },
