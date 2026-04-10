@@ -37,24 +37,26 @@ export const RETA_BRACKETS = [
   { maxIncome: Infinity, monthlyQuote: 500 },
 ];
 
-// Tarifa plana threshold: annual net income below this qualifies for year-2 extension
-const TARIFA_PLANA_INCOME_THRESHOLD = 14208; // SMI 2026: €1.184/mese × 12 (RD 126/2026)
-const TARIFA_PLANA_QUOTE = 80;
+// Tarifa plana — ABOLITA dal 1° gennaio 2023 (RD-ley 13/2022).
+// Dal 2023 si applica la cotización por rendimientos netos per tutti gli autónomos.
+// La funzione è mantenuta per compatibilità ma restituisce sempre 'normal' per startYear >= 2023.
+const TARIFA_PLANA_INCOME_THRESHOLD = 14208; // SMI 2026: €1.184/mese × 12 (RD 126/2026) — riferimento storico
+const TARIFA_PLANA_QUOTE = 80; // valore storico, non più applicabile
 
 export type TarifaPlanaStatus = 'year1' | 'year2_below_threshold' | 'normal';
 
 /**
- * Returns tarifa plana status based on start year and annual gross income.
- * - year1: first calendar year → €80/month flat
- * - year2_below_threshold: second year AND income < SMI → €80/month extended
- * - normal: third year onwards or income above threshold → standard brackets
+ * @deprecated La tarifa plana €80/mese è ABOLITA dal 1° gennaio 2023 (RD-ley 13/2022).
+ * Tutti gli autónomos con startYear >= 2023 ricadono nel sistema ordinario (cotización por ingresos reales).
+ * Questa funzione restituisce sempre 'normal' per startYear >= 2023.
  */
 export function getTarifaPlanaStatus(
   startYear: number | undefined,
   currentYear: number,
   annualGrossIncome: number
 ): TarifaPlanaStatus {
-  if (!startYear) return 'normal';
+  // Tarifa plana abolita dal 2023: nessun autónomo che inizia da 2023 può accedervi
+  if (!startYear || startYear >= 2023) return 'normal';
   const yearsActive = currentYear - startYear;
   if (yearsActive < 1) return 'year1';
   if (yearsActive < 2 && annualGrossIncome < TARIFA_PLANA_INCOME_THRESHOLD) return 'year2_below_threshold';

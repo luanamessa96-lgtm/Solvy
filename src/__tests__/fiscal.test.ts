@@ -298,36 +298,44 @@ describe('Spain — calculateRETA', () => {
 // SPAIN — Tarifa Plana
 // ═══════════════════════════════════════════════════════════════════════════════
 
-describe('Spain — Tarifa Plana', () => {
+// Tarifa plana ABOLITA dal 1° gennaio 2023 (RD-ley 13/2022).
+// Dal 2023 tutti gli autónomos usano la cotización por ingresos reales.
+// I test verificano che startYear >= 2023 restituisca sempre 'normal'.
+describe('Spain — Tarifa Plana (abolita dal 2023)', () => {
   const currentYear = 2026;
 
   it('startYear undefined → normal', () => {
     expect(getTarifaPlanaStatus(undefined, currentYear, 20000)).toBe('normal');
   });
 
-  it('primo anno (< 1 anno) → year1 indipendentemente dal reddito', () => {
-    expect(getTarifaPlanaStatus(2026, currentYear, 100000)).toBe('year1');
+  it('startYear 2026 (>= 2023) → normal (tarifa plana abolita)', () => {
+    expect(getTarifaPlanaStatus(2026, currentYear, 100000)).toBe('normal');
   });
 
-  it('secondo anno + reddito sotto soglia → year2_below_threshold', () => {
-    expect(getTarifaPlanaStatus(2025, currentYear, 8000)).toBe('year2_below_threshold');
+  it('startYear 2025 (>= 2023) → normal anche se reddito sotto soglia', () => {
+    expect(getTarifaPlanaStatus(2025, currentYear, 8000)).toBe('normal');
   });
 
-  it('secondo anno + reddito sopra soglia → normal', () => {
+  it('startYear 2025 (>= 2023) + reddito sopra soglia → normal', () => {
     expect(getTarifaPlanaStatus(2025, currentYear, 15000)).toBe('normal');
   });
 
-  it('terzo anno → normal indipendentemente dal reddito', () => {
+  it('startYear 2024 (>= 2023) → normal', () => {
     expect(getTarifaPlanaStatus(2024, currentYear, 5000)).toBe('normal');
   });
 
-  it('calculateRETA_withTarifaPlana: year1 → €80/mese', () => {
-    const { monthly, status } = calculateRETA_withTarifaPlana(1000, 2026, currentYear, 20000);
-    expect(monthly).toBe(80);
-    expect(status).toBe('year1');
+  it('startYear 2022 (< 2023), terzo anno attivo → normal (anni attivi >= 3)', () => {
+    // Anche per chi aveva tarifa plana pre-2023, dopo 3 anni ricade nel normale
+    expect(getTarifaPlanaStatus(2022, currentYear, 5000)).toBe('normal');
   });
 
-  it('calculateRETA_withTarifaPlana: normal → quota fascia standard', () => {
+  it('calculateRETA_withTarifaPlana: startYear 2026 → quota fascia standard (no tarifa plana)', () => {
+    const { monthly, status } = calculateRETA_withTarifaPlana(1000, 2026, currentYear, 20000);
+    expect(monthly).toBe(calculateRETA(1000));
+    expect(status).toBe('normal');
+  });
+
+  it('calculateRETA_withTarifaPlana: startYear 2020, anni > 2 → quota fascia standard', () => {
     const { monthly, status } = calculateRETA_withTarifaPlana(1000, 2020, currentYear, 20000);
     expect(monthly).toBe(calculateRETA(1000));
     expect(status).toBe('normal');
