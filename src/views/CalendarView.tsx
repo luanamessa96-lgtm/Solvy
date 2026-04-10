@@ -111,13 +111,14 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   // IT-21 + IT-22: importi stimati per scadenze fiscali IT
   // NOTA: currentYear deve essere dichiarato prima di questo useMemo
   const fiscalAmounts = useMemo<Record<string, number>>(() => {
-    if (isSpain) return {};
-    if (isPrimoAnnoIT) return {};
+    const empty: Record<string, number> = {};
+    if (isSpain) return empty;
+    if (isPrimoAnnoIT) return empty;
     // IT-33: usa reddito N-1 se disponibile, altrimenti reddito corrente
     const baseInc = (redditoN1 != null && redditoN1 > 0)
       ? redditoN1
       : (typeof income === 'number' && Number.isFinite(income) && income > 0 ? income : 0);
-    if (baseInc === 0) return {};
+    if (baseInc === 0) return empty;
     const exp = typeof expenses === 'number' && Number.isFinite(expenses) ? expenses : 0;
     const regime = profile?.regime ?? 'forfettario';
     let imposta = 0;
@@ -139,9 +140,9 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
         imposta = irpef + base * 0.023;
       }
     } catch {
-      return {};
+      return empty;
     }
-    if (!Number.isFinite(imposta) || !Number.isFinite(inps)) return {};
+    if (!Number.isFinite(imposta) || !Number.isFinite(inps)) return empty;
     return {
       'Saldo imposta sostitutiva + 1° acconto': Math.round(imposta * 0.40),
       '1° acconto INPS gestione separata': Math.round(inps * 0.40),
@@ -155,10 +156,10 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     if (!isSpain) return null;
     try {
       return {
-        1: calcularTrimestre(documents, 1, selectedYear),
-        2: calcularTrimestre(documents, 2, selectedYear),
-        3: calcularTrimestre(documents, 3, selectedYear),
-        4: calcularTrimestre(documents, 4, selectedYear),
+        1: calcularTrimestre(documents ?? [], 1, selectedYear),
+        2: calcularTrimestre(documents ?? [], 2, selectedYear),
+        3: calcularTrimestre(documents ?? [], 3, selectedYear),
+        4: calcularTrimestre(documents ?? [], 4, selectedYear),
       };
     } catch { return null; }
   }, [isSpain, documents, selectedYear]);
