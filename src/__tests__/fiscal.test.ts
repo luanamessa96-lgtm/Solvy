@@ -309,50 +309,72 @@ describe('Spain — calculateGastosDificilJustificacion (art.30 RIRPF)', () => {
 // SPAIN — RETA (fasce 2023)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-describe('Spain — calculateRETA', () => {
-  it('reddito mensile ≤ 670 → €230/mese', () => {
-    expect(calculateRETA(500)).toBe(230);
+// RETA 2026 — Orden PJC/297/2026, tipo total 31,50%, cuota = base_mínima × 31,50%
+// ✅ = confermato SKILL.md; ⚠️ = interpolato da basi 2025 × 31,50%
+describe('Spain — calculateRETA (2026)', () => {
+  it('≤ €670/mese → €206/mese ✅ (base min €653,59)', () => {
+    expect(calculateRETA(500)).toBe(206);
+    expect(calculateRETA(670)).toBe(206);
   });
 
-  it('reddito mensile 671–900 → €260/mese', () => {
-    expect(calculateRETA(800)).toBe(260);
+  it('€670–€900/mese → €227/mese ✅ (base min €718,95, congelata)', () => {
+    expect(calculateRETA(800)).toBe(227);
   });
 
-  it('reddito mensile 901–1.166 → €275/mese', () => {
-    expect(calculateRETA(1000)).toBe(275);
+  it('€900–€1.166,70/mese → €268/mese ✅ (base min €849,67, congelata)', () => {
+    expect(calculateRETA(1000)).toBe(268);
   });
 
-  it('reddito mensile 1.167–1.300 → €294/mese', () => {
-    expect(calculateRETA(1250)).toBe(294);
+  it('€1.166,70–€1.300/mese → €300/mese ✅ (base min €950,98)', () => {
+    expect(calculateRETA(1250)).toBe(300);
   });
 
-  it('reddito mensile 1.301–1.500 → €320/mese', () => {
-    expect(calculateRETA(1400)).toBe(320);
+  it('€1.300–€1.500/mese → €303/mese ⚠️ (base ~€960,78)', () => {
+    expect(calculateRETA(1400)).toBe(303);
   });
 
-  it('reddito mensile 1.501–1.700 → €350/mese', () => {
-    expect(calculateRETA(1600)).toBe(350);
+  it('€1.500–€1.700/mese → €330/mese ⚠️ (base ~€1.045,75)', () => {
+    expect(calculateRETA(1600)).toBe(330);
   });
 
-  it('reddito mensile 1.701–1.850 → €370/mese', () => {
-    expect(calculateRETA(1800)).toBe(370);
+  it('€1.700–€1.850/mese → €360/mese ✅ (base min €1.143,79)', () => {
+    expect(calculateRETA(1800)).toBe(360);
   });
 
-  it('reddito mensile 1.851–2.030 → €390/mese', () => {
-    expect(calculateRETA(2000)).toBe(390);
+  it('€1.850–€2.030/mese → €381/mese ⚠️ (base ~€1.209,15)', () => {
+    expect(calculateRETA(2000)).toBe(381);
   });
 
-  it('reddito mensile > 2.030 → €500/mese', () => {
-    expect(calculateRETA(3000)).toBe(500);
-    expect(calculateRETA(10000)).toBe(500);
+  it('€2.030–€2.330/mese → €402/mese ⚠️', () => {
+    expect(calculateRETA(2200)).toBe(402);
   });
 
-  it('reddito zero → fascia minima €230', () => {
-    expect(calculateRETA(0)).toBe(230);
+  it('€2.330–€2.760/mese → €440/mese ⚠️', () => {
+    expect(calculateRETA(2500)).toBe(440);
+  });
+
+  it('€2.760–€3.190/mese → €453/mese ✅ (base min €1.437,91)', () => {
+    expect(calculateRETA(3000)).toBe(453);
+  });
+
+  it('€3.190–€4.139/mese → €453/mese ⚠️ (stessa base tramo 11)', () => {
+    expect(calculateRETA(3500)).toBe(453);
+  });
+
+  it('€4.139–€6.000/mese → €478/mese ⚠️ (base ~€1.516,93)', () => {
+    expect(calculateRETA(5000)).toBe(478);
+  });
+
+  it('> €6.000/mese → €607/mese ✅ (base min €1.928,10)', () => {
+    expect(calculateRETA(7000)).toBe(607);
+    expect(calculateRETA(10000)).toBe(607);
+  });
+
+  it('reddito zero → fascia minima €206 (tramo 1)', () => {
+    expect(calculateRETA(0)).toBe(206);
   });
 
   it('tutte le fasce coperte (nessun buco)', () => {
-    // Verifica che ogni limite di fascia ricada nella fascia corretta
     for (const bracket of RETA_BRACKETS) {
       if (bracket.maxIncome !== Infinity) {
         expect(calculateRETA(bracket.maxIncome)).toBe(bracket.monthlyQuote);
