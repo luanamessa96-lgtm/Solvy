@@ -249,7 +249,16 @@ function AppInner() {
         const profile = completeProfiles.find(p => p.id === savedId) || completeProfiles[0];
         setActiveProfile(profile);
         setLanguageByCountry(profile.country);
-        let profileTheme = migrateTheme(themeStorage.getItem(`theme_${profile.id}`) || themeStorage.getItem('theme'));
+        const savedProfileTheme = themeStorage.getItem(`theme_${profile.id}`);
+        const savedGlobalTheme = themeStorage.getItem('theme');
+        let profileTheme = migrateTheme(savedProfileTheme || savedGlobalTheme);
+        // Guard write distruttivo (Scenario B — ITP Safari): se storage è completamente vuoto
+        // (cookie per-profilo scaduto dopo 7gg + globale mancante) ma React state ha un tema
+        // valido letto correttamente al mount, usa lo state come fonte di verità invece di
+        // sovrascrivere tutto con 'free-light' (il default di migrateTheme(null)).
+        if (!savedProfileTheme && !savedGlobalTheme && theme !== 'free-light') {
+          profileTheme = theme;
+        }
         // Se localStorage ha ancora un tema Pro ma l'utente non è più Pro (es. cancellazione),
         // declassa subito il tema per evitare il flash pro-light al reload
         if (!profile.isPro && (profileTheme === 'pro-light' || profileTheme === 'pro-dark')) {
