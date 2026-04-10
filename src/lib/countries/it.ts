@@ -91,16 +91,19 @@ export const italyModule: CountryModule = {
         },
       };
     } else {
-      // Regime ordinario — INPS GS 26.07%, deducibile ex art. 10 TUIR prima del calcolo IRPEF
-      const inps = grossIncome * 0.2607;
-      const irpefBase = grossIncome - inps;
+      // Regime ordinario — spese analitiche deducibili (art. 54 TUIR) prima di INPS e IRPEF
+      const expenses = Math.max(0, input.deductibleExpenses ?? 0);
+      const netBase = Math.max(0, grossIncome - expenses); // base al netto delle spese
+      // INPS GS 26.07% su base netta, deducibile ex art. 10 TUIR prima del calcolo IRPEF
+      const inps = netBase * 0.2607;
+      const irpefBase = netBase - inps;
       let incomeTax = 0;
       if (irpefBase <= 28000) incomeTax = irpefBase * 0.23;
       else if (irpefBase <= 50000) incomeTax = 28000 * 0.23 + (irpefBase - 28000) * 0.33;
       else incomeTax = 28000 * 0.23 + 22000 * 0.33 + (irpefBase - 50000) * 0.43;
       const regionalAddl = irpefBase * 0.023;
       const totalIncomeTax = incomeTax + regionalAddl;
-      const netIncome = grossIncome - totalIncomeTax - inps;
+      const netIncome = netBase - totalIncomeTax - inps; // netto = base netta − imposte − contributi
       return {
         grossIncome,
         taxableIncome: irpefBase,
@@ -109,13 +112,17 @@ export const italyModule: CountryModule = {
         vatRate: 22,
         netIncome,
         effectiveRate: grossIncome > 0 ? (totalIncomeTax + inps) / grossIncome : 0,
-        details: { regime: 'ordinario', irpef: incomeTax, addizionaleRegionale: regionalAddl, inps },
+        details: { regime: 'ordinario', irpef: incomeTax, addizionaleRegionale: regionalAddl, inps, expenses },
       };
     }
   },
   calculateContributions: (input: TaxInput): ContributionsResult => {
     const { grossIncome = 0, regime = 'forfettario', categoryCoeff = 0.78 } = input;
-    const taxableIncome = regime === 'forfettario' ? grossIncome * categoryCoeff : grossIncome;
+    const expenses = Math.max(0, input.deductibleExpenses ?? 0);
+    // Forfettario: base = ricavi × coeff ATECO; Ordinario: base = lordo − spese analitiche
+    const taxableIncome = regime === 'forfettario'
+      ? grossIncome * categoryCoeff
+      : Math.max(0, grossIncome - expenses);
     const annual = taxableIncome * 0.2607; // GS 26.07% sia per forfettario che ordinario
     return {
       monthly: annual / 12,

@@ -153,6 +153,43 @@ describe('Italy — IRPEF Ordinario (scaglioni)', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// ITALY — Ordinario con spese deducibili (D1)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe('Italy — Ordinario con deductibleExpenses', () => {
+  it('D1: spese analitiche riducono base INPS e IRPEF (art. 54 TUIR)', () => {
+    // Scenario: fatturato €45.000, spese €5.000 → base netta €40.000
+    const result = italyModule.calculateTax({ grossIncome: 45000, regime: 'ordinario', deductibleExpenses: 5000 });
+    const netBase = 45000 - 5000; // 40000
+    const expectedINPS = netBase * 0.2607;
+    const irpefBase = netBase - expectedINPS;
+    const expectedIRPEF = 28000 * 0.23 + (irpefBase - 28000) * 0.33;
+    const expectedAddl = irpefBase * 0.023;
+    expect(result.socialContributions).toBeCloseTo(expectedINPS, 0);
+    expect(result.incomeTax).toBeCloseTo(expectedIRPEF + expectedAddl, 0);
+    expect(result.netIncome).toBeCloseTo(netBase - expectedINPS - (expectedIRPEF + expectedAddl), 0);
+  });
+
+  it('D1: senza spese (default 0) → comportamento invariato', () => {
+    const withExpenses = italyModule.calculateTax({ grossIncome: 40000, regime: 'ordinario', deductibleExpenses: 0 });
+    const withoutField  = italyModule.calculateTax({ grossIncome: 40000, regime: 'ordinario' });
+    expect(withExpenses.incomeTax).toBeCloseTo(withoutField.incomeTax, 2);
+    expect(withExpenses.socialContributions).toBeCloseTo(withoutField.socialContributions, 2);
+  });
+
+  it('D1: grossIncome === deductibleExpenses → tutto zero', () => {
+    const result = italyModule.calculateTax({ grossIncome: 10000, regime: 'ordinario', deductibleExpenses: 10000 });
+    expect(result.socialContributions).toBe(0);
+    expect(result.incomeTax).toBe(0);
+  });
+
+  it('D1: calculateContributions ordinario sottrae spese dalla base', () => {
+    const res = italyModule.calculateContributions({ grossIncome: 50000, regime: 'ordinario', deductibleExpenses: 10000 });
+    expect(res.annual).toBeCloseTo(40000 * 0.2607, 0);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // ITALY — INPS Gestione Separata (calculateContributions)
 // ═══════════════════════════════════════════════════════════════════════════════
 

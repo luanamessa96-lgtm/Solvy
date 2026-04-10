@@ -1,8 +1,9 @@
 export interface TaxInput {
   grossIncome: number;
   regime?: string;
-  categoryCoeff?: number; // Italian forfettario
-  startYear?: number;     // Italian 5% vs 15%
+  categoryCoeff?: number;      // Italian forfettario
+  startYear?: number;          // Italian 5% vs 15%
+  deductibleExpenses?: number; // IT ordinario: spese analitiche; ES EDS: gastos analíticos
   isFirstThreeYears?: boolean; // Spanish retenciones
   applyRetenciones?: boolean;
   monthlyNetIncome?: number;
