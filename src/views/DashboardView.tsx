@@ -10,6 +10,7 @@ import InfoTooltip from '../components/ui/InfoTooltip';
 const DashboardChart = lazy(() => import('../components/DashboardChart'));
 import { calculateSpanishTaxes } from '../lib/countries/es';
 import { calcularTrimestre } from '../services/modelosES';
+import { profileStorage } from '../lib/supabase';
 import { parseLocalDate, getLocalYear } from '../utils/date';
 import { getItDeductibilityRate } from '../lib/it/deductibility';
 import { getEsDeductibilityRate } from '../lib/es/deductibility';
@@ -218,6 +219,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
 
   const isSpainProfile = profile.country === 'Spain';
   const isForfettario = !isSpainProfile && tasse.regime === 'forfettario';
+  const retaMensualMissing = isSpainProfile && !profileStorage.get(`reta_${profile.id}`);
 
   // ES deductible expenses for displayYear (applied when computing Spanish taxes)
   const esDeductibleExpenses = useMemo(() => {
@@ -364,6 +366,17 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
               </div>
             </div>
 
+            {/* ES — avviso RETA mancante */}
+            {retaMensualMissing && (
+              <div className={`flex items-start gap-3 px-4 py-3.5 rounded-2xl border ${darkMode ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-amber-50 border-amber-200 text-amber-700'}`}>
+                <AlertTriangle size={15} className="mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs font-bold">Cuota RETA mensual no configurada</p>
+                  <p className="text-[10px] mt-0.5 opacity-80">Inserta tu cuota RETA en el perfil para cálculos precisos. Ahora se usa el mínimo estimado (€206/mes).</p>
+                </div>
+              </div>
+            )}
+
             {/* Grafico */}
             <div className={`rounded-3xl p-6 border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} space-y-6`}>
               <div className="flex justify-between items-center">
@@ -462,6 +475,12 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                     <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                       <div className="bg-amber-400 h-full rounded-full" style={{ width: `${Math.min(barRETA, 100)}%` }} />
                     </div>
+                    {retaMensualMissing && (
+                      <div className={`flex items-start gap-2 mt-1 px-3 py-2 rounded-xl ${darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-700'}`}>
+                        <AlertTriangle size={13} className="mt-0.5 shrink-0" />
+                        <p className="text-[10px] leading-relaxed">Inserta tu cuota RETA mensual en el perfil para cálculos precisos. Ahora se muestra el mínimo estimado (€206/mes).</p>
+                      </div>
+                    )}
                   </div>
                   <div className={`pt-3 border-t space-y-1.5 ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
                     <div className="flex justify-between">
