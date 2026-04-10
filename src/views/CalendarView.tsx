@@ -18,6 +18,25 @@ const FISCAL_ESTIMATE_TITLES = new Set([
   '2° acconto INPS gestione separata',
 ]);
 
+const INPS_ARTIGIANI_MINIMALE = 4000;
+const INPS_ARTIGIANI_RATE = 0.24;
+const INPS_COMMERCIANTI_RATE = 0.2448;
+const INPS_GESTIONE_SEPARATA_RATE = 0.2607;
+
+function getCalendarInpsType(country: string | undefined, coeff: number | undefined): 'separata' | 'artigiani' | 'commercianti' {
+  if (country !== 'Italy') return 'separata';
+  if (coeff === 67) return 'artigiani';
+  if (coeff === 40) return 'commercianti';
+  return 'separata';
+}
+
+// Restituisce la label di display corretta per i titoli INPS nel calendario
+function localizeInpsTitle(title: string, inpsType: 'separata' | 'artigiani' | 'commercianti'): string {
+  if (inpsType === 'separata') return title;
+  const replacement = inpsType === 'artigiani' ? 'INPS artigiani' : 'INPS commercianti';
+  return title.replace('INPS gestione separata', replacement);
+}
+
 function isFiscalEstimate(deadline: Deadline): boolean {
   return deadline.type === 'tax' && !!deadline.amount && FISCAL_ESTIMATE_TITLES.has(deadline.title);
 }
@@ -42,14 +61,15 @@ function getScadenzeFiscali(year: number, regime?: string): Omit<Deadline, 'id'>
     { title: '2° acconto imposta sostitutiva', date: `${year}-11-30`, type: 'tax' },
     { title: '2° acconto INPS gestione separata', date: `${year}-11-16`, type: 'tax' },
     { title: 'Dichiarazione dei redditi (Modello Redditi)', date: `${year}-10-31`, type: 'tax' },
-    { title: 'Acconto IVA dicembre', date: `${year}-12-16`, type: 'tax' },
   ];
   if (regime === 'ordinario') {
+    // IVA: forfettario è esonerato (art.1 c.58 L.190/2014) — queste scadenze solo per ordinario
     base.push(
       { title: 'Liquidazione IVA T1 (gen-mar)', date: `${year}-04-16`, type: 'tax' },
       { title: 'Liquidazione IVA T2 (apr-giu)', date: `${year}-07-16`, type: 'tax' },
       { title: 'Liquidazione IVA T3 (lug-set)', date: `${year}-10-16`, type: 'tax' },
       { title: 'Liquidazione IVA T4 (ott-dic)', date: `${year + 1}-01-16`, type: 'tax' },
+      { title: 'Acconto IVA dicembre', date: `${year}-12-16`, type: 'tax' },
     );
   }
   return base;
@@ -102,6 +122,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
+  const calInpsType = getCalendarInpsType(profile?.country, profile?.coefficiente);
   const [searchQuery, setSearchQuery] = useState('');
   // IT-33: primo anno e reddito N-1
   // ORDINE DICHIARAZIONI: redditoN1 deve stare prima di isPrimoAnnoIT (evita TDZ crash)
@@ -122,20 +143,26 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     if (baseInc === 0) return empty;
     const exp = typeof expenses === 'number' && Number.isFinite(expenses) ? expenses : 0;
     const regime = profile?.regime ?? 'forfettario';
+    const calInpsType = getCalendarInpsType(profile?.country, profile?.coefficiente);
     let imposta = 0;
     let inps = 0;
     try {
+      const calcInps = (reddito: number): number => {
+        if (calInpsType === 'artigiani') return Math.max(INPS_ARTIGIANI_MINIMALE, reddito * INPS_ARTIGIANI_RATE);
+        if (calInpsType === 'commercianti') return Math.max(INPS_ARTIGIANI_MINIMALE, reddito * INPS_COMMERCIANTI_RATE);
+        return reddito * INPS_GESTIONE_SEPARATA_RATE;
+      };
       if (regime === 'forfettario') {
         const coeffRaw = profile?.coefficiente;
         const coeff = coeffRaw != null && coeffRaw > 0 ? coeffRaw / 100 : 0.78;
         const redditoLordo = Math.max(0, baseInc * coeff);
-        inps = redditoLordo * 0.2607;
+        inps = calcInps(redditoLordo);
         const base = Math.max(0, redditoLordo - inps);
         const isFive = annoInizio != null && Number.isFinite(annoInizio) && (selectedYear - annoInizio) < 5;
         imposta = base * (isFive ? 0.05 : 0.15);
       } else {
         const redditoLordo = Math.max(0, baseInc - exp);
-        inps = redditoLordo * 0.2607; // gestione separata (stesso del forfettario)
+        inps = calcInps(redditoLordo);
         const base = Math.max(0, redditoLordo - inps);
         const irpef = base <= 0 ? 0 : base <= 28000 ? base * 0.23 : base <= 50000 ? 28000 * 0.23 + (base - 28000) * 0.33 : 28000 * 0.23 + 22000 * 0.33 + (base - 50000) * 0.43;
         imposta = irpef + base * getAddizionaliRate(profile?.region);
@@ -299,8 +326,16 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                     <p className="text-sm font-bold">{daysUntilNext === 0 ? t('calendar.today') : daysUntilNext === 1 ? t('calendar.tomorrow') : t('calendar.days_left', { count: daysUntilNext })}</p>
                   </div>
                 </div>
-                <h3 className="text-lg font-bold leading-tight">{nextDeadline.title}</h3>
-                {nextDeadline.amount && <p className="text-2xl font-bold pt-2">€{nextDeadline.amount.toLocaleString(isSpain ? 'es-ES' : 'it-IT', { minimumFractionDigits: 2 })}</p>}
+                <h3 className="text-lg font-bold leading-tight">{localizeInpsTitle(nextDeadline.title, calInpsType)}</h3>
+                {(() => {
+                  // Preferisce l'importo calcolato live (fiscalAmounts) rispetto a quello salvato nel DB
+                  const heroAmt = FISCAL_ESTIMATE_TITLES.has(nextDeadline.title)
+                    ? (fiscalAmounts[nextDeadline.title] ?? nextDeadline.amount)
+                    : nextDeadline.amount;
+                  return heroAmt != null && heroAmt > 0
+                    ? <p className="text-2xl font-bold pt-2">€{heroAmt.toLocaleString(isSpain ? 'es-ES' : 'it-IT', { minimumFractionDigits: 2 })}</p>
+                    : null;
+                })()}
               </div>
             </motion.div>
           )}
@@ -373,7 +408,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start mb-0.5">
                       <div className="flex items-center gap-0.5 flex-1 min-w-0 pr-2">
-                        <h3 className={`text-sm font-bold truncate transition-colors ${deadline.completed ? 'line-through text-slate-400' : (darkMode ? 'text-white' : 'text-slate-900')}`}>{deadline.title}</h3>
+                        <h3 className={`text-sm font-bold truncate transition-colors ${deadline.completed ? 'line-through text-slate-400' : (darkMode ? 'text-white' : 'text-slate-900')}`}>{localizeInpsTitle(deadline.title, calInpsType)}</h3>
                         {DEADLINE_TOOLTIPS[deadline.title] && (
                           <InfoTooltip text={DEADLINE_TOOLTIPS[deadline.title]} darkMode={darkMode} />
                         )}
@@ -406,8 +441,26 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                       ) : (
                         <>
                           <span className="text-[10px] font-medium text-slate-400">{deadline.type === 'tax' ? t('calendar.type_tax') : deadline.type === 'payment' ? t('calendar.type_payment') : t('calendar.type_other')}</span>
-                          <div className={`w-1 h-1 rounded-full ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
-                          <span className={`text-[10px] font-bold uppercase tracking-wider ${deadline.type === 'tax' ? 'text-red-500' : 'text-blue-500'}`}>{deadline.type === 'tax' ? t('calendar.urgent') : t('calendar.expiring')}</span>
+                          {(() => {
+                            if (deadline.type !== 'tax') {
+                              return (
+                                <>
+                                  <div className={`w-1 h-1 rounded-full ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-500">{t('calendar.expiring')}</span>
+                                </>
+                              );
+                            }
+                            const daysToDeadline = Math.ceil((parseLocalDate(deadline.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                            if (daysToDeadline <= 30) {
+                              return (
+                                <>
+                                  <div className={`w-1 h-1 rounded-full ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-red-500">{t('calendar.urgent')}</span>
+                                </>
+                              );
+                            }
+                            return null;
+                          })()}
                         </>
                       )}
                     </div>

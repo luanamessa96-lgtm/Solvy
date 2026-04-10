@@ -39,7 +39,8 @@ interface TasseForfettario {
   imposta: number;
   inps: number;
   netto: number;
-  redditoImponibile: number;
+  redditoLordo: number;     // income × coeff — mostrato come "Reddito imponibile"
+  redditoImponibile: number; // redditoLordo − inps — base effettiva per imposta sostitutiva
   aliquota: number;
   isFivePercent: boolean;
   coeff: number;
@@ -169,7 +170,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
       const imposta = redditoImponibile * aliquota;
       const netto = base - imposta - inps;
 
-      return { regime: 'forfettario', imposta, inps, netto, redditoImponibile, aliquota, isFivePercent, coeff };
+      return { regime: 'forfettario', imposta, inps, netto, redditoLordo, redditoImponibile, aliquota, isFivePercent, coeff };
     } else {
       // Regime ordinario — INPS deducibile dalla base imponibile IRPEF (IT-20)
       const redditoLordo = Math.max(0, base - expenses);
@@ -565,9 +566,9 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   <div className="flex justify-between">
                     <span className="inline-flex items-center text-xs font-bold text-slate-400">
                       {t('dashboard.taxable_income', { pct: tasse.regime === 'forfettario' ? Math.round(tasse.coeff * 100) : 100 })}
-                      <InfoTooltip text="Percentuale che determina la base imponibile nel forfettario. Varia per categoria (es. 78% per professionisti). Rappresenta la quota di fatturato considerata come reddito." darkMode={darkMode} />
+                      <InfoTooltip text="Percentuale che determina la base imponibile nel forfettario. Varia per categoria (es. 78% per professionisti). Rappresenta la quota di fatturato considerata come reddito. L'INPS è poi deducibile prima del calcolo dell'imposta sostitutiva." darkMode={darkMode} />
                     </span>
-                    <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(tasse.redditoImponibile)}</span>
+                    <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(tasse.redditoLordo)}</span>
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
