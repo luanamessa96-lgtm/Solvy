@@ -70,8 +70,10 @@ export const italyModule: CountryModule = {
       const currentYear = new Date().getFullYear();
       const yearsInBusiness = startYear ? currentYear - startYear : 10;
       const taxRate = yearsInBusiness < 5 ? 0.05 : 0.15;
-      const incomeTax = taxableIncome * taxRate;
       const inps = taxableIncome * 0.2607;
+      // INPS deducibile prima del calcolo imposta sostitutiva (Circ. AdE 10/E 2016)
+      const imponibileNetto = Math.max(0, taxableIncome - inps);
+      const incomeTax = imponibileNetto * taxRate;
       const netIncome = grossIncome - incomeTax - inps;
       return {
         grossIncome,
@@ -89,13 +91,13 @@ export const italyModule: CountryModule = {
         },
       };
     } else {
-      // Regime ordinario — INPS deducibile ex art. 10 TUIR prima del calcolo IRPEF
-      const inps = grossIncome * 0.24;
+      // Regime ordinario — INPS GS 26.07%, deducibile ex art. 10 TUIR prima del calcolo IRPEF
+      const inps = grossIncome * 0.2607;
       const irpefBase = grossIncome - inps;
       let incomeTax = 0;
       if (irpefBase <= 28000) incomeTax = irpefBase * 0.23;
-      else if (irpefBase <= 50000) incomeTax = 28000 * 0.23 + (irpefBase - 28000) * 0.35;
-      else incomeTax = 28000 * 0.23 + 22000 * 0.35 + (irpefBase - 50000) * 0.43;
+      else if (irpefBase <= 50000) incomeTax = 28000 * 0.23 + (irpefBase - 28000) * 0.33;
+      else incomeTax = 28000 * 0.23 + 22000 * 0.33 + (irpefBase - 50000) * 0.43;
       const regionalAddl = irpefBase * 0.023;
       const totalIncomeTax = incomeTax + regionalAddl;
       const netIncome = grossIncome - totalIncomeTax - inps;
@@ -114,7 +116,7 @@ export const italyModule: CountryModule = {
   calculateContributions: (input: TaxInput): ContributionsResult => {
     const { grossIncome = 0, regime = 'forfettario', categoryCoeff = 0.78 } = input;
     const taxableIncome = regime === 'forfettario' ? grossIncome * categoryCoeff : grossIncome;
-    const annual = taxableIncome * (regime === 'forfettario' ? 0.2607 : 0.24);
+    const annual = taxableIncome * 0.2607; // GS 26.07% sia per forfettario che ordinario
     return {
       monthly: annual / 12,
       annual,

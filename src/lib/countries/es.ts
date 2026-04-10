@@ -11,7 +11,7 @@ export interface SpanishTaxResult {
   effectiveRate: number;
 }
 
-// IRPF 2024 brackets
+// IRPF 2026 — aliquote statali invariate dal 2022 (L.199/2025 non le ha modificate)
 const IRPF_BRACKETS = [
   { limit: 12450, rate: 0.19 },
   { limit: 20200, rate: 0.24 },
@@ -22,6 +22,9 @@ const IRPF_BRACKETS = [
 ];
 
 // RETA monthly quotes by income bracket (monthly net income → monthly quote)
+// Tabelle 2023 (sistema cotización por ingresos reales, RD-ley 13/2022).
+// Le tabelle 2024/2025 (Orden PCJ/178/2025) usano basi min/max × tipo 31,40%.
+// TODO T7: aggiornare a tabelle 2026 quando Orden 2026 autónomos pubblicata su BOE.
 export const RETA_BRACKETS = [
   { maxIncome: 670, monthlyQuote: 230 },
   { maxIncome: 900, monthlyQuote: 260 },
@@ -35,7 +38,7 @@ export const RETA_BRACKETS = [
 ];
 
 // Tarifa plana threshold: annual net income below this qualifies for year-2 extension
-const TARIFA_PLANA_INCOME_THRESHOLD = 10800; // SMI 2024 approx.
+const TARIFA_PLANA_INCOME_THRESHOLD = 14208; // SMI 2026: €1.184/mese × 12 (RD 126/2026)
 const TARIFA_PLANA_QUOTE = 80;
 
 export type TarifaPlanaStatus = 'year1' | 'year2_below_threshold' | 'normal';
@@ -151,7 +154,7 @@ function getSpanishDeadlines(year: number): FiscalDeadline[] {
     { title: 'Modelo 303+130 — T1', date: `${year}-04-20`, type: 'trimestrale' },
     { title: 'Modelo 303+130 — T2', date: `${year}-07-20`, type: 'trimestrale' },
     { title: 'Modelo 303+130 — T3', date: `${year}-10-20`, type: 'trimestrale' },
-    { title: 'Modelo 303+130 — T4', date: `${year + 1}-01-20`, type: 'trimestrale' },
+    { title: 'Modelo 303+130 — T4', date: `${year + 1}-01-30`, type: 'trimestrale' },
     { title: 'Modelo 390 — Resumen anual IVA', date: `${year + 1}-01-30`, type: 'annuale' },
     { title: 'Modelo 100 — Renta anual', date: `${year}-06-30`, type: 'annuale' },
   ];

@@ -51,7 +51,7 @@ const SECTIONS: Section[] = [
       },
       {
         title: 'Come funziona l\'IRPEF a scaglioni (ordinario)',
-        body: '23% fino a €28.000 · 35% da €28.001 a €50.000 · 43% oltre €50.000. Si applica sul reddito imponibile (fatturato - spese - INPS).',
+        body: '23% fino a €28.000 · 33% da €28.001 a €50.000 · 43% oltre €50.000 (aliquote 2026, L.199/2025). Si applica sul reddito imponibile (fatturato - spese - INPS).',
       },
       {
         title: 'Cosa sono le addizionali regionali e comunali',

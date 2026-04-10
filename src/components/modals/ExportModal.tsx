@@ -6,6 +6,7 @@ import { useProStatus } from '../../hooks/useProStatus';
 import { generateFatturaPA, getMissingProfileFields } from '../../services/fatturaPA';
 import { parseLocalDate, getLocalYear, getLocalMonth } from '../../utils/date';
 import { getItDeductibilityRate } from '../../lib/it/deductibility';
+import { getAddizionaliRate } from '../../lib/it/addizionali';
 import { calcularTrimestre, generateResumenPDF, getCurrentQuarter, QUARTER_LABELS } from '../../services/modelosES';
 import PdfPreviewModal from './PdfPreviewModal';
 
@@ -777,8 +778,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       function calcIRPEFi(imp: number): number {
         if (imp<=0) return 0;
         if (imp<=28000) return imp*0.23;
-        if (imp<=50000) return 28000*0.23+(imp-28000)*0.35;
-        return 28000*0.23+22000*0.35+(imp-50000)*0.43;
+        if (imp<=50000) return 28000*0.23+(imp-28000)*0.33;
+        return 28000*0.23+22000*0.33+(imp-50000)*0.43;
       }
       const allY = documents.filter(d => getLocalYear(d.date)===year);
       const paidInv = allY.filter(d => d.type==='invoice' && d.status==='paid');
@@ -794,7 +795,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const totExp = isItOrd ? expD.reduce((s,d)=>s+d.amount*getItDeductibilityRate(d.category),0) : totExpFull;
       const coeff = (profile.coefficiente!=null&&profile.coefficiente>0)?profile.coefficiente/100:0.78;
       const redLordo = isForf ? Math.max(0,totInc*coeff) : Math.max(0,totInc-totExp);
-      const inpsR = isForf ? 0.2607 : 0.24;
+      const inpsR = 0.2607; // GS 26.07% sia forfettario che ordinario professionisti
       const inps = redLordo*inpsR;
       const redImp = Math.max(0,redLordo-inps);
       const annoIn = profile.annoInizioAttivita??null;
@@ -803,7 +804,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const aliq = isForf?(is5pct?0.05:0.15):0;
       const impForf = redImp*aliq;
       const irpef = isForf?0:calcIRPEFi(redImp);
-      const addiz = isForf?0:redImp*0.023;
+      const addiz = isForf?0:redImp*getAddizionaliRate(profile.region);
       const imposta = isForf?impForf:irpef+addiz;
       const accGiu = imposta*0.40;
       const accNov = imposta*0.60;
@@ -849,7 +850,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       pdf.text('CALCOLO FISCALE STIMATO',margin,ry); ry+=4;
       const fiscBody = isForf
         ? [['Coefficiente',`${(coeff*100).toFixed(0)}%`],['Reddito lordo',fmtE(redLordo)],[`INPS (${(inpsR*100).toFixed(2)}%)`,fmtE(inps)],['Reddito imponibile',fmtE(redImp)],[`Imposta sostitutiva (${(aliq*100).toFixed(0)}%)`,fmtE(imposta)],['Acconto giugno (40%)',fmtE(accGiu)],['Acconto novembre (60%)',fmtE(accNov)],['Saldo stimato',fmtE(saldo)]]
-        : [['Reddito lordo',fmtE(redLordo)],[`INPS (${(inpsR*100).toFixed(0)}%)`,fmtE(inps)],['Reddito imponibile',fmtE(redImp)],['IRPEF',fmtE(irpef)],['Addizionali (~2.3%)',fmtE(addiz)],['Totale imposta',fmtE(imposta)],['Acconto giugno (40%)',fmtE(accGiu)],['Acconto novembre (60%)',fmtE(accNov)],['Saldo stimato',fmtE(saldo)]];
+        : [['Reddito lordo',fmtE(redLordo)],[`INPS (${(inpsR*100).toFixed(0)}%)`,fmtE(inps)],['Reddito imponibile',fmtE(redImp)],['IRPEF',fmtE(irpef)],[`Addizionali (${(getAddizionaliRate(profile.region)*100).toFixed(2)}%)`,fmtE(addiz)],['Totale imposta',fmtE(imposta)],['Acconto giugno (40%)',fmtE(accGiu)],['Acconto novembre (60%)',fmtE(accNov)],['Saldo stimato',fmtE(saldo)]];
       autoTable(pdf,{
         startY:ry,
         head:[['Calcolo','Importo stimato']],
@@ -1044,12 +1045,11 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const red: [number, number, number] = [239, 68, 68];
 
       const INPS_GESTIONE_SEPARATA = 0.2607;
-      const INPS_ORDINARIO = 0.24;
       function calcIRPEFLocal(imp: number): number {
         if (imp <= 0) return 0;
         if (imp <= 28000) return imp * 0.23;
-        if (imp <= 50000) return 28000 * 0.23 + (imp - 28000) * 0.35;
-        return 28000 * 0.23 + 22000 * 0.35 + (imp - 50000) * 0.43;
+        if (imp <= 50000) return 28000 * 0.23 + (imp - 28000) * 0.33;
+        return 28000 * 0.23 + 22000 * 0.33 + (imp - 50000) * 0.43;
       }
       const fmtEur = (n: number) => `€ ${Math.abs(n).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -1072,7 +1072,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
         : totalExpensesAmt;
       const coeff = (profile.coefficiente != null && profile.coefficiente > 0) ? profile.coefficiente / 100 : 0.78;
       const redditoLordo = isForfettario ? Math.max(0, totalIncome * coeff) : Math.max(0, totalIncome - totalDeductibleExpenses);
-      const inpsRate = isForfettario ? INPS_GESTIONE_SEPARATA : INPS_ORDINARIO;
+      const inpsRate = INPS_GESTIONE_SEPARATA; // GS 26.07% sia forfettario che ordinario professionisti
       const inps = redditoLordo * inpsRate;
       const redditoImponibile = Math.max(0, redditoLordo - inps);
       const annoInizio = profile.annoInizioAttivita ?? null;
@@ -1081,7 +1081,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const aliquota = isForfettario ? (isFivePercent ? 0.05 : 0.15) : 0;
       const impostaForFeit = redditoImponibile * aliquota;
       const irpef = isForfettario ? 0 : calcIRPEFLocal(redditoImponibile);
-      const addizionali = isForfettario ? 0 : redditoImponibile * 0.023;
+      const addizionali = isForfettario ? 0 : redditoImponibile * getAddizionaliRate(profile.region);
       const imposta = isForfettario ? impostaForFeit : irpef + addizionali;
       const accontoGiugno = imposta * 0.40;
       const accontoNovembre = imposta * 0.60;
@@ -1172,7 +1172,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
             [`Contributi INPS (${(inpsRate * 100).toFixed(0)}%)`, fmtEur(inps)],
             ['Reddito imponibile', fmtEur(redditoImponibile)],
             ['IRPEF', fmtEur(irpef)],
-            ['Addizionali (~2.3%)', fmtEur(addizionali)],
+            [`Addizionali (${(getAddizionaliRate(profile.region) * 100).toFixed(2)}%)`, fmtEur(addizionali)],
             ['Totale imposta', fmtEur(imposta)],
             ['Acconto giugno (40%)', fmtEur(accontoGiugno)],
             ['Acconto novembre (60%)', fmtEur(accontoNovembre)],

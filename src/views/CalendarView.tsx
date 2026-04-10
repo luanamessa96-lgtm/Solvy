@@ -5,6 +5,7 @@ import { Deadline, Profile, Document } from '../types';
 import { calcularTrimestre, ResumenTrimestral } from '../services/modelosES';
 import { getSpanishDeadlines, getAllRetaDeadlines, getNextRetaDeadline } from '../data/deadlines-es';
 import { parseLocalDate, getLocalYear, getLocalMonth, todayLocalISO } from '../utils/date';
+import { getAddizionaliRate } from '../lib/it/addizionali';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
 import { useTranslation } from 'react-i18next';
@@ -136,8 +137,8 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
         const redditoLordo = Math.max(0, baseInc - exp);
         inps = redditoLordo * 0.2607; // gestione separata (stesso del forfettario)
         const base = Math.max(0, redditoLordo - inps);
-        const irpef = base <= 0 ? 0 : base <= 28000 ? base * 0.23 : base <= 50000 ? 28000 * 0.23 + (base - 28000) * 0.35 : 28000 * 0.23 + 22000 * 0.35 + (base - 50000) * 0.43;
-        imposta = irpef + base * 0.023;
+        const irpef = base <= 0 ? 0 : base <= 28000 ? base * 0.23 : base <= 50000 ? 28000 * 0.23 + (base - 28000) * 0.33 : 28000 * 0.23 + 22000 * 0.33 + (base - 50000) * 0.43;
+        imposta = irpef + base * getAddizionaliRate(profile?.region);
       }
     } catch {
       return empty;

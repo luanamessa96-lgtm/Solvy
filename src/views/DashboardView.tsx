@@ -82,8 +82,8 @@ const ALERT_SOGLIA_VICINO = 65000;
 function calcIRPEF(imponibile: number): number {
   if (!Number.isFinite(imponibile) || imponibile <= 0) return 0;
   if (imponibile <= 28000) return imponibile * 0.23;
-  if (imponibile <= 50000) return 28000 * 0.23 + (imponibile - 28000) * 0.35;
-  return 28000 * 0.23 + 22000 * 0.35 + (imponibile - 50000) * 0.43;
+  if (imponibile <= 50000) return 28000 * 0.23 + (imponibile - 28000) * 0.33;
+  return 28000 * 0.23 + 22000 * 0.33 + (imponibile - 50000) * 0.43;
 }
 
 function fmt(n: number) {

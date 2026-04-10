@@ -43,9 +43,11 @@ describe('Italy — IRPEF Forfettario', () => {
       categoryCoeff: 0.78,
       startYear: currentYear - 2, // 2 anni fa → < 5 → 5%
     });
-    const expectedTaxable = 30000 * 0.78; // 23400
+    const expectedTaxable = 30000 * 0.78; // 23400 — lordo × coeff
+    const expectedINPS = expectedTaxable * 0.2607;
+    const expectedBase = expectedTaxable - expectedINPS; // INPS deducibile (Circ. AdE 10/E 2016)
     expect(result.taxableIncome).toBeCloseTo(expectedTaxable);
-    expect(result.incomeTax).toBeCloseTo(expectedTaxable * 0.05);
+    expect(result.incomeTax).toBeCloseTo(expectedBase * 0.05);
     expect(result.details?.aliquota).toBe(0.05);
   });
 
@@ -58,7 +60,9 @@ describe('Italy — IRPEF Forfettario', () => {
       startYear: currentYear - 10,
     });
     const expectedTaxable = 30000 * 0.78;
-    expect(result.incomeTax).toBeCloseTo(expectedTaxable * 0.15);
+    const expectedINPS = expectedTaxable * 0.2607;
+    const expectedBase = expectedTaxable - expectedINPS; // INPS deducibile (Circ. AdE 10/E 2016)
+    expect(result.incomeTax).toBeCloseTo(expectedBase * 0.15);
     expect(result.details?.aliquota).toBe(0.15);
   });
 
@@ -108,37 +112,37 @@ describe('Italy — IRPEF Forfettario', () => {
 describe('Italy — IRPEF Ordinario (scaglioni)', () => {
   it('scaglione ≤ 28.000 → 23%', () => {
     const result = italyModule.calculateTax({ grossIncome: 20000, regime: 'ordinario' });
-    // INPS deducibile ex art. 10 TUIR: base IRPEF = 20000 - (20000 * 0.24) = 15200
-    const inps = 20000 * 0.24;
+    // INPS GS 26.07% deducibile ex art. 10 TUIR: base IRPEF = 20000 - (20000 * 0.2607)
+    const inps = 20000 * 0.2607;
     const base = 20000 - inps;
     const expectedIRPEF = base * 0.23;
     const expectedAddl = base * 0.023;
     expect(result.incomeTax).toBeCloseTo(expectedIRPEF + expectedAddl, 0);
   });
 
-  it('scaglione 28.001–50.000 → 23% + 35% (IRPEF su base netta INPS)', () => {
+  it('scaglione 28.001–50.000 → 23% + 33% (IRPEF su base netta INPS, L.199/2025)', () => {
     const result = italyModule.calculateTax({ grossIncome: 40000, regime: 'ordinario' });
-    // INPS deducibile ex art. 10 TUIR: base IRPEF = 40000 - (40000 * 0.24) = 30400
-    const inps = 40000 * 0.24;
+    // INPS deducibile ex art. 10 TUIR: base IRPEF = 40000 - (40000 * 0.2607)
+    const inps = 40000 * 0.2607;
     const base = 40000 - inps;
-    const irpef = 28000 * 0.23 + (base - 28000) * 0.35;
+    const irpef = 28000 * 0.23 + (base - 28000) * 0.33;
     const addl = base * 0.023;
     expect(result.incomeTax).toBeCloseTo(irpef + addl, 0);
   });
 
-  it('scaglione oltre 50.000 → 23% + 35% + 43% (IRPEF su base netta INPS)', () => {
+  it('scaglione oltre 50.000 → 23% + 33% + 43% (IRPEF su base netta INPS, L.199/2025)', () => {
     const result = italyModule.calculateTax({ grossIncome: 70000, regime: 'ordinario' });
-    // INPS deducibile ex art. 10 TUIR: base IRPEF = 70000 - (70000 * 0.24) = 53200
-    const inps = 70000 * 0.24;
+    // INPS deducibile ex art. 10 TUIR: base IRPEF = 70000 - (70000 * 0.2607)
+    const inps = 70000 * 0.2607;
     const base = 70000 - inps;
-    const irpef = 28000 * 0.23 + 22000 * 0.35 + (base - 50000) * 0.43;
+    const irpef = 28000 * 0.23 + 22000 * 0.33 + (base - 50000) * 0.43;
     const addl = base * 0.023;
     expect(result.incomeTax).toBeCloseTo(irpef + addl, 0);
   });
 
-  it('INPS ordinario al 24%', () => {
+  it('INPS ordinario gestione separata al 26.07%', () => {
     const result = italyModule.calculateTax({ grossIncome: 30000, regime: 'ordinario' });
-    expect(result.socialContributions).toBeCloseTo(30000 * 0.24);
+    expect(result.socialContributions).toBeCloseTo(30000 * 0.2607);
   });
 
   it('effectiveRate coerente con i calcoli', () => {
@@ -160,9 +164,9 @@ describe('Italy — INPS Gestione Separata', () => {
     expect(res.monthly).toBeCloseTo(res.annual / 12, 2);
   });
 
-  it('ordinario: contributi su reddito lordo al 24%', () => {
+  it('ordinario: contributi gestione separata al 26.07%', () => {
     const res = italyModule.calculateContributions({ grossIncome: 50000, regime: 'ordinario', categoryCoeff: 0.78 });
-    expect(res.annual).toBeCloseTo(50000 * 0.24, 0);
+    expect(res.annual).toBeCloseTo(50000 * 0.2607, 0);
   });
 
   it('label = "INPS Gestione Separata"', () => {
