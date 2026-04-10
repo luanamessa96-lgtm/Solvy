@@ -376,7 +376,10 @@ function AppInner() {
       .channel(`profiles-${userId}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${userId}` }, async (payload) => {
         const updatedId = (payload.new as Record<string, unknown>).id as string;
-        const newIsPro = ((payload.new as Record<string, unknown>).is_pro as boolean) ?? false;
+        // is_pro può essere assente nel payload se updateProfile non lo include (upsert senza is_pro).
+        // Usare ?? false causerebbe un falso downgrade del tema ad ogni salvataggio profilo.
+        const rawIsPro = (payload.new as Record<string, unknown>).is_pro;
+        const newIsPro = rawIsPro === true; // true solo se esplicitamente true nel payload
         try {
           const fresh = await getProfiles(userId);
           const fp = fresh.find(p => p.id === updatedId);
@@ -385,12 +388,15 @@ function AppInner() {
             setActiveProfile(prev => prev.id === updatedId ? fp : prev);
           }
         } catch {
-          // fallback: aggiorna solo isPro
-          setProfiles(prev => prev.map(p => p.id === updatedId ? { ...p, isPro: newIsPro } : p));
-          setActiveProfile(prev => prev.id === updatedId ? { ...prev, isPro: newIsPro } : prev);
+          // fallback: aggiorna solo isPro se il campo era presente nel payload
+          if (rawIsPro !== undefined) {
+            setProfiles(prev => prev.map(p => p.id === updatedId ? { ...p, isPro: newIsPro } : p));
+            setActiveProfile(prev => prev.id === updatedId ? { ...prev, isPro: newIsPro } : prev);
+          }
         }
-        // Se l'utente perde il Pro, declassa il tema pro → free (solo se il tema attuale è pro)
-        if (!newIsPro) {
+        // Declassa il tema pro → free solo quando is_pro è esplicitamente false nel payload
+        // (cambio reale da Pro a Free via Stripe webhook), non quando il campo è assente.
+        if (rawIsPro === false) {
           setTheme(prev => {
             if (prev !== 'pro-light' && prev !== 'pro-dark') return prev;
             const next = prev === 'pro-light' ? 'free-light' : 'free-dark';
