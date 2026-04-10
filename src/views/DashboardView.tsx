@@ -372,7 +372,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                 <AlertTriangle size={15} className="mt-0.5 shrink-0" />
                 <div>
                   <p className="text-xs font-bold">Cuota RETA mensual no configurada</p>
-                  <p className="text-[10px] mt-0.5 opacity-80">Inserta tu cuota RETA en el perfil para cálculos precisos. Ahora se usa el mínimo estimado (€206/mes).</p>
+                  <p className="text-[10px] mt-0.5 opacity-80">La cuota se estima según tus ingresos. Inserta el importe exacto en tu perfil para mayor precisión.</p>
                 </div>
               </div>
             )}
@@ -478,7 +478,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                     {retaMensualMissing && (
                       <div className={`flex items-start gap-2 mt-1 px-3 py-2 rounded-xl ${darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-700'}`}>
                         <AlertTriangle size={13} className="mt-0.5 shrink-0" />
-                        <p className="text-[10px] leading-relaxed">Inserta tu cuota RETA mensual en el perfil para cálculos precisos. Ahora se muestra el mínimo estimado (€206/mes).</p>
+                        <p className="text-[10px] leading-relaxed">La cuota se estima según tus ingresos. Inserta el importe exacto en tu perfil para mayor precisión.</p>
                       </div>
                     )}
                   </div>
