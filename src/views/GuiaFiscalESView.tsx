@@ -58,10 +58,6 @@ const SECTIONS: Section[] = [
         body: 'El Régimen Especial de Trabajadores Autónomos es el sistema de Seguridad Social para autónomos. Desde 2023 la cuota mensual se calcula según tus ingresos reales netos: a más rendimiento neto, más cuota. Hay 15 tramos, desde ~€200/mes hasta ~€590/mes. Cada año se ajusta en función de lo que hayas ganado realmente.',
       },
       {
-        title: 'Qué es la Tarifa Plana y cuánto dura realmente',
-        body: 'La Tarifa Plana es una cuota reducida de €80/mes para nuevos autónomos durante los primeros 12 meses. No importa cuánto ganes — pagas siempre €80. A partir del mes 13 pagas la cuota según tu tramo de ingresos. Si ya fuiste autónomo en los últimos 2 años, no tienes derecho a ella.',
-      },
-      {
         title: 'Cuándo y cómo pagar la cuota RETA mensual',
         body: 'La cuota RETA se domicilia automáticamente en tu cuenta bancaria entre los días 20 y 31 de cada mes. No tienes que hacer nada manualmente una vez configurada. Si no tienes domiciliación activa puedes pagar en tu banco o sede electrónica de la Seguridad Social. El impago genera recargos y puede llevarte a baja de oficio.',
       },

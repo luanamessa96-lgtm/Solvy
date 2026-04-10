@@ -281,7 +281,7 @@ export const spainModule: CountryModule = {
       monthly,
       annual: monthly * 12,
       label: isTarifaPlana
-        ? `RETA — Tarifa Plana €${monthly}/mes (${status === 'year1' ? '1er año' : '2º año'})`
+        ? `RETA €${monthly}/mes (tramo reducido histórico)`
         : 'RETA (Seguridad Social autónomos)',
     };
   },

@@ -46,7 +46,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
   const [taxIdType, setTaxIdType] = useState<'nif' | 'nie'>('nif');
   const [nif, setNif] = useState('');
   const [nie, setNie] = useState('');
-  const [retaMensile, setRetaMensile] = useState('500');
+  const [retaMensile, setRetaMensile] = useState('');
   const [annoInizioSpagna, setAnnoInizioSpagna] = useState('');
   const [streetEs, setStreetEs] = useState('');
   const [capEs, setCapEs] = useState('');
@@ -399,19 +399,8 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                 </div>
                 <div className="space-y-1.5">
                   <label className={lc}>Cuota RETA mensual</label>
-                  <select value={retaMensile} onChange={e => setRetaMensile(e.target.value)} className={ic}>
-                    <option value="80">€ 80/mes — Tarifa Plana (1er/2º año)</option>
-                    <option value="230">€ 230/mes</option>
-                    <option value="260">€ 260/mes</option>
-                    <option value="275">€ 275/mes</option>
-                    <option value="294">€ 294/mes</option>
-                    <option value="320">€ 320/mes</option>
-                    <option value="350">€ 350/mes</option>
-                    <option value="370">€ 370/mes</option>
-                    <option value="390">€ 390/mes</option>
-                    <option value="500">€ 500+/mes</option>
-                  </select>
-                  <HelpText text="Cuota mensual del Régimen Especial de Trabajadores Autónomos." />
+                  <input type="number" inputMode="decimal" min="0" step="0.01" value={retaMensile} onChange={e => setRetaMensile(e.target.value)} placeholder="es. 89.50" className={ic} />
+                  <HelpText text="Chiedi al tuo commercialista o alla Seguridad Social la tua quota mensile esatta." />
                 </div>
                 <div className="space-y-1.5">
                   <label className={lc}>Año inicio actividad</label>

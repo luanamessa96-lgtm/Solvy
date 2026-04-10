@@ -40,7 +40,7 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
   const retaAlert = useMemo(() => {
     if (profile.country !== 'Spain') return null;
     const currentYear = new Date().getFullYear();
-    // Non mostrare se Tarifa Plana (primo anno)
+    // Non mostrare l'alert di cambio fascia se hanno iniziato quest'anno (nessun dato storico)
     if (profile.annoInizioAttivita != null && profile.annoInizioAttivita >= currentYear) return null;
     // Priorità a redditoN1 (inserito manualmente); fallback al calcolo da fatture anno corrente
     let monthlyNet: number;
