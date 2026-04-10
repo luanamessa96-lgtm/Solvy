@@ -3,17 +3,21 @@
  * midnight offset bug: new Date("2026-04-01") = midnight UTC, which in UTC-X
  * timezones becomes March 31 locally. This utility always returns local midnight.
  */
-export function parseLocalDate(dateStr: string): Date {
+export function parseLocalDate(dateStr: string | null | undefined): Date {
+  if (!dateStr) return new Date(0); // sentinel: won't match any real year/month filter
   const s = dateStr.split('T')[0];
-  const [y, m, d] = s.split('-').map(Number);
+  const parts = s.split('-').map(Number);
+  // Guard against partial dates ("2026-04") or non-numeric parts
+  if (parts.length < 3 || parts.some(isNaN)) return new Date(0);
+  const [y, m, d] = parts;
   return new Date(y, m - 1, d);
 }
 
-export function getLocalYear(dateStr: string): number {
+export function getLocalYear(dateStr: string | null | undefined): number {
   return parseLocalDate(dateStr).getFullYear();
 }
 
-export function getLocalMonth(dateStr: string): number {
+export function getLocalMonth(dateStr: string | null | undefined): number {
   return parseLocalDate(dateStr).getMonth();
 }
 

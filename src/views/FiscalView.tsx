@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import { Info, Download } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
+import { useToast } from '../components/ui/Toast';
 import { Profile, Document } from '../types';
 import { todayLocalISO } from '../utils/date';
 import { IT_ADDIZIONALI_REGIONALI } from '../lib/it/addizionali';
@@ -18,6 +19,7 @@ interface FiscalViewProps {
 
 const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: FiscalViewProps) => {
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const [redditoN1Input, setRedditoN1Input] = useState(
     profile.redditoN1 != null ? String(profile.redditoN1) : ''
   );
@@ -173,6 +175,9 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('[FiscalView] Export backup IT failed:', e);
+      showToast('Errore durante l\'esportazione. Riprova.', 'error');
     } finally {
       setIsExportingZip(false);
     }
@@ -287,6 +292,9 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('[FiscalView] Export backup ES failed:', e);
+      showToast('Error al exportar. Inténtalo de nuevo.', 'error');
     } finally {
       setIsExportingZipES(false);
     }

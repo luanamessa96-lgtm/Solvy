@@ -80,7 +80,7 @@ const ALERT_SOGLIA = 80000;
 const ALERT_SOGLIA_VICINO = 65000;
 
 function calcIRPEF(imponibile: number): number {
-  if (imponibile <= 0) return 0;
+  if (!Number.isFinite(imponibile) || imponibile <= 0) return 0;
   if (imponibile <= 28000) return imponibile * 0.23;
   if (imponibile <= 50000) return 28000 * 0.23 + (imponibile - 28000) * 0.35;
   return 28000 * 0.23 + 22000 * 0.35 + (imponibile - 50000) * 0.43;
@@ -175,13 +175,15 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
       const redditoLordo = Math.max(0, base - expenses);
       const inpsLordo = calcInpsAmount(redditoLordo, INPS_GESTIONE_SEPARATA);
 
-      // Rivalsa INPS 4% ricevuta dai clienti riduce il costo INPS effettivo (solo IT ordinario)
-      const rivalsaInps = profile.country === 'Italy'
+      // Rivalsa INPS 4% ricevuta dai clienti riduce il costo INPS effettivo (solo IT ordinario).
+      // Cappata a inpsLordo: in nessun caso la rivalsa può azzerare più di quanto dovuto.
+      const rivalsaRaw = profile.country === 'Italy'
         ? documents
             .filter(d => d.type === 'invoice' && d.status === 'paid' && d.rivalsaInps && getLocalYear(d.date) === displayYear)
             .reduce((sum, d) => sum + d.amount * 0.04, 0)
         : 0;
-      const inps = Math.max(0, inpsLordo - rivalsaInps);
+      const rivalsaInps = Math.min(rivalsaRaw, inpsLordo);
+      const inps = inpsLordo - rivalsaInps; // always >= 0
 
       const redditoImponibile = Math.max(0, redditoLordo - inps);
       const irpef = calcIRPEF(redditoImponibile);
@@ -189,7 +191,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
       const totaleImposta = irpef + addizionali;
       const netto = base - totaleImposta - inps - expenses;
 
-      return { regime: 'ordinario', imposta: totaleImposta, irpef, addizionali, inps, inpsLordo, rivalsaInps, netto, redditoImponibile, aliquota: redditoImponibile > 0 ? totaleImposta / redditoImponibile : 0 };
+      return { regime: 'ordinario', imposta: totaleImposta, irpef, addizionali, inps, inpsLordo, rivalsaInps, netto, redditoImponibile, aliquota: Number.isFinite(redditoImponibile) && redditoImponibile > 0 ? totaleImposta / redditoImponibile : 0 };
     }
   }, [income, expenses, profile, displayYear, documents]);
 

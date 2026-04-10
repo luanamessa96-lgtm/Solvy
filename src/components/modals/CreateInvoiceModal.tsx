@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Plus, FileText, CheckCircle2, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Document, Profile } from '../../types';
-import { todayLocalISO } from '../../utils/date';
+import { todayLocalISO, getLocalYear } from '../../utils/date';
 import InfoTooltip from '../ui/InfoTooltip';
 
 interface CreateInvoiceModalProps {
@@ -102,7 +102,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
   const clientSuggestions = useMemo(() => {
     if (!form.client.trim() || !showSuggestions) return [];
     const q = form.client.toLowerCase();
-    return clientHistory.filter(d => d.client!.toLowerCase().includes(q)).slice(0, 5);
+    return clientHistory.filter(d => d.client?.toLowerCase().includes(q) ?? false).slice(0, 5);
   }, [form.client, clientHistory, showSuggestions]);
 
   const applyClient = (d: Document) => {
@@ -164,8 +164,10 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
   const incrementCounter = () => {
     const year = new Date().getFullYear();
     const yearStr = String(year);
-    const existingCount = documents.filter(d => d.type === 'invoice' && new Date(d.date).getFullYear() === year).length;
-    const current = profile.invoiceCounters?.[yearStr] ?? existingCount;
+    // Use Math.max to prevent duplicates on rapid creation: if the stored counter is behind
+    // the actual document count (race condition), the document count wins as the floor.
+    const existingCount = documents.filter(d => d.type === 'invoice' && getLocalYear(d.date) === year).length;
+    const current = Math.max(profile.invoiceCounters?.[yearStr] ?? 0, existingCount);
     onUpdateProfile({ ...profile, invoiceCounters: { ...(profile.invoiceCounters ?? {}), [yearStr]: current + 1 } });
   };
 
