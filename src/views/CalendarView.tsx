@@ -12,9 +12,11 @@ import { useTranslation } from 'react-i18next';
 import InfoTooltip from '../components/ui/InfoTooltip';
 
 const FISCAL_ESTIMATE_TITLES = new Set([
-  'Saldo imposta sostitutiva + 1° acconto',
+  'Saldo imposta sostitutiva + 1° acconto', // forfettario
+  'Saldo IRPEF + 1° acconto',               // ordinario
   '1° acconto INPS gestione separata',
-  '2° acconto imposta sostitutiva',
+  '2° acconto imposta sostitutiva',          // forfettario
+  '2° acconto IRPEF',                        // ordinario
   '2° acconto INPS gestione separata',
 ]);
 
@@ -43,8 +45,10 @@ function isFiscalEstimate(deadline: Deadline): boolean {
 
 const DEADLINE_TOOLTIPS: Record<string, string> = {
   'Saldo imposta sostitutiva + 1° acconto': "Pagamento del saldo dell'anno precedente più il primo acconto dell'anno corrente (40%). Scade il 30 giugno.",
+  'Saldo IRPEF + 1° acconto': "Pagamento del saldo IRPEF dell'anno precedente più il primo acconto dell'anno corrente (40%). Scade il 30 giugno.",
   '1° acconto INPS gestione separata': 'Primo acconto dei contributi INPS (40% del totale annuo stimato). Scade il 16 giugno.',
-  '2° acconto imposta sostitutiva': 'Secondo acconto IRPEF/imposta sostitutiva (60% del totale annuo stimato). Scade il 30 novembre.',
+  '2° acconto imposta sostitutiva': 'Secondo acconto imposta sostitutiva (60% del totale annuo stimato). Scade il 30 novembre.',
+  '2° acconto IRPEF': 'Secondo acconto IRPEF (60% del totale annuo stimato). Scade il 30 novembre.',
   '2° acconto INPS gestione separata': 'Secondo acconto INPS (60% del totale annuo stimato). Scade il 16 novembre.',
   'Dichiarazione dei redditi (Modello Redditi)': 'Presentazione del Modello Redditi PF. Scade il 31 ottobre.',
   'Acconto IVA dicembre': 'Acconto IVA annuale per regime ordinario. Scade il 16 dicembre.',
@@ -55,10 +59,13 @@ const DEADLINE_TOOLTIPS: Record<string, string> = {
 };
 
 function getScadenzeFiscali(year: number, regime?: string): Omit<Deadline, 'id'>[] {
+  const isOrdinario = regime === 'ordinario';
+  const saldoTitle = isOrdinario ? 'Saldo IRPEF + 1° acconto' : 'Saldo imposta sostitutiva + 1° acconto';
+  const accontoTitle = isOrdinario ? '2° acconto IRPEF' : '2° acconto imposta sostitutiva';
   const base: Omit<Deadline, 'id'>[] = [
-    { title: 'Saldo imposta sostitutiva + 1° acconto', date: `${year}-06-30`, type: 'tax' },
+    { title: saldoTitle, date: `${year}-06-30`, type: 'tax' },
     { title: '1° acconto INPS gestione separata', date: `${year}-06-16`, type: 'tax' },
-    { title: '2° acconto imposta sostitutiva', date: `${year}-11-30`, type: 'tax' },
+    { title: accontoTitle, date: `${year}-11-30`, type: 'tax' },
     { title: '2° acconto INPS gestione separata', date: `${year}-11-16`, type: 'tax' },
     { title: 'Dichiarazione dei redditi (Modello Redditi)', date: `${year}-10-31`, type: 'tax' },
   ];
@@ -128,7 +135,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   // ORDINE DICHIARAZIONI: redditoN1 deve stare prima di isPrimoAnnoIT (evita TDZ crash)
   const annoInizio = profile?.annoInizioAttivita != null ? Number(profile.annoInizioAttivita) : null;
   const redditoN1 = profile?.redditoN1;
-  const isPrimoAnnoIT = !isSpain && profile?.regime !== 'ordinario' && annoInizio != null && annoInizio === selectedYear && !(redditoN1 != null && redditoN1 > 0);
+  const isPrimoAnnoIT = !isSpain && annoInizio != null && annoInizio === selectedYear && !(redditoN1 != null && redditoN1 > 0);
 
   // IT-21 + IT-22: importi stimati per scadenze fiscali IT
   // NOTA: currentYear deve essere dichiarato prima di questo useMemo
@@ -171,10 +178,13 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
       return empty;
     }
     if (!Number.isFinite(imposta) || !Number.isFinite(inps)) return empty;
+    const isOrdinarioCalc = regime === 'ordinario';
+    const saldoKey = isOrdinarioCalc ? 'Saldo IRPEF + 1° acconto' : 'Saldo imposta sostitutiva + 1° acconto';
+    const accontoKey = isOrdinarioCalc ? '2° acconto IRPEF' : '2° acconto imposta sostitutiva';
     return {
-      'Saldo imposta sostitutiva + 1° acconto': Math.round(imposta * 0.40),
+      [saldoKey]: Math.round(imposta * 0.40),
       '1° acconto INPS gestione separata': Math.round(inps * 0.40),
-      '2° acconto imposta sostitutiva': Math.round(imposta * 0.60),
+      [accontoKey]: Math.round(imposta * 0.60),
       '2° acconto INPS gestione separata': Math.round(inps * 0.60),
     };
   }, [isSpain, isPrimoAnnoIT, redditoN1, income, expenses, profile, annoInizio, currentYear, selectedYear]);
