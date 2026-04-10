@@ -521,14 +521,15 @@ describe('Spain — IVA repercutida / soportada', () => {
 describe('Spain — Modelo 130 (calcolo cumulativo)', () => {
   const year = 2026;
 
-  it('T1: base = ingresos − gastos, cuota = 20%', () => {
+  it('T1: base = (ingresos − gastos) × 95% dopo gastos difícil 5%', () => {
     const docs = [
       makeInvoice(5000, '2026-02-01'),
       makeExpense(1000, '2026-02-10', 'material', 0),
     ];
     const res = calcularTrimestre(docs, 1, year);
-    expect(res.baseImponible130).toBeCloseTo(4000);
-    expect(res.cuotaIRPF).toBeCloseTo(4000 * 0.20);
+    // rendimientoNetoPrevio = 4000; gastosDificil = 4000 × 5% = 200; base = 3800
+    expect(res.baseImponible130).toBeCloseTo(3800);
+    expect(res.cuotaIRPF).toBeCloseTo(3800 * 0.20);
     expect(res.pagosAnteriores).toBe(0);
   });
 
@@ -543,15 +544,16 @@ describe('Spain — Modelo 130 (calcolo cumulativo)', () => {
     expect(t2.cuotaIRPF).toBeCloseTo(t2.cuotaAcumulada - t2.pagosAnteriores, 2);
   });
 
-  it('T3 cumulativo: include T1 + T2 + T3', () => {
+  it('T3 cumulativo: include T1 + T2 + T3, applica 5% gastos difícil', () => {
     const docs = [
       makeInvoice(3000, '2026-01-15'), // T1
       makeInvoice(3000, '2026-04-15'), // T2
       makeInvoice(3000, '2026-07-15'), // T3
     ];
     const res = calcularTrimestre(docs, 3, year);
+    // ingresos cumulativi = 9000; gastosDificil = 9000 × 5% = 450; base = 8550
     expect(res.ingresosCumulativos).toBeCloseTo(9000);
-    expect(res.cuotaAcumulada).toBeCloseTo(9000 * 0.20);
+    expect(res.cuotaAcumulada).toBeCloseTo(8550 * 0.20);
   });
 
   it('exentoMinimo: base < €1.000 → cuotaIRPF = 0 e flag true', () => {
@@ -561,11 +563,12 @@ describe('Spain — Modelo 130 (calcolo cumulativo)', () => {
     expect(res.cuotaIRPF).toBe(0);
   });
 
-  it('exentoMinimo: base = €1.000 → NON esente (bordo superiore)', () => {
+  it('exentoMinimo: ingresos = €1.000 → esente dopo 5% gastos difícil (base netta = €950)', () => {
+    // rendimientoNetoPrevio = 1000; gastosDificil = 1000 × 5% = 50; base = 950 < 1000 → esente
     const docs = [makeInvoice(1000, '2026-01-10')];
     const res = calcularTrimestre(docs, 1, year);
-    expect(res.exentoMinimo).toBe(false);
-    expect(res.cuotaIRPF).toBeCloseTo(1000 * 0.20);
+    expect(res.exentoMinimo).toBe(true);
+    expect(res.cuotaIRPF).toBe(0);
   });
 
   it('factura_rectificativa riduce gli ingresos cumulativi', () => {
@@ -587,14 +590,15 @@ describe('Spain — Modelo 130 (calcolo cumulativo)', () => {
     expect(res.cuotaIRPF).toBeGreaterThanOrEqual(0);
   });
 
-  it('spese con deducibilità parziale (telefono 50%)', () => {
+  it('spese con deducibilità parziale (telefono 50%), gastos difícil applicato', () => {
     const docs = [
       makeInvoice(5000, '2026-01-10'),
       makeExpense(2000, '2026-01-20', 'telefono', 0), // deducibile al 50% → 1000
     ];
     const res = calcularTrimestre(docs, 1, year);
+    // rendimientoNetoPrevio = 5000 - 1000 = 4000; gastosDificil = 200; base = 3800
     expect(res.gastosCumulativos).toBeCloseTo(1000);
-    expect(res.baseImponible130).toBeCloseTo(4000);
+    expect(res.baseImponible130).toBeCloseTo(3800);
   });
 });
 

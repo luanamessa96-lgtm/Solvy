@@ -137,7 +137,8 @@ export function calculateSpanishTaxes(
   );
   const reta = monthlyRETA * 12;
   const retenciones = applyRetenciones ? calculateRetenciones(grossIncome, isFirstThreeYears) : 0;
-  const netIncome = rendimientoNeto - irpf - reta;
+  // netIncome = cash in pocket: income received minus real expenses minus taxes (gastosDificil is a tax deduction, not a real outflow)
+  const netIncome = rendimientoNetoPrevio - irpf - reta;
   const effectiveRate = grossIncome > 0 ? (irpf + reta) / grossIncome : 0;
 
   return {
@@ -245,7 +246,8 @@ export const spainModule: CountryModule = {
     );
     const reta = monthlyRETA * 12;
     const retenciones = applyRetenciones ? calculateRetenciones(grossIncome, isFirstThreeYears) : 0;
-    const netIncome = rendimientoNeto - irpf - reta;
+    // netIncome = cash in pocket: income received minus real expenses minus taxes
+    const netIncome = rendimientoNetoPrevio - irpf - reta;
     return {
       grossIncome,
       taxableIncome: rendimientoNeto,

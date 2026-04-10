@@ -1,6 +1,7 @@
 import { Document, Profile } from '../types';
 import { getLocalYear } from '../utils/date';
 import { getEsDeductibilityRate } from '../lib/es/deductibility';
+import { calculateGastosDificilJustificacion } from '../lib/countries/es';
 
 type jsPDFWithAutoTable = import('jspdf').jsPDF & { lastAutoTable: { finalY: number } };
 
@@ -22,8 +23,9 @@ export interface ResumenTrimestral {
   gastosCumulativos: number;
   baseImponible130: number;     // = max(0, ingresosCumulativos − gastosCumulativos)
   cuotaAcumulada: number;       // baseImponible130 × 20%
-  pagosAnteriores: number;      // cuotas già versate in T1..T(n-1)
-  cuotaIRPF: number;            // netta = max(0, cuotaAcumulada − pagosAnteriores)
+  retencionesCumulativas: number; // retenciones soportadas accumulate da gen → fine trimestre
+  pagosAnteriores: number;      // cuotas nette già versate in T1..T(n-1)
+  cuotaIRPF: number;            // netta = max(0, cuotaAcumulada − retencionesCumulativas − pagosAnteriores)
   exentoMinimo: boolean;        // true se rendimiento neto cumulativo < €1.000 → cuota = 0
 }
 
@@ -84,14 +86,41 @@ function calcCuotaAcumulada(
 
   const ingresos = inv.reduce((s, d) => s + d.amount, 0) - rect.reduce((s, d) => s + d.amount, 0);
   const gastos   = exp.reduce((s, d) => s + d.amount * getEsDeductibilityRate(d.category), 0);
-  const base     = Math.max(0, ingresos - gastos);
+  const rendimientoNetoPrevio = Math.max(0, ingresos - gastos);
+  // Gastos difícil justificación: 5% del rendimiento neto previo, max €2.000 (art.30 RIRPF)
+  const gastosDificil = calculateGastosDificilJustificacion(rendimientoNetoPrevio);
+  const base = rendimientoNetoPrevio - gastosDificil;
   return { ingresos, gastos, base, cuota: base * 0.20 };
+}
+
+/** Sum of retenciones soportadas (withheld by clients) from Jan 1 to end of the given quarter. */
+function calcRetencionesCumulativas(
+  documents: Document[],
+  upToQuarter: 1 | 2 | 3 | 4,
+  year: number,
+  retencionRate: number
+): number {
+  if (retencionRate === 0) return 0;
+  const startDate = new Date(year, 0, 1, 0, 0, 0, 0);
+  const endDate   = getQuarterRange(upToQuarter, year).end;
+  const inCum = (d: Document) => {
+    if (!d.date) return false;
+    const parts = d.date.split('T')[0].split('-').map(Number);
+    if (parts.length < 3 || parts.some(isNaN)) return false;
+    const date = new Date(parts[0], parts[1] - 1, parts[2]);
+    return date >= startDate && date <= endDate;
+  };
+  const inv  = documents.filter(d => d.type === 'invoice' && d.ritenuta && inCum(d));
+  const rect = documents.filter(d => d.type === 'factura_rectificativa' && d.ritenuta && inCum(d));
+  const ingresos = inv.reduce((s, d) => s + d.amount, 0) - rect.reduce((s, d) => s + d.amount, 0);
+  return Math.round(ingresos * retencionRate * 100) / 100;
 }
 
 export function calcularTrimestre(
   documents: Document[],
   quarter: 1 | 2 | 3 | 4,
-  year: number
+  year: number,
+  retencionRate: number = 0
 ): ResumenTrimestral {
   const { start, end } = getQuarterRange(quarter, year);
 
@@ -120,17 +149,27 @@ export function calcularTrimestre(
 
   // Modelo 130 — calcolo cumulativo (Ene → fine trimestre)
   const cumActual = calcCuotaAcumulada(documents, quarter, year);
-  const cumPrev   = quarter > 1
-    ? calcCuotaAcumulada(documents, (quarter - 1) as 1 | 2 | 3 | 4, year)
-    : { cuota: 0 };
 
   const ingresosCumulativos = cumActual.ingresos;
   const gastosCumulativos   = cumActual.gastos;
   const baseImponible130    = cumActual.base;
   const cuotaAcumulada      = cumActual.cuota;
-  const pagosAnteriores     = cumPrev.cuota;
-  const exentoMinimo        = baseImponible130 < 1000;
-  const cuotaIRPF           = exentoMinimo ? 0 : Math.max(0, cuotaAcumulada - pagosAnteriores);
+
+  // Sequential pagosAnteriores: sum of actual net cuotasIRPF paid in T1..T(n-1).
+  // Each previous quarter's net cuota = max(0, cuotaAcum_q - retenciones_q - pagosAnt_q).
+  let pagosAnteriores = 0;
+  for (let q = 1; q < quarter; q++) {
+    const qNum = q as 1 | 2 | 3 | 4;
+    const qCum = calcCuotaAcumulada(documents, qNum, year);
+    const qRet = calcRetencionesCumulativas(documents, qNum, year, retencionRate);
+    const qExento = qCum.base < 1000;
+    const qCuotaIRPF = qExento ? 0 : Math.max(0, qCum.cuota - qRet - pagosAnteriores);
+    pagosAnteriores += qCuotaIRPF;
+  }
+
+  const retencionesCumulativas = calcRetencionesCumulativas(documents, quarter, year, retencionRate);
+  const exentoMinimo = baseImponible130 < 1000;
+  const cuotaIRPF = exentoMinimo ? 0 : Math.max(0, cuotaAcumulada - retencionesCumulativas - pagosAnteriores);
 
   return {
     quarter, year,
@@ -139,7 +178,7 @@ export function calcularTrimestre(
     ivaRepercutida, ivaSoportada,
     diferenciaIVA: ivaRepercutida - ivaSoportada,
     ingresosCumulativos, gastosCumulativos,
-    baseImponible130, cuotaAcumulada, pagosAnteriores, cuotaIRPF, exentoMinimo,
+    baseImponible130, cuotaAcumulada, retencionesCumulativas, pagosAnteriores, cuotaIRPF, exentoMinimo,
   };
 }
 
@@ -441,7 +480,10 @@ export async function buildResumenPDFBlob(
   quarter: 1 | 2 | 3 | 4,
   year: number
 ): Promise<{ blob: Blob; fileName: string }> {
-  const resumen = calcularTrimestre(documents, quarter, year);
+  const currentYr = new Date().getFullYear();
+  const yearsActiveP = profile.annoInizioAttivita ? currentYr - profile.annoInizioAttivita : 10;
+  const retencionRateP = yearsActiveP <= 3 ? 0.07 : 0.15;
+  const resumen = calcularTrimestre(documents, quarter, year, retencionRateP);
   const pdf = await generateResumenPDF(resumen, profile);
   const nif = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
   const fileName = `ES_${nif}_resumen_T${quarter}_${year}.pdf`;
@@ -454,7 +496,10 @@ export async function downloadResumenTrimestral(
   quarter: 1 | 2 | 3 | 4,
   year: number
 ): Promise<void> {
-  const resumen = calcularTrimestre(documents, quarter, year);
+  const currentYrD = new Date().getFullYear();
+  const yearsActiveD = profile.annoInizioAttivita ? currentYrD - profile.annoInizioAttivita : 10;
+  const retencionRateD = yearsActiveD <= 3 ? 0.07 : 0.15;
+  const resumen = calcularTrimestre(documents, quarter, year, retencionRateD);
   const pdf = await generateResumenPDF(resumen, profile);
   const nif = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
   const filename = `ES_${nif}_resumen_T${quarter}_${year}.pdf`;

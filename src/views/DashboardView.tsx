@@ -217,13 +217,22 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
 
   const isSpainProfile = profile.country === 'Spain';
   const isForfettario = !isSpainProfile && tasse.regime === 'forfettario';
+
+  // ES deductible expenses for displayYear (applied when computing Spanish taxes)
+  const esDeductibleExpenses = useMemo(() => {
+    if (!isSpainProfile) return 0;
+    return documents
+      .filter(d => d.type === 'expense' && getLocalYear(d.date) === displayYear)
+      .reduce((s, d) => s + d.amount * getEsDeductibilityRate(d.category), 0);
+  }, [isSpainProfile, documents, displayYear]);
+
   const totaleTasse = useMemo(() => {
     if (isSpainProfile) {
-      const sp = calculateSpanishTaxes(income, false, false, profile.annoInizioAttivita, displayYear);
+      const sp = calculateSpanishTaxes(income, false, false, profile.annoInizioAttivita, displayYear, esDeductibleExpenses);
       return sp.irpf + sp.reta;
     }
     return tasse.imposta + tasse.inps;
-  }, [isSpainProfile, income, profile.annoInizioAttivita, displayYear, tasse]);
+  }, [isSpainProfile, income, profile.annoInizioAttivita, displayYear, esDeductibleExpenses, tasse]);
   const mettiDaParte = useMemo(() => {
     if (!isPro || isSpainProfile) return null;
     const today = new Date();
@@ -385,7 +394,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
 
         {/* ── TASSE ── */}
         {activeTab === 'taxes' && profile.country === 'Spain' && (() => {
-          const spTaxes = calculateSpanishTaxes(income, false, false, profile.annoInizioAttivita, displayYear);
+          const spTaxes = calculateSpanishTaxes(income, false, false, profile.annoInizioAttivita, displayYear, esDeductibleExpenses);
           const isTarifaPlana = spTaxes.tarifaPlanaStatus !== 'normal';
           const annoInicio = profile.annoInizioAttivita != null ? Number(profile.annoInizioAttivita) : null;
           const yearsActiveES = annoInicio != null ? displayYear - annoInicio : null;
@@ -439,15 +448,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-bold text-slate-400">RETA anual<InfoTooltip text="Régimen Especial de Trabajadores Autónomos. La cuota mensual a la Seguridad Social." darkMode={darkMode} /></span>
-                        {isTarifaPlana && (
-                          <>
-                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${darkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
-                              Tarifa Plana €{spTaxes.monthlyRETA}/mes
-                            </span>
-                            <InfoTooltip text="Cuota reducida de €80/mes para nuevos autónomos durante el primer año." darkMode={darkMode} />
-                          </>
-                        )}
+                        <span className="text-xs font-bold text-slate-400">RETA anual<InfoTooltip text="Cuota a la Seguridad Social (autónomos). No es un impuesto: es tu cotización previdencial mensual. Calculada según el sistema de ingresos reales vigente desde 2023." darkMode={darkMode} /></span>
                       </div>
                       <span className="text-xs font-bold text-amber-500">€{Math.round(spTaxes.reta).toLocaleString()}</span>
                     </div>
@@ -464,10 +465,10 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                       <div className="bg-emerald-400 h-full rounded-full" style={{ width: `${Math.min(barNetES, 100)}%` }} />
                     </div>
                   </div>
-                  {income > 0 && (
+                  {spTaxes.rendimientoNeto > 0 && (
                     <div className={`pt-3 border-t flex items-start gap-2 ${darkMode ? 'border-slate-800 text-slate-400' : 'border-slate-50 text-slate-400'}`}>
                       <Info size={13} className="mt-0.5 shrink-0" />
-                      <p className="text-[11px] leading-relaxed">Tipo efectivo: <span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{Math.round(spTaxes.effectiveRate * 100)}%</span></p>
+                      <p className="text-[11px] leading-relaxed">Tipo efectivo (IRPF+RETA / rendimiento neto): <span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{Math.round((spTaxes.irpf + spTaxes.reta) / spTaxes.rendimientoNeto * 100)}%</span></p>
                     </div>
                   )}
                   {/* Disclaimer ES-12 */}

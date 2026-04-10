@@ -112,7 +112,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     coefficiente: activeProfile.coefficiente?.toString() || '',
     annoInizioAttivita: activeProfile.annoInizioAttivita?.toString() || '',
     nie: activeProfile.nie || '',
-    retaMensile: profileStorage.get(`reta_${activeProfile.id}`) || '500',
+    retaMensile: profileStorage.get(`reta_${activeProfile.id}`) || '',
     regimenFiscal: activeProfile.regimenFiscal || 'simplificada',
     ivaHabitual: activeProfile.ivaHabitual?.toString() || '21',
     hasOstativaCause: activeProfile.hasOstativaCause || false,
@@ -345,19 +345,28 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                         </select>
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Cuota RETA mensual</label>
-                        <select value={editData.retaMensile} onChange={e => setEditData({ ...editData, retaMensile: e.target.value })} className={inputClass()}>
-                          <option value="80">€ 80/mes — Tarifa Plana (1er/2º año)</option>
-                          <option value="230">€ 230/mes</option>
-                          <option value="260">€ 260/mes</option>
-                          <option value="275">€ 275/mes</option>
-                          <option value="294">€ 294/mes</option>
-                          <option value="320">€ 320/mes</option>
-                          <option value="350">€ 350/mes</option>
-                          <option value="370">€ 370/mes</option>
-                          <option value="390">€ 390/mes</option>
-                          <option value="500">€ 500+/mes</option>
-                        </select>
+                        <div className="flex items-center gap-1.5 ml-1">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cuota RETA mensual</label>
+                          <div className="relative group">
+                            <Info size={11} className="text-slate-400 cursor-help" />
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-slate-800 text-white text-[10px] rounded-lg px-3 py-2 hidden group-hover:block z-50 shadow-lg leading-relaxed">
+                              Inserisci la quota comunicata dalla Seguridad Social. Il primo anno può essere inferiore alla quota standard calcolata in base al tuo reddito stimato.
+                            </div>
+                          </div>
+                        </div>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium pointer-events-none">€</span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={editData.retaMensile}
+                            onChange={e => setEditData({ ...editData, retaMensile: e.target.value })}
+                            placeholder="es. 89.50"
+                            className={`${inputClass()} pl-7`}
+                          />
+                        </div>
+                        <p className="text-[10px] text-slate-400 ml-1">Chiedi al tuo commercialista o alla Seguridad Social la tua quota mensile esatta e inseriscila qui.</p>
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Año inicio actividad</label>
@@ -500,7 +509,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
               ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'IVA habitual', value: `${activeProfile.ivaHabitual ?? 21}%` }] : []),
               ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'Año inicio actividad', value: activeProfile.annoInizioAttivita ? activeProfile.annoInizioAttivita.toString() : '—' }] : []),
               ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'Ret. IRPF (auto)', value: (() => { const y = activeProfile.annoInizioAttivita ? new Date().getFullYear() - activeProfile.annoInizioAttivita : 10; return `${y <= 3 ? 7 : 15}%`; })() }] : []),
-              ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'RETA mensual', value: `€${profileStorage.get(`reta_${activeProfile.id}`) || '500'}/mes` }] : []),
+              ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'RETA mensual', value: (() => { const v = profileStorage.get(`reta_${activeProfile.id}`); return v ? `€${v}/mes` : '—'; })() }] : []),
             ].map(({ icon: Icon, label, value }, i, arr) => (
               <div key={label} className={`w-full p-4 flex items-center justify-between ${i < arr.length - 1 ? 'border-b' : ''}`} style={i < arr.length - 1 ? { borderColor: 'var(--color-border)' } : undefined}>
                 <div className="flex items-center gap-3">

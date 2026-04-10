@@ -112,9 +112,13 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const resumenYear = year;
   const hasTaxIdSpain = !!(profile.nie || profile.piva);
 
+  const currentYrExport = new Date().getFullYear();
+  const yearsActiveExport = profile.annoInizioAttivita ? currentYrExport - profile.annoInizioAttivita : 10;
+  const esRetencionRateExport = yearsActiveExport <= 3 ? 0.07 : 0.15;
+
   const resumenPreview = useMemo(() =>
-    calcularTrimestre(documents, resumenQuarter, resumenYear),
-    [documents, resumenQuarter, resumenYear]
+    calcularTrimestre(documents, resumenQuarter, resumenYear, esRetencionRateExport),
+    [documents, resumenQuarter, resumenYear, esRetencionRateExport]
   );
 
   const toggleMonth = (m: number) => {

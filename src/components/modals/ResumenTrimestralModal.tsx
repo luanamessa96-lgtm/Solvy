@@ -66,9 +66,15 @@ export default function ResumenTrimestralModal({
     return Array.from(years).sort((a, b) => b - a);
   }, [documents, currentYear]);
 
+  const esRetencionRate = useMemo(() => {
+    if (!profile.annoInizioAttivita) return 0.15;
+    const yearsActive = currentYear - profile.annoInizioAttivita;
+    return yearsActive < 3 ? 0.07 : 0.15;
+  }, [profile.annoInizioAttivita, currentYear]);
+
   const resumen = useMemo(
-    () => calcularTrimestre(documents, quarter, year),
-    [documents, quarter, year]
+    () => calcularTrimestre(documents, quarter, year, esRetencionRate),
+    [documents, quarter, year, esRetencionRate]
   );
 
   const hasTaxId = !!(profile.nie || profile.piva);

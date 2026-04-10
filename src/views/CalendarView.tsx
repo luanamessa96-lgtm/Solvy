@@ -190,17 +190,20 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   }, [isSpain, isPrimoAnnoIT, redditoN1, income, expenses, profile, annoInizio, currentYear, selectedYear]);
 
   // ES-29 — importi stimati per scadenze trimestrali Spain
+  const esRetencionRate = isSpain && annoInizio != null
+    ? ((selectedYear - annoInizio) < 3 ? 0.07 : 0.15)
+    : 0.15;
   const spFiscalData = useMemo<Record<1|2|3|4, ResumenTrimestral> | null>(() => {
     if (!isSpain) return null;
     try {
       return {
-        1: calcularTrimestre(documents ?? [], 1, selectedYear),
-        2: calcularTrimestre(documents ?? [], 2, selectedYear),
-        3: calcularTrimestre(documents ?? [], 3, selectedYear),
-        4: calcularTrimestre(documents ?? [], 4, selectedYear),
+        1: calcularTrimestre(documents ?? [], 1, selectedYear, esRetencionRate),
+        2: calcularTrimestre(documents ?? [], 2, selectedYear, esRetencionRate),
+        3: calcularTrimestre(documents ?? [], 3, selectedYear, esRetencionRate),
+        4: calcularTrimestre(documents ?? [], 4, selectedYear, esRetencionRate),
       };
     } catch { return null; }
-  }, [isSpain, documents, selectedYear]);
+  }, [isSpain, documents, selectedYear, esRetencionRate]);
 
   const scadenzeFiscaliRaw = isSpain
     ? getSpanishDeadlines(selectedYear).map(s => ({ title: s.title, date: s.date, type: 'tax' as Deadline['type'] }))
@@ -236,6 +239,16 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
 
   const filteredDeadlines = useMemo(() => {
     let base = selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => getLocalMonth(d.date) === selectedMonth);
+    // Year list (selectedMonth === null): inject missing ES fiscal deadlines as virtual (e.g. T4 not yet preloaded)
+    if (selectedMonth === null && isSpain) {
+      const saved = new Set(base.map(d => d.title + '|' + d.date));
+      const virtualFiscalES = scadenzeFiscaliRaw
+        .filter(s => !saved.has(s.title + '|' + s.date))
+        .map(s => ({ id: `fiscal-virtual-${s.title}`, title: s.title, date: s.date, type: 'tax' as Deadline['type'], completed: false }) as Deadline);
+      if (virtualFiscalES.length) {
+        base = [...base, ...virtualFiscalES].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      }
+    }
     // In month view, inject virtual RETA (ES) or virtual IT fiscal deadlines not yet saved in DB
     if (selectedMonth !== null) {
       if (isSpain) {

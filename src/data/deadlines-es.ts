@@ -23,12 +23,11 @@ export function getNextRetaDeadline(options?: SpanishDeadlinesOptions): { date: 
   const redditoN1 = options?.redditoN1;
   const currentYear = new Date().getFullYear();
 
-  let amount = 80;
-  if (annoInicio == null || annoInicio !== currentYear) {
-    if (redditoN1 != null && redditoN1 > 0) {
-      amount = calculateRETA(redditoN1 / 12);
-    }
-  }
+  // Tarifa plana €80/mes abolita dal 1°/01/2023 (RD-ley 13/2022).
+  // Per primo anno senza redditoN1: usa il tramo minimo (≤€670/mes → €206/mes).
+  let amount = redditoN1 != null && redditoN1 > 0
+    ? calculateRETA(redditoN1 / 12)
+    : calculateRETA(0);
 
   const today = new Date();
   const year = today.getFullYear();
@@ -47,10 +46,11 @@ export function getAllRetaDeadlines(year: number, options?: SpanishDeadlinesOpti
   const annoInicio = options?.annoInizioAttivita;
   const redditoN1 = options?.redditoN1;
   const currentYear = new Date().getFullYear();
-  let amount = 80;
-  if ((annoInicio == null || annoInicio !== currentYear) && redditoN1 != null && redditoN1 > 0) {
-    amount = calculateRETA(redditoN1 / 12);
-  }
+  // Tarifa plana €80/mes abolita. Usa sempre il tramo per rendimiento neto.
+  // Senza redditoN1 (primo anno o dati mancanti): tramo minimo (€206/mes).
+  const amount = redditoN1 != null && redditoN1 > 0
+    ? calculateRETA(redditoN1 / 12)
+    : calculateRETA(0);
   return Array.from({ length: 12 }, (_, i) => ({
     id: `reta-virtual-${year}-${i}`,
     title: 'Cuota RETA \u2014 Seguridad Social',
