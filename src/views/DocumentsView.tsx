@@ -96,6 +96,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const [isRectificativaOpen, setIsRectificativaOpen] = useState(false);
   const [isPresupuestoOpen, setIsPresupuestoOpen] = useState(false);
   const [docToFacturaEdit, setDocToFacturaEdit] = useState<Document | null>(null);
+  const [docToExpenseEdit, setDocToExpenseEdit] = useState<Document | null>(null);
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'pending' | 'overdue'>('all');
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
@@ -511,7 +512,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
       {/* ─── Modal comuni ───────────────────────────────────────────── */}
       {profile.country !== 'Spain' && <CreateInvoiceModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} onSave={onAddDocument} onUpdateProfile={onUpdateProfile} profile={profile} documents={documents} darkMode={darkMode} />}
       {profile.country === 'Spain' && <CreateFacturaModal isOpen={isCreateOpen || !!docToFacturaEdit} onClose={() => { setIsCreateOpen(false); setDocToFacturaEdit(null); }} onSave={onAddDocument} onUpdate={onUpdateDocument} onUpdateProfile={onUpdateProfile} profile={profile} documents={documents} darkMode={darkMode} editDoc={docToFacturaEdit ?? undefined} />}
-      <CreateExpenseModal isOpen={isExpenseOpen} onClose={() => setIsExpenseOpen(false)} onSave={onAddDocument} darkMode={darkMode} profile={profile} />
+      <CreateExpenseModal isOpen={isExpenseOpen || !!docToExpenseEdit} onClose={() => { setIsExpenseOpen(false); setDocToExpenseEdit(null); }} onSave={onAddDocument} onUpdate={onUpdateDocument} editDoc={docToExpenseEdit ?? undefined} darkMode={darkMode} profile={profile} />
       {/* ─── Modal Italia ───────────────────────────────────────────── */}
       {profile.country === 'Italy' && <CreateCreditNoteModal isOpen={isCreditNoteOpen} onClose={() => setIsCreditNoteOpen(false)} onSave={onAddDocument} profile={profile} documents={documents} darkMode={darkMode} />}
       {profile.country === 'Italy' && <CreateInvoiceModal isOpen={isProformaOpen} onClose={() => setIsProformaOpen(false)} onSave={onAddDocument} onUpdateProfile={onUpdateProfile} profile={profile} documents={documents} darkMode={darkMode} isProforma={true} />}
@@ -670,6 +671,8 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   <button onClick={() => {
                     if (profile.country === 'Spain' && selectedDoc.type === 'invoice') {
                       setDocToFacturaEdit(selectedDoc);
+                    } else if (profile.country === 'Spain' && selectedDoc.type === 'expense') {
+                      setDocToExpenseEdit(selectedDoc);
                     } else {
                       setDocToEdit({ ...selectedDoc, docRegime: selectedDoc.docRegime ?? (profile.regime === 'autonomo' ? 'forfettario' : profile.regime ?? 'forfettario') });
                     }

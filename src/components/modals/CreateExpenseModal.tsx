@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { Plus, FileText, CreditCard, Calendar, Paperclip, X } from 'lucide-react';
@@ -11,13 +11,15 @@ interface CreateExpenseModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (doc: import('../../types').Document) => void;
+  onUpdate?: (doc: import('../../types').Document) => void;
+  editDoc?: import('../../types').Document;
   darkMode?: boolean;
   profile?: import('../../types').Profile;
 }
 
 const IVA_RATES = [0, 4, 10, 21] as const;
 
-const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: CreateExpenseModalProps) => {
+const CreateExpenseModal = ({ isOpen, onClose, onSave, onUpdate, editDoc, darkMode, profile }: CreateExpenseModalProps) => {
   useBodyScrollLock(isOpen);
   const { t } = useTranslation();
   const isSpain = profile?.country === 'Spain';
@@ -36,6 +38,21 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
   const [attachData, setAttachData] = useState<string | undefined>(undefined);
   const [attachName, setAttachName] = useState<string | undefined>(undefined);
   const attachRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editDoc) {
+      setFormData({
+        title: editDoc.title || '',
+        amount: String(editDoc.amount),
+        date: editDoc.date,
+        category: editDoc.category || defaultCategory,
+      });
+      setIvaRate(editDoc.ivaRate ?? 21);
+      setNifProveedor(editDoc.nifProveedor || '');
+      setAttachData(editDoc.imageData);
+      setAttachName(editDoc.fileName);
+    }
+  }, [editDoc]);
 
   const handleAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -56,17 +73,21 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
   const handleSubmit = () => {
     setAmountTouched(true);
     if (amountNum <= 0) return;
-    onSave({
+    const updatedDoc = {
+      ...(editDoc ?? { id: Math.random().toString(36).substr(2, 9), type: 'expense' as const, status: 'paid' as const }),
       ...formData,
-      id: Math.random().toString(36).substr(2, 9),
       amount: parseFloat(formData.amount),
-      type: 'expense',
-      status: 'paid',
       title: formData.title || formData.category,
       ...(isSpain ? { ivaRate } : {}),
-      ...(isSpain && nifProveedor.trim() ? { nifProveedor: nifProveedor.trim() } : {}),
-      ...(attachData ? { imageData: attachData, fileName: attachName } : {}),
-    });
+      ...(isSpain && nifProveedor.trim() ? { nifProveedor: nifProveedor.trim() } : { nifProveedor: undefined }),
+      imageData: attachData,
+      fileName: attachName,
+    };
+    if (editDoc && onUpdate) {
+      onUpdate(updatedDoc);
+    } else {
+      onSave(updatedDoc);
+    }
     onClose();
     setFormData({ title: '', amount: '', date: todayLocalISO(), category: defaultCategory });
     setIvaRate(21);
