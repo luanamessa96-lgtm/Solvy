@@ -238,7 +238,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                   </div>
                   <div className="space-y-1.5">
                     <label className={lc}>Data</label>
-                    <input type="date" value={form.date} onChange={e => set('date', e.target.value)} className={ic()} />
+                    <input type="date" value={form.date} onChange={e => set('date', e.target.value)} className={`${ic()} appearance-none`} />
                   </div>
                 </div>
               </div>
