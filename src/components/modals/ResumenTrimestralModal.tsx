@@ -250,6 +250,7 @@ export default function ResumenTrimestralModal({
 
   const dm = darkMode;
   const isWorking = isGenerating || isSending || isSharing;
+  const gastosDificilImporte = Math.max(0, (resumen.ingresosCumulativos - resumen.gastosCumulativos) - resumen.baseImponible130);
 
   const Toggle = ({
     checked, onToggle, emoji, label, badge, subtitle,
@@ -390,18 +391,14 @@ export default function ResumenTrimestralModal({
               </div>
 
               {/* Gastos difícil justificación */}
-              {(() => {
-                const gastosDificil = Math.max(0, (resumen.ingresosCumulativos - resumen.gastosCumulativos) - resumen.baseImponible130);
-                if (gastosDificil <= 0) return null;
-                return (
-                  <div className={`flex items-start gap-3 p-4 rounded-2xl border ${dm ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'}`}>
-                    <span className="text-base leading-none mt-0.5">ℹ️</span>
-                    <p className={`text-xs leading-relaxed ${dm ? 'text-blue-300' : 'text-blue-800'}`}>
-                      <span className="font-bold">Gastos de difícil justificación aplicados: {fmtPreview(gastosDificil)}</span> — 5% del rendimiento neto, máx. €2.000 (art. 30 RIRPF). Deducción automática incluida en el Mod. 130.
-                    </p>
-                  </div>
-                );
-              })()}
+              {gastosDificilImporte > 0 && (
+                <div className={`flex items-start gap-3 p-4 rounded-2xl border ${dm ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'}`}>
+                  <span className="text-base leading-none mt-0.5">ℹ️</span>
+                  <p className={`text-xs leading-relaxed ${dm ? 'text-blue-300' : 'text-blue-800'}`}>
+                    <span className="font-bold">Gastos de difícil justificación aplicados: {fmtPreview(gastosDificilImporte)}</span> — 5% del rendimiento neto, máx. €2.000 (art. 30 RIRPF). Deducción automática incluida en el Mod. 130.
+                  </p>
+                </div>
+              )}
 
               {/* Reducción inicio actividad */}
               {resumen.reduccionInicioRate > 0 && (
