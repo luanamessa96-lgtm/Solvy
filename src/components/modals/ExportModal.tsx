@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { X, Download, Check, Mail, Share2, Eye, AlertTriangle } from 'lucide-react';
 import { Document as AppDoc, Profile, Accountant } from '../../types';
 import { useProStatus } from '../../hooks/useProStatus';
@@ -1353,33 +1354,27 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
   const inputBase = `px-4 py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-95`;
   const dragControls = useDragControls();
+  useBodyScrollLock(isOpen);
   return (
     <>
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            drag="y" dragControls={dragControls} dragListener={false}
-            dragConstraints={{ top: 0 }} dragElastic={0.1}
-            onDragEnd={(_, info) => { if (info.offset.y > 80) onClose(); }}
-            className="relative w-full max-w-md rounded-t-[32px] shadow-2xl"
+            className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl max-h-[90dvh] flex flex-col"
             style={{ backgroundColor: 'var(--color-card)' }}
           >
-            <div onPointerDown={e => dragControls.start(e)} className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing touch-none">
-              <div className={`w-10 h-1 rounded-full ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-            </div>
-            <div className="overflow-y-auto max-h-[88vh] p-8 space-y-6 [padding-bottom:max(2rem,calc(env(safe-area-inset-bottom)+1rem))]">
-              {/* Header */}
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Esporta</h2>
-                  <p className="text-sm text-slate-500">{periodLabel}</p>
-                </div>
-                <button onClick={onClose} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-400'}`}><X size={22} /></button>
+            <div className={`flex items-start justify-between p-6 pb-4 shrink-0 ${darkMode ? 'border-b border-slate-800' : 'border-b border-slate-100'}`}>
+              <div>
+                <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Esporta</h2>
+                <p className="text-sm text-slate-500">{periodLabel}</p>
               </div>
+              <button onClick={onClose} className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${darkMode ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-500 hover:text-slate-700'}`}><X size={18} /></button>
+            </div>
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
 
               {/* Tipo documento */}
               <div className="space-y-2">
