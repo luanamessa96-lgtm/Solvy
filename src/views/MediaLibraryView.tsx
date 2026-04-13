@@ -286,10 +286,7 @@ export default function MediaLibraryView({ documents, onDeleteDocument, onUpdate
                 </div>
                 <div className="flex gap-3">
                   <button onClick={() => setSelectedItem(null)} className={`flex-1 py-3 rounded-2xl font-bold ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>{t('media_library.btn_close')}</button>
-                  <button onClick={() => { setEditItem({ ...selectedItem }); setSelectedItem(null); }} className="flex-1 py-3 rounded-2xl font-bold bg-primary text-white shadow-lg shadow-primary/30 flex items-center justify-center gap-2">
-                    <Pencil size={16} /> {t('media_library.btn_edit')}
-                  </button>
-                  <button onClick={() => handleDelete(selectedItem)} className="py-3 px-4 rounded-2xl font-bold bg-red-500 text-white shadow-lg shadow-red-500/30">{t('media_library.btn_delete')}</button>
+                  <button onClick={() => handleDelete(selectedItem)} className="flex-1 py-3 rounded-2xl font-bold bg-red-500 text-white shadow-lg shadow-red-500/30">{t('media_library.btn_delete')}</button>
                 </div>
               </div>
             </motion.div>
