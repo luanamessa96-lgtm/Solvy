@@ -332,9 +332,8 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Régimen Fiscal</label>
                         <select value={editData.regimenFiscal ?? 'simplificada'} onChange={e => setEditData({ ...editData, regimenFiscal: e.target.value as 'normal' | 'simplificada' | 'modulos' })} className={inputClass()}>
                           <option value="simplificada">Estimación Directa Simplificada</option>
-                          <option value="normal">Estimación Directa Normal</option>
-                          <option value="modulos">Estimación Objetiva / Módulos</option>
                         </select>
+                        <p className="text-[10px] text-slate-400 ml-1">Solvy v1 cubre la Estimación Directa Simplificada. La EDN y Módulos llegarán en futuras versiones.</p>
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Tipo IVA habitual</label>

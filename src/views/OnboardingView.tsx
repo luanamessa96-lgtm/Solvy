@@ -384,9 +384,8 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                   <label className={lc}>Régimen fiscal</label>
                   <select value={regimenFiscal} onChange={e => setRegimenFiscal(e.target.value as typeof regimenFiscal)} className={ic}>
                     <option value="simplificada">Estimación Directa Simplificada</option>
-                    <option value="normal">Estimación Directa Normal</option>
-                    <option value="modulos">Estimación Objetiva / Módulos</option>
                   </select>
+                  <p className="text-[10px] text-slate-400 ml-1">Solvy v1 cubre la Estimación Directa Simplificada. La EDN y Módulos llegarán en futuras versiones.</p>
                 </div>
                 <div className="space-y-1.5">
                   <label className={lc}>Tipo IVA habitual</label>
