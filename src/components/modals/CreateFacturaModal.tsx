@@ -302,18 +302,27 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
               {/* IVA repercutida */}
               <div className="space-y-3">
                 <label className={lc}>IVA Repercutida</label>
-                <div className={`p-4 rounded-2xl border space-y-3 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                <div className={`p-4 rounded-2xl border space-y-3 ${form.intracomunitaria ? (darkMode ? 'bg-slate-800/40 border-slate-700/40 opacity-50' : 'bg-slate-50/50 border-slate-100 opacity-50') : (darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100')}`}>
                   <div className="flex gap-2 flex-wrap">
                     {IVA_OPTIONS.map(rate => (
-                      <button key={rate} type="button" onClick={() => set('ivaRate', rate)}
-                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 ${form.ivaRate === rate ? 'bg-primary text-white shadow-md shadow-primary/30' : (darkMode ? 'bg-slate-700 text-slate-300' : 'bg-white text-slate-600 border border-slate-200')}`}>
+                      <button key={rate} type="button"
+                        disabled={form.intracomunitaria}
+                        onClick={() => set('ivaRate', rate)}
+                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 disabled:cursor-not-allowed ${
+                          form.intracomunitaria
+                            ? (rate === 0 ? 'bg-primary text-white shadow-md shadow-primary/30' : (darkMode ? 'bg-slate-700 text-slate-500' : 'bg-white text-slate-300 border border-slate-200'))
+                            : (form.ivaRate === rate ? 'bg-primary text-white shadow-md shadow-primary/30' : (darkMode ? 'bg-slate-700 text-slate-300' : 'bg-white text-slate-600 border border-slate-200'))
+                        }`}>
                         {rate}%
                       </button>
                     ))}
                   </div>
                   {base > 0 && (
                     <p className="text-xs text-slate-400">
-                      IVA {form.ivaRate}% = <span className="font-bold text-primary">€{ivaAmount.toFixed(2)}</span>
+                      {form.intracomunitaria
+                        ? 'IVA 0% — inversión del sujeto pasivo'
+                        : <>IVA {form.ivaRate}% = <span className="font-bold text-primary">€{ivaAmount.toFixed(2)}</span></>
+                      }
                     </p>
                   )}
                 </div>
