@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { Plus, FileText, CreditCard, Calendar, Paperclip, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getItDeductibilityRate } from '../../lib/it/deductibility';
@@ -17,6 +18,7 @@ interface CreateExpenseModalProps {
 const IVA_RATES = [0, 4, 10, 21] as const;
 
 const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: CreateExpenseModalProps) => {
+  useBodyScrollLock(isOpen);
   const { t } = useTranslation();
   const isSpain = profile?.country === 'Spain';
   const isItaly = profile?.country === 'Italy';

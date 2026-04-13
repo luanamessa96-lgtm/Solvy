@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { Plus, CheckCircle2, ChevronDown } from 'lucide-react';
 import { Document, Profile } from '../../types';
 import { getLocalYear, todayLocalISO } from '../../utils/date';
@@ -24,6 +25,7 @@ interface CreateFacturaRectificativaModalProps {
 const CreateFacturaRectificativaModal = ({
   isOpen, onClose, onSave, profile, documents, darkMode,
 }: CreateFacturaRectificativaModalProps) => {
+  useBodyScrollLock(isOpen);
   const dragControls = useDragControls();
 
   const facturas = useMemo(

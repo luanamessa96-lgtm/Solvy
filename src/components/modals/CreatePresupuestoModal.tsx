@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { Plus, FileText } from 'lucide-react';
 import { Document, Profile } from '../../types';
 import { todayLocalISO } from '../../utils/date';
@@ -22,6 +23,7 @@ const defaultValidez = () => {
 };
 
 const CreatePresupuestoModal = ({ isOpen, onClose, onSave, profile, documents, darkMode }: CreatePresupuestoModalProps) => {
+  useBodyScrollLock(isOpen);
   const dragControls = useDragControls();
   const currentYear = new Date().getFullYear();
 

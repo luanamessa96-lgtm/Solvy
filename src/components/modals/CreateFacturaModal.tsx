@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { Plus, FileText, CheckCircle2 } from 'lucide-react';
 import { Document, Profile } from '../../types';
 import { todayLocalISO } from '../../utils/date';
@@ -19,6 +20,7 @@ interface CreateFacturaModalProps {
 const IVA_OPTIONS = [0, 4, 10, 21] as const;
 
 const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile, profile, documents, darkMode, editDoc }: CreateFacturaModalProps) => {
+  useBodyScrollLock(isOpen);
   const dragControls = useDragControls();
   const currentYear = new Date().getFullYear();
   const isEditMode = !!editDoc;
