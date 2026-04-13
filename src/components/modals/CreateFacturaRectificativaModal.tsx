@@ -125,7 +125,7 @@ const CreateFacturaRectificativaModal = ({
               </button>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
 
               {/* Número */}
               <div className="space-y-1.5">
