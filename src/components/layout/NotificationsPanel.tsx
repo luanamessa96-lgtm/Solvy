@@ -69,7 +69,7 @@ const NotificationsPanel = ({ isOpen, deadlines, onClose, onUpdateDeadline, dark
                 </button>
               </div>
 
-              <div className="space-y-5 max-h-[60vh] overflow-y-auto -mx-1 px-1">
+              <div className="space-y-5 max-h-[60dvh] overflow-y-auto -mx-1 px-1">
                 {groups.length === 0 ? (
                   <div className="py-10 text-center space-y-2">
                     <p className="text-4xl">🎉</p>

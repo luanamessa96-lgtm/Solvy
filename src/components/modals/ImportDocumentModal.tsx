@@ -109,7 +109,7 @@ const ImportDocumentModal = ({ isOpen, onClose, onSave, darkMode }: ImportDocume
             <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileChange} />
             <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.xlsx,.csv" className="hidden" onChange={handleFileChange} />
 
-            <div className="overflow-y-auto max-h-[85vh] p-8 space-y-6">
+            <div className="overflow-y-auto max-h-[85dvh] p-8 space-y-6">
               {/* Header */}
               <div className="flex justify-between items-start">
                 <div className="space-y-1">

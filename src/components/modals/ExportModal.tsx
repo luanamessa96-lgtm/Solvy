@@ -1371,7 +1371,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
             <div onPointerDown={e => dragControls.start(e)} className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing touch-none">
               <div className={`w-10 h-1 rounded-full ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
             </div>
-            <div className="overflow-y-auto max-h-[88vh] p-8 space-y-6 [padding-bottom:max(2rem,calc(env(safe-area-inset-bottom)+1rem))]">
+            <div className="overflow-y-auto max-h-[88dvh] p-8 space-y-6 [padding-bottom:max(2rem,calc(env(safe-area-inset-bottom)+1rem))]">
               {/* Header */}
               <div className="flex justify-between items-center">
                 <div>
