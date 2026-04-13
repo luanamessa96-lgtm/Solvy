@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { motion, AnimatePresence, useDragControls } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { Plus, FileText, CreditCard, Calendar, Paperclip, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -48,7 +48,6 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
     e.target.value = '';
   };
 
-  const dragControls = useDragControls();
   const [amountTouched, setAmountTouched] = useState(false);
   const amountNum = parseFloat(formData.amount) || 0;
   const amountError = amountTouched && amountNum <= 0 ? 'Inserisci un importo valido' : '';
@@ -125,7 +124,7 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
                 <Plus className="rotate-45" size={18} />
               </button>
             </div>
-            <div data-scroll-lock-ignore className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain p-5 space-y-4">
+            <div data-scroll-lock-ignore className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto overscroll-y-contain p-5 space-y-4">
               <div className="space-y-3">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('common.category')}</label>

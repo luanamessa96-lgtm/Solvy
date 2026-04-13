@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence, useDragControls } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { Plus, FileText, CheckCircle2, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -197,7 +197,6 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
   };
 
   useBodyScrollLock(isOpen);
-  const dragControls = useDragControls();
 
   const ic = (err?: string) => `w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all ${
     err
@@ -228,7 +227,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 </button>
             </div>
 
-            <div data-scroll-lock-ignore className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
+            <div data-scroll-lock-ignore className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto overscroll-y-contain p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
               {/* Dati Fattura */}
               <div className="space-y-3">
                 <label className={lc}>{isProforma ? t('documents.field_proforma_data') : t('documents.field_invoice_data')}</label>

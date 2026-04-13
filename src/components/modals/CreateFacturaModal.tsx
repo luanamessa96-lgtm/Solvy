@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence, useDragControls } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { Plus, FileText, CheckCircle2 } from 'lucide-react';
 import { Document, Profile } from '../../types';
@@ -21,7 +21,6 @@ const IVA_OPTIONS = [0, 4, 10, 21] as const;
 
 const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile, profile, documents, darkMode, editDoc }: CreateFacturaModalProps) => {
   useBodyScrollLock(isOpen);
-  const dragControls = useDragControls();
   const currentYear = new Date().getFullYear();
   const isEditMode = !!editDoc;
 
@@ -189,7 +188,7 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
               </button>
             </div>
 
-            <div data-scroll-lock-ignore className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
+            <div data-scroll-lock-ignore className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto overscroll-y-contain p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
 
               {/* Datos del documento */}
               <div className="space-y-3">

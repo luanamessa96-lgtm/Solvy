@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence, useDragControls } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { Plus, CheckCircle2, ChevronDown } from 'lucide-react';
 import { Document, Profile } from '../../types';
@@ -26,7 +26,6 @@ const CreateFacturaRectificativaModal = ({
   isOpen, onClose, onSave, profile, documents, darkMode,
 }: CreateFacturaRectificativaModalProps) => {
   useBodyScrollLock(isOpen);
-  const dragControls = useDragControls();
 
   const facturas = useMemo(
     () => documents.filter(d => d.type === 'invoice'),
@@ -127,7 +126,7 @@ const CreateFacturaRectificativaModal = ({
               </button>
             </div>
 
-            <div data-scroll-lock-ignore className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
+            <div data-scroll-lock-ignore className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto overscroll-y-contain p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
 
               {/* Número */}
               <div className="space-y-1.5">
