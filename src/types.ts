@@ -16,6 +16,7 @@ export interface Profile {
   regime?: 'forfettario' | 'ordinario' | 'autonomo';
   coefficiente?: number;
   annoInizioAttivita?: number;
+  meseInizioAttivita?: number; // 1–12 — mese di iscrizione RETA, per calcolo proporzionale nel primo anno
   iban?: string;
   isPro?: boolean;
   subscriptionStartedAt?: string;

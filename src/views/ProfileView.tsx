@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 const DB_PROFILE_FIELDS: (keyof Profile)[] = [
   'id', 'name', 'email', 'jobType', 'country', 'currency', 'avatar',
   'address', 'piva', 'nie', 'codiceFiscale', 'iban', 'regime', 'coefficiente',
-  'annoInizioAttivita', 'isPro', 'regimenFiscal', 'ivaHabitual',
+  'annoInizioAttivita', 'meseInizioAttivita', 'isPro', 'regimenFiscal', 'ivaHabitual',
   'street', 'cap', 'city', 'province', 'region', 'hasOstativaCause',
 ];
 
@@ -111,6 +111,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     regime: activeProfile.regime || 'forfettario' as 'forfettario' | 'ordinario',
     coefficiente: activeProfile.coefficiente?.toString() || '',
     annoInizioAttivita: activeProfile.annoInizioAttivita?.toString() || '',
+    meseInizioAttivita: activeProfile.meseInizioAttivita?.toString() || '',
     nie: activeProfile.nie || '',
     retaMensile: profileStorage.get(`reta_${activeProfile.id}`) || '',
     regimenFiscal: activeProfile.regimenFiscal || 'simplificada',
@@ -172,6 +173,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
         regime: isSpain ? undefined : editData.regime,
         coefficiente: editData.coefficiente ? parseFloat(editData.coefficiente) : undefined,
         annoInizioAttivita: editData.annoInizioAttivita ? parseInt(editData.annoInizioAttivita) : undefined,
+        meseInizioAttivita: isSpain && editData.meseInizioAttivita ? parseInt(editData.meseInizioAttivita) : undefined,
         regimenFiscal: isSpain ? (editData.regimenFiscal as 'simplificada' | 'normal' | 'modulos') : undefined,
         ivaHabitual: isSpain && editData.ivaHabitual ? parseInt(editData.ivaHabitual) as 21 | 10 | 4 : undefined,
         hasOstativaCause: !isSpain && editData.regime === 'forfettario' ? editData.hasOstativaCause : undefined,
@@ -369,8 +371,16 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Año inicio actividad</label>
-                        <input type="number" min="2000" max={new Date().getFullYear()} value={editData.annoInizioAttivita} onChange={e => setEditData({ ...editData, annoInizioAttivita: e.target.value })} placeholder="ej. 2023" className={inputClass()} />
-                        <p className="text-[10px] text-slate-400 ml-1">{t('profile.reta_note')}</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input type="number" min="2000" max={new Date().getFullYear()} value={editData.annoInizioAttivita} onChange={e => setEditData({ ...editData, annoInizioAttivita: e.target.value })} placeholder="ej. 2023" className={inputClass()} />
+                          <select value={editData.meseInizioAttivita} onChange={e => setEditData({ ...editData, meseInizioAttivita: e.target.value })} className={inputClass()}>
+                            <option value="">Mes inicio</option>
+                            {['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map((m, i) => (
+                              <option key={i + 1} value={i + 1}>{m}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <p className="text-[10px] text-slate-400 ml-1">El mes de inicio permite calcular la RETA proporcional en el primer año.</p>
                       </div>
                     </>
                   ) : (

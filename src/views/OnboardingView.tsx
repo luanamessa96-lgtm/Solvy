@@ -48,6 +48,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
   const [nie, setNie] = useState('');
   const [retaMensile, setRetaMensile] = useState('');
   const [annoInizioSpagna, setAnnoInizioSpagna] = useState('');
+  const [meseInizioSpagna, setMeseInizioSpagna] = useState('');
   const [streetEs, setStreetEs] = useState('');
   const [capEs, setCapEs] = useState('');
   const [cityEs, setCityEs] = useState('');
@@ -72,6 +73,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
         regime: undefined,
         coefficiente: undefined,
         annoInizioAttivita: annoInizioSpagna ? parseInt(annoInizioSpagna) : undefined,
+        meseInizioAttivita: meseInizioSpagna ? parseInt(meseInizioSpagna) : undefined,
         street: streetEs || undefined,
         cap: capEs || undefined,
         city: cityEs || undefined,
@@ -403,7 +405,16 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                 </div>
                 <div className="space-y-1.5">
                   <label className={lc}>Año inicio actividad</label>
-                  <input type="number" min="2000" max={currentYear} value={annoInizioSpagna} onChange={e => setAnnoInizioSpagna(e.target.value)} placeholder={`Es. ${currentYear - 2}`} className={ic} />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input type="number" min="2000" max={currentYear} value={annoInizioSpagna} onChange={e => setAnnoInizioSpagna(e.target.value)} placeholder={`Es. ${currentYear}`} className={ic} />
+                    <select value={meseInizioSpagna} onChange={e => setMeseInizioSpagna(e.target.value)} className={ic}>
+                      <option value="">Mes inicio</option>
+                      {['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map((m, i) => (
+                        <option key={i + 1} value={i + 1}>{m}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <HelpText text="El mes de inicio permite calcular la RETA proporcional el primer año." />
                 </div>
                 <div className="space-y-1.5">
                   <label className={lc}>Calle / Dirección</label>

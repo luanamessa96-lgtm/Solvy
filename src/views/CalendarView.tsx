@@ -430,11 +430,23 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start mb-0.5">
-                      <div className="flex items-center gap-0.5 flex-1 min-w-0 pr-2">
+                      <div className="flex items-center gap-1 flex-1 min-w-0 pr-2 flex-wrap">
                         <h3 className={`text-sm font-bold truncate transition-colors ${deadline.completed ? 'line-through text-slate-400' : (darkMode ? 'text-white' : 'text-slate-900')}`}>{localizeInpsTitle(deadline.title, calInpsType)}</h3>
                         {DEADLINE_TOOLTIPS[deadline.title] && (
                           <InfoTooltip text={DEADLINE_TOOLTIPS[deadline.title]} darkMode={darkMode} />
                         )}
+                        {(() => {
+                          const spQ = getSpQuarter(deadline.title);
+                          const spData = spQ && spFiscalData ? spFiscalData[spQ] : null;
+                          if (spData?.invoices.some(d => d.intracomunitaria)) {
+                            return (
+                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}>
+                                +M349
+                              </span>
+                            );
+                          }
+                          return null;
+                        })()}
                       </div>
                       {(() => {
                         const spQ = getSpQuarter(deadline.title);

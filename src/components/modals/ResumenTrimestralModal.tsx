@@ -344,6 +344,19 @@ export default function ResumenTrimestralModal({
                 </div>
               )}
 
+              {/* Modelo 349 — alert operaciones intracomunitarias */}
+              {resumen.invoices.some(d => d.intracomunitaria) && (
+                <div className={`flex items-start gap-3 p-4 rounded-2xl border ${dm ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-200'}`}>
+                  <span className="text-base leading-none mt-0.5 shrink-0">🌍</span>
+                  <div>
+                    <p className={`text-xs font-bold ${dm ? 'text-amber-300' : 'text-amber-800'}`}>Modelo 349 — Operaciones intracomunitarias</p>
+                    <p className={`text-[10px] leading-relaxed mt-0.5 ${dm ? 'text-amber-400' : 'text-amber-700'}`}>
+                      Este trimestre tiene {resumen.invoices.filter(d => d.intracomunitaria).length} factura{resumen.invoices.filter(d => d.intracomunitaria).length !== 1 ? 's' : ''} intracomunitaria{resumen.invoices.filter(d => d.intracomunitaria).length !== 1 ? 's' : ''}. Recuerda presentar el <span className="font-bold">Modelo 349</span> (Declaración recapitulativa de operaciones intracomunitarias) antes de la misma fecha de vencimiento. Consulta a tu gestor.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Disclaimer */}
               <p className="text-[10px] text-slate-400 leading-relaxed">
                 Los valores son estimativos. Verifica los datos en la sede electrónica de la AEAT antes de presentar.

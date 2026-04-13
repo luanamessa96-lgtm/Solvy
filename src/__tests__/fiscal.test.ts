@@ -13,6 +13,7 @@ import {
   calculateGastosDificilJustificacion,
   calculateSpanishTaxes,
   getReduccionInicio,
+  getMesesDeAlta,
   RETA_BRACKETS,
 } from '../lib/countries/es';
 import { getEsDeductibilityRate } from '../lib/es/deductibility';
@@ -868,6 +869,40 @@ describe('Spain — IVA soportada parziale (telefono 50%)', () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 // SPAIN — Operazioni intracomunitarie
 // ═══════════════════════════════════════════════════════════════════════════════
+
+describe('Spain — getMesesDeAlta (RETA proporzionale)', () => {
+  it('anno diverso da startYear → sempre 12', () => {
+    expect(getMesesDeAlta(2025, 1, 2026)).toBe(12);
+    expect(getMesesDeAlta(2025, 6, 2026)).toBe(12);
+    expect(getMesesDeAlta(2024, 12, 2026)).toBe(12);
+  });
+
+  it('nessun startYear → 12', () => {
+    expect(getMesesDeAlta(undefined, undefined, 2026)).toBe(12);
+  });
+
+  it('stesso anno, mese non noto → 12 (stima conservativa)', () => {
+    expect(getMesesDeAlta(2026, undefined, 2026)).toBe(12);
+  });
+
+  it('stesso anno, Enero (1) → 12 mesi', () => {
+    expect(getMesesDeAlta(2026, 1, 2026)).toBe(12);
+  });
+
+  it('stesso anno, Julio (7) → 6 mesi', () => {
+    expect(getMesesDeAlta(2026, 7, 2026)).toBe(6);
+  });
+
+  it('stesso anno, Diciembre (12) → 1 mese', () => {
+    expect(getMesesDeAlta(2026, 12, 2026)).toBe(1);
+  });
+
+  it('RETA annuale con inizio a luglio è metà rispetto a inizio gennaio', () => {
+    const rJan = calculateSpanishTaxes(20000, false, false, 2026, 2026, 0, getMesesDeAlta(2026, 1, 2026));
+    const rJul = calculateSpanishTaxes(20000, false, false, 2026, 2026, 0, getMesesDeAlta(2026, 7, 2026));
+    expect(rJul.reta).toBeCloseTo(rJan.reta / 2, 1);
+  });
+});
 
 describe('Spain — Operazioni intracomunitarie (inversión del sujeto pasivo)', () => {
   const year = 2026;

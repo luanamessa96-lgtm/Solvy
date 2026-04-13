@@ -8,7 +8,7 @@ import { Profile, Document } from '../types';
 import InfoTooltip from '../components/ui/InfoTooltip';
 
 const DashboardChart = lazy(() => import('../components/DashboardChart'));
-import { calculateSpanishTaxes } from '../lib/countries/es';
+import { calculateSpanishTaxes, getMesesDeAlta } from '../lib/countries/es';
 import { calcularTrimestre } from '../services/modelosES';
 import { profileStorage } from '../lib/supabase';
 import { parseLocalDate, getLocalYear } from '../utils/date';
@@ -231,11 +231,12 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
 
   const totaleTasse = useMemo(() => {
     if (isSpainProfile) {
-      const sp = calculateSpanishTaxes(income, false, false, profile.annoInizioAttivita, displayYear, esDeductibleExpenses);
+      const mesesDeAlta = getMesesDeAlta(profile.annoInizioAttivita, profile.meseInizioAttivita, displayYear);
+      const sp = calculateSpanishTaxes(income, false, false, profile.annoInizioAttivita, displayYear, esDeductibleExpenses, mesesDeAlta);
       return sp.irpf + sp.reta;
     }
     return tasse.imposta + tasse.inps;
-  }, [isSpainProfile, income, profile.annoInizioAttivita, displayYear, esDeductibleExpenses, tasse]);
+  }, [isSpainProfile, income, profile.annoInizioAttivita, profile.meseInizioAttivita, displayYear, esDeductibleExpenses, tasse]);
   const mettiDaParte = useMemo(() => {
     if (!isPro || isSpainProfile) return null;
     const today = new Date();
@@ -408,7 +409,8 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
 
         {/* ── TASSE ── */}
         {activeTab === 'taxes' && profile.country === 'Spain' && (() => {
-          const spTaxes = calculateSpanishTaxes(income, false, false, profile.annoInizioAttivita, displayYear, esDeductibleExpenses);
+          const mesesDeAlta = getMesesDeAlta(profile.annoInizioAttivita, profile.meseInizioAttivita, displayYear);
+          const spTaxes = calculateSpanishTaxes(income, false, false, profile.annoInizioAttivita, displayYear, esDeductibleExpenses, mesesDeAlta);
           const isTarifaPlana = spTaxes.tarifaPlanaStatus !== 'normal';
           const annoInicio = profile.annoInizioAttivita != null ? Number(profile.annoInizioAttivita) : null;
           const yearsActiveES = annoInicio != null ? displayYear - annoInicio : null;

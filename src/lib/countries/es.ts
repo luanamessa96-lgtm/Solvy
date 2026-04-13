@@ -105,6 +105,22 @@ export function getReduccionInicio(startYear: number | undefined, currentYear: n
   return 0;
 }
 
+/**
+ * Meses de alta en el año de inicio de actividad (para RETA proporcional).
+ * Si el año de cálculo es distinto del año de inicio → siempre 12 (año completo).
+ * Si coincide → 13 − meseInizio (Enero=12, Feb=11, …, Dic=1).
+ * Si no se conoce el mes → devuelve 12 (estimación conservadora).
+ */
+export function getMesesDeAlta(
+  startYear: number | undefined,
+  startMonth: number | undefined,
+  calcYear: number
+): number {
+  if (!startYear || startYear !== calcYear) return 12;
+  if (!startMonth) return 12; // mes desconocido → estimación conservadora
+  return Math.max(1, 13 - startMonth);
+}
+
 export function calculateIRPF(grossIncome: number): number {
   if (grossIncome <= 0) return 0;
   let tax = 0;
