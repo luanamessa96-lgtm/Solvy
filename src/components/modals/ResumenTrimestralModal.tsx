@@ -87,6 +87,35 @@ export default function ResumenTrimestralModal({
     URL.revokeObjectURL(a.href);
   };
 
+  // Converte le foto allegate ai gastos in file scaricabili/condivisibili
+  const buildImageFiles = async (expenses: typeof resumen.expenses): Promise<{ blob: Blob; fileName: string }[]> => {
+    const sorted = [...expenses].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const withImages = sorted.filter(d => d.imageData);
+    const results: { blob: Blob; fileName: string }[] = [];
+    for (let i = 0; i < withImages.length; i++) {
+      const doc = withImages[i];
+      try {
+        let blob: Blob;
+        if (doc.imageData!.startsWith('http')) {
+          const res = await fetch(doc.imageData!);
+          blob = await res.blob();
+        } else {
+          const mimeMatch = doc.imageData!.match(/^data:(image\/\w+);base64,/);
+          const mime = mimeMatch?.[1] ?? 'image/jpeg';
+          const base64 = doc.imageData!.split(',')[1];
+          const binary = atob(base64);
+          const bytes = new Uint8Array(binary.length);
+          for (let j = 0; j < binary.length; j++) bytes[j] = binary.charCodeAt(j);
+          blob = new Blob([bytes], { type: mime });
+        }
+        const ext = blob.type.includes('png') ? 'png' : 'jpg';
+        const ref = `FREC${String(i + 1).padStart(3, '0')}_${year}`;
+        results.push({ blob, fileName: `${ref}_justificante.${ext}` });
+      } catch { /* skip immagini non raggiungibili */ }
+    }
+    return results;
+  };
+
   const generateAll = async () => {
     const resumenResult = await buildResumenPDFBlob(documents, profile, quarter, year);
     const libroE = includeLibroEmitidas ? await generateLibroEmitidaBlob(documents, profile, year) : null;
@@ -132,7 +161,11 @@ export default function ResumenTrimestralModal({
         if (libroE) downloadBlob(libroE);
         if (libroR) downloadBlob(libroR);
         if (facturasResult) downloadBlob(facturasResult);
-        if (gastosResult) downloadBlob(gastosResult);
+        if (gastosResult) {
+          downloadBlob(gastosResult);
+          const imgFiles = await buildImageFiles(resumen.expenses);
+          imgFiles.forEach(f => downloadBlob(f));
+        }
         if (anualResult) downloadBlob(anualResult);
         if (anualIVAResult) downloadBlob(anualIVAResult);
       }
@@ -162,12 +195,14 @@ export default function ResumenTrimestralModal({
 
       const subject = `Documentos T${quarter} ${year} — Solvy`;
 
+      const imgFiles = gastosResult ? await buildImageFiles(resumen.expenses) : [];
       const allFiles: File[] = [
         new File([resumenResult.blob], resumenResult.fileName, { type: 'application/pdf' }),
         ...(libroE ? [new File([libroE.blob], libroE.fileName, { type: 'application/pdf' })] : []),
         ...(libroR ? [new File([libroR.blob], libroR.fileName, { type: 'application/pdf' })] : []),
         ...(facturasResult ? [new File([facturasResult.blob], facturasResult.fileName, { type: 'application/pdf' })] : []),
         ...(gastosResult ? [new File([gastosResult.blob], gastosResult.fileName, { type: 'application/pdf' })] : []),
+        ...imgFiles.map(f => new File([f.blob], f.fileName, { type: f.blob.type })),
         ...(anualResult ? [new File([anualResult.blob], anualResult.fileName, { type: 'application/pdf' })] : []),
         ...(anualIVAResult ? [new File([anualIVAResult.blob], anualIVAResult.fileName, { type: 'application/pdf' })] : []),
       ];
