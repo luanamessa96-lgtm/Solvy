@@ -205,7 +205,7 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
                   </div>
                   <div className="space-y-1.5">
                     <label className={lc}>Fecha emisión</label>
-                    <input type="date" value={form.date} onChange={e => set('date', e.target.value)} className={ic()} />
+                    <input type="date" value={form.date} onChange={e => set('date', e.target.value)} className={`${ic()} appearance-none`} />
                   </div>
                 </div>
               </div>
