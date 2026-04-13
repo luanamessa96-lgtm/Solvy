@@ -4,7 +4,6 @@ import { X, FileText, Image as ImageIcon, Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Document } from '../types';
 import { uploadFile } from '../lib/db';
-import { todayLocalISO } from '../utils/date';
 
 interface MediaLibraryViewProps {
   documents: Document[];
@@ -137,32 +136,16 @@ function FileThumbnail({ doc, darkMode }: { doc: Document; darkMode?: boolean })
   );
 }
 
-export default function MediaLibraryView({ documents, onAddDocument, onDeleteDocument, onUpdateDocument, darkMode, addTrigger }: MediaLibraryViewProps) {
+export default function MediaLibraryView({ documents, onDeleteDocument, onUpdateDocument, darkMode }: MediaLibraryViewProps) {
   const { t } = useTranslation();
   const items = documents.filter(d => d.imageData || d.fileName);
   const groups = groupByMonth(items);
   const monthKeys = Object.keys(groups);
 
-  const [isAdding, setIsAdding] = React.useState(false);
-  const [addType, setAddType] = React.useState<'image' | 'file'>('image');
   const [selectedItem, setSelectedItem] = React.useState<Document | null>(null);
   const [editItem, setEditItem] = React.useState<Document | null>(null);
-  const [preview, setPreview] = React.useState<string | null>(null);
-  const [fileName, setFileName] = React.useState('');
-  const [docType, setDocType] = React.useState<'invoice' | 'expense'>('expense');
-  const [form, setForm] = React.useState({ title: '', client: '', amount: '', date: todayLocalISO(), category: 'altro' });
-  const [amountError, setAmountError] = React.useState(false);
-  const [uploading, setUploading] = React.useState(false);
-  const [uploadError, setUploadError] = React.useState('');
   const [pdfUrl, setPdfUrl] = React.useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = React.useState(false);
-  const imageRef = React.useRef<HTMLInputElement>(null);
-  const fileRef = React.useRef<HTMLInputElement>(null);
-
-  // Trigger dal + della BottomNav
-  React.useEffect(() => {
-    if (addTrigger) setIsAdding(true);
-  }, [addTrigger]);
 
   // Auto-upload base64 PDF to Storage when detail modal opens
   React.useEffect(() => {
@@ -187,54 +170,6 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
       .finally(() => setPdfLoading(false));
   }, [selectedItem?.id]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = ev => setPreview(ev.target?.result as string);
-    reader.readAsDataURL(file);
-  };
-
-  const handleSave = async () => {
-    if (!preview) return;
-    const parsed = parseFloat(form.amount.replace(',', '.'));
-    if (!form.amount.trim() || isNaN(parsed)) { setAmountError(true); return; }
-    setUploading(true);
-    setUploadError('');
-    try {
-      const id = Math.random().toString(36).substr(2, 9);
-      onAddDocument({
-        id,
-        type: docType,
-        status: 'paid',
-        title: form.title || form.category,
-        client: docType === 'invoice' ? form.client : undefined,
-        amount: parsed,
-        date: form.date,
-        category: form.category,
-        imageData: preview,
-        fileName: addType === 'file' ? fileName : undefined,
-      });
-      reset();
-    } catch (err: unknown) {
-      setUploading(false);
-      setUploadError(err instanceof Error ? err.message : t('media_library.save_error'));
-    }
-  };
-
-  const reset = () => {
-    setPreview(null);
-    setFileName('');
-    setForm({ title: '', client: '', amount: '', date: todayLocalISO(), category: 'altro' });
-    setDocType('expense');
-    setAmountError(false);
-    setIsAdding(false);
-    setUploading(false);
-    if (imageRef.current) imageRef.current.value = '';
-    if (fileRef.current) fileRef.current.value = '';
-  };
-
   const handleDelete = (doc: Document) => {
     onDeleteDocument(doc.id);
     setSelectedItem(null);
@@ -245,9 +180,6 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pb-24">
-      <input ref={imageRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-      <input ref={fileRef} type="file" accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain,.pdf,.doc,.docx,.xlsx,.csv,.txt" className="hidden" onChange={handleFileChange} />
-
       {items.length === 0 ? (
         <div className="py-20 flex flex-col items-center gap-4 text-center px-6">
           <div className={`w-20 h-20 rounded-3xl flex items-center justify-center ${darkMode ? 'bg-slate-800 text-slate-600' : 'bg-slate-100 text-slate-300'}`}>
@@ -255,11 +187,8 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
           </div>
           <div>
             <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('media_library.no_files_title')}</p>
-            <p className="text-sm text-slate-400 mt-1">{t('media_library.no_files_subtitle')}</p>
+            <p className="text-sm text-slate-400 mt-1">Adjunta scontrinos o facturas al crear un gasto — aparecerán aquí automáticamente.</p>
           </div>
-          <button onClick={() => setIsAdding(true)} className="px-6 py-3 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/30 active:scale-95 transition-all">
-            {t('media_library.add_btn')}
-          </button>
         </div>
       ) : (
         <div className="space-y-6 pt-2">
@@ -299,99 +228,6 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
           ))}
         </div>
       )}
-
-      {/* Add modal */}
-      <AnimatePresence>
-        {isAdding && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={reset} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
-            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="relative w-full max-w-md rounded-t-[32px] shadow-2xl flex flex-col max-h-[92dvh]" style={{ backgroundColor: 'var(--color-card)' }}>
-              <div className="overflow-y-auto flex-1 p-6 space-y-4 [padding-bottom:max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))]">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{preview ? t('media_library.details_title') : t('media_library.add_title')}</h2>
-                    <p className="text-sm text-slate-500">{preview ? t('media_library.fill_subtitle') : t('media_library.add_subtitle')}</p>
-                  </div>
-                  <button onClick={reset} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-400'}`}><X size={22} /></button>
-                </div>
-
-                {!preview ? (
-                  <div className="grid grid-cols-2 gap-3">
-                    <button onClick={() => { setAddType('image'); imageRef.current?.click(); }} className={`h-32 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all active:scale-[0.97] ${darkMode ? 'border-slate-700 bg-slate-800/50' : 'border-slate-200 bg-slate-50'}`}>
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}><ImageIcon size={22} /></div>
-                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('media_library.type_image')}</p>
-                    </button>
-                    <button onClick={() => { setAddType('file'); fileRef.current?.click(); }} className={`h-32 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all active:scale-[0.97] ${darkMode ? 'border-slate-700 bg-slate-800/50' : 'border-slate-200 bg-slate-50'}`}>
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${darkMode ? 'bg-primary/10 text-primary' : 'bg-primary/5 text-primary'}`}><FileText size={22} /></div>
-                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('media_library.type_file')}</p>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-5">
-                    <div className="relative w-full h-32 rounded-2xl overflow-hidden">
-                      {addType === 'image' ? (
-                        <img src={preview} alt="preview" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className={`w-full h-full flex flex-col items-center justify-center gap-2 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                          <FileText size={36} className="text-primary" strokeWidth={1.5} />
-                          <p className={`text-sm font-bold truncate px-4 ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fileName}</p>
-                        </div>
-                      )}
-                      <button onClick={() => { setPreview(null); setFileName(''); }} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center text-white"><X size={16} /></button>
-                    </div>
-
-                    <div className="p-1 rounded-2xl flex" style={{ backgroundColor: 'var(--color-card-bg)' }}>
-                      <button onClick={() => setDocType('invoice')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${docType === 'invoice' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>{t('media_library.toggle_invoice')}</button>
-                      <button onClick={() => setDocType('expense')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${docType === 'expense' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`}>{t('media_library.toggle_expense')}</button>
-                    </div>
-
-                    <div className="space-y-3">
-                      {docType === 'invoice' && (
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.client')}</label>
-                          <input type="text" placeholder={t('media_library.client_placeholder')} value={form.client} onChange={e => setForm(p => ({ ...p, client: e.target.value }))} className={inputClass()} />
-                        </div>
-                      )}
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.description')}</label>
-                        <input type="text" placeholder={t('media_library.description_placeholder')} value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} className={inputClass()} />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                          <label className={`text-xs font-bold uppercase tracking-wider ${amountError ? 'text-red-500' : 'text-slate-400'}`}>{t('common.amount')}</label>
-                          <input type="text" inputMode="decimal" placeholder="0.00" value={form.amount} onChange={e => { setAmountError(false); setForm(p => ({ ...p, amount: e.target.value })); }} className={inputClass(amountError)} />
-                          {amountError && <p className="text-xs font-bold text-red-500">{t('media_library.amount_error')}</p>}
-                        </div>
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.date')}</label>
-                          <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className={inputClass()} />
-                        </div>
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.category')}</label>
-                        <div className="flex flex-wrap gap-2">
-                          {categories.map(c => (
-                            <button key={c.value} type="button" onClick={() => setForm(p => ({ ...p, category: c.value }))} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 ${form.category === c.value ? 'bg-primary text-white shadow-lg shadow-primary/30' : (darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500')}`}>
-                              {c.emoji} {t(`media_library.cat_${c.value}`)}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {uploadError && (
-                      <p className="text-xs font-bold text-red-500 text-center px-2">⚠️ {uploadError}</p>
-                    )}
-                    <button onClick={handleSave} disabled={uploading} className={`w-full py-4 rounded-2xl font-bold text-white shadow-xl active:scale-[0.98] transition-all disabled:opacity-60 ${docType === 'invoice' ? 'bg-emerald-500 shadow-emerald-500/30' : 'bg-indigo-500 shadow-indigo-500/30'}`}>
-                      {uploading ? t('media_library.uploading') : (docType === 'invoice' ? t('media_library.save_invoice_btn') : t('media_library.save_expense_btn'))}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Detail modal */}
       <AnimatePresence>

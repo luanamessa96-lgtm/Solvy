@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
-import { Plus, FileText, CreditCard, Calendar } from 'lucide-react';
+import { Plus, FileText, CreditCard, Calendar, Paperclip, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getItDeductibilityRate } from '../../lib/it/deductibility';
 import { getEsDeductibilityRate } from '../../lib/es/deductibility';
@@ -30,6 +30,21 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
     category: defaultCategory,
   });
   const [ivaRate, setIvaRate] = useState<number>(21);
+  const [attachData, setAttachData] = useState<string | undefined>(undefined);
+  const [attachName, setAttachName] = useState<string | undefined>(undefined);
+  const attachRef = useRef<HTMLInputElement>(null);
+
+  const handleAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      setAttachData(ev.target?.result as string);
+      setAttachName(file.type.startsWith('image/') ? undefined : file.name);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
 
   const dragControls = useDragControls();
   const [amountTouched, setAmountTouched] = useState(false);
@@ -47,11 +62,14 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
       status: 'paid',
       title: formData.title || formData.category,
       ...(isSpain ? { ivaRate } : {}),
+      ...(attachData ? { imageData: attachData, fileName: attachName } : {}),
     });
     onClose();
     setFormData({ title: '', amount: '', date: todayLocalISO(), category: defaultCategory });
     setIvaRate(21);
     setAmountTouched(false);
+    setAttachData(undefined);
+    setAttachName(undefined);
   };
 
   const categoriesOrdinario = [
@@ -181,6 +199,33 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
                   </div>
                 </div>
               )}
+                {/* Allegato scontrino / justificante */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                    {isSpain ? 'Justificante (scontrino / factura)' : 'Allegato'}
+                  </label>
+                  <input ref={attachRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={handleAttach} />
+                  {attachData ? (
+                    <div className={`relative flex items-center gap-3 p-3 rounded-2xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                      {attachName ? (
+                        <FileText size={20} className="text-primary shrink-0" />
+                      ) : (
+                        <img src={attachData} alt="preview" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                      )}
+                      <p className={`text-xs font-semibold flex-1 truncate ${darkMode ? 'text-white' : 'text-slate-700'}`}>
+                        {attachName ?? 'Foto allegata'}
+                      </p>
+                      <button onClick={() => { setAttachData(undefined); setAttachName(undefined); }} className="w-6 h-6 rounded-full bg-slate-300/60 flex items-center justify-center shrink-0">
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button onClick={() => attachRef.current?.click()} className={`w-full flex items-center gap-2 px-4 py-3 rounded-2xl border-2 border-dashed transition-all active:scale-[0.98] ${darkMode ? 'border-slate-700 text-slate-400 hover:border-slate-500' : 'border-slate-200 text-slate-400 hover:border-slate-300'}`}>
+                      <Paperclip size={16} />
+                      <span className="text-sm font-semibold">{isSpain ? 'Adjuntar scontrino o factura' : 'Allega documento'}</span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
             <div className="shrink-0 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 space-y-2.5">
