@@ -400,7 +400,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                 <div className="space-y-1.5">
                   <label className={lc}>Cuota RETA mensual</label>
                   <input type="number" inputMode="decimal" min="0" step="0.01" value={retaMensile} onChange={e => setRetaMensile(e.target.value)} placeholder="es. 89.50" className={ic} />
-                  <HelpText text="Chiedi al tuo commercialista o alla Seguridad Social la tua quota mensile esatta." />
+                  <HelpText text="Consulta a tu gestor fiscal o a la Seguridad Social para conocer tu cuota mensual exacta." />
                 </div>
                 <div className="space-y-1.5">
                   <label className={lc}>Año inicio actividad</label>

@@ -366,7 +366,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                             className={`${inputClass()} pl-7`}
                           />
                         </div>
-                        <p className="text-[10px] text-slate-400 ml-1">Chiedi al tuo commercialista o alla Seguridad Social la tua quota mensile esatta e inseriscila qui.</p>
+                        <p className="text-[10px] text-slate-400 ml-1">Consulta a tu gestor fiscal o a la Seguridad Social para conocer tu cuota mensual exacta e introdúcela aquí.</p>
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Año inicio actividad</label>
