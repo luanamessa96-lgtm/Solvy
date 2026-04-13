@@ -48,6 +48,7 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
     amount: '',
     ivaRate: defaultIva as number,
     retencionIrpf: false,
+    intracomunitaria: false,
     status: 'pending' as 'paid' | 'pending',
   });
 
@@ -67,6 +68,7 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
         amount: String(editDoc.amount),
         ivaRate: editDoc.ivaRate ?? (profile.ivaHabitual ?? 21),
         retencionIrpf: editDoc.ritenuta ?? false,
+        intracomunitaria: editDoc.intracomunitaria ?? false,
         status: (editDoc.status === 'paid' || editDoc.status === 'pending') ? editDoc.status : 'pending',
       });
     } else {
@@ -80,6 +82,7 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
         amount: '',
         ivaRate: profile.ivaHabitual ?? 21,
         retencionIrpf: false,
+        intracomunitaria: false,
         status: 'pending',
       });
     }
@@ -90,7 +93,8 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
   const touch = (key: string) => setTouched(t => ({ ...t, [key]: true }));
 
   const base = parseFloat(form.amount.replace(',', '.')) || 0;
-  const ivaAmount = base * form.ivaRate / 100;
+  const effectiveIvaRate = form.intracomunitaria ? 0 : form.ivaRate;
+  const ivaAmount = base * effectiveIvaRate / 100;
   const irpfAmount = form.retencionIrpf ? base * irpfRate / 100 : 0;
   const total = base + ivaAmount - irpfAmount;
 
@@ -123,8 +127,9 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
     clientCf: form.clientType === 'particular' && form.clientNif.trim() ? form.clientNif : undefined,
     title: form.title,
     amount: base,
-    ivaRate: form.ivaRate,
+    ivaRate: form.intracomunitaria ? 0 : form.ivaRate,
     ritenuta: form.retencionIrpf,
+    intracomunitaria: form.intracomunitaria || undefined,
     status: form.status,
   });
 
@@ -335,6 +340,24 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
                 />
               </div>
 
+              {/* Operación intracomunitaria */}
+              <div className={`flex items-center gap-3 p-4 rounded-2xl border ${form.intracomunitaria ? (darkMode ? 'bg-blue-500/10 border-blue-500/30' : 'bg-blue-50 border-blue-200') : (darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100')}`}>
+                <div className="flex-1">
+                  <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                    Cliente UE — Operación intracomunitaria
+                  </p>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    IVA 0% · Inversión del sujeto pasivo (art. 194 Directiva IVA)
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={form.intracomunitaria}
+                  onChange={e => set('intracomunitaria', e.target.checked)}
+                  className="w-5 h-5 rounded-lg text-primary focus:ring-primary"
+                />
+              </div>
+
               {/* Resumen importes */}
               {base > 0 && (
                 <div className={`rounded-2xl p-4 space-y-2 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
@@ -343,7 +366,9 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
                     <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{base.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-slate-400">IVA {form.ivaRate}%</span>
+                    <span className="text-sm text-slate-400">
+                      {form.intracomunitaria ? 'IVA 0% (inv. sujeto pasivo)' : `IVA ${effectiveIvaRate}%`}
+                    </span>
                     <span className="text-sm font-bold text-slate-500">+€{ivaAmount.toFixed(2)}</span>
                   </div>
                   {form.retencionIrpf && (

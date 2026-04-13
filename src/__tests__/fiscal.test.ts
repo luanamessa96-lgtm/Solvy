@@ -11,6 +11,8 @@ import {
   getTarifaPlanaStatus,
   calculateRETA_withTarifaPlana,
   calculateGastosDificilJustificacion,
+  calculateSpanishTaxes,
+  getReduccionInicio,
   RETA_BRACKETS,
 } from '../lib/countries/es';
 import { getEsDeductibilityRate } from '../lib/es/deductibility';
@@ -29,6 +31,10 @@ function makeExpense(amount: number, date: string, category = 'material', ivaRat
 
 function makeRectificativa(amount: number, date: string, ivaRate = 21): Document {
   return { id: Math.random().toString(), type: 'factura_rectificativa', title: 'Rect', amount, date, ivaRate } as Document;
+}
+
+function makeIntracomunitaria(amount: number, date: string): Document {
+  return { id: Math.random().toString(), type: 'invoice', title: 'Intracom', client: 'EU Client', amount, date, status: 'paid', ivaRate: 0, intracomunitaria: true } as Document;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -470,13 +476,13 @@ describe('Spain — IVA repercutida / soportada', () => {
     expect(res.ivaRepercutida).toBeCloseTo(210 + 200, 1);
   });
 
-  it('ivaSoportada = somma IVA delle spese del trimestre', () => {
+  it('ivaSoportada = IVA spese con deducibilità parziale applicata', () => {
     const docs = [
-      makeExpense(500, '2026-01-20', 'material', 21), // IVA: 105
-      makeExpense(100, '2026-03-01', 'telefono', 21),  // IVA: 21
+      makeExpense(500, '2026-01-20', 'material', 21), // IVA: 500×100%×21% = 105
+      makeExpense(100, '2026-03-01', 'telefono', 21),  // IVA: 100×50%×21% = 10.5 (telefono 50% deducibile)
     ];
     const res = calcularTrimestre(docs, 1, year);
-    expect(res.ivaSoportada).toBeCloseTo(105 + 21, 1);
+    expect(res.ivaSoportada).toBeCloseTo(105 + 10.5, 1);
   });
 
   it('diferenciaIVA = repercutida − soportada', () => {
@@ -749,5 +755,148 @@ describe('Spain — getEsDeductibilityRate', () => {
   it('case insensitive', () => {
     expect(getEsDeductibilityRate('TELEFONO')).toBe(0.5);
     expect(getEsDeductibilityRate('Material')).toBe(1);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPAIN — Reducción inicio actividad (art. 32.3 LIRPF)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe('Spain — getReduccionInicio (art. 32.3 LIRPF)', () => {
+  it('primo anno di attività → 20%', () => {
+    expect(getReduccionInicio(2026, 2026)).toBe(0.20);
+  });
+
+  it('secondo anno → 30%', () => {
+    expect(getReduccionInicio(2025, 2026)).toBe(0.30);
+  });
+
+  it('terzo anno e oltre → 0%', () => {
+    expect(getReduccionInicio(2024, 2026)).toBe(0);
+    expect(getReduccionInicio(2020, 2026)).toBe(0);
+  });
+
+  it('startYear undefined → 0%', () => {
+    expect(getReduccionInicio(undefined, 2026)).toBe(0);
+  });
+});
+
+describe('Spain — calculateSpanishTaxes con reducción inicio', () => {
+  const grossIncome = 30000;
+  const currentYear = 2026;
+
+  it('primo anno: IRPF calcolato su base ridotta del 20%', () => {
+    const startYear = 2026;
+    // rendimientoNetoPrevio = 30000, gastosDificil = 1500, rendimientoNetoPrelim = 28500
+    // reduccion 20% → rendimientoNeto = 28500 × 0.80 = 22800
+    const r = calculateSpanishTaxes(grossIncome, false, false, startYear, currentYear, 0);
+    expect(r.reduccionInicioRate).toBe(0.20);
+    expect(r.rendimientoNeto).toBeCloseTo(22800, 0);
+    // IRPF su 22800: 12450×19% + (20200-12450)×24% + (22800-20200)×30%
+    const irpfExpected = 12450 * 0.19 + 7750 * 0.24 + 2600 * 0.30;
+    expect(r.irpf).toBeCloseTo(irpfExpected, 0);
+  });
+
+  it('secondo anno: IRPF calcolato su base ridotta del 30%', () => {
+    const startYear = 2025;
+    // rendimientoNetoPrelim = 28500, reduccion 30% → rendimientoNeto = 19950
+    const r = calculateSpanishTaxes(grossIncome, false, false, startYear, currentYear, 0);
+    expect(r.reduccionInicioRate).toBe(0.30);
+    expect(r.rendimientoNeto).toBeCloseTo(28500 * 0.70, 0);
+  });
+
+  it('anno normale: nessuna reducción', () => {
+    const startYear = 2020;
+    const r = calculateSpanishTaxes(grossIncome, false, false, startYear, currentYear, 0);
+    expect(r.reduccionInicioRate).toBe(0);
+    expect(r.rendimientoNeto).toBeCloseTo(30000 - 1500, 0); // 28500
+  });
+
+  it('mesesDeAlta = 6: RETA annuale è metà di quella a 12 mesi', () => {
+    const r12 = calculateSpanishTaxes(grossIncome, false, false, undefined, currentYear, 0, 12);
+    const r6  = calculateSpanishTaxes(grossIncome, false, false, undefined, currentYear, 0, 6);
+    expect(r6.reta).toBeCloseTo(r12.reta / 2, 1);
+  });
+});
+
+describe('Spain — Reducción inicio in calcularTrimestre (Modelo 130)', () => {
+  const year = 2026;
+
+  it('primo anno: cuotaIRPF ridotta del 20% rispetto a senza reducción', () => {
+    const docs = [
+      makeInvoice(10000, '2026-01-10', 21),
+    ];
+    const rSenza = calcularTrimestre(docs, 1, year, 0);          // senza startYear
+    const rCon   = calcularTrimestre(docs, 1, year, 0, 2026);    // primo anno
+    // Con reducción, cuota = baseConReduccion × 20% invece di base × 20%
+    expect(rCon.cuotaIRPF).toBeLessThan(rSenza.cuotaIRPF);
+    expect(rCon.reduccionInicioRate).toBe(0.20);
+  });
+
+  it('anno normale: reduccionInicioRate = 0, cuota invariata', () => {
+    const docs = [makeInvoice(10000, '2026-01-10', 21)];
+    const r = calcularTrimestre(docs, 1, year, 0, 2020);
+    expect(r.reduccionInicioRate).toBe(0);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPAIN — IVA soportada con deducibilità parziale
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe('Spain — IVA soportada parziale (telefono 50%)', () => {
+  const year = 2026;
+
+  it('telefono: solo il 50% dell IVA è deducibile', () => {
+    const docs = [
+      makeExpense(1000, '2026-01-10', 'telefono', 21), // IVA: 1000×50%×21% = 105
+    ];
+    const r = calcularTrimestre(docs, 1, year);
+    expect(r.ivaSoportada).toBeCloseTo(105, 1);
+  });
+
+  it('material 100% + telefono 50% = somma corretta', () => {
+    const docs = [
+      makeExpense(1000, '2026-01-10', 'material', 21), // IVA: 210
+      makeExpense(1000, '2026-01-10', 'telefono', 21), // IVA: 105
+    ];
+    const r = calcularTrimestre(docs, 1, year);
+    expect(r.ivaSoportada).toBeCloseTo(210 + 105, 1);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPAIN — Operazioni intracomunitarie
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe('Spain — Operazioni intracomunitarie (inversión del sujeto pasivo)', () => {
+  const year = 2026;
+
+  it('fattura intracomunitaria non contribuisce a ivaRepercutida', () => {
+    const docs = [
+      makeInvoice(1000, '2026-01-10', 21),          // IVA 210
+      makeIntracomunitaria(2000, '2026-02-15'),       // IVA 0 — esclusa
+    ];
+    const r = calcularTrimestre(docs, 1, year);
+    expect(r.ivaRepercutida).toBeCloseTo(210, 1);   // solo la normale
+  });
+
+  it('solo intracomunitarie: ivaRepercutida = 0', () => {
+    const docs = [
+      makeIntracomunitaria(5000, '2026-01-10'),
+      makeIntracomunitaria(3000, '2026-02-20'),
+    ];
+    const r = calcularTrimestre(docs, 1, year);
+    expect(r.ivaRepercutida).toBe(0);
+  });
+
+  it('intracomunitaria entra nel totalIngresos (base IRPF)', () => {
+    const docs = [
+      makeInvoice(1000, '2026-01-10', 21),
+      makeIntracomunitaria(2000, '2026-01-20'),
+    ];
+    const r = calcularTrimestre(docs, 1, year);
+    // totalIngresos include entrambe (l'intracomunitaria è comunque reddito)
+    expect(r.totalIngresos).toBeCloseTo(3000, 1);
   });
 });

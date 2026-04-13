@@ -117,8 +117,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const esRetencionRateExport = yearsActiveExport <= 3 ? 0.07 : 0.15;
 
   const resumenPreview = useMemo(() =>
-    calcularTrimestre(documents, resumenQuarter, resumenYear, esRetencionRateExport),
-    [documents, resumenQuarter, resumenYear, esRetencionRateExport]
+    calcularTrimestre(documents, resumenQuarter, resumenYear, esRetencionRateExport, profile.annoInizioAttivita),
+    [documents, resumenQuarter, resumenYear, esRetencionRateExport, profile.annoInizioAttivita]
   );
 
   const toggleMonth = (m: number) => {
@@ -1005,7 +1005,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       // Generate Resumen Trimestral PDF if toggle is on (Spain)
       let resumenFile: { blob: Blob; fileName: string } | undefined;
       if (includeResumen && isSpain && isPro && hasTaxIdSpain) {
-        const resumen = calcularTrimestre(documents, resumenQuarter, resumenYear);
+        const resumen = calcularTrimestre(documents, resumenQuarter, resumenYear, esRetencionRateExport, profile.annoInizioAttivita);
         const resumenPdf = await generateResumenPDF(resumen, profile);
         const nif = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
         const resumenFileName = `ES_${nif}_resumen_T${resumenQuarter}_${resumenYear}.pdf`;

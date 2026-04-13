@@ -197,10 +197,10 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     if (!isSpain) return null;
     try {
       return {
-        1: calcularTrimestre(documents ?? [], 1, selectedYear, esRetencionRate),
-        2: calcularTrimestre(documents ?? [], 2, selectedYear, esRetencionRate),
-        3: calcularTrimestre(documents ?? [], 3, selectedYear, esRetencionRate),
-        4: calcularTrimestre(documents ?? [], 4, selectedYear, esRetencionRate),
+        1: calcularTrimestre(documents ?? [], 1, selectedYear, esRetencionRate, profile?.annoInizioAttivita),
+        2: calcularTrimestre(documents ?? [], 2, selectedYear, esRetencionRate, profile?.annoInizioAttivita),
+        3: calcularTrimestre(documents ?? [], 3, selectedYear, esRetencionRate, profile?.annoInizioAttivita),
+        4: calcularTrimestre(documents ?? [], 4, selectedYear, esRetencionRate, profile?.annoInizioAttivita),
       };
     } catch { return null; }
   }, [isSpain, documents, selectedYear, esRetencionRate]);

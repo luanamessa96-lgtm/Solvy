@@ -343,7 +343,7 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
               </div>
               {profile.annoInizioAttivita === new Date().getFullYear() && !redditoN1Input.trim() && (
                 <p className="text-[10px] text-blue-500 font-bold">
-                  Primer año de actividad — la cuota RETA se calcula según tus ingresos reales.
+                  Primer año de actividad — la cuota RETA se calcula según tus ingresos reales y es proporcional a los meses de alta. Consulta con tu gestor.
                 </p>
               )}
             </div>

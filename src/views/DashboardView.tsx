@@ -438,7 +438,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
           // T4 covers Oct–Dec of currentYearES (presented Jan 30 year+1 but fiscal year is currentYearES)
           const nextQYear = currentYearES;
           const esRetencionRateDecimal = (yearsActiveES != null && yearsActiveES < 3 ? 7 : 15) / 100;
-          const nextQData = calcularTrimestre(documents ?? [], nextQNum, nextQYear, esRetencionRateDecimal);
+          const nextQData = calcularTrimestre(documents ?? [], nextQNum, nextQYear, esRetencionRateDecimal, profile.annoInizioAttivita);
           const quarterlyAmountES = nextQData.cuotaIRPF;
           return (
             <motion.div key="taxes" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }} className="px-6 space-y-4">

@@ -56,6 +56,7 @@ export interface Document {
   clientSdi?: string;
   clientPec?: string;
   validezDate?: string;
+  intracomunitaria?: boolean;
 }
 
 export interface Deadline {

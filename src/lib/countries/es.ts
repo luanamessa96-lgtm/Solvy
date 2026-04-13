@@ -92,6 +92,19 @@ export function calculateGastosDificilJustificacion(rendimientoNetoPrevio: numbe
   return Math.min(rendimientoNetoPrevio * 0.05, 2000);
 }
 
+/**
+ * Reducción por inicio de actividad (art. 32.3 LIRPF)
+ * 20% el primer año de actividad, 30% el segundo.
+ * Se aplica sobre el rendimiento neto positivo (después de gastos de difícil justificación).
+ */
+export function getReduccionInicio(startYear: number | undefined, currentYear: number): number {
+  if (!startYear) return 0;
+  const diff = currentYear - startYear;
+  if (diff === 0) return 0.20;
+  if (diff === 1) return 0.30;
+  return 0;
+}
+
 export function calculateIRPF(grossIncome: number): number {
   if (grossIncome <= 0) return 0;
   let tax = 0;
@@ -123,19 +136,24 @@ export function calculateSpanishTaxes(
   applyRetenciones: boolean = false,
   startYear?: number,
   currentYear: number = new Date().getFullYear(),
-  deductibleExpenses: number = 0
-): SpanishTaxResult & { tarifaPlanaStatus: TarifaPlanaStatus; monthlyRETA: number; rendimientoNeto: number } {
+  deductibleExpenses: number = 0,
+  mesesDeAlta: number = 12
+): SpanishTaxResult & { tarifaPlanaStatus: TarifaPlanaStatus; monthlyRETA: number; rendimientoNeto: number; reduccionInicioRate: number } {
   // D2: rendimiento neto previo = ingresos − gastos analíticos
   const rendimientoNetoPrevio = Math.max(0, grossIncome - deductibleExpenses);
   // Gastos difícil justificación: 5% del rendimiento neto previo, máx €2.000 (art.30 RIRPF, Manual IRPF 2024)
   const gastosDificil = calculateGastosDificilJustificacion(rendimientoNetoPrevio);
-  const rendimientoNeto = rendimientoNetoPrevio - gastosDificil;
+  const rendimientoNetoPrelim = rendimientoNetoPrevio - gastosDificil;
+  // Reducción inicio actividad (art. 32.3 LIRPF): 20% año 1, 30% año 2
+  const reduccionInicioRate = getReduccionInicio(startYear, currentYear);
+  const rendimientoNeto = Math.max(0, rendimientoNetoPrelim * (1 - reduccionInicioRate));
   const irpf = calculateIRPF(rendimientoNeto);
   const monthlyNet = rendimientoNeto / 12;
   const { monthly: monthlyRETA, status: tarifaPlanaStatus } = calculateRETA_withTarifaPlana(
     monthlyNet, startYear, currentYear, grossIncome
   );
-  const reta = monthlyRETA * 12;
+  // RETA proporzionale: mesesDeAlta permette di pro-ratare per anno di inizio attività
+  const reta = monthlyRETA * mesesDeAlta;
   const retenciones = applyRetenciones ? calculateRetenciones(grossIncome, isFirstThreeYears) : 0;
   // netIncome = cash in pocket: income received minus real expenses minus taxes (gastosDificil is a tax deduction, not a real outflow)
   const netIncome = rendimientoNetoPrevio - irpf - reta;
@@ -151,6 +169,7 @@ export function calculateSpanishTaxes(
     tarifaPlanaStatus,
     monthlyRETA,
     rendimientoNeto,
+    reduccionInicioRate,
   };
 }
 
@@ -238,7 +257,10 @@ export const spainModule: CountryModule = {
     const deductibleExpenses = Math.max(0, input.deductibleExpenses ?? 0);
     const rendimientoNetoPrevio = Math.max(0, grossIncome - deductibleExpenses);
     const gastosDificil = calculateGastosDificilJustificacion(rendimientoNetoPrevio);
-    const rendimientoNeto = rendimientoNetoPrevio - gastosDificil;
+    const rendimientoNetoPrelim = rendimientoNetoPrevio - gastosDificil;
+    // Reducción inicio actividad (art. 32.3 LIRPF): 20% año 1, 30% año 2
+    const reduccionInicioRate = getReduccionInicio(startYear, currentYear);
+    const rendimientoNeto = Math.max(0, rendimientoNetoPrelim * (1 - reduccionInicioRate));
     const irpf = calculateIRPF(rendimientoNeto);
     const monthlyNet = rendimientoNeto / 12;
     const { monthly: monthlyRETA, status: tarifaPlanaStatus } = calculateRETA_withTarifaPlana(
@@ -267,6 +289,7 @@ export const spainModule: CountryModule = {
         gastosDificilJustificacion: gastosDificil,
         rendimientoNeto,
         deductibleExpenses,
+        reduccionInicioRate,
       },
     };
   },

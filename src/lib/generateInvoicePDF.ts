@@ -298,7 +298,10 @@ export async function buildInvoicePage(
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(7);
     pdf.setTextColor(...grey);
-    const lines = pdf.splitTextToSize(SPAIN_NOTE, W - M * 2);
+    const spainNote = doc.intracomunitaria
+      ? 'Operación intracomunitaria. Inversión del sujeto pasivo según el art. 194 de la Directiva 2006/112/CE del Consejo. IVA no repercutido — el destinatario es sujeto pasivo en el Estado miembro de destino.'
+      : SPAIN_NOTE;
+    const lines = pdf.splitTextToSize(spainNote, W - M * 2);
     pdf.text(lines, M, y);
     y += lines.length * 3.5 + 4;
   } else if (!isOrdinario) {

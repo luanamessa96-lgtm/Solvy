@@ -1,7 +1,7 @@
 import { Document, Profile } from '../types';
 import { getLocalYear } from '../utils/date';
 import { getEsDeductibilityRate } from '../lib/es/deductibility';
-import { calculateGastosDificilJustificacion } from '../lib/countries/es';
+import { calculateGastosDificilJustificacion, getReduccionInicio } from '../lib/countries/es';
 
 type jsPDFWithAutoTable = import('jspdf').jsPDF & { lastAutoTable: { finalY: number } };
 
@@ -27,6 +27,7 @@ export interface ResumenTrimestral {
   pagosAnteriores: number;      // cuotas nette già versate in T1..T(n-1)
   cuotaIRPF: number;            // netta = max(0, cuotaAcumulada − retencionesCumulativas − pagosAnteriores)
   exentoMinimo: boolean;        // true se rendimiento neto cumulativo < €1.000 → cuota = 0
+  reduccionInicioRate: number;  // 0, 0.20 (año 1) o 0.30 (año 2) — art. 32.3 LIRPF
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -67,7 +68,8 @@ function fmtES(n: number): string {
 function calcCuotaAcumulada(
   documents: Document[],
   upToQuarter: 1 | 2 | 3 | 4,
-  year: number
+  year: number,
+  startYear?: number
 ): { ingresos: number; gastos: number; base: number; cuota: number } {
   const startDate = new Date(year, 0, 1, 0, 0, 0, 0);
   const endDate   = getQuarterRange(upToQuarter, year).end;
@@ -90,7 +92,10 @@ function calcCuotaAcumulada(
   // Gastos difícil justificación: 5% del rendimiento neto previo, max €2.000 (art.30 RIRPF)
   const gastosDificil = calculateGastosDificilJustificacion(rendimientoNetoPrevio);
   const base = rendimientoNetoPrevio - gastosDificil;
-  return { ingresos, gastos, base, cuota: base * 0.20 };
+  // Reducción inicio actividad (art. 32.3 LIRPF): 20% año 1, 30% año 2
+  const reduccionRate = getReduccionInicio(startYear, year);
+  const baseConReduccion = Math.max(0, base * (1 - reduccionRate));
+  return { ingresos, gastos, base, cuota: baseConReduccion * 0.20 };
 }
 
 /** Sum of retenciones soportadas (withheld by clients) from Jan 1 to end of the given quarter. */
@@ -120,7 +125,8 @@ export function calcularTrimestre(
   documents: Document[],
   quarter: 1 | 2 | 3 | 4,
   year: number,
-  retencionRate: number = 0
+  retencionRate: number = 0,
+  startYear?: number
 ): ResumenTrimestral {
   const { start, end } = getQuarterRange(quarter, year);
 
@@ -141,14 +147,18 @@ export function calcularTrimestre(
                       - rectificativas.reduce((sum, d) => sum + d.amount, 0);
   const totalGastos   = expenses.reduce((sum, d) => sum + d.amount * getEsDeductibilityRate(d.category), 0);
 
-  const ivaRepercutida = invoices.reduce((sum, d) => sum + d.amount * ((d.ivaRate ?? 0) / 100), 0)
-                       - rectificativas.reduce((sum, d) => sum + d.amount * ((d.ivaRate ?? 0) / 100), 0);
+  // Operaciones intracomunitarias: IVA = 0 (inversión del sujeto pasivo) — no computan en ivaRepercutida
+  const ivaRepercutida = invoices
+    .filter(d => !d.intracomunitaria)
+    .reduce((sum, d) => sum + d.amount * ((d.ivaRate ?? 0) / 100), 0)
+    - rectificativas.reduce((sum, d) => sum + d.amount * ((d.ivaRate ?? 0) / 100), 0);
+  // IVA soportada: aplicar tasa de deducibilidad por categoría (ej. teléfono 50%)
   const ivaSoportada   = expenses
     .filter(d => (d.ivaRate ?? 0) > 0)
-    .reduce((sum, d) => sum + d.amount * ((d.ivaRate ?? 0) / 100), 0);
+    .reduce((sum, d) => sum + d.amount * getEsDeductibilityRate(d.category) * ((d.ivaRate ?? 0) / 100), 0);
 
   // Modelo 130 — calcolo cumulativo (Ene → fine trimestre)
-  const cumActual = calcCuotaAcumulada(documents, quarter, year);
+  const cumActual = calcCuotaAcumulada(documents, quarter, year, startYear);
 
   const ingresosCumulativos = cumActual.ingresos;
   const gastosCumulativos   = cumActual.gastos;
@@ -160,7 +170,7 @@ export function calcularTrimestre(
   let pagosAnteriores = 0;
   for (let q = 1; q < quarter; q++) {
     const qNum = q as 1 | 2 | 3 | 4;
-    const qCum = calcCuotaAcumulada(documents, qNum, year);
+    const qCum = calcCuotaAcumulada(documents, qNum, year, startYear);
     const qRet = calcRetencionesCumulativas(documents, qNum, year, retencionRate);
     const qExento = qCum.base < 1000;
     const qCuotaIRPF = qExento ? 0 : Math.max(0, qCum.cuota - qRet - pagosAnteriores);
@@ -179,6 +189,7 @@ export function calcularTrimestre(
     diferenciaIVA: ivaRepercutida - ivaSoportada,
     ingresosCumulativos, gastosCumulativos,
     baseImponible130, cuotaAcumulada, retencionesCumulativas, pagosAnteriores, cuotaIRPF, exentoMinimo,
+    reduccionInicioRate: getReduccionInicio(startYear, year),
   };
 }
 
@@ -487,7 +498,7 @@ export async function buildResumenPDFBlob(
   const currentYr = new Date().getFullYear();
   const yearsActiveP = profile.annoInizioAttivita ? currentYr - profile.annoInizioAttivita : 10;
   const retencionRateP = yearsActiveP <= 3 ? 0.07 : 0.15;
-  const resumen = calcularTrimestre(documents, quarter, year, retencionRateP);
+  const resumen = calcularTrimestre(documents, quarter, year, retencionRateP, profile.annoInizioAttivita);
   const pdf = await generateResumenPDF(resumen, profile);
   const nif = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
   const fileName = `ES_${nif}_resumen_T${quarter}_${year}.pdf`;
@@ -503,7 +514,7 @@ export async function downloadResumenTrimestral(
   const currentYrD = new Date().getFullYear();
   const yearsActiveD = profile.annoInizioAttivita ? currentYrD - profile.annoInizioAttivita : 10;
   const retencionRateD = yearsActiveD <= 3 ? 0.07 : 0.15;
-  const resumen = calcularTrimestre(documents, quarter, year, retencionRateD);
+  const resumen = calcularTrimestre(documents, quarter, year, retencionRateD, profile.annoInizioAttivita);
   const pdf = await generateResumenPDF(resumen, profile);
   const nif = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
   const filename = `ES_${nif}_resumen_T${quarter}_${year}.pdf`;
@@ -802,10 +813,11 @@ export async function generateResumenAnualBlob(
   const totalIngresos     = yearInvoices.reduce((s, d) => s + d.amount, 0)
                           - yearRect.reduce((s, d) => s + d.amount, 0);
   const totalGastos       = yearExpenses.reduce((s, d) => s + d.amount * getEsDeductibilityRate(d.category), 0);
-  const ivaRepercutida    = yearInvoices.reduce((s, d) => s + d.amount * ((d.ivaRate ?? 0) / 100), 0)
+  const ivaRepercutida    = yearInvoices.filter(d => !d.intracomunitaria)
+                              .reduce((s, d) => s + d.amount * ((d.ivaRate ?? 0) / 100), 0)
                           - yearRect.reduce((s, d) => s + d.amount * ((d.ivaRate ?? 0) / 100), 0);
   const ivaSoportada      = yearExpenses.filter(d => (d.ivaRate ?? 0) > 0)
-                              .reduce((s, d) => s + d.amount * ((d.ivaRate ?? 0) / 100), 0);
+                              .reduce((s, d) => s + d.amount * getEsDeductibilityRate(d.category) * ((d.ivaRate ?? 0) / 100), 0);
   const diferenciaIVA     = ivaRepercutida - ivaSoportada;
   const totalRetenciones  = yearInvoices.filter(d => d.ritenuta)
                               .reduce((s, d) => s + d.amount * (retencionRate / 100), 0);
@@ -813,7 +825,7 @@ export async function generateResumenAnualBlob(
 
   // Per-quarter breakdown
   const quarterData = ([1, 2, 3, 4] as const).map(q => {
-    const r = calcularTrimestre(documents, q, year);
+    const r = calcularTrimestre(documents, q, year, retencionRate / 100, profile.annoInizioAttivita);
     return { q, totalIngresos: r.totalIngresos, ivaRepercutida: r.ivaRepercutida };
   });
 
@@ -1016,9 +1028,9 @@ export async function generateResumenAnualIVABlob(
   const yearRect     = documents.filter(d => d.type === 'factura_rectificativa' && getLocalYear(d.date) === year);
   const yearExpenses = documents.filter(d => d.type === 'expense' && getLocalYear(d.date) === year);
 
-  // IVA repercutida grouped by rate
+  // IVA repercutida grouped by rate — operaciones intracomunitarias excluidas (inversión del sujeto pasivo)
   const ivaRepRates: Record<number, { base: number; cuota: number }> = {};
-  for (const d of yearInvoices) {
+  for (const d of yearInvoices.filter(d => !d.intracomunitaria)) {
     const rate = d.ivaRate ?? 21;
     if (!ivaRepRates[rate]) ivaRepRates[rate] = { base: 0, cuota: 0 };
     ivaRepRates[rate].base += d.amount;
@@ -1031,14 +1043,15 @@ export async function generateResumenAnualIVABlob(
     ivaRepRates[rate].cuota -= d.amount * (rate / 100);
   }
 
-  // IVA soportada grouped by rate
+  // IVA soportada grouped by rate — aplicar tasa de deducibilidad por categoría (ej. teléfono 50%)
   const ivaSopRates: Record<number, { base: number; cuota: number }> = {};
   for (const d of yearExpenses) {
     const rate = d.ivaRate ?? 0;
     if (rate === 0) continue;
+    const dedRate = getEsDeductibilityRate(d.category);
     if (!ivaSopRates[rate]) ivaSopRates[rate] = { base: 0, cuota: 0 };
-    ivaSopRates[rate].base += d.amount;
-    ivaSopRates[rate].cuota += d.amount * (rate / 100);
+    ivaSopRates[rate].base += d.amount * dedRate;
+    ivaSopRates[rate].cuota += d.amount * dedRate * (rate / 100);
   }
 
   const totalIvaRep = Object.values(ivaRepRates).reduce((s, v) => s + v.cuota, 0);
@@ -1046,7 +1059,7 @@ export async function generateResumenAnualIVABlob(
   const diferenciaTotal = totalIvaRep - totalIvaSop;
 
   const quarterData = ([1, 2, 3, 4] as const).map(q => {
-    const r = calcularTrimestre(documents, q, year);
+    const r = calcularTrimestre(documents, q, year, 0, profile.annoInizioAttivita);
     return { q, ivaRep: r.ivaRepercutida, ivaSop: r.ivaSoportada, dif: r.diferenciaIVA };
   });
 
