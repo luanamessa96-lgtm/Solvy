@@ -155,7 +155,6 @@ export default function ResumenTrimestralModal({
       const extras = [libroE, libroR, facturasResult, gastosResult, anualResult, anualIVAResult].filter(Boolean);
       if (extras.length === 1) {
         downloadBlob(extras[0]!);
-        downloadBlob(resumenResult);
       } else {
         setPdfPreview(resumenResult);
         if (libroE) downloadBlob(libroE);
