@@ -213,7 +213,8 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
   const { invoices, rectificativas, expenses, totalIngresos, totalGastos,
           ivaRepercutida, ivaSoportada, diferenciaIVA,
           ingresosCumulativos, gastosCumulativos,
-          baseImponible130, cuotaAcumulada, pagosAnteriores, cuotaIRPF } = resumen;
+          baseImponible130, cuotaAcumulada, pagosAnteriores, cuotaIRPF,
+          reduccionInicioRate } = resumen;
 
   // ── Header ─────────────────────────────────────────────────────────────────
   pdf.setFont('helvetica', 'bold');
@@ -398,6 +399,9 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
       ['Gastos difícil just. (5%)', `- ${fmtES(gastosDificilPDF)}`] as [string, string],
     ] : []),
     ['Rendimiento neto',     fmtES(baseImponible130)],
+    ...(reduccionInicioRate > 0 ? [
+      [`Reducción inicio act. (${(reduccionInicioRate * 100).toFixed(0)}%) art.32.3`, `- ${fmtES(baseImponible130 * reduccionInicioRate)}`] as [string, string],
+    ] : []),
     ['Tipo pago fraccionado','20%'],
     ...(pagosAnteriores > 0 ? [
       ['Cuota íntegra',       fmtES(cuotaAcumulada)] as [string, string],
