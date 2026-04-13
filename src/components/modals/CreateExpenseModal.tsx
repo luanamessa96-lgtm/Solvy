@@ -114,7 +114,7 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
           <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl max-h-[90dvh] grid grid-rows-[auto_1fr_auto]"
+            className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl max-h-[90dvh] flex flex-col"
             style={{ backgroundColor: 'var(--color-card)' }}>
             <div className={`flex items-start justify-between p-6 pb-4 shrink-0 ${darkMode ? 'border-b border-slate-800' : 'border-b border-slate-100'}`}>
               <div className="space-y-0.5">
@@ -125,7 +125,7 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
                 <Plus className="rotate-45" size={18} />
               </button>
             </div>
-            <div data-scroll-lock-ignore className="overflow-y-auto overscroll-y-contain p-5 space-y-4">
+            <div data-scroll-lock-ignore className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain p-5 space-y-4">
               <div className="space-y-3">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('common.category')}</label>

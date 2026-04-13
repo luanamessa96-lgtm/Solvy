@@ -77,7 +77,7 @@ const CreateCreditNoteModal = ({ isOpen, onClose, onSave, profile, documents, da
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl max-h-[90dvh] grid grid-rows-[auto_1fr]"
+            className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl max-h-[90dvh] flex flex-col"
             style={{ backgroundColor: 'var(--color-card)' }}
           >
             <div className={`flex items-start justify-between p-6 pb-4 shrink-0 ${darkMode ? 'border-b border-slate-800' : 'border-b border-slate-100'}`}>
@@ -88,7 +88,7 @@ const CreateCreditNoteModal = ({ isOpen, onClose, onSave, profile, documents, da
               <button onClick={onClose} className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${darkMode ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-500 hover:text-slate-700'}`}><Plus className="rotate-45" size={18} /></button>
             </div>
 
-            <div data-scroll-lock-ignore className="overflow-y-auto overscroll-y-contain p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
+            <div data-scroll-lock-ignore className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
               <div className="space-y-1.5">
                 <label className={lc}>{t('create_credit_note.number_label')}</label>
                 <div className={`${ic} opacity-60 cursor-not-allowed`}>{nextCreditNoteNumber}</div>
