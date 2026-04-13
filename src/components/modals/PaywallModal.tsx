@@ -99,14 +99,14 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="relative w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl max-h-[90dvh]"
+            className="relative w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl max-h-[90vh]"
           >
             {/* Sfondo gradiente */}
             <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-[#0d1f3c] to-[#061020]" />
             <div className="absolute top-0 right-0 w-48 h-48 bg-primary/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl" />
 
-            <div className="relative z-10 p-8 overflow-y-auto max-h-[90dvh]">
+            <div className="relative z-10 p-8 overflow-y-auto max-h-[90vh]">
               {/* Close */}
               <button
                 onClick={onClose}

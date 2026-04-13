@@ -114,46 +114,21 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
             drag="y" dragControls={dragControls} dragListener={false}
             dragConstraints={{ top: 0 }} dragElastic={0.1}
             onDragEnd={(_, info) => { if (info.offset.y > 80) onClose(); }}
-            className="relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl flex flex-col max-h-[90dvh]"
+            className="relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl flex flex-col max-h-[88vh]"
             style={{ backgroundColor: 'var(--color-card)' }}>
             <div onPointerDown={e => dragControls.start(e)} className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing touch-none shrink-0">
               <div className={`w-10 h-1 rounded-full ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
             </div>
-            {/* Header — fisso */}
-          <div className="shrink-0 flex justify-between items-start px-5 pt-2 pb-3">
-            <div className="space-y-0.5">
-              <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('create_expense.title')}</h2>
-              <p className="text-sm text-slate-500">{t('create_expense.subtitle')}</p>
-            </div>
-            <button onClick={onClose} className={`p-2 rounded-full transition-all active:scale-90 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
-              <Plus className="rotate-45" size={22} />
-            </button>
-          </div>
-
-          {/* Preview allegato — fissa sopra il form quando presente */}
-          {attachData && (
-            <div className="shrink-0 px-5 pb-3">
-              <input ref={attachRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={handleAttach} />
-              <div className={`flex items-center gap-3 p-3 rounded-2xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-                {attachName ? (
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${darkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
-                    <FileText size={18} className="text-primary" />
-                  </div>
-                ) : (
-                  <img src={attachData} alt="preview" className="w-10 h-10 rounded-xl object-cover shrink-0 border border-slate-200" />
-                )}
-                <p className={`text-xs font-semibold flex-1 truncate ${darkMode ? 'text-white' : 'text-slate-700'}`}>
-                  {attachName ?? 'Foto allegata'}
-                </p>
-                <button onClick={() => { setAttachData(undefined); setAttachName(undefined); }} className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-200 text-slate-500'}`}>
-                  <X size={13} />
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              <div className="flex justify-between items-start">
+                <div className="space-y-0.5">
+                  <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('create_expense.title')}</h2>
+                  <p className="text-sm text-slate-500">{t('create_expense.subtitle')}</p>
+                </div>
+                <button onClick={onClose} className={`p-2 rounded-full transition-all active:scale-90 ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
+                  <Plus className="rotate-45" size={22} />
                 </button>
               </div>
-            </div>
-          )}
-
-          {/* Form scrollabile */}
-          <div className="flex-1 overflow-y-auto px-5 pb-2 space-y-4">
               <div className="space-y-3">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('common.category')}</label>
@@ -225,18 +200,32 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
                 </div>
               )}
                 {/* Allegato scontrino / justificante */}
-                {!attachData && (
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                      {isSpain ? 'Justificante (scontrino / factura)' : 'Allegato'}
-                    </label>
-                    <input ref={attachRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={handleAttach} />
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                    {isSpain ? 'Justificante (scontrino / factura)' : 'Allegato'}
+                  </label>
+                  <input ref={attachRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={handleAttach} />
+                  {attachData ? (
+                    <div className={`relative flex items-center gap-3 p-3 rounded-2xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                      {attachName ? (
+                        <FileText size={20} className="text-primary shrink-0" />
+                      ) : (
+                        <img src={attachData} alt="preview" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                      )}
+                      <p className={`text-xs font-semibold flex-1 truncate ${darkMode ? 'text-white' : 'text-slate-700'}`}>
+                        {attachName ?? 'Foto allegata'}
+                      </p>
+                      <button onClick={() => { setAttachData(undefined); setAttachName(undefined); }} className="w-6 h-6 rounded-full bg-slate-300/60 flex items-center justify-center shrink-0">
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ) : (
                     <button onClick={() => attachRef.current?.click()} className={`w-full flex items-center gap-2 px-4 py-3 rounded-2xl border-2 border-dashed transition-all active:scale-[0.98] ${darkMode ? 'border-slate-700 text-slate-400 hover:border-slate-500' : 'border-slate-200 text-slate-400 hover:border-slate-300'}`}>
                       <Paperclip size={16} />
                       <span className="text-sm font-semibold">{isSpain ? 'Adjuntar scontrino o factura' : 'Allega documento'}</span>
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
             <div className="shrink-0 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 space-y-2.5">

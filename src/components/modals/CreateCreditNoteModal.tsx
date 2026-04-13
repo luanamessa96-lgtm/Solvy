@@ -83,7 +83,7 @@ const CreateCreditNoteModal = ({ isOpen, onClose, onSave, profile, documents, da
             <div onPointerDown={e => dragControls.start(e)} className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
               <div className="w-10 h-1 rounded-full bg-slate-300/50" />
             </div>
-            <div className="overflow-y-auto max-h-[90dvh] px-8 pb-8 pt-4 space-y-5 [padding-bottom:max(2rem,calc(env(safe-area-inset-bottom)+1rem))]">
+            <div className="overflow-y-auto max-h-[90vh] px-8 pb-8 pt-4 space-y-5 [padding-bottom:max(2rem,calc(env(safe-area-inset-bottom)+1rem))]">
               <div className="flex justify-between items-start">
                 <div>
                   <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('create_credit_note.title')}</h2>

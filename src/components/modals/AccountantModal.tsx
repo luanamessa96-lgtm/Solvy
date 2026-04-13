@@ -18,8 +18,8 @@ const AccountantModal = ({ isOpen, onClose, accountant, darkMode }: AccountantMo
     {isOpen && (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl transition-all backdrop-blur-xl max-h-[90dvh]" style={{ backgroundColor: 'var(--color-card)' }}>
-          <div className="p-8 space-y-6 overflow-y-auto max-h-[90dvh]">
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl transition-all backdrop-blur-xl max-h-[90vh]" style={{ backgroundColor: 'var(--color-card)' }}>
+          <div className="p-8 space-y-6 overflow-y-auto max-h-[90vh]">
             <div className="flex justify-between items-start">
               <div className="space-y-1">
                 <h2 className={`text-2xl font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('accountant_modal.title')}</h2>

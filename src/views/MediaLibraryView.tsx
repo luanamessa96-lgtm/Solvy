@@ -303,7 +303,7 @@ export default function MediaLibraryView({ documents, onDeleteDocument, onUpdate
           <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setEditItem(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="relative w-full max-w-md rounded-t-[32px] shadow-2xl" style={{ backgroundColor: 'var(--color-card)' }}>
-              <div className="overflow-y-auto max-h-[90dvh] p-8 space-y-5">
+              <div className="overflow-y-auto max-h-[90vh] p-8 space-y-5">
                 <div className="flex justify-between items-center">
                   <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('media_library.edit_title')}</h2>
                   <button onClick={() => setEditItem(null)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-400'}`}><X size={22} /></button>
