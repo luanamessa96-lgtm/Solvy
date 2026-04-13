@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Download, Lock, Check, Mail } from 'lucide-react';
+import { X, Download, Lock, Check, Mail, Share2 } from 'lucide-react';
 import { Document, Profile, Accountant } from '../../types';
 import {
   calcularTrimestre,
@@ -40,6 +40,7 @@ export default function ResumenTrimestralModal({
   const [year, setYear] = useState<number>(currentYear);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
   const [pdfPreview, setPdfPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
   const [includeLibroEmitidas, setIncludeLibroEmitidas] = useState(false);
   const [includeLibroRecibidas, setIncludeLibroRecibidas] = useState(false);
@@ -224,11 +225,31 @@ export default function ResumenTrimestralModal({
     }
   };
 
+  const handleShareJustificantes = async () => {
+    setIsSharing(true);
+    try {
+      const imgFiles = await buildImageFiles(resumen.expenses);
+      if (imgFiles.length === 0) return;
+      const files = imgFiles.map(f => new File([f.blob], f.fileName, { type: f.blob.type }));
+      if (navigator.share && navigator.canShare?.({ files })) {
+        await navigator.share({ files, title: `Justificantes T${quarter} ${year}` });
+      } else {
+        imgFiles.forEach(f => downloadBlob(f));
+      }
+    } catch {
+      showToast('Error al compartir los justificantes', 'error');
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const justificanteCount = resumen.expenses.filter(e => e.imageData).length;
+
   const fmtPreview = (n: number) =>
     `${n < 0 ? '-' : ''}€${Math.abs(n).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const dm = darkMode;
-  const isWorking = isGenerating || isSending;
+  const isWorking = isGenerating || isSending || isSharing;
 
   const Toggle = ({
     checked, onToggle, emoji, label, badge, subtitle,
@@ -468,6 +489,16 @@ export default function ResumenTrimestralModal({
                     >
                       <Mail size={18} />
                       {isSending ? 'Preparando…' : `Enviar al Gestor · ${accountant.email}`}
+                    </button>
+                  )}
+                  {justificanteCount > 0 && (
+                    <button
+                      onClick={handleShareJustificantes}
+                      disabled={isWorking}
+                      className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold transition-all active:scale-[0.98] disabled:opacity-60 ${dm ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-900'}`}
+                    >
+                      <Share2 size={18} />
+                      {isSharing ? 'Preparando…' : `Compartir justificantes · ${justificanteCount} foto${justificanteCount !== 1 ? 's' : ''}`}
                     </button>
                   )}
                 </div>
