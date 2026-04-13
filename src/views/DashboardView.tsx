@@ -430,13 +430,13 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
             { date: new Date(currentYearES, 3, 20), label: '20 de abril', modelo: 'Mod. 130 T1' },
             { date: new Date(currentYearES, 6, 20), label: '20 de julio', modelo: 'Mod. 130 T2' },
             { date: new Date(currentYearES, 9, 20), label: '20 de octubre', modelo: 'Mod. 130 T3' },
-            { date: new Date(currentYearES + 1, 0, 20), label: '20 de enero', modelo: 'Mod. 130 T4' },
+            { date: new Date(currentYearES + 1, 0, 30), label: '30 de enero', modelo: 'Mod. 130 T4' },
           ];
           const nextQuarterlyES = quarterlyDeadlinesES.find(d => d.date >= today) ?? quarterlyDeadlinesES[3];
           const nextQIndex = quarterlyDeadlinesES.indexOf(nextQuarterlyES);
           const nextQNum = (nextQIndex + 1) as 1 | 2 | 3 | 4;
-          // T4 deadline (Jan 30 year+1) belongs to fiscal year currentYearES-1
-          const nextQYear = nextQNum === 4 ? currentYearES - 1 : currentYearES;
+          // T4 covers Oct–Dec of currentYearES (presented Jan 30 year+1 but fiscal year is currentYearES)
+          const nextQYear = currentYearES;
           const esRetencionRateDecimal = (yearsActiveES != null && yearsActiveES < 3 ? 7 : 15) / 100;
           const nextQData = calcularTrimestre(documents ?? [], nextQNum, nextQYear, esRetencionRateDecimal);
           const quarterlyAmountES = nextQData.cuotaIRPF;

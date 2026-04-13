@@ -56,7 +56,9 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
     const currentBracketIdx = RETA_BRACKETS.findIndex(b => monthlyNet <= b.maxIncome);
     if (currentBracketIdx === -1 || currentBracketIdx === RETA_BRACKETS.length - 1) return null;
     const currentBracket = RETA_BRACKETS[currentBracketIdx];
-    const nextBracket = RETA_BRACKETS[currentBracketIdx + 1];
+    // Trova il prossimo tramo con quota diversa (es. trami 11 e 12 sono entrambi €453 — salta fino al primo che cambia)
+    const nextBracket = RETA_BRACKETS.slice(currentBracketIdx + 1).find(b => b.monthlyQuote !== currentBracket.monthlyQuote);
+    if (!nextBracket) return null;
     // Soglia = tetto del tramo corrente × 0.85 (entro 15% dal cambio fascia)
     const threshold15pct = currentBracket.maxIncome * 0.85;
     if (monthlyNet < threshold15pct) return null;
