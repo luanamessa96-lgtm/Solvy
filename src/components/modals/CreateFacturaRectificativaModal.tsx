@@ -112,7 +112,7 @@ const CreateFacturaRectificativaModal = ({
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
+            className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl max-h-[90dvh] grid grid-rows-[auto_1fr]"
             style={{ backgroundColor: 'var(--color-card)' }}
           >
             <div className={`flex items-start justify-between p-6 pb-4 shrink-0 ${darkMode ? 'border-b border-slate-800' : 'border-b border-slate-100'}`}>
@@ -125,7 +125,7 @@ const CreateFacturaRectificativaModal = ({
               </button>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
+            <div className="overflow-y-auto overscroll-y-contain p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
 
               {/* Número */}
               <div className="space-y-1.5">
