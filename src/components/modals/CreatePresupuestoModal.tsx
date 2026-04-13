@@ -149,7 +149,7 @@ const CreatePresupuestoModal = ({ isOpen, onClose, onSave, profile, documents, d
               </button>
             </div>
 
-            <div className="overflow-y-auto overscroll-y-contain p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
+            <div data-scroll-lock-ignore className="overflow-y-auto overscroll-y-contain p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
 
               {/* Datos del documento */}
               <div className="space-y-3">

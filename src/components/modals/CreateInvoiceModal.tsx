@@ -228,7 +228,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
                 </button>
             </div>
 
-            <div className="overflow-y-auto overscroll-y-contain p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
+            <div data-scroll-lock-ignore className="overflow-y-auto overscroll-y-contain p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
               {/* Dati Fattura */}
               <div className="space-y-3">
                 <label className={lc}>{isProforma ? t('documents.field_proforma_data') : t('documents.field_invoice_data')}</label>
