@@ -103,43 +103,29 @@ const CreateFacturaRectificativaModal = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
           />
           <motion.div
-            drag="y" dragControls={dragControls} dragListener={false}
-            dragConstraints={{ top: 0 }} dragElastic={{ top: 0, bottom: 0.3 }}
-            onDragEnd={(_, info) => { if (info.offset.y > 80) onClose(); }}
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl"
+            className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
             style={{ backgroundColor: 'var(--color-card)' }}
           >
-            <div
-              onPointerDown={e => dragControls.start(e)}
-              className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing"
-            >
-              <div className="w-10 h-1 rounded-full bg-slate-300/50" />
+            <div className={`flex items-start justify-between p-6 pb-4 shrink-0 ${darkMode ? 'border-b border-slate-800' : 'border-b border-slate-100'}`}>
+              <div>
+                <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Factura Rectificativa</h2>
+                <p className="text-sm text-slate-500">Referencia a factura original</p>
+              </div>
+              <button onClick={onClose} className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${darkMode ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-500 hover:text-slate-700'}`}>
+                <Plus className="rotate-45" size={18} />
+              </button>
             </div>
 
-            <div className="overflow-y-auto max-h-[90vh] px-8 pb-8 pt-4 space-y-5 [padding-bottom:max(2rem,calc(env(safe-area-inset-bottom)+1rem))]">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                    Factura Rectificativa
-                  </h2>
-                  <p className="text-sm text-slate-500">Referencia a factura original</p>
-                </div>
-                <button
-                  onClick={onClose}
-                  className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}
-                >
-                  <Plus className="rotate-45" size={24} />
-                </button>
-              </div>
+            <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-5 [padding-bottom:max(3rem,calc(env(safe-area-inset-bottom)+2rem))]">
 
               {/* Número */}
               <div className="space-y-1.5">
