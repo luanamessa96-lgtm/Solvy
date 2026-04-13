@@ -58,6 +58,7 @@ export interface Document {
   clientPec?: string;
   validezDate?: string;
   intracomunitaria?: boolean;
+  nifProveedor?: string;
 }
 
 export interface Deadline {

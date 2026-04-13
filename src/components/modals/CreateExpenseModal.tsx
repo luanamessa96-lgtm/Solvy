@@ -32,6 +32,7 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
     category: defaultCategory,
   });
   const [ivaRate, setIvaRate] = useState<number>(21);
+  const [nifProveedor, setNifProveedor] = useState('');
   const [attachData, setAttachData] = useState<string | undefined>(undefined);
   const [attachName, setAttachName] = useState<string | undefined>(undefined);
   const attachRef = useRef<HTMLInputElement>(null);
@@ -63,11 +64,13 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
       status: 'paid',
       title: formData.title || formData.category,
       ...(isSpain ? { ivaRate } : {}),
+      ...(isSpain && nifProveedor.trim() ? { nifProveedor: nifProveedor.trim() } : {}),
       ...(attachData ? { imageData: attachData, fileName: attachName } : {}),
     });
     onClose();
     setFormData({ title: '', amount: '', date: todayLocalISO(), category: defaultCategory });
     setIvaRate(21);
+    setNifProveedor('');
     setAmountTouched(false);
     setAttachData(undefined);
     setAttachName(undefined);
@@ -193,6 +196,12 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, darkMode, profile }: Crea
                       </button>
                     ))}
                   </div>
+                </div>
+              )}
+              {isSpain && (
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">NIF / CIF Proveedor <span className="font-normal normal-case">(opcional)</span></label>
+                  <input type="text" value={nifProveedor} onChange={e => setNifProveedor(e.target.value)} placeholder="B12345678" className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`} />
                 </div>
               )}
                 {/* Allegato scontrino / justificante */}

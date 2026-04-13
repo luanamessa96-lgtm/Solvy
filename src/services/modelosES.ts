@@ -210,6 +210,7 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
   const bgLight:   [number, number, number] = [248, 250, 252];
 
   const nif = profile.nie || profile.piva || '';
+  const nifLabel = profile.nie ? 'NIE' : 'NIF';
   const { invoices, rectificativas, expenses, totalIngresos, totalGastos,
           ivaRepercutida, ivaSoportada, diferenciaIVA,
           ingresosCumulativos, gastosCumulativos,
@@ -237,7 +238,7 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
   pdf.setFontSize(8.5);
   pdf.setTextColor(...grey);
   const infoLines: string[] = [];
-  if (nif) infoLines.push(`NIF/NIE: ${nif}`);
+  if (nif) infoLines.push(`${nifLabel}: ${nif}`);
   if (profile.address) infoLines.push(profile.address);
   if (profile.email) infoLines.push(profile.email);
   infoLines.forEach((line, i) => pdf.text(line, R, 20 + i * 5, { align: 'right' }));
@@ -561,6 +562,7 @@ export async function generateLibroEmitidaBlob(
   const retencionRate = yearsActive <= 3 ? 7 : 15;
   const defaultIvaRate = profile.ivaHabitual ?? 21;
   const taxId = profile.nie || profile.piva || '';
+  const nifLabel = profile.nie ? 'NIE' : 'NIF';
   const fmtES = (n: number) => `€ ${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const libroDocs = documents
@@ -582,7 +584,7 @@ export async function generateLibroEmitidaBlob(
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(8.5);
   pdf.setTextColor(...grey);
-  pdf.text(`${profile.name}${taxId ? ` · NIF/NIE: ${taxId}` : ''} · Ejercicio ${year}`, M, 20);
+  pdf.text(`${profile.name}${taxId ? ` · ${nifLabel}: ${taxId}` : ''} · Ejercicio ${year}`, M, 20);
   pdf.setDrawColor(...lightGrey);
   pdf.setLineWidth(0.4);
   pdf.line(M, 23, R, 23);
@@ -673,6 +675,7 @@ export async function generateLibroRecibidaBlob(
   const aeat:      [number, number, number] = [37, 99, 235];
 
   const taxId = profile.nie || profile.piva || '';
+  const nifLabel = profile.nie ? 'NIE' : 'NIF';
   const fmtES = (n: number) => `€ ${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const recibidaDocs = documents
@@ -694,7 +697,7 @@ export async function generateLibroRecibidaBlob(
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(8.5);
   pdf.setTextColor(...grey);
-  pdf.text(`${profile.name}${taxId ? ` · NIF/NIE: ${taxId}` : ''} · Ejercicio ${year}`, M, 20);
+  pdf.text(`${profile.name}${taxId ? ` · ${nifLabel}: ${taxId}` : ''} · Ejercicio ${year}`, M, 20);
   pdf.setDrawColor(...lightGrey);
   pdf.setLineWidth(0.4);
   pdf.line(M, 23, R, 23);
@@ -709,7 +712,7 @@ export async function generateLibroRecibidaBlob(
     return [
       `FREC${String(i + 1).padStart(3, '0')}/${new Date(doc.date).getFullYear()}`,
       new Date(doc.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-      '—',
+      doc.nifProveedor || '—',
       doc.title || doc.category || '—',
       fmtES(doc.amount),
       ivaRate > 0 ? `${ivaRate}%` : '—',
@@ -804,6 +807,7 @@ export async function generateResumenAnualBlob(
   const red:       [number, number, number] = [220, 38, 38];
 
   const nif = profile.nie || profile.piva || '';
+  const nifLabel = profile.nie ? 'NIE' : 'NIF';
   const fmt = (n: number) => `€ ${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const currentYr = new Date().getFullYear();
@@ -849,7 +853,7 @@ export async function generateResumenAnualBlob(
   pdf.text(profile.name, R, 14, { align: 'right' });
   pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(...grey);
   const infoLines: string[] = [];
-  if (nif) infoLines.push(`NIF/NIE: ${nif}`);
+  if (nif) infoLines.push(`${nifLabel}: ${nif}`);
   if (profile.address) infoLines.push(profile.address);
   if (profile.email) infoLines.push(profile.email);
   infoLines.forEach((l, i) => pdf.text(l, R, 20 + i * 5, { align: 'right' }));
@@ -1026,6 +1030,7 @@ export async function generateResumenAnualIVABlob(
   const red:       [number, number, number] = [220, 38, 38];
 
   const nif = profile.nie || profile.piva || '';
+  const nifLabel = profile.nie ? 'NIE' : 'NIF';
   const fmt = (n: number) => `€ ${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const yearInvoices = documents.filter(d => d.type === 'invoice' && getLocalYear(d.date) === year);
@@ -1076,7 +1081,7 @@ export async function generateResumenAnualIVABlob(
   pdf.text(profile.name, R, 14, { align: 'right' });
   pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(...grey);
   const infoLines: string[] = [];
-  if (nif) infoLines.push(`NIF/NIE: ${nif}`);
+  if (nif) infoLines.push(`${nifLabel}: ${nif}`);
   if (profile.address) infoLines.push(profile.address);
   if (profile.email) infoLines.push(profile.email);
   infoLines.forEach((l, i) => pdf.text(l, R, 20 + i * 5, { align: 'right' }));
@@ -1242,6 +1247,7 @@ export async function generateGastosTrimestreBlob(
   const primary:   [number, number, number] = [79, 70, 229];
 
   const taxId = profile.nie || profile.piva || '';
+  const nifLabel = profile.nie ? 'NIE' : 'NIF';
   const fmtES = (n: number) => `€ ${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const qLabel = QUARTER_LABELS[quarter];
 
@@ -1250,7 +1256,7 @@ export async function generateGastosTrimestreBlob(
   pdf.setFont('helvetica', 'bold'); pdf.setFontSize(16); pdf.setTextColor(...black);
   pdf.text(`GASTOS — T${quarter} ${year}`, M, 14);
   pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(...grey);
-  pdf.text(`${profile.name}${taxId ? ` · NIF/NIE: ${taxId}` : ''} · ${qLabel} ${year}`, M, 20);
+  pdf.text(`${profile.name}${taxId ? ` · ${nifLabel}: ${taxId}` : ''} · ${qLabel} ${year}`, M, 20);
   pdf.setDrawColor(...lightGrey); pdf.setLineWidth(0.4); pdf.line(M, 23, R, 23);
 
   let totalBase = 0, totalCuotaIva = 0, totalFactura = 0;
@@ -1263,7 +1269,7 @@ export async function generateGastosTrimestreBlob(
     return [
       `FREC${String(i + 1).padStart(3, '0')}/${year}`,
       new Date(doc.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-      '—',
+      doc.nifProveedor || '—',
       doc.title || doc.category || '—',
       fmtES(doc.amount),
       ivaRate > 0 ? `${ivaRate}%` : '—',

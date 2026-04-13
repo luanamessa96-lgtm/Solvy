@@ -41,6 +41,7 @@ export async function getDocuments(profileId: string): Promise<Document[]> {
     clientSdi: d.client_sdi,
     clientPec: d.client_pec,
     validezDate: d.validez_date,
+    nifProveedor: d.nif_proveedor,
   }));
 }
 
@@ -70,6 +71,7 @@ export async function addDocument(doc: Document, profileId: string): Promise<voi
       client_sdi: doc.clientSdi ?? null,
       client_pec: doc.clientPec ?? null,
       validez_date: doc.validezDate ?? null,
+      nif_proveedor: doc.nifProveedor ?? null,
       profile_id: profileId,
       updated_at: new Date().toISOString(),
     }], { onConflict: 'id' });
@@ -102,6 +104,7 @@ export async function updateDocument(doc: Document): Promise<void> {
       client_sdi: doc.clientSdi ?? null,
       client_pec: doc.clientPec ?? null,
       validez_date: doc.validezDate ?? null,
+      nif_proveedor: doc.nifProveedor ?? null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', doc.id);
