@@ -156,11 +156,11 @@ const CreatePresupuestoModal = ({ isOpen, onClose, onSave, profile, documents, d
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className={lc}>Fecha</label>
-                    <input type="date" value={form.date} onChange={e => set('date', e.target.value)} className={ic()} />
+                    <input type="date" value={form.date} onChange={e => set('date', e.target.value)} className={`${ic()} appearance-none`} />
                   </div>
                   <div className="space-y-1.5">
                     <label className={lc}>Válido hasta</label>
-                    <input type="date" value={form.validezDate} onChange={e => set('validezDate', e.target.value)} className={ic()} />
+                    <input type="date" value={form.validezDate} onChange={e => set('validezDate', e.target.value)} className={`${ic()} appearance-none`} />
                   </div>
                 </div>
                 <p className="text-[10px] text-slate-400 ml-1">Validez por defecto 30 días desde hoy</p>
