@@ -45,6 +45,10 @@ const SECTIONS: Section[] = [
         body: 'El IRPF es progresivo: cuanto más ganas, más porcentaje pagas. Los tipos van del 19% al 47% según tramos. Como autónomo en Estimación Directa, tu base imponible es el rendimiento neto (ingresos − gastos deducibles). El Modelo 130 es el anticipo trimestral; el Modelo 100 es la liquidación final.',
       },
       {
+        title: 'Reducción por inicio de actividad — 20% el primer año, 30% el segundo (art. 32.3 LIRPF)',
+        body: 'Si inicias una actividad económica en Estimación Directa, puedes aplicar una reducción sobre el rendimiento neto positivo: 20% el primer año en que el rendimiento sea positivo y 30% el segundo año. Esto reduce directamente la base imponible del IRPF — tanto en el Modelo 130 trimestral como en la Renta anual. Ejemplo: rendimiento neto €25.000 → base reducida año 1 = €20.000 (−€5.000). Solvy la aplica automáticamente si has introducido tu año de inicio de actividad en el perfil.',
+      },
+      {
         title: 'Qué gastos son deducibles y con qué límites',
         body: 'Son deducibles los gastos necesarios para desarrollar tu actividad: software y suscripciones (100%), material de oficina (100%), formación profesional (100%), teléfono (50% si es uso mixto), suministros del hogar en teletrabajo (30% sobre el porcentaje afecto a la actividad), dietas y desplazamientos (con justificante). Los gastos personales nunca son deducibles. Consulta con tu gestor para optimizar.',
       },
@@ -64,6 +68,10 @@ const SECTIONS: Section[] = [
       {
         title: 'Qué es el tramo RETA y cuándo cambia tu cuota',
         body: 'Cada año previsor comunicas a la Seguridad Social una estimación de tus ingresos netos para el año. Te asignan el tramo correspondiente y pagas esa cuota mensual. En enero del año siguiente se regulariza: si ganaste más de lo declarado, pagas la diferencia; si ganaste menos, te devuelven. Puedes cambiar de tramo hasta 6 veces al año.',
+      },
+      {
+        title: 'RETA proporcional el año de inicio de actividad',
+        body: 'Si te das de alta como autónomo a lo largo del año (no el 1 de enero), solo pagas la cuota RETA por los meses efectivamente dados de alta. Ejemplo: alta en mayo → pagas 8 meses de RETA en lugar de 12. La Seguridad Social calcula la cuota proporcionalmente a los días de alta. Cuando introduzcas tu año de inicio en Solvy, recuerda que la estimación anual de RETA puede ser inferior si te diste de alta mediado el año — consulta con tu gestor el importe exacto.',
       },
     ],
   },
@@ -89,6 +97,10 @@ const SECTIONS: Section[] = [
       {
         title: 'Qué es la retención IRPF — por qué es 7% o 15%',
         body: 'La retención es un anticipo del IRPF que el cliente retiene de tu factura y lo ingresa a Hacienda por ti. El 7% es el tipo reducido para autónomos en sus primeros 3 años de actividad. El 15% es el tipo general a partir del cuarto año. Solo se aplica cuando facturas a empresas o profesionales — nunca a particulares. El cliente te paga el total menos la retención.',
+      },
+      {
+        title: 'Facturas a clientes de la UE — operaciones intracomunitarias',
+        body: 'Si facturas a un cliente de otro país de la Unión Europea (empresa o profesional con NIF comunitario), la operación es intracomunitaria: no aplicas IVA español. El mecanismo se llama "inversión del sujeto pasivo" (art. 194 Directiva IVA 2006/112/CE) — el cliente declara y liquida el IVA en su propio país. Tu factura debe indicar explícitamente esta condición. En Solvy activa el toggle "Cliente UE — Operación intracomunitaria" al crear la factura: el IVA se pone a 0% automáticamente, la factura incluye la nota legal obligatoria y el importe no entra en tu IVA repercutido del Modelo 303. Importante: el importe sí computa como ingreso para el IRPF (Modelo 130 y 100).',
       },
     ],
   },
@@ -119,6 +131,10 @@ const SECTIONS: Section[] = [
       {
         title: 'Diferencia entre IVA repercutida y IVA soportada',
         body: 'IVA repercutido → el IVA que cobras a tus clientes en tus facturas. Lo recaudas en nombre de Hacienda y debes ingresarlo. IVA soportado → el IVA que pagas en tus gastos y compras de negocio. Lo puedes deducir. La diferencia trimestral (repercutido − soportado) es lo que declaras en el Modelo 303: positivo = pagas, negativo = Hacienda te devuelve.',
+      },
+      {
+        title: 'IVA soportado deducible: por qué el teléfono solo cuenta al 50%',
+        body: 'No todo el IVA que pagas en tus gastos es deducible al 100%. La ley establece límites según el uso del bien: teléfono móvil y línea de datos → 50% deducible (uso mixto personal/profesional estimado por Hacienda). Suministros del hogar en teletrabajo → 30% del porcentaje afecto a la actividad. Software, material de oficina, formación, suscripciones profesionales → 100% deducible. Ejemplo: factura de teléfono con IVA €21 → solo puedes deducir €10,50. Solvy aplica estos límites automáticamente al calcular el IVA soportado del Modelo 303.',
       },
       {
         title: 'Cómo funciona el cálculo acumulativo del Modelo 130',
