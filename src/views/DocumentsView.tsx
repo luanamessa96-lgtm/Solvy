@@ -438,14 +438,14 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl" style={{ backgroundColor: 'var(--color-card)' }}>
               <div className="p-8 space-y-4">
                 <div className="space-y-1">
-                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Cosa vuoi aggiungere?</h2>
-                  <p className="text-sm text-slate-500">Scegli il tipo di documento</p>
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{profile.country === 'Spain' ? '¿Qué quieres añadir?' : 'Cosa vuoi aggiungere?'}</h2>
+                  <p className="text-sm text-slate-500">{profile.country === 'Spain' ? 'Elige el tipo de documento' : 'Scegli il tipo di documento'}</p>
                 </div>
                 <button onClick={() => { setIsChoiceOpen(false); if (!isPro && invoiceCount >= 8) { setIsPaywallOpen(true); return; } setIsCreateOpen(true); }} className={`w-full p-5 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-lg ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}>
                   <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30"><FileText size={22} /></div>
                   <div className="text-left">
                     <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('documents.invoice')}</p>
-                    <p className="text-sm text-slate-500">Entrata da un cliente</p>
+                    <p className="text-sm text-slate-500">{profile.country === 'Spain' ? 'Ingreso de un cliente' : 'Entrata da un cliente'}</p>
                   </div>
                   <ChevronRight size={18} className="ml-auto text-slate-400" />
                 </button>
@@ -453,7 +453,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   <div className="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30"><CreditCard size={22} /></div>
                   <div className="text-left">
                     <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('documents.expense')}</p>
-                    <p className="text-sm text-slate-500">Abbonamento, materiale, software…</p>
+                    <p className="text-sm text-slate-500">{profile.country === 'Spain' ? 'Suscripción, material, software…' : 'Abbonamento, materiale, software…'}</p>
                   </div>
                   <ChevronRight size={18} className="ml-auto text-slate-400" />
                 </button>
@@ -487,7 +487,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                     <button onClick={() => { setIsChoiceOpen(false); setIsRectificativaOpen(true); }} className={`w-full p-5 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-lg ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-rose-500/40 hover:shadow-rose-500/10' : 'bg-white border-slate-100 hover:border-rose-500/20 hover:shadow-rose-500/5'}`}>
                       <div className="w-12 h-12 bg-rose-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-rose-500/30"><FileMinus size={22} /></div>
                       <div className="text-left">
-                        <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Factura Rectificativa</p>
+                        <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Factura Rectif.</p>
                         <p className="text-sm text-slate-500">Referencia a factura original</p>
                       </div>
                       <ChevronRight size={18} className="ml-auto text-slate-400" />
