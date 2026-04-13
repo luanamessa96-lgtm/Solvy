@@ -305,8 +305,8 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
         {isAdding && (
           <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={reset} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
-            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="relative w-full max-w-md rounded-t-[32px] shadow-2xl" style={{ backgroundColor: 'var(--color-card)' }}>
-              <div className="overflow-y-auto max-h-[92vh] p-8 space-y-5">
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="relative w-full max-w-md rounded-t-[32px] shadow-2xl flex flex-col max-h-[92dvh]" style={{ backgroundColor: 'var(--color-card)' }}>
+              <div className="overflow-y-auto flex-1 p-6 space-y-4 [padding-bottom:max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))]">
                 <div className="flex justify-between items-center">
                   <div>
                     <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{preview ? t('media_library.details_title') : t('media_library.add_title')}</h2>
@@ -328,7 +328,7 @@ export default function MediaLibraryView({ documents, onAddDocument, onDeleteDoc
                   </div>
                 ) : (
                   <div className="space-y-5">
-                    <div className="relative w-full h-40 rounded-2xl overflow-hidden">
+                    <div className="relative w-full h-32 rounded-2xl overflow-hidden">
                       {addType === 'image' ? (
                         <img src={preview} alt="preview" className="w-full h-full object-cover" />
                       ) : (
