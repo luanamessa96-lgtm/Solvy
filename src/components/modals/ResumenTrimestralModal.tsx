@@ -389,16 +389,6 @@ export default function ResumenTrimestralModal({
                 </div>
               </div>
 
-              {/* Reducción inicio actividad */}
-              {resumen.reduccionInicioRate > 0 && (
-                <div className={`flex items-start gap-3 p-4 rounded-2xl border ${dm ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'}`}>
-                  <span className="text-base leading-none mt-0.5">ℹ️</span>
-                  <p className={`text-xs leading-relaxed ${dm ? 'text-blue-300' : 'text-blue-800'}`}>
-                    <span className="font-bold">Reducción inicio de actividad ({(resumen.reduccionInicioRate * 100).toFixed(0)}%) aplicada</span> — art. 32.3 LIRPF. El rendimiento neto se reduce antes del cálculo del Mod. 130.
-                  </p>
-                </div>
-              )}
-
               {/* Esenzione minimo €1.000 Modelo 130 */}
               {resumen.exentoMinimo && (
                 <div className={`flex items-start gap-3 p-4 rounded-2xl border ${dm ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'}`}>
