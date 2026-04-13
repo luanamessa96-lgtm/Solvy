@@ -603,6 +603,121 @@ describe('Spain — Modelo 130 (calcolo cumulativo)', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// SPAIN — Modelo 390 (Resumen Anual IVA — aggregazione 4 trimestri)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe('Spain — Modelo 390 (aggregazione 4 trimestri)', () => {
+  const year = 2026;
+
+  // Helper: simula il calcolo annuale che fa generateResumenAnualIVABlob
+  function calcAnualeIVA(docs: Document[]) {
+    const yearInvoices = docs.filter(d => d.type === 'invoice' && new Date(d.date).getFullYear() === year);
+    const yearRect     = docs.filter(d => d.type === 'factura_rectificativa' && new Date(d.date).getFullYear() === year);
+    const yearExpenses = docs.filter(d => d.type === 'expense' && new Date(d.date).getFullYear() === year);
+
+    const totalIvaRep = yearInvoices.reduce((s, d) => s + d.amount * ((d.ivaRate ?? 0) / 100), 0)
+                      - yearRect.reduce((s, d) => s + d.amount * ((d.ivaRate ?? 0) / 100), 0);
+    const totalIvaSop = yearExpenses
+      .filter(d => (d.ivaRate ?? 0) > 0)
+      .reduce((s, d) => s + d.amount * ((d.ivaRate ?? 0) / 100), 0);
+
+    const quarters = ([1, 2, 3, 4] as const).map(q => calcularTrimestre(docs, q, year));
+    const sumRepFromQuarters = quarters.reduce((s, q) => s + q.ivaRepercutida, 0);
+    const sumSopFromQuarters = quarters.reduce((s, q) => s + q.ivaSoportada, 0);
+
+    return { totalIvaRep, totalIvaSop, diferencia: totalIvaRep - totalIvaSop, sumRepFromQuarters, sumSopFromQuarters };
+  }
+
+  it('IVA annuale = somma dei 4 trimestri (coerenza path annuale vs trimestrale)', () => {
+    const docs = [
+      makeInvoice(5000, '2026-01-10', 21), // T1 — rep: 1050
+      makeInvoice(3000, '2026-04-15', 21), // T2 — rep: 630
+      makeInvoice(4000, '2026-07-20', 21), // T3 — rep: 840
+      makeInvoice(2000, '2026-10-05', 21), // T4 — rep: 420
+      makeExpense(1000, '2026-02-10', 'material', 21), // T1 — sop: 210
+      makeExpense(500,  '2026-08-01', 'material', 21), // T3 — sop: 105
+    ];
+    const r = calcAnualeIVA(docs);
+    // IVA rep: 1050+630+840+420 = 2940; IVA sop: 210+105 = 315
+    expect(r.totalIvaRep).toBeCloseTo(2940, 1);
+    expect(r.totalIvaSop).toBeCloseTo(315, 1);
+    expect(r.sumRepFromQuarters).toBeCloseTo(r.totalIvaRep, 1);
+    expect(r.sumSopFromQuarters).toBeCloseTo(r.totalIvaSop, 1);
+  });
+
+  it('diferencia annuale = totalIvaRep − totalIvaSop', () => {
+    const docs = [
+      makeInvoice(5000, '2026-03-01', 21), // rep: 1050
+      makeExpense(1000, '2026-03-15', 'material', 21), // sop: 210
+    ];
+    const r = calcAnualeIVA(docs);
+    expect(r.diferencia).toBeCloseTo(1050 - 210, 1); // 840
+  });
+
+  it('aggregazione multi-aliquota: 21% + 10% separati per rate', () => {
+    const docs = [
+      makeInvoice(5000, '2026-01-10', 21), // rep 21%: 1050
+      makeInvoice(2000, '2026-04-01', 10), // rep 10%: 200
+      makeExpense(1000, '2026-02-01', 'material', 21), // sop 21%: 210
+    ];
+    const r = calcAnualeIVA(docs);
+    expect(r.totalIvaRep).toBeCloseTo(1050 + 200, 1); // 1250
+    expect(r.totalIvaSop).toBeCloseTo(210, 1);
+    expect(r.diferencia).toBeCloseTo(1040, 1);
+  });
+
+  it('factura_rectificativa riduce IVA repercutida annuale', () => {
+    const docs = [
+      makeInvoice(5000, '2026-01-10', 21),       // +1050
+      makeRectificativa(1000, '2026-06-01', 21), // -210
+    ];
+    const r = calcAnualeIVA(docs);
+    expect(r.totalIvaRep).toBeCloseTo(1050 - 210, 1); // 840
+    expect(r.sumRepFromQuarters).toBeCloseTo(840, 1);
+  });
+
+  it('documenti di anni diversi esclusi dal 390', () => {
+    const docs = [
+      makeInvoice(10000, '2025-12-31', 21), // anno precedente — escluso
+      makeInvoice(5000,  '2026-01-15', 21), // 2026 — incluso
+      makeInvoice(3000,  '2027-01-01', 21), // anno successivo — escluso
+    ];
+    const r = calcAnualeIVA(docs);
+    expect(r.totalIvaRep).toBeCloseTo(5000 * 0.21, 1); // solo la fattura 2026
+  });
+
+  it('trimestre senza fatture contribuisce con IVA = 0', () => {
+    const docs = [
+      makeInvoice(5000, '2026-01-10', 21), // solo T1
+    ];
+    const quarters = ([1, 2, 3, 4] as const).map(q => calcularTrimestre(docs, q, year));
+    expect(quarters[0].ivaRepercutida).toBeCloseTo(1050, 1); // T1
+    expect(quarters[1].ivaRepercutida).toBe(0);              // T2
+    expect(quarters[2].ivaRepercutida).toBe(0);              // T3
+    expect(quarters[3].ivaRepercutida).toBe(0);              // T4
+  });
+
+  it('IVA soportada > repercutida → diferencia negativa (a devolver)', () => {
+    const docs = [
+      makeInvoice(1000, '2026-01-10', 21),  // rep: 210
+      makeExpense(5000, '2026-01-20', 'material', 21), // sop: 1050
+    ];
+    const r = calcAnualeIVA(docs);
+    expect(r.diferencia).toBeLessThan(0); // a devolver
+    expect(r.diferencia).toBeCloseTo(210 - 1050, 1); // -840
+  });
+
+  it('nessun documento → tutto zero', () => {
+    const r = calcAnualeIVA([]);
+    expect(r.totalIvaRep).toBe(0);
+    expect(r.totalIvaSop).toBe(0);
+    expect(r.diferencia).toBe(0);
+    expect(r.sumRepFromQuarters).toBe(0);
+    expect(r.sumSopFromQuarters).toBe(0);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // SPAIN — Deductibility rates
 // ═══════════════════════════════════════════════════════════════════════════════
 
