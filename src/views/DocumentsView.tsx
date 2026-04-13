@@ -487,7 +487,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                     <button onClick={() => { setIsChoiceOpen(false); setIsRectificativaOpen(true); }} className={`w-full p-5 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-lg ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-rose-500/40 hover:shadow-rose-500/10' : 'bg-white border-slate-100 hover:border-rose-500/20 hover:shadow-rose-500/5'}`}>
                       <div className="w-12 h-12 bg-rose-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-rose-500/30"><FileMinus size={22} /></div>
                       <div className="text-left">
-                        <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>📋 Factura Rectificativa</p>
+                        <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Factura Rectificativa</p>
                         <p className="text-sm text-slate-500">Referencia a factura original</p>
                       </div>
                       <ChevronRight size={18} className="ml-auto text-slate-400" />
@@ -495,7 +495,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                     <button onClick={() => { setIsChoiceOpen(false); setIsPresupuestoOpen(true); }} className={`w-full p-5 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-lg ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-amber-500/40 hover:shadow-amber-500/10' : 'bg-white border-slate-100 hover:border-amber-500/20 hover:shadow-amber-500/5'}`}>
                       <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-amber-500/30"><FileText size={22} /></div>
                       <div className="text-left">
-                        <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>📋 Presupuesto</p>
+                        <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Presupuesto</p>
                         <p className="text-sm text-slate-500">Estimación para un cliente</p>
                       </div>
                       <ChevronRight size={18} className="ml-auto text-slate-400" />
