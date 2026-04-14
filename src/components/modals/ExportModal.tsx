@@ -1668,6 +1668,12 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                     <Share2 size={18} />
                     Condividi / Allega File
                   </button>
+                  {accountant && (
+                    <button onClick={handleOpenMail} className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-all ${darkMode ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-900'}`}>
+                      <Mail size={18} />
+                      Apri Mail · {accountant.email}
+                    </button>
+                  )}
                 </div>
               ) : (
                 <button
