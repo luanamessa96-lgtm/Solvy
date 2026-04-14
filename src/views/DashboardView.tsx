@@ -77,7 +77,7 @@ function getInpsType(country: string, coeff: number | undefined): InpsType {
   if (coeff === 67) return 'artigiani';
   if (coeff === 86) return 'costruzioni';
   if (coeff === 62) return 'intermediari';
-  if (coeff === 40) return 'commercianti';
+  if (coeff === 40) return 'ristorazione';
   return 'professionisti';
 }
 
