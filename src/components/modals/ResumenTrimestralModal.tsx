@@ -48,7 +48,10 @@ export default function ResumenTrimestralModal({
   const [includeGastos, setIncludeGastos] = useState(false);
   const [includeResumenAnual, setIncludeResumenAnual] = useState(false);
   const [includeResumenAnualIVA, setIncludeResumenAnualIVA] = useState(false);
-  const [readyBlob, setReadyBlob] = useState<{ blob: Blob; fileName: string } | null>(null);
+  const [readyBlob, setReadyBlob] = useState<{
+    resumen: { blob: Blob; fileName: string };
+    extras: { blob: Blob; fileName: string; type?: string }[];
+  } | null>(null);
 
   // Reset toggles and readyBlob every time the modal closes
   useEffect(() => {
@@ -160,17 +163,18 @@ export default function ResumenTrimestralModal({
     try {
       const { resumenResult, libroE, libroR, facturasResult, gastosResult, anualResult, anualIVAResult } = await generateAll();
 
-      setReadyBlob(resumenResult);
-      if (libroE) downloadBlob(libroE);
-      if (libroR) downloadBlob(libroR);
-      if (facturasResult) downloadBlob(facturasResult);
+      const extras: { blob: Blob; fileName: string; type?: string }[] = [];
+      if (libroE) extras.push(libroE);
+      if (libroR) extras.push(libroR);
+      if (facturasResult) extras.push(facturasResult);
       if (gastosResult) {
-        downloadBlob(gastosResult);
+        extras.push(gastosResult);
         const imgFiles = await buildImageFiles(resumen.expenses);
-        imgFiles.forEach(f => downloadBlob(f));
+        imgFiles.forEach(f => extras.push({ ...f, type: f.blob.type }));
       }
-      if (anualResult) downloadBlob(anualResult);
-      if (anualIVAResult) downloadBlob(anualIVAResult);
+      if (anualResult) extras.push(anualResult);
+      if (anualIVAResult) extras.push(anualIVAResult);
+      setReadyBlob({ resumen: resumenResult, extras });
     } catch {
       showToast('Error al generar el PDF', 'error');
     } finally {
@@ -499,14 +503,14 @@ export default function ResumenTrimestralModal({
                   {readyBlob ? (
                     <>
                       <button
-                        onClick={() => setPdfPreview(readyBlob)}
+                        onClick={() => setPdfPreview(readyBlob.resumen)}
                         className={`w-full rounded-2xl p-4 flex items-center gap-3 transition-all active:scale-[0.98] ${dm ? 'bg-slate-800' : 'bg-slate-50 hover:bg-slate-100'}`}
                       >
                         <div className="min-w-0 flex-1 text-left space-y-1.5">
                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Listo para enviar</p>
                           <div className="flex items-center gap-1.5">
                             <Check size={13} className="text-emerald-500 shrink-0" />
-                            <p className="text-xs text-slate-500 truncate">{readyBlob.fileName}</p>
+                            <p className="text-xs text-slate-500 truncate">{readyBlob.resumen.fileName}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5 text-primary shrink-0">
@@ -516,11 +520,15 @@ export default function ResumenTrimestralModal({
                       </button>
                       <button
                         onClick={async () => {
-                          const file = new File([readyBlob.blob], readyBlob.fileName, { type: 'application/pdf' });
-                          if (navigator.share && navigator.canShare?.({ files: [file] })) {
-                            await navigator.share({ files: [file], title: readyBlob.fileName });
+                          const allFiles = [
+                            new File([readyBlob.resumen.blob], readyBlob.resumen.fileName, { type: 'application/pdf' }),
+                            ...readyBlob.extras.map(e => new File([e.blob], e.fileName, { type: e.type ?? 'application/pdf' })),
+                          ];
+                          if (navigator.share && navigator.canShare?.({ files: allFiles })) {
+                            await navigator.share({ files: allFiles, title: readyBlob.resumen.fileName });
                           } else {
-                            downloadBlob(readyBlob);
+                            downloadBlob(readyBlob.resumen);
+                            readyBlob.extras.forEach(e => downloadBlob(e));
                           }
                         }}
                         className="w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
