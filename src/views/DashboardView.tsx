@@ -73,6 +73,7 @@ type InpsType = 'separata' | 'artigiani' | 'commercianti';
 
 function getInpsType(country: string, coeff: number | undefined): InpsType {
   if (country !== 'Italy') return 'separata';
+  if (coeff === 86) return 'artigiani';
   if (coeff === 67) return 'artigiani';
   if (coeff === 40) return 'commercianti';
   return 'separata';

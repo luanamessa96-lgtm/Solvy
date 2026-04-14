@@ -28,6 +28,7 @@ const INPS_GESTIONE_SEPARATA_RATE = 0.2607;
 
 function getCalendarInpsType(country: string | undefined, coeff: number | undefined): 'separata' | 'artigiani' | 'commercianti' {
   if (country !== 'Italy') return 'separata';
+  if (coeff === 86) return 'artigiani';
   if (coeff === 67) return 'artigiani';
   if (coeff === 40) return 'commercianti';
   return 'separata';
