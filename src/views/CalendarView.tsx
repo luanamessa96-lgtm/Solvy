@@ -264,6 +264,14 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
       .replace(/^\w/, c => c.toUpperCase())
   );
 
+  // Tutti i titoli INPS fiscali noti — usato per nascondere scadenze stantie di categorie diverse
+  const ALL_INPS_FISCAL_TITLES = new Set([
+    '1° acconto INPS gestione separata',
+    '2° acconto INPS gestione separata',
+    '1° rata INPS artigiani', '2° rata INPS artigiani', '3° rata INPS artigiani', 'Saldo INPS artigiani',
+    '1° rata INPS commercianti', '2° rata INPS commercianti', '3° rata INPS commercianti', 'Saldo INPS commercianti',
+  ]);
+
   const yearDeadlines = useMemo(() => {
     // Build a map title→date from this year's fiscal templates
     // (handles ES deadlines like T4/390 whose date falls in year+1)
@@ -275,6 +283,8 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
       const templateDate = templateMap.get(d.title);
       // Template deadline: show if title+date matches this year's template exactly
       if (templateDate !== undefined) return templateDate === d.date;
+      // Scadenza INPS di un tipo diverso da quello corrente → nascondi (stantia dopo cambio categoria)
+      if (ALL_INPS_FISCAL_TITLES.has(d.title)) return false;
       // User-created deadline: show by date year
       return getLocalYear(d.date) === selectedYear;
     });
