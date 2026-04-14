@@ -12,30 +12,19 @@ interface PdfPreviewModalProps {
 
 export default function PdfPreviewModal({ isOpen, onClose, blob, fileName, darkMode }: PdfPreviewModalProps) {
   const { t } = useTranslation();
-  const [blocked, setBlocked] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen || !blob.size) return;
     const url = URL.createObjectURL(blob);
     setBlobUrl(url);
-    const win = window.open(url, '_blank');
-    if (win) {
-      // Delay revocation so the new tab has time to fully load the PDF
-      // before the URL becomes invalid (prevents white pages race condition)
-      setTimeout(() => URL.revokeObjectURL(url), 30_000);
-      onClose();
-      return;
-    }
-    setBlocked(true);
     return () => {
       URL.revokeObjectURL(url);
       setBlobUrl(null);
-      setBlocked(false);
     };
   }, [isOpen, blob]);
 
-  if (!isOpen || !blocked) return null;
+  if (!isOpen || !blob.size) return null;
 
   const handleShare = async () => {
     const file = new File([blob], fileName, { type: 'application/pdf' });
@@ -68,7 +57,7 @@ export default function PdfPreviewModal({ isOpen, onClose, blob, fileName, darkM
         <p className={`text-sm font-bold truncate flex-1 ${darkMode ? 'text-white' : 'text-slate-900'}`}>{fileName}</p>
       </div>
 
-      {/* Fallback (popup bloccato) */}
+      {/* Preview area */}
       <div className="flex-1 flex flex-col items-center justify-center gap-5 px-8">
         <div className={`w-24 h-28 rounded-3xl flex flex-col items-center justify-center gap-1.5 shadow-lg ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
           <FileText size={40} className="text-red-500" strokeWidth={1.5} />
