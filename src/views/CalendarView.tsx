@@ -19,6 +19,16 @@ const FISCAL_ESTIMATE_TITLES = new Set([
   '2° acconto imposta sostitutiva',          // forfettario
   '2° acconto IRPEF',                        // ordinario
   '2° acconto INPS gestione separata',
+  // artigiani — 4 rate trimestrali
+  '1° rata INPS artigiani',
+  '2° rata INPS artigiani',
+  '3° rata INPS artigiani',
+  'Saldo INPS artigiani',
+  // commercianti — 4 rate trimestrali
+  '1° rata INPS commercianti',
+  '2° rata INPS commercianti',
+  '3° rata INPS commercianti',
+  'Saldo INPS commercianti',
 ]);
 
 const INPS_ARTIGIANI_MINIMALE = 4000;
@@ -54,23 +64,43 @@ const DEADLINE_TOOLTIPS: Record<string, string> = {
   '2° acconto INPS gestione separata': 'Secondo acconto INPS (60% del totale annuo stimato). Scade il 16 novembre.',
   'Dichiarazione dei redditi (Modello Redditi)': 'Presentazione del Modello Redditi PF. Scade il 31 ottobre.',
   'Acconto IVA dicembre': 'Acconto IVA annuale per regime ordinario. Scade il 16 dicembre.',
+  '1° rata INPS artigiani': 'Prima rata trimestrale INPS artigiani (25% del totale annuo stimato). Scade il 16 maggio. Stimato · verifica con il tuo commercialista.',
+  '2° rata INPS artigiani': 'Seconda rata trimestrale INPS artigiani (25% del totale annuo stimato). Scade il 20 agosto. Stimato · verifica con il tuo commercialista.',
+  '3° rata INPS artigiani': 'Terza rata trimestrale INPS artigiani (25% del totale annuo stimato). Scade il 16 novembre. Stimato · verifica con il tuo commercialista.',
+  'Saldo INPS artigiani': 'Saldo/conguaglio annuale INPS artigiani. Scade il 16 febbraio dell\'anno successivo. Stimato · verifica con il tuo commercialista.',
+  '1° rata INPS commercianti': 'Prima rata trimestrale INPS commercianti (25% del totale annuo stimato). Scade il 16 maggio. Stimato · verifica con il tuo commercialista.',
+  '2° rata INPS commercianti': 'Seconda rata trimestrale INPS commercianti (25% del totale annuo stimato). Scade il 20 agosto. Stimato · verifica con il tuo commercialista.',
+  '3° rata INPS commercianti': 'Terza rata trimestrale INPS commercianti (25% del totale annuo stimato). Scade il 16 novembre. Stimato · verifica con il tuo commercialista.',
+  'Saldo INPS commercianti': 'Saldo/conguaglio annuale INPS commercianti. Scade il 16 febbraio dell\'anno successivo. Stimato · verifica con il tuo commercialista.',
   'Liquidazione IVA T1 (gen-mar)': 'Versamento IVA del 1° trimestre (gennaio-marzo). Scade il 16 aprile.',
   'Liquidazione IVA T2 (apr-giu)': 'Versamento IVA del 2° trimestre (aprile-giugno). Scade il 16 luglio.',
   'Liquidazione IVA T3 (lug-set)': 'Versamento IVA del 3° trimestre (luglio-settembre). Scade il 16 ottobre.',
   'Liquidazione IVA T4 (ott-dic)': 'Versamento IVA del 4° trimestre (ottobre-dicembre). Scade il 16 gennaio dell\'anno successivo.',
 };
 
-function getScadenzeFiscali(year: number, regime?: string): Omit<Deadline, 'id'>[] {
+function getScadenzeFiscali(year: number, regime?: string, inpsType?: 'separata' | 'artigiani' | 'commercianti'): Omit<Deadline, 'id'>[] {
   const isOrdinario = regime === 'ordinario';
   const saldoTitle = isOrdinario ? 'Saldo IRPEF + 1° acconto' : 'Saldo imposta sostitutiva + 1° acconto';
   const accontoTitle = isOrdinario ? '2° acconto IRPEF' : '2° acconto imposta sostitutiva';
   const base: Omit<Deadline, 'id'>[] = [
     { title: saldoTitle, date: `${year}-06-30`, type: 'tax' },
-    { title: '1° acconto INPS gestione separata', date: `${year}-06-16`, type: 'tax' },
     { title: accontoTitle, date: `${year}-11-30`, type: 'tax' },
-    { title: '2° acconto INPS gestione separata', date: `${year}-11-16`, type: 'tax' },
     { title: 'Dichiarazione dei redditi (Modello Redditi)', date: `${year}-10-31`, type: 'tax' },
   ];
+  if (inpsType === 'artigiani' || inpsType === 'commercianti') {
+    // 4 rate trimestrali — date stimate, verifica con commercialista
+    base.push(
+      { title: `1° rata INPS ${inpsType}`, date: `${year}-05-16`, type: 'tax' },
+      { title: `2° rata INPS ${inpsType}`, date: `${year}-08-20`, type: 'tax' },
+      { title: `3° rata INPS ${inpsType}`, date: `${year}-11-16`, type: 'tax' },
+      { title: `Saldo INPS ${inpsType}`, date: `${year + 1}-02-16`, type: 'tax' },
+    );
+  } else {
+    base.push(
+      { title: '1° acconto INPS gestione separata', date: `${year}-06-16`, type: 'tax' },
+      { title: '2° acconto INPS gestione separata', date: `${year}-11-16`, type: 'tax' },
+    );
+  }
   if (regime === 'ordinario') {
     // IVA: forfettario è esonerato (art.1 c.58 L.190/2014) — queste scadenze solo per ordinario
     base.push(
@@ -184,6 +214,16 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     const isOrdinarioCalc = regime === 'ordinario';
     const saldoKey = isOrdinarioCalc ? 'Saldo IRPEF + 1° acconto' : 'Saldo imposta sostitutiva + 1° acconto';
     const accontoKey = isOrdinarioCalc ? '2° acconto IRPEF' : '2° acconto imposta sostitutiva';
+    if (calInpsType === 'artigiani' || calInpsType === 'commercianti') {
+      return {
+        [saldoKey]: Math.round(imposta * 0.40),
+        [accontoKey]: Math.round(imposta * 0.60),
+        [`1° rata INPS ${calInpsType}`]: Math.round(inps / 4),
+        [`2° rata INPS ${calInpsType}`]: Math.round(inps / 4),
+        [`3° rata INPS ${calInpsType}`]: Math.round(inps / 4),
+        [`Saldo INPS ${calInpsType}`]: Math.round(inps / 4),
+      };
+    }
     return {
       [saldoKey]: Math.round(imposta * 0.40),
       '1° acconto INPS gestione separata': Math.round(inps * 0.40),
@@ -210,7 +250,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
 
   const scadenzeFiscaliRaw = isSpain
     ? getSpanishDeadlines(selectedYear).map(s => ({ title: s.title, date: s.date, type: 'tax' as Deadline['type'] }))
-    : getScadenzeFiscali(selectedYear, profile?.regime);
+    : getScadenzeFiscali(selectedYear, profile?.regime, calInpsType);
   const scadenzeFiscali = scadenzeFiscaliRaw;
   // Set dei titoli fiscali — usato sia per i dot griglia che per l'iniezione virtuale in filteredDeadlines
   const fiscalTitleSet = new Set(scadenzeFiscaliRaw.map(s => s.title));
@@ -229,7 +269,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     // (handles ES deadlines like T4/390 whose date falls in year+1)
     const templates = isSpain
       ? getSpanishDeadlines(selectedYear).map(s => ({ title: s.title, date: s.date }))
-      : getScadenzeFiscali(selectedYear, profile?.regime);
+      : getScadenzeFiscali(selectedYear, profile?.regime, calInpsType);
     const templateMap = new Map(templates.map(s => [s.title, s.date]));
     return deadlines.filter(d => {
       const templateDate = templateMap.get(d.title);
