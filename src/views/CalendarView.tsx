@@ -583,7 +583,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl" style={{ backgroundColor: 'var(--color-card)' }}>
               <div className="p-6 space-y-4">
                 <div className={`p-4 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
-                  <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedDeadline.title}</p>
+                  <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{localizeInpsTitle(selectedDeadline.title, calInpsType)}</p>
                   {(() => {
                     const spQ = getSpQuarter(selectedDeadline.title);
                     if (spQ && spFiscalData) {
