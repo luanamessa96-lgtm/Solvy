@@ -153,17 +153,22 @@ export default function ResumenTrimestralModal({
     try {
       const { resumenResult, libroE, libroR, facturasResult, gastosResult, anualResult, anualIVAResult } = await generateAll();
 
-      setPdfPreview(resumenResult);
-      if (libroE) downloadBlob(libroE);
-      if (libroR) downloadBlob(libroR);
-      if (facturasResult) downloadBlob(facturasResult);
-      if (gastosResult) {
-        downloadBlob(gastosResult);
-        const imgFiles = await buildImageFiles(resumen.expenses);
-        imgFiles.forEach(f => downloadBlob(f));
+      const extras = [libroE, libroR, facturasResult, gastosResult, anualResult, anualIVAResult].filter(Boolean);
+      if (extras.length === 1) {
+        downloadBlob(extras[0]!);
+      } else {
+        setPdfPreview(resumenResult);
+        if (libroE) downloadBlob(libroE);
+        if (libroR) downloadBlob(libroR);
+        if (facturasResult) downloadBlob(facturasResult);
+        if (gastosResult) {
+          downloadBlob(gastosResult);
+          const imgFiles = await buildImageFiles(resumen.expenses);
+          imgFiles.forEach(f => downloadBlob(f));
+        }
+        if (anualResult) downloadBlob(anualResult);
+        if (anualIVAResult) downloadBlob(anualIVAResult);
       }
-      if (anualResult) downloadBlob(anualResult);
-      if (anualIVAResult) downloadBlob(anualIVAResult);
     } catch {
       showToast('Error al generar el PDF', 'error');
     } finally {
