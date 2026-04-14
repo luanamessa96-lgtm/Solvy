@@ -152,8 +152,9 @@ Deno.serve(async (req) => {
     });
 
   } catch (err) {
-    console.error('delete-account error:', err);
-    return new Response(JSON.stringify({ error: (err as Error).message }), {
+    const msg = err instanceof Error ? err.message : JSON.stringify(err) ?? 'Errore sconosciuto';
+    console.error('delete-account error:', msg);
+    return new Response(JSON.stringify({ error: msg }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
