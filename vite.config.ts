@@ -6,7 +6,20 @@ import {defineConfig, loadEnv} from 'vite';
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      {
+        name: 'non-blocking-css',
+        transformIndexHtml(html: string) {
+          return html.replace(
+            /<link rel="stylesheet"([^>]*href="[^"]*\.css"[^>]*)>/g,
+            (_match: string, attrs: string) =>
+              `<link rel="preload" as="style"${attrs} onload="this.rel='stylesheet'"><noscript><link rel="stylesheet"${attrs}></noscript>`
+          );
+        },
+      },
+    ],
     define: {
       'process.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
       'process.env.VITE_SUPABASE_KEY': JSON.stringify(env.VITE_SUPABASE_KEY),
