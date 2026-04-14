@@ -212,7 +212,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     78: 'Professionisti',
     67: 'Artigiani / Servizi',
     62: 'Intermediari commercio',
-    40: 'Commercio / Ristorazione',
+    40: 'Ristorazione',
   };
 
   return (
