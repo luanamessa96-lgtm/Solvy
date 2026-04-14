@@ -203,9 +203,9 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     let inps = 0;
     try {
       const calcInps = (reddito: number): number => {
-        if (calInpsType === 'artigiani') return Math.max(INPS_ARTIGIANI_MINIMALE, reddito * INPS_ARTIGIANI_RATE);
-        if (calInpsType === 'commercianti') return Math.max(INPS_ARTIGIANI_MINIMALE, reddito * INPS_COMMERCIANTI_RATE);
-        return reddito * INPS_GESTIONE_SEPARATA_RATE;
+        if (calInpsType === 'artigiani' || calInpsType === 'costruzioni') return Math.max(INPS_ARTIGIANI_MINIMALE, reddito * INPS_ARTIGIANI_RATE);
+        if (calInpsType === 'commercianti' || calInpsType === 'ristorazione') return Math.max(INPS_ARTIGIANI_MINIMALE, reddito * INPS_COMMERCIANTI_RATE);
+        return reddito * INPS_GESTIONE_SEPARATA_RATE; // professionisti, intermediari
       };
       if (regime === 'forfettario') {
         const coeffRaw = profile?.coefficiente;
@@ -229,7 +229,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     const isOrdinarioCalc = regime === 'ordinario';
     const saldoKey = isOrdinarioCalc ? 'Saldo IRPEF + 1° acconto' : 'Saldo imposta sostitutiva + 1° acconto';
     const accontoKey = isOrdinarioCalc ? '2° acconto IRPEF' : '2° acconto imposta sostitutiva';
-    if (calInpsType === 'artigiani' || calInpsType === 'commercianti') {
+    if (calInpsType === 'artigiani' || calInpsType === 'costruzioni' || calInpsType === 'commercianti' || calInpsType === 'ristorazione') {
       return {
         [saldoKey]: Math.round(imposta * 0.40),
         [accontoKey]: Math.round(imposta * 0.60),

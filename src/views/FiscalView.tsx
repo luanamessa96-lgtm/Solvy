@@ -528,13 +528,16 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
         </motion.div>
       )}
 
-      {/* Banner INPS artigiani/commercianti */}
-      {(profile.coefficiente === 86 || profile.coefficiente === 67 || profile.coefficiente === 40) && (
+      {/* Banner INPS per categorie con contributi trimestrali */}
+      {(profile.coefficiente === 67 || profile.coefficiente === 86 || profile.coefficiente === 40) && (
         <motion.div variants={item}>
           <div className={`flex items-start gap-3 px-4 py-3.5 rounded-2xl border ${darkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-300' : 'bg-blue-50 border-blue-100 text-blue-700'}`}>
             <Info size={16} className="mt-0.5 shrink-0" />
             <p className="text-xs font-bold leading-relaxed">
-              La tua categoria potrebbe richiedere INPS {profile.coefficiente === 40 ? 'commercianti' : 'artigiani'} invece della gestione separata. Verifica con il tuo commercialista.
+              {profile.coefficiente === 67 && 'La tua categoria richiede INPS artigiani (24%) — minimale annuo ~€4.000, pagamento in 4 rate trimestrali.'}
+              {profile.coefficiente === 86 && 'La tua categoria richiede INPS costruzioni (24%) — minimale annuo ~€4.000, pagamento in 4 rate trimestrali.'}
+              {profile.coefficiente === 40 && 'La tua categoria richiede INPS ristorazione (24.48%) — minimale annuo ~€4.000, pagamento in 4 rate trimestrali.'}
+              {' '}Verifica con il tuo commercialista.
             </p>
           </div>
         </motion.div>

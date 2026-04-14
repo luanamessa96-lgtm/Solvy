@@ -153,9 +153,9 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
     const it = getInpsType(profile.country, profile.coefficiente);
 
     const calcInpsAmount = (reddito: number, fallbackRate: number) => {
-      if (it === 'artigiani') return Math.max(INPS_MINIMALE, reddito * INPS_ARTIGIANI);
-      if (it === 'commercianti') return Math.max(INPS_MINIMALE, reddito * INPS_COMMERCIANTI);
-      return reddito * fallbackRate;
+      if (it === 'artigiani' || it === 'costruzioni') return Math.max(INPS_MINIMALE, reddito * INPS_ARTIGIANI);
+      if (it === 'commercianti' || it === 'ristorazione') return Math.max(INPS_MINIMALE, reddito * INPS_COMMERCIANTI);
+      return reddito * fallbackRate; // professionisti, intermediari → gestione separata
     };
 
     if (regime === 'forfettario') {
@@ -657,10 +657,10 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
                       <span className="inline-flex items-center text-xs font-bold text-slate-400">
-                        {inpsType === 'artigiani' ? t('dashboard.inps_artigiani') : inpsType === 'commercianti' ? t('dashboard.inps_commercianti') : t('dashboard.inps_sep')}
+                        {inpsType === 'artigiani' ? t('dashboard.inps_artigiani') : inpsType === 'costruzioni' ? t('dashboard.inps_costruzioni') : inpsType === 'commercianti' ? t('dashboard.inps_commercianti') : inpsType === 'ristorazione' ? t('dashboard.inps_ristorazione') : inpsType === 'intermediari' ? t('dashboard.inps_intermediari') : t('dashboard.inps_sep')}
                         <InfoTooltip
-                          text={inpsType === 'artigiani' || inpsType === 'commercianti'
-                            ? "Contributi previdenziali per artigiani e lavoratori manuali. Hanno un minimale annuo di ~€4.000 indipendentemente dal reddito."
+                          text={inpsType === 'artigiani' || inpsType === 'costruzioni' || inpsType === 'commercianti' || inpsType === 'ristorazione'
+                            ? "Contributi previdenziali con minimale annuo di ~€4.000 indipendentemente dal reddito. Pagamento in 4 rate trimestrali."
                             : "Contributi previdenziali obbligatori per professionisti autonomi. Si calcolano sul reddito imponibile e danno diritto alla pensione."}
                           darkMode={darkMode}
                         />
@@ -699,10 +699,10 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
                       <span className="inline-flex items-center text-xs font-bold text-slate-400">
-                        {inpsType === 'artigiani' ? t('dashboard.inps_artigiani') : inpsType === 'commercianti' ? t('dashboard.inps_commercianti') : t('dashboard.inps_sep')}
+                        {inpsType === 'artigiani' ? t('dashboard.inps_artigiani') : inpsType === 'costruzioni' ? t('dashboard.inps_costruzioni') : inpsType === 'commercianti' ? t('dashboard.inps_commercianti') : inpsType === 'ristorazione' ? t('dashboard.inps_ristorazione') : inpsType === 'intermediari' ? t('dashboard.inps_intermediari') : t('dashboard.inps_sep')}
                         <InfoTooltip
-                          text={inpsType === 'artigiani' || inpsType === 'commercianti'
-                            ? "Contributi previdenziali per artigiani e lavoratori manuali. Hanno un minimale annuo di ~€4.000 indipendentemente dal reddito."
+                          text={inpsType === 'artigiani' || inpsType === 'costruzioni' || inpsType === 'commercianti' || inpsType === 'ristorazione'
+                            ? "Contributi previdenziali con minimale annuo di ~€4.000 indipendentemente dal reddito. Pagamento in 4 rate trimestrali."
                             : "Contributi previdenziali obbligatori per professionisti autonomi. Si calcolano sul reddito imponibile e danno diritto alla pensione."}
                           darkMode={darkMode}
                         />
