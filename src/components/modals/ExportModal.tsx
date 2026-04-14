@@ -991,31 +991,46 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   };
 
   const shareOrDownload = async (blob: Blob, fileName: string, mimeType: string) => {
-    // Generate FatturaPA XMLs if toggle is on (Italy)
-    let xmlFiles: { blob: Blob; fileName: string }[] | undefined;
-    if (accountant && includeFatturaPA && isItaly && isPro && missingProfileFields.length === 0) {
-      const invoices = filteredDocs.filter(d => d.type === 'invoice');
-      if (invoices.length > 0) {
-        xmlFiles = invoices.map(inv => {
-          const { xml, filename } = generateFatturaPA(inv, profile);
-          return { blob: new Blob([xml], { type: 'application/xml' }), fileName: filename };
-        });
+    if (accountant) {
+      // Generate FatturaPA XMLs if toggle is on
+      let xmlFiles: { blob: Blob; fileName: string }[] | undefined;
+      if (includeFatturaPA && isItaly && isPro && missingProfileFields.length === 0) {
+        const invoices = filteredDocs.filter(d => d.type === 'invoice');
+        if (invoices.length > 0) {
+          xmlFiles = invoices.map(inv => {
+            const { xml, filename } = generateFatturaPA(inv, profile);
+            return { blob: new Blob([xml], { type: 'application/xml' }), fileName: filename };
+          });
+        }
       }
-    }
-    // Generate Resumen Trimestral PDF if toggle is on (Spain)
-    let resumenFile: { blob: Blob; fileName: string } | undefined;
-    if (includeResumen && isSpain && isPro && hasTaxIdSpain) {
-      const resumen = calcularTrimestre(documents, resumenQuarter, resumenYear, esRetencionRateExport, profile.annoInizioAttivita);
-      const resumenPdf = await generateResumenPDF(resumen, profile);
-      const nif = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
-      const resumenFileName = `ES_${nif}_resumen_T${resumenQuarter}_${resumenYear}.pdf`;
-      resumenFile = { blob: resumenPdf.output('blob'), fileName: resumenFileName };
-    }
+      // Generate Resumen Trimestral PDF if toggle is on (Spain)
+      let resumenFile: { blob: Blob; fileName: string } | undefined;
+      if (includeResumen && isSpain && isPro && hasTaxIdSpain) {
+        const resumen = calcularTrimestre(documents, resumenQuarter, resumenYear, esRetencionRateExport, profile.annoInizioAttivita);
+        const resumenPdf = await generateResumenPDF(resumen, profile);
+        const nif = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
+        const resumenFileName = `ES_${nif}_resumen_T${resumenQuarter}_${resumenYear}.pdf`;
+        resumenFile = { blob: resumenPdf.output('blob'), fileName: resumenFileName };
+      }
 
-    // Registro e Riepilogo sono già inline nel PDF principale
-    const registroFile: { blob: Blob; fileName: string } | undefined = undefined;
-    const riepilogoFile: { blob: Blob; fileName: string } | undefined = undefined;
-    setReadyBlob({ blob, fileName, xmlFiles, resumenFile, registroFile, riepilogoFile });
+      // Registro e Riepilogo sono già inline nel PDF principale
+      const registroFile: { blob: Blob; fileName: string } | undefined = undefined;
+      const riepilogoFile: { blob: Blob; fileName: string } | undefined = undefined;
+      setReadyBlob({ blob, fileName, xmlFiles, resumenFile, registroFile, riepilogoFile });
+      return;
+    }
+    const file = new File([blob], fileName, { type: mimeType });
+    if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ files: [file], title: fileName });
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = window.document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    onClose();
   };
 
   const generateRiepilogoFile = async (): Promise<{ blob: Blob; fileName: string }> => {
