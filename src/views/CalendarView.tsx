@@ -328,8 +328,8 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
 
   const nextDeadline = useMemo(() => {
     const today = new Date();
-    return deadlines.filter(d => parseLocalDate(d.date) >= today && !d.completed).sort((a, b) => parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime())[0] || null;
-  }, [deadlines]);
+    return yearDeadlines.filter(d => parseLocalDate(d.date) >= today && !d.completed).sort((a, b) => parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime())[0] || null;
+  }, [yearDeadlines]);
 
   const daysUntilNext = nextDeadline ? Math.ceil((new Date(nextDeadline.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
 
