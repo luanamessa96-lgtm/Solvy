@@ -33,7 +33,7 @@ export default function DeleteAccountModal({ isOpen, onClose, darkMode, profile,
     setError(null);
 
     try {
-      const { data: { session } } = await getClient().auth.getSession();
+      const { data: { session } } = await getClient().auth.refreshSession();
       if (!session) {
         setError(t('delete_account.session_expired'));
         setLoading(false);
