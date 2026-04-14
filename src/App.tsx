@@ -4,7 +4,9 @@
  */
 
 import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
-import { AnimatePresence } from 'motion/react';
+const AnimatePresence = lazy(() =>
+  import('motion/react').then(m => ({ default: m.AnimatePresence }))
+);
 import { MOCK_PROFILES, MOCK_ACCOUNTANT } from './constants';
 import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, addDeadline, updateDeadline, deleteDeadline, getProfiles, createProfile, updateProfile, getAccountant, updateAccountant, uploadFile } from './lib/db';
 import { supabaseReady, getClient } from './lib/supabase';
@@ -891,22 +893,24 @@ function AppInner() {
 
     </div>
     <BottomNav activeTab={(isProfilePage || isSettingsPage || isSubscriptionPage || isAccountantPage || isFiscalPage || isGuidaFiscalePage || isGuiaFiscalESPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} theme={theme} onPlusPress={handlePlusPress} isNavHidden={isNavHidden} />
-    <AnimatePresence>
-      {swRegistration && (
-        <UpdateBanner
-          key="update-banner"
-          darkMode={darkMode}
-          onUpdate={() => {
-            swRegistration.waiting?.postMessage({ type: 'SKIP_WAITING' });
-            window.location.reload();
-          }}
-          onDismiss={() => {
-            dismissedWaiting.current = swRegistration?.waiting ?? null;
-            setSwRegistration(null);
-          }}
-        />
-      )}
-    </AnimatePresence>
+    <Suspense fallback={null}>
+      <AnimatePresence>
+        {swRegistration && (
+          <UpdateBanner
+            key="update-banner"
+            darkMode={darkMode}
+            onUpdate={() => {
+              swRegistration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+              window.location.reload();
+            }}
+            onDismiss={() => {
+              dismissedWaiting.current = swRegistration?.waiting ?? null;
+              setSwRegistration(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
+    </Suspense>
     {import.meta.env.DEV && (
       <button
         onClick={() => window.dispatchEvent(new CustomEvent('swUpdateReady', { detail: { registration: { waiting: { postMessage: () => {} } } } }))}

@@ -23,7 +23,6 @@ export default defineConfig(({mode}) => {
         output: {
           manualChunks: {
             'react-vendor': ['react', 'react-dom'],
-            'motion': ['motion'],
             'i18n': ['i18next', 'react-i18next'],
           },
         },
