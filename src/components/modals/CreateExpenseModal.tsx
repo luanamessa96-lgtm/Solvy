@@ -102,7 +102,6 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, onUpdate, editDoc, darkMo
     { value: 'formazione', label: 'Formazione', emoji: '📚' },
     { value: 'materiale', label: 'Materiale', emoji: '🛠️' },
     { value: 'telefono', label: 'Telefono', emoji: '📱' },
-    { value: 'auto_moto', label: 'Auto/Moto', emoji: '🚗' },
   ];
 
   const categoriesForfettario = [
