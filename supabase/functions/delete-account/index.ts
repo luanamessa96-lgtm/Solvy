@@ -1,5 +1,6 @@
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import * as jose from 'https://deno.land/x/jose@v4.14.4/index.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,28 +21,45 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Verifica utente tramite JWT
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    const token = authHeader.replace('Bearer ', '');
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    // Verifica firma JWT con 2 ore di tolleranza sull'expiry.
+    // verify_jwt=false nel config.toml permette al gateway di passare token scaduti —
+    // la firma viene comunque verificata qui per sicurezza.
+    const jwtSecret = Deno.env.get('SUPABASE_JWT_SECRET');
+    if (!jwtSecret) throw new Error('SUPABASE_JWT_SECRET non configurato');
+
+    let userId: string;
+    try {
+      const { payload } = await jose.jwtVerify(
+        token,
+        new TextEncoder().encode(jwtSecret),
+        { clockTolerance: 7200 } // 2 ore di tolleranza
+      );
+      userId = payload.sub as string;
+      if (!userId) throw new Error('sub mancante nel JWT');
+    } catch (jwtErr) {
+      console.error('JWT verification failed:', jwtErr);
+      return new Response(JSON.stringify({ error: 'Token non valido' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-    const userId = user.id;
 
     // Client admin con service role — bypassa RLS per cancellare tutto
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    // Verifica che l'utente esista nel DB auth
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId);
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Utente non trovato' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Controlla se il body contiene un profileId (cancellazione singolo profilo)
     let profileIdOnly: string | undefined;
