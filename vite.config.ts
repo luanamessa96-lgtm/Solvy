@@ -37,16 +37,6 @@ export default defineConfig(({mode}) => {
           manualChunks: {
             'react-vendor': ['react', 'react-dom'],
             'i18n': ['i18next', 'react-i18next'],
-            'recharts': ['recharts'],
-            'supabase': [
-              '@supabase/supabase-js',
-              '@supabase/auth-js',
-              '@supabase/realtime-js',
-              '@supabase/postgrest-js',
-              '@supabase/storage-js',
-              '@supabase/functions-js',
-            ],
-            'motion': ['motion', 'motion/react'],
           },
         },
       },
