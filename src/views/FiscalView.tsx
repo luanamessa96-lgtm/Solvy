@@ -529,12 +529,12 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
       )}
 
       {/* Banner INPS artigiani/commercianti */}
-      {(profile.coefficiente === 67 || profile.coefficiente === 40) && (
+      {(profile.coefficiente === 86 || profile.coefficiente === 67 || profile.coefficiente === 40) && (
         <motion.div variants={item}>
           <div className={`flex items-start gap-3 px-4 py-3.5 rounded-2xl border ${darkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-300' : 'bg-blue-50 border-blue-100 text-blue-700'}`}>
             <Info size={16} className="mt-0.5 shrink-0" />
             <p className="text-xs font-bold leading-relaxed">
-              La tua categoria potrebbe richiedere INPS {profile.coefficiente === 67 ? 'artigiani' : 'commercianti'} invece della gestione separata. Verifica con il tuo commercialista.
+              La tua categoria potrebbe richiedere INPS {profile.coefficiente === 40 ? 'commercianti' : 'artigiani'} invece della gestione separata. Verifica con il tuo commercialista.
             </p>
           </div>
         </motion.div>
