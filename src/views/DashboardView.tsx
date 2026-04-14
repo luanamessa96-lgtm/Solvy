@@ -201,25 +201,49 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
   const sogliAlert = income >= SOGLIA_FORFETTARIO ? 'exceeded' : income >= ALERT_SOGLIA ? 'warning' : income >= ALERT_SOGLIA_VICINO ? 'approaching' : null;
 
   const spesePerCategoria = useMemo(() => {
+    const isSpain = profile.country === 'Spain';
+    // Mappa valori DB → label localizzata (copre categorie IT e ES, vecchie e nuove)
+    const CAT_LABELS: Record<string, { it: string; es: string }> = {
+      abbonamento:   { it: 'Abbonamento',  es: 'Suscripción' },
+      suscripcion:   { it: 'Abbonamento',  es: 'Suscripción' },
+      materiale:     { it: 'Materiale',    es: 'Material' },
+      material:      { it: 'Materiale',    es: 'Material' },
+      software:      { it: 'Software',     es: 'Software' },
+      formazione:    { it: 'Formazione',   es: 'Formación' },
+      formacion:     { it: 'Formazione',   es: 'Formación' },
+      telefono:      { it: 'Telefono',     es: 'Teléfono' },
+      auto_moto:     { it: 'Auto/Moto',    es: 'Auto/Moto' },
+      casa_ufficio:  { it: 'Casa/Ufficio', es: 'Casa/Oficina' },
+      pasti:         { it: 'Pasti/Rapp.',  es: 'Comidas' },
+      amortizacion:  { it: 'Ammortamento', es: 'Amortización' },
+      altro:         { it: 'Altro',        es: 'Otro' },
+    };
+    const getCatLabel = (cat: string) => {
+      const entry = CAT_LABELS[cat.toLowerCase()];
+      if (!entry) return cat;
+      return isSpain ? entry.es : entry.it;
+    };
     const currentYear = new Date().getFullYear();
     const yearExpenses = documents.filter(d => d.type === 'expense' && getLocalYear(d.date) === currentYear);
     const applyDeductibility = profile.country === 'Italy' && profile.regime === 'ordinario';
-    const map: Record<string, { gross: number; deductible: number; rate: number }> = {};
+    const map: Record<string, { label: string; gross: number; deductible: number; rate: number }> = {};
     yearExpenses.forEach(d => {
-      const cat = d.category || 'Altro';
+      const cat = d.category || 'altro';
+      const label = getCatLabel(cat);
       const rate = applyDeductibility ? getItDeductibilityRate(d.category) : 1;
-      if (!map[cat]) map[cat] = { gross: 0, deductible: 0, rate };
+      if (!map[cat]) map[cat] = { label, gross: 0, deductible: 0, rate };
       map[cat].gross += d.amount;
       map[cat].deductible += d.amount * rate;
     });
     return Object.entries(map)
-      .map(([name, { gross, deductible, rate }]) => ({ name, amount: deductible, gross, rate }))
+      .map(([, { label, gross, deductible, rate }]) => ({ name: label, amount: deductible, gross, rate }))
       .sort((a, b) => b.amount - a.amount);
   }, [documents, profile.country, profile.regime]);
 
   const isSpainProfile = profile.country === 'Spain';
   const isForfettario = !isSpainProfile && tasse.regime === 'forfettario';
   const retaMensualMissing = isSpainProfile && !profileStorage.get(`reta_${profile.id}`);
+  const savedRetaMensileES = isSpainProfile ? (() => { const v = profileStorage.get(`reta_${profile.id}`); return v ? parseFloat(v) : null; })() : null;
 
   // ES deductible expenses for displayYear (applied when computing Spanish taxes)
   const esDeductibleExpenses = useMemo(() => {
@@ -233,10 +257,11 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
     if (isSpainProfile) {
       const mesesDeAlta = getMesesDeAlta(profile.annoInizioAttivita, profile.meseInizioAttivita, displayYear);
       const sp = calculateSpanishTaxes(income, false, false, profile.annoInizioAttivita, displayYear, esDeductibleExpenses, mesesDeAlta);
-      return sp.irpf + sp.reta;
+      const retaAnual = savedRetaMensileES != null && savedRetaMensileES > 0 ? savedRetaMensileES * mesesDeAlta : sp.reta;
+      return sp.irpf + retaAnual;
     }
     return tasse.imposta + tasse.inps;
-  }, [isSpainProfile, income, profile.annoInizioAttivita, profile.meseInizioAttivita, displayYear, esDeductibleExpenses, tasse]);
+  }, [isSpainProfile, income, profile.annoInizioAttivita, profile.meseInizioAttivita, displayYear, esDeductibleExpenses, tasse, savedRetaMensileES]);
   const mettiDaParte = useMemo(() => {
     if (!isPro || isSpainProfile) return null;
     const today = new Date();
@@ -410,7 +435,9 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
         {/* ── TASSE ── */}
         {activeTab === 'taxes' && profile.country === 'Spain' && (() => {
           const mesesDeAlta = getMesesDeAlta(profile.annoInizioAttivita, profile.meseInizioAttivita, displayYear);
-          const spTaxes = calculateSpanishTaxes(income, false, false, profile.annoInizioAttivita, displayYear, esDeductibleExpenses, mesesDeAlta);
+          const spTaxesRaw = calculateSpanishTaxes(income, false, false, profile.annoInizioAttivita, displayYear, esDeductibleExpenses, mesesDeAlta);
+          const retaOverride = savedRetaMensileES != null && savedRetaMensileES > 0 ? savedRetaMensileES * mesesDeAlta : null;
+          const spTaxes = retaOverride != null ? { ...spTaxesRaw, reta: retaOverride, monthlyRETA: savedRetaMensileES! } : spTaxesRaw;
           const isTarifaPlana = spTaxes.tarifaPlanaStatus !== 'normal';
           const annoInicio = profile.annoInizioAttivita != null ? Number(profile.annoInizioAttivita) : null;
           const yearsActiveES = annoInicio != null ? displayYear - annoInicio : null;
