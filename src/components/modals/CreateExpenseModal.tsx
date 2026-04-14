@@ -177,21 +177,19 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, onUpdate, editDoc, darkMo
                     <input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder={t('create_expense.description_placeholder')} className={`w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`} />
                   </div>
                 </div>
-                <div className="grid gap-3" style={{ gridTemplateColumns: '2fr 3fr' }}>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('common.amount')}</label>
-                    <div className="relative">
-                      <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                      <input type="number" inputMode="decimal" value={formData.amount} onChange={e => setFormData({ ...formData, amount: e.target.value })} onBlur={() => setAmountTouched(true)} placeholder="0.00" className={`w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 font-bold transition-all ${amountError ? 'border-red-400 bg-red-50 text-red-900 focus:ring-red-200 placeholder:text-red-300' : (darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600 focus:ring-indigo-500/20' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400 focus:ring-indigo-500/20')}`} />
-                      {amountError && <p className="text-[10px] text-red-500 font-semibold ml-1 mt-0.5">{amountError}</p>}
-                    </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('common.amount')}</label>
+                  <div className="relative">
+                    <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <input type="number" inputMode="decimal" value={formData.amount} onChange={e => setFormData({ ...formData, amount: e.target.value })} onBlur={() => setAmountTouched(true)} placeholder="0.00" className={`w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 font-bold transition-all ${amountError ? 'border-red-400 bg-red-50 text-red-900 focus:ring-red-200 placeholder:text-red-300' : (darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600 focus:ring-indigo-500/20' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400 focus:ring-indigo-500/20')}`} />
+                    {amountError && <p className="text-[10px] text-red-500 font-semibold ml-1 mt-0.5">{amountError}</p>}
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('common.date')}</label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                      <input type="date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} className={`w-full pl-8 pr-2 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
-                    </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('common.date')}</label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <input type="date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} className={`w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
                   </div>
                 </div>
               {isSpain && (
