@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { parseLocalDate, getLocalYear } from './utils/date';
 import { getItDeductibilityRate } from './lib/it/deductibility';
 import { getEsDeductibilityRate } from './lib/es/deductibility';
-import AuthView from './views/AuthView';
+const AuthView = lazy(() => import('./views/AuthView'));
 
 import { ToastProvider, useToast } from './components/ui/Toast';
 import DashboardSkeleton from './components/DashboardSkeleton';
@@ -753,12 +753,12 @@ function AppInner() {
 
   // Non autenticato → schermata login (sempre pro-light, gestito dall'useEffect tema)
   if (!isAuthenticated) {
-    return <AuthView darkMode={darkMode} />;
+    return <Suspense fallback={null}><AuthView darkMode={darkMode} /></Suspense>;
   }
 
   // Recupero password → schermata nuova password (sempre pro-light, gestito dall'useEffect tema)
   if (isPasswordRecovery) {
-    return <AuthView darkMode={darkMode} initialScreen="reset" onResetPassword={() => setIsPasswordRecovery(false)} />;
+    return <Suspense fallback={null}><AuthView darkMode={darkMode} initialScreen="reset" onResetPassword={() => setIsPasswordRecovery(false)} /></Suspense>;
   }
 
   const proGradient = theme === 'pro-light'
