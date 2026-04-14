@@ -69,14 +69,16 @@ const INPS_ARTIGIANI = 0.24;
 const INPS_COMMERCIANTI = 0.2448;
 const INPS_MINIMALE = 4000; // minimale annuo artigiani/commercianti
 
-type InpsType = 'separata' | 'artigiani' | 'commercianti';
+type InpsType = 'professionisti' | 'artigiani' | 'costruzioni' | 'intermediari' | 'commercianti' | 'ristorazione';
 
 function getInpsType(country: string, coeff: number | undefined): InpsType {
-  if (country !== 'Italy') return 'separata';
-  if (coeff === 86) return 'artigiani';
+  if (country !== 'Italy') return 'professionisti';
+  if (coeff === 78) return 'professionisti';
   if (coeff === 67) return 'artigiani';
+  if (coeff === 86) return 'costruzioni';
+  if (coeff === 62) return 'intermediari';
   if (coeff === 40) return 'commercianti';
-  return 'separata';
+  return 'professionisti';
 }
 
 const SOGLIA_FORFETTARIO = 85000;

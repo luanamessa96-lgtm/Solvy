@@ -24,11 +24,21 @@ const FISCAL_ESTIMATE_TITLES = new Set([
   '2° rata INPS artigiani',
   '3° rata INPS artigiani',
   'Saldo INPS artigiani',
+  // costruzioni — 4 rate trimestrali
+  '1° rata INPS costruzioni',
+  '2° rata INPS costruzioni',
+  '3° rata INPS costruzioni',
+  'Saldo INPS costruzioni',
   // commercianti — 4 rate trimestrali
   '1° rata INPS commercianti',
   '2° rata INPS commercianti',
   '3° rata INPS commercianti',
   'Saldo INPS commercianti',
+  // ristorazione — 4 rate trimestrali
+  '1° rata INPS ristorazione',
+  '2° rata INPS ristorazione',
+  '3° rata INPS ristorazione',
+  'Saldo INPS ristorazione',
 ]);
 
 const INPS_ARTIGIANI_MINIMALE = 4000;
@@ -36,19 +46,22 @@ const INPS_ARTIGIANI_RATE = 0.24;
 const INPS_COMMERCIANTI_RATE = 0.2448;
 const INPS_GESTIONE_SEPARATA_RATE = 0.2607;
 
-function getCalendarInpsType(country: string | undefined, coeff: number | undefined): 'separata' | 'artigiani' | 'commercianti' {
-  if (country !== 'Italy') return 'separata';
-  if (coeff === 86) return 'artigiani';
+type CalendarInpsType = 'professionisti' | 'artigiani' | 'costruzioni' | 'intermediari' | 'commercianti' | 'ristorazione';
+
+function getCalendarInpsType(country: string | undefined, coeff: number | undefined): CalendarInpsType {
+  if (country !== 'Italy') return 'professionisti';
+  if (coeff === 78) return 'professionisti';
   if (coeff === 67) return 'artigiani';
+  if (coeff === 86) return 'costruzioni';
+  if (coeff === 62) return 'intermediari';
   if (coeff === 40) return 'commercianti';
-  return 'separata';
+  return 'professionisti';
 }
 
 // Restituisce la label di display corretta per i titoli INPS nel calendario
-function localizeInpsTitle(title: string, inpsType: 'separata' | 'artigiani' | 'commercianti'): string {
-  if (inpsType === 'separata') return title;
-  const replacement = inpsType === 'artigiani' ? 'INPS artigiani' : 'INPS commercianti';
-  return title.replace('INPS gestione separata', replacement);
+function localizeInpsTitle(title: string, inpsType: CalendarInpsType): string {
+  if (inpsType === 'professionisti' || inpsType === 'intermediari') return title;
+  return title.replace('INPS gestione separata', `INPS ${inpsType}`);
 }
 
 function isFiscalEstimate(deadline: Deadline): boolean {
@@ -78,7 +91,7 @@ const DEADLINE_TOOLTIPS: Record<string, string> = {
   'Liquidazione IVA T4 (ott-dic)': 'Versamento IVA del 4° trimestre (ottobre-dicembre). Scade il 16 gennaio dell\'anno successivo.',
 };
 
-function getScadenzeFiscali(year: number, regime?: string, inpsType?: 'separata' | 'artigiani' | 'commercianti'): Omit<Deadline, 'id'>[] {
+function getScadenzeFiscali(year: number, regime?: string, inpsType?: CalendarInpsType): Omit<Deadline, 'id'>[] {
   const isOrdinario = regime === 'ordinario';
   const saldoTitle = isOrdinario ? 'Saldo IRPEF + 1° acconto' : 'Saldo imposta sostitutiva + 1° acconto';
   const accontoTitle = isOrdinario ? '2° acconto IRPEF' : '2° acconto imposta sostitutiva';
@@ -87,7 +100,8 @@ function getScadenzeFiscali(year: number, regime?: string, inpsType?: 'separata'
     { title: accontoTitle, date: `${year}-11-30`, type: 'tax' },
     { title: 'Dichiarazione dei redditi (Modello Redditi)', date: `${year}-10-31`, type: 'tax' },
   ];
-  if (inpsType === 'artigiani' || inpsType === 'commercianti') {
+  const isQuarterly = inpsType === 'artigiani' || inpsType === 'costruzioni' || inpsType === 'commercianti' || inpsType === 'ristorazione';
+  if (isQuarterly && inpsType) {
     // 4 rate trimestrali — date stimate, verifica con commercialista
     base.push(
       { title: `1° rata INPS ${inpsType}`, date: `${year}-05-16`, type: 'tax' },
@@ -96,6 +110,7 @@ function getScadenzeFiscali(year: number, regime?: string, inpsType?: 'separata'
       { title: `Saldo INPS ${inpsType}`, date: `${year + 1}-02-16`, type: 'tax' },
     );
   } else {
+    // gestione separata: professionisti e intermediari — 2 rate (giu + nov)
     base.push(
       { title: '1° acconto INPS gestione separata', date: `${year}-06-16`, type: 'tax' },
       { title: '2° acconto INPS gestione separata', date: `${year}-11-16`, type: 'tax' },
@@ -269,7 +284,9 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     '1° acconto INPS gestione separata',
     '2° acconto INPS gestione separata',
     '1° rata INPS artigiani', '2° rata INPS artigiani', '3° rata INPS artigiani', 'Saldo INPS artigiani',
+    '1° rata INPS costruzioni', '2° rata INPS costruzioni', '3° rata INPS costruzioni', 'Saldo INPS costruzioni',
     '1° rata INPS commercianti', '2° rata INPS commercianti', '3° rata INPS commercianti', 'Saldo INPS commercianti',
+    '1° rata INPS ristorazione', '2° rata INPS ristorazione', '3° rata INPS ristorazione', 'Saldo INPS ristorazione',
   ]);
 
   const yearDeadlines = useMemo(() => {
