@@ -108,13 +108,8 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, onUpdate, editDoc, darkMo
   const categoriesForfettario = [
     { value: 'abbonamento', label: 'Abbonamento', emoji: '📦' },
     { value: 'software', label: 'Software', emoji: '💻' },
-    { value: 'materiale', label: 'Materiale', emoji: '🛠️' },
     { value: 'formazione', label: 'Formazione', emoji: '📚' },
     { value: 'telefono', label: 'Telefono', emoji: '📱' },
-    { value: 'auto_moto', label: 'Auto/Moto', emoji: '🚗' },
-    { value: 'casa_ufficio', label: 'Casa/Ufficio', emoji: '🏠' },
-    { value: 'pasti', label: 'Pasti/Rapp.', emoji: '🍽️' },
-    { value: 'altro', label: 'Altro', emoji: '📎' },
   ];
 
   const categoriesSpain = [
