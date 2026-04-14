@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Download, Lock, Check, Mail, Share2 } from 'lucide-react';
+import { X, Download, Lock, Check, Mail, Share2, Eye } from 'lucide-react';
 import { Document, Profile, Accountant } from '../../types';
 import {
   calcularTrimestre,
@@ -48,8 +48,9 @@ export default function ResumenTrimestralModal({
   const [includeGastos, setIncludeGastos] = useState(false);
   const [includeResumenAnual, setIncludeResumenAnual] = useState(false);
   const [includeResumenAnualIVA, setIncludeResumenAnualIVA] = useState(false);
+  const [readyBlob, setReadyBlob] = useState<{ blob: Blob; fileName: string } | null>(null);
 
-  // Reset toggles every time the modal closes so stale selections don't bleed into the next session
+  // Reset toggles and readyBlob every time the modal closes
   useEffect(() => {
     if (!isOpen) {
       setIncludeLibroEmitidas(false);
@@ -58,8 +59,14 @@ export default function ResumenTrimestralModal({
       setIncludeGastos(false);
       setIncludeResumenAnual(false);
       setIncludeResumenAnualIVA(false);
+      setReadyBlob(null);
     }
   }, [isOpen]);
+
+  // Reset readyBlob whenever the user changes quarter, year or document selection
+  useEffect(() => {
+    setReadyBlob(null);
+  }, [quarter, year, includeLibroEmitidas, includeLibroRecibidas, includeFacturas, includeGastos, includeResumenAnual, includeResumenAnualIVA]);
 
   const availableYears = useMemo(() => {
     const years = new Set(documents.map(d => getLocalYear(d.date)));
@@ -153,22 +160,17 @@ export default function ResumenTrimestralModal({
     try {
       const { resumenResult, libroE, libroR, facturasResult, gastosResult, anualResult, anualIVAResult } = await generateAll();
 
-      const extras = [libroE, libroR, facturasResult, gastosResult, anualResult, anualIVAResult].filter(Boolean);
-      if (extras.length === 1) {
-        downloadBlob(extras[0]!);
-      } else {
-        setPdfPreview(resumenResult);
-        if (libroE) downloadBlob(libroE);
-        if (libroR) downloadBlob(libroR);
-        if (facturasResult) downloadBlob(facturasResult);
-        if (gastosResult) {
-          downloadBlob(gastosResult);
-          const imgFiles = await buildImageFiles(resumen.expenses);
-          imgFiles.forEach(f => downloadBlob(f));
-        }
-        if (anualResult) downloadBlob(anualResult);
-        if (anualIVAResult) downloadBlob(anualIVAResult);
+      setReadyBlob(resumenResult);
+      if (libroE) downloadBlob(libroE);
+      if (libroR) downloadBlob(libroR);
+      if (facturasResult) downloadBlob(facturasResult);
+      if (gastosResult) {
+        downloadBlob(gastosResult);
+        const imgFiles = await buildImageFiles(resumen.expenses);
+        imgFiles.forEach(f => downloadBlob(f));
       }
+      if (anualResult) downloadBlob(anualResult);
+      if (anualIVAResult) downloadBlob(anualIVAResult);
     } catch {
       showToast('Error al generar el PDF', 'error');
     } finally {
@@ -491,17 +493,64 @@ export default function ResumenTrimestralModal({
                 </div>
               )}
 
-              {/* Download button */}
+              {/* Download / ready card */}
               {isPro ? (
                 <div className="space-y-3">
-                  <button
-                    onClick={handleDownload}
-                    disabled={isWorking}
-                    className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-white bg-primary shadow-lg shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-60"
-                  >
-                    <Download size={18} />
-                    {isGenerating ? 'Generando…' : 'Descargar PDF'}
-                  </button>
+                  {readyBlob ? (
+                    <>
+                      <button
+                        onClick={() => setPdfPreview(readyBlob)}
+                        className={`w-full rounded-2xl p-4 flex items-center gap-3 transition-all active:scale-[0.98] ${dm ? 'bg-slate-800' : 'bg-slate-50 hover:bg-slate-100'}`}
+                      >
+                        <div className="min-w-0 flex-1 text-left space-y-1.5">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Listo para enviar</p>
+                          <div className="flex items-center gap-1.5">
+                            <Check size={13} className="text-emerald-500 shrink-0" />
+                            <p className="text-xs text-slate-500 truncate">{readyBlob.fileName}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-primary shrink-0">
+                          <Eye size={16} />
+                          <span className="text-xs font-bold">Vista previa</span>
+                        </div>
+                      </button>
+                      <button
+                        onClick={async () => {
+                          const file = new File([readyBlob.blob], readyBlob.fileName, { type: 'application/pdf' });
+                          if (navigator.share && navigator.canShare?.({ files: [file] })) {
+                            await navigator.share({ files: [file], title: readyBlob.fileName });
+                          } else {
+                            downloadBlob(readyBlob);
+                          }
+                        }}
+                        className="w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                      >
+                        <Share2 size={18} />
+                        Compartir / Adjuntar
+                      </button>
+                      {accountant && (
+                        <button
+                          onClick={() => {
+                            const subject = encodeURIComponent(`Documentos T${quarter} ${year} — Solvy`);
+                            window.open(`mailto:${accountant.email}?subject=${subject}`, '_blank');
+                          }}
+                          className={`w-full py-3 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-all ${dm ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-900'}`}
+                        >
+                          <Mail size={16} />
+                          Enviar correo · {accountant.email}
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleDownload}
+                      disabled={isWorking}
+                      className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-white bg-primary shadow-lg shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-60"
+                    >
+                      <Download size={18} />
+                      {isGenerating ? 'Generando…' : 'Descargar PDF'}
+                    </button>
+                  )}
 
                   {justificanteCount > 0 && (
                     <button
