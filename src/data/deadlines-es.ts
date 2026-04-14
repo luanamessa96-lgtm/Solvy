@@ -10,6 +10,7 @@ export interface SpanishDeadlinesOptions {
   redditoN1?: number | null;
   annoInizioAttivita?: number | null;
   currentIncome?: number | null;
+  savedRetaMensile?: number | null;
 }
 
 /** Last day of month (month: 0-based). */
@@ -20,20 +21,24 @@ function lastDayOfMonth(year: number, month: number): string {
 
 /** Returns the next monthly RETA deadline (last day of current or next month) with computed amount. */
 export function getNextRetaDeadline(options?: SpanishDeadlinesOptions): { date: string; amount: number } {
-  const annoInicio = options?.annoInizioAttivita;
   const redditoN1 = options?.redditoN1;
   const currentIncome = options?.currentIncome;
-  const currentYear = new Date().getFullYear();
+  const savedRetaMensile = options?.savedRetaMensile;
 
-  // Priorità: redditoN1 (anno precedente dichiarato) → currentIncome (anno corrente, con gastosDificil) → minimo
-  let monthlyNet = 0;
-  if (redditoN1 != null && redditoN1 > 0) {
-    monthlyNet = redditoN1 / 12;
-  } else if (currentIncome != null && currentIncome > 0) {
-    const rendimientoNeto = currentIncome - calculateGastosDificilJustificacion(currentIncome);
-    monthlyNet = rendimientoNeto / 12;
+  // Priorità: savedRetaMensile (valore salvato dall'utente) → redditoN1 → currentIncome → minimo
+  let amount: number;
+  if (savedRetaMensile != null && savedRetaMensile > 0) {
+    amount = savedRetaMensile;
+  } else {
+    let monthlyNet = 0;
+    if (redditoN1 != null && redditoN1 > 0) {
+      monthlyNet = redditoN1 / 12;
+    } else if (currentIncome != null && currentIncome > 0) {
+      const rendimientoNeto = currentIncome - calculateGastosDificilJustificacion(currentIncome);
+      monthlyNet = rendimientoNeto / 12;
+    }
+    amount = calculateRETA(monthlyNet);
   }
-  let amount = calculateRETA(monthlyNet);
 
   const today = new Date();
   const year = today.getFullYear();
@@ -49,19 +54,24 @@ export function getNextRetaDeadline(options?: SpanishDeadlinesOptions): { date: 
 
 /** Returns 12 virtual RETA deadlines (last day of each month) for display only — never saved to DB. */
 export function getAllRetaDeadlines(year: number, options?: SpanishDeadlinesOptions): Array<{ id: string; title: string; date: string; amount: number; type: 'tax' }> {
-  const annoInicio = options?.annoInizioAttivita;
   const redditoN1 = options?.redditoN1;
   const currentIncome = options?.currentIncome;
-  const currentYear = new Date().getFullYear();
-  // Priorità: redditoN1 (anno precedente dichiarato) → currentIncome (anno corrente, con gastosDificil) → minimo
-  let monthlyNet = 0;
-  if (redditoN1 != null && redditoN1 > 0) {
-    monthlyNet = redditoN1 / 12;
-  } else if (currentIncome != null && currentIncome > 0) {
-    const rendimientoNeto = currentIncome - calculateGastosDificilJustificacion(currentIncome);
-    monthlyNet = rendimientoNeto / 12;
+  const savedRetaMensile = options?.savedRetaMensile;
+
+  // Priorità: savedRetaMensile (valore salvato dall'utente) → redditoN1 → currentIncome → minimo
+  let amount: number;
+  if (savedRetaMensile != null && savedRetaMensile > 0) {
+    amount = savedRetaMensile;
+  } else {
+    let monthlyNet = 0;
+    if (redditoN1 != null && redditoN1 > 0) {
+      monthlyNet = redditoN1 / 12;
+    } else if (currentIncome != null && currentIncome > 0) {
+      const rendimientoNeto = currentIncome - calculateGastosDificilJustificacion(currentIncome);
+      monthlyNet = rendimientoNeto / 12;
+    }
+    amount = calculateRETA(monthlyNet);
   }
-  const amount = calculateRETA(monthlyNet);
   return Array.from({ length: 12 }, (_, i) => ({
     id: `reta-virtual-${year}-${i}`,
     title: 'Cuota RETA \u2014 Seguridad Social',

@@ -6,6 +6,7 @@ import { calcularTrimestre, ResumenTrimestral } from '../services/modelosES';
 import { getSpanishDeadlines, getAllRetaDeadlines, getNextRetaDeadline } from '../data/deadlines-es';
 import { parseLocalDate, getLocalYear, getLocalMonth, todayLocalISO } from '../utils/date';
 import { getAddizionaliRate } from '../lib/it/addizionali';
+import { profileStorage } from '../lib/supabase';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
 import { useTranslation } from 'react-i18next';
@@ -135,6 +136,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   // ORDINE DICHIARAZIONI: redditoN1 deve stare prima di isPrimoAnnoIT (evita TDZ crash)
   const annoInizio = profile?.annoInizioAttivita != null ? Number(profile.annoInizioAttivita) : null;
   const redditoN1 = profile?.redditoN1;
+  const savedRetaMensile = isSpain && profile?.id ? (() => { const v = profileStorage.get(`reta_${profile.id}`); return v ? parseFloat(v) : null; })() : null;
   const isPrimoAnnoIT = !isSpain && annoInizio != null && annoInizio === selectedYear && !(redditoN1 != null && redditoN1 > 0);
 
   // IT-21 + IT-22: importi stimati per scadenze fiscali IT
@@ -252,7 +254,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     // In month view, inject virtual RETA (ES) or virtual IT fiscal deadlines not yet saved in DB
     if (selectedMonth !== null) {
       if (isSpain) {
-        const retaForMonth = getAllRetaDeadlines(selectedYear, { redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined, currentIncome: income ?? undefined })
+        const retaForMonth = getAllRetaDeadlines(selectedYear, { redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined, currentIncome: income ?? undefined, savedRetaMensile: savedRetaMensile ?? undefined })
           .filter(d => getLocalMonth(d.date) === selectedMonth);
         base = [...base, ...retaForMonth as typeof base].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       } else {
@@ -270,7 +272,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   }, [selectedMonth, yearDeadlines, searchQuery, isSpain, selectedYear, redditoN1, annoInizio, scadenzeFiscaliRaw, fiscalAmounts]);
 
   const nextReta = isSpain
-    ? getNextRetaDeadline({ redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined, currentIncome: income ?? undefined })
+    ? getNextRetaDeadline({ redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined, currentIncome: income ?? undefined, savedRetaMensile: savedRetaMensile ?? undefined })
     : null;
 
   const nextDeadline = useMemo(() => {
