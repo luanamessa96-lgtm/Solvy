@@ -4,7 +4,9 @@
  */
 
 import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
-import { AnimatePresence } from 'motion/react';
+const AnimatePresence = lazy(() =>
+  import('motion/react').then(m => ({ default: m.AnimatePresence }))
+);
 import { MOCK_PROFILES, MOCK_ACCOUNTANT } from './constants';
 import { getDocuments, addDocument, updateDocument, deleteDocument, getDeadlines, addDeadline, updateDeadline, deleteDeadline, getProfiles, createProfile, updateProfile, getAccountant, updateAccountant, uploadFile } from './lib/db';
 import { supabaseReady, getClient } from './lib/supabase';
@@ -15,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { parseLocalDate, getLocalYear } from './utils/date';
 import { getItDeductibilityRate } from './lib/it/deductibility';
 import { getEsDeductibilityRate } from './lib/es/deductibility';
-import AuthView from './views/AuthView';
+const AuthView = lazy(() => import('./views/AuthView'));
 
 import { ToastProvider, useToast } from './components/ui/Toast';
 import DashboardSkeleton from './components/DashboardSkeleton';
@@ -751,12 +753,12 @@ function AppInner() {
 
   // Non autenticato → schermata login (sempre pro-light, gestito dall'useEffect tema)
   if (!isAuthenticated) {
-    return <AuthView darkMode={darkMode} />;
+    return <Suspense fallback={null}><AuthView darkMode={darkMode} /></Suspense>;
   }
 
   // Recupero password → schermata nuova password (sempre pro-light, gestito dall'useEffect tema)
   if (isPasswordRecovery) {
-    return <AuthView darkMode={darkMode} initialScreen="reset" onResetPassword={() => setIsPasswordRecovery(false)} />;
+    return <Suspense fallback={null}><AuthView darkMode={darkMode} initialScreen="reset" onResetPassword={() => setIsPasswordRecovery(false)} /></Suspense>;
   }
 
   const proGradient = theme === 'pro-light'
@@ -891,22 +893,24 @@ function AppInner() {
 
     </div>
     <BottomNav activeTab={(isProfilePage || isSettingsPage || isSubscriptionPage || isAccountantPage || isFiscalPage || isGuidaFiscalePage || isGuiaFiscalESPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} theme={theme} onPlusPress={handlePlusPress} isNavHidden={isNavHidden} />
-    <AnimatePresence>
-      {swRegistration && (
-        <UpdateBanner
-          key="update-banner"
-          darkMode={darkMode}
-          onUpdate={() => {
-            swRegistration.waiting?.postMessage({ type: 'SKIP_WAITING' });
-            window.location.reload();
-          }}
-          onDismiss={() => {
-            dismissedWaiting.current = swRegistration?.waiting ?? null;
-            setSwRegistration(null);
-          }}
-        />
-      )}
-    </AnimatePresence>
+    <Suspense fallback={null}>
+      <AnimatePresence>
+        {swRegistration && (
+          <UpdateBanner
+            key="update-banner"
+            darkMode={darkMode}
+            onUpdate={() => {
+              swRegistration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+              window.location.reload();
+            }}
+            onDismiss={() => {
+              dismissedWaiting.current = swRegistration?.waiting ?? null;
+              setSwRegistration(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
+    </Suspense>
     {import.meta.env.DEV && (
       <button
         onClick={() => window.dispatchEvent(new CustomEvent('swUpdateReady', { detail: { registration: { waiting: { postMessage: () => {} } } } }))}
