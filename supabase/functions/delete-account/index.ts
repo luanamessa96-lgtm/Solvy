@@ -67,12 +67,17 @@ Deno.serve(async (req) => {
       }
 
       // Cancella solo i dati di questo profilo (non tocca auth user né altri profili)
-      await Promise.all([
+      const [docsRes, deadlinesRes, accountantRes] = await Promise.all([
         supabaseAdmin.from('documents').delete().eq('profile_id', profileIdOnly),
         supabaseAdmin.from('deadlines').delete().eq('profile_id', profileIdOnly),
         supabaseAdmin.from('accountant').delete().eq('profile_id', profileIdOnly),
       ]);
-      await supabaseAdmin.from('profiles').delete().eq('id', profileIdOnly).eq('user_id', userId);
+      if (docsRes.error) throw new Error(`Errore eliminazione documenti: ${docsRes.error.message}`);
+      if (deadlinesRes.error) throw new Error(`Errore eliminazione scadenze: ${deadlinesRes.error.message}`);
+      if (accountantRes.error) throw new Error(`Errore eliminazione dati commercialista: ${accountantRes.error.message}`);
+
+      const profileRes = await supabaseAdmin.from('profiles').delete().eq('id', profileIdOnly).eq('user_id', userId);
+      if (profileRes.error) throw new Error(`Errore eliminazione profilo: ${profileRes.error.message}`);
 
       console.log(`Profile deleted: profile_id=${profileIdOnly} user_id=${userId}`);
       return new Response(JSON.stringify({ success: true }), {
@@ -124,14 +129,14 @@ Deno.serve(async (req) => {
         supabaseAdmin.from('deadlines').delete().in('profile_id', profileIds),
         supabaseAdmin.from('accountant').delete().in('profile_id', profileIds),
       ]);
-      if (docsRes.error) console.error('Error deleting documents:', docsRes.error);
-      if (deadlinesRes.error) console.error('Error deleting deadlines:', deadlinesRes.error);
-      if (accountantRes.error) console.error('Error deleting accountant:', accountantRes.error);
+      if (docsRes.error) throw new Error(`Errore eliminazione documenti: ${docsRes.error.message}`);
+      if (deadlinesRes.error) throw new Error(`Errore eliminazione scadenze: ${deadlinesRes.error.message}`);
+      if (accountantRes.error) throw new Error(`Errore eliminazione dati commercialista: ${accountantRes.error.message}`);
     }
 
     // 4. Cancella profili
     const profilesRes = await supabaseAdmin.from('profiles').delete().eq('user_id', userId);
-    if (profilesRes.error) console.error('Error deleting profiles:', profilesRes.error);
+    if (profilesRes.error) throw new Error(`Errore eliminazione profili: ${profilesRes.error.message}`);
 
     // 5. Cancella utente da Supabase Auth (deve essere l'ultima operazione)
     const { error: deleteUserError } = await supabaseAdmin.auth.admin.deleteUser(userId);
