@@ -487,18 +487,6 @@ export default function ResumenTrimestralModal({
                         <Share2 size={18} />
                         Compartir / Adjuntar
                       </button>
-                      {accountant && (
-                        <button
-                          onClick={() => {
-                            const subject = encodeURIComponent(`Documentos T${quarter} ${year} — Solvy`);
-                            window.open(`mailto:${accountant.email}?subject=${subject}`, '_blank');
-                          }}
-                          className={`w-full py-3 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-all ${dm ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-900'}`}
-                        >
-                          <Mail size={16} />
-                          Enviar correo · {accountant.email}
-                        </button>
-                      )}
                     </>
                   ) : (
                     <button
