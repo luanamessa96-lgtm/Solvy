@@ -504,8 +504,12 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       pdf.text(`N° ${inv.invoiceNumber || '—'}`, R, 14, { align: 'right' });
       pdf.setFontSize(9);
       pdf.text(new Date(inv.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' }), R, 20, { align: 'right' });
-      pdf.setFontSize(8);
-      pdf.text((profile.regime === 'ordinario' ? 'Regime Ordinario' : 'Regime Forfettario').toUpperCase(), M, 24);
+      if (!isCreditNote || !inv.category) {
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(8);
+        pdf.setTextColor(...grey);
+        pdf.text((profile.regime === 'ordinario' ? 'Regime Ordinario' : 'Regime Forfettario').toUpperCase(), M, 24);
+      }
 
       // Divider
       pdf.setDrawColor(...lightGrey);
