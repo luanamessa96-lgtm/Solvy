@@ -195,18 +195,12 @@ export function calcularTrimestre(
 
 // ─── PDF Generation ───────────────────────────────────────────────────────────
 
-export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Profile, existingPdf?: import('jspdf').jsPDF, addNewPage = true): Promise<import('jspdf').jsPDF> {
+export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Profile): Promise<import('jspdf').jsPDF> {
   const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
     import('jspdf'),
     import('jspdf-autotable'),
   ]);
-  let pdf: jsPDFWithAutoTable;
-  if (existingPdf) {
-    if (addNewPage) existingPdf.addPage();
-    pdf = existingPdf as jsPDFWithAutoTable;
-  } else {
-    pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
-  }
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as jsPDFWithAutoTable;
 
   const W = 210, M = 16, R = W - M;
   const black:     [number, number, number] = [15, 23, 42];

@@ -48,6 +48,9 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const [readyBlob, setReadyBlob] = useState<{
     blob: Blob; fileName: string;
     xmlFiles?: { blob: Blob; fileName: string }[];
+    resumenFile?: { blob: Blob; fileName: string };
+    registroFile?: { blob: Blob; fileName: string };
+    riepilogoFile?: { blob: Blob; fileName: string };
   } | null>(null);
   const [year, setYear] = useState(selectedYear);
 
@@ -183,8 +186,17 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
     const primaryFile = new File([blob], fileName, { type: 'application/pdf' });
     const xmlFileObjs = (xmlFiles || []).map(f => new File([f.blob], f.fileName, { type: 'application/xml' }));
+    const resumenFileObj = readyBlob.resumenFile
+      ? new File([readyBlob.resumenFile.blob], readyBlob.resumenFile.fileName, { type: 'application/pdf' })
+      : null;
+    const registroFileObj = readyBlob.registroFile
+      ? new File([readyBlob.registroFile.blob], readyBlob.registroFile.fileName, { type: 'application/pdf' })
+      : null;
+    const riepilogoFileObj = readyBlob.riepilogoFile
+      ? new File([readyBlob.riepilogoFile.blob], readyBlob.riepilogoFile.fileName, { type: 'application/pdf' })
+      : null;
 
-    const pdfFiles = [primaryFile];
+    const pdfFiles = [primaryFile, ...(resumenFileObj ? [resumenFileObj] : []), ...(registroFileObj ? [registroFileObj] : []), ...(riepilogoFileObj ? [riepilogoFileObj] : [])];
     const allFiles = [...pdfFiles, ...xmlFileObjs];
 
     const downloadFile = (f: { blob: Blob; fileName: string }) => {
@@ -206,6 +218,9 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
         // No share support — download everything
         downloadFile({ blob, fileName });
         for (const f of xmlFiles || []) downloadFile(f);
+        if (readyBlob.resumenFile) downloadFile(readyBlob.resumenFile);
+        if (readyBlob.registroFile) downloadFile(readyBlob.registroFile);
+        if (readyBlob.riepilogoFile) downloadFile(readyBlob.riepilogoFile);
       }
     } catch (err) {
       // AbortError = user dismissed the share sheet — don't close the modal
@@ -213,6 +228,9 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       // Any other error: fall back to download
       downloadFile({ blob, fileName });
       for (const f of xmlFiles || []) downloadFile(f);
+      if (readyBlob.resumenFile) downloadFile(readyBlob.resumenFile);
+      if (readyBlob.registroFile) downloadFile(readyBlob.registroFile);
+      if (readyBlob.riepilogoFile) downloadFile(readyBlob.riepilogoFile);
     }
     setReadyBlob(null);
     onClose();
@@ -838,13 +856,6 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       }
     }
 
-    // ── SEZIONE INLINE: Resumen Trimestral (solo ES Pro) ─────────────────────
-    if (includeResumen && isSpain && isPro && hasTaxIdSpain) {
-      const resumenData = calcularTrimestre(documents, resumenQuarter, resumenYear, esRetencionRateExport, profile.annoInizioAttivita);
-      await generateResumenPDF(resumenData, profile, pdf, pdfSections > 0);
-      pdfSections++;
-    }
-
     const blob = pdf.output('blob');
     const fileName = `documenti_${year}_${Date.now()}.pdf`;
     await shareOrDownload(blob, fileName, 'application/pdf');
@@ -942,9 +953,20 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
           });
         }
       }
-      // Resumen Trimestral è già inline nel PDF principale (ES)
-      // Registro e Riepilogo sono già inline nel PDF principale (IT)
-      setReadyBlob({ blob, fileName, xmlFiles });
+      // Generate Resumen Trimestral PDF if toggle is on (Spain)
+      let resumenFile: { blob: Blob; fileName: string } | undefined;
+      if (includeResumen && isSpain && isPro && hasTaxIdSpain) {
+        const resumen = calcularTrimestre(documents, resumenQuarter, resumenYear, esRetencionRateExport, profile.annoInizioAttivita);
+        const resumenPdf = await generateResumenPDF(resumen, profile);
+        const nif = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
+        const resumenFileName = `ES_${nif}_resumen_T${resumenQuarter}_${resumenYear}.pdf`;
+        resumenFile = { blob: resumenPdf.output('blob'), fileName: resumenFileName };
+      }
+
+      // Registro e Riepilogo sono già inline nel PDF principale
+      const registroFile: { blob: Blob; fileName: string } | undefined = undefined;
+      const riepilogoFile: { blob: Blob; fileName: string } | undefined = undefined;
+      setReadyBlob({ blob, fileName, xmlFiles, resumenFile, registroFile, riepilogoFile });
       return;
     }
     const file = new File([blob], fileName, { type: mimeType });
