@@ -206,14 +206,15 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       URL.revokeObjectURL(u);
     };
 
+    const shareTitle = `Documenti ${periodLabel} — Solvy`;
     try {
       if (navigator.share && navigator.canShare?.({ files: allFiles })) {
         // All files (PDF + XML) shareable together
-        await navigator.share({ files: allFiles, title: fileName });
+        await navigator.share({ files: allFiles, title: shareTitle, text: '' });
       } else if (navigator.share && navigator.canShare?.({ files: pdfFiles })) {
         // XML not shareable on this device — download XMLs, share PDFs via share sheet
         for (const f of xmlFiles || []) downloadFile(f);
-        await navigator.share({ files: pdfFiles, title: fileName });
+        await navigator.share({ files: pdfFiles, title: shareTitle, text: '' });
       } else {
         // No share support — download everything
         downloadFile({ blob, fileName });
@@ -971,7 +972,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     }
     const file = new File([blob], fileName, { type: mimeType });
     if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: fileName });
+      await navigator.share({ files: [file], title: `Documenti ${periodLabel} — Solvy`, text: '' });
     } else {
       const url = URL.createObjectURL(blob);
       const a = window.document.createElement('a');
