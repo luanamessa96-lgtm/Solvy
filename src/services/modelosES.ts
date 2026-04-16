@@ -524,7 +524,7 @@ export async function downloadResumenTrimestral(
   const nif = (profile.nie || profile.piva || 'SINIF').replace(/\s/g, '');
   const filename = `ES_${nif}_resumen_T${quarter}_${year}.pdf`;
   const blob = pdf.output('blob');
-  const file = new File([blob], filename, { type: 'application/pdf' });
+  const file = new File([blob], filename, { type: 'application/octet-stream' });
   if (navigator.share && navigator.canShare?.({ files: [file] })) {
     await navigator.share({ files: [file], title: filename });
   } else {

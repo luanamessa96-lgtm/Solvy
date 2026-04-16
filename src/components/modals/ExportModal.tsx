@@ -184,16 +184,16 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     if (!readyBlob) return;
     const { blob, fileName, xmlFiles } = readyBlob;
 
-    const primaryFile = new File([blob], fileName, { type: 'application/pdf' });
+    const primaryFile = new File([blob], fileName, { type: 'application/octet-stream' });
     const xmlFileObjs = (xmlFiles || []).map(f => new File([f.blob], f.fileName, { type: 'application/xml' }));
     const resumenFileObj = readyBlob.resumenFile
-      ? new File([readyBlob.resumenFile.blob], readyBlob.resumenFile.fileName, { type: 'application/pdf' })
+      ? new File([readyBlob.resumenFile.blob], readyBlob.resumenFile.fileName, { type: 'application/octet-stream' })
       : null;
     const registroFileObj = readyBlob.registroFile
-      ? new File([readyBlob.registroFile.blob], readyBlob.registroFile.fileName, { type: 'application/pdf' })
+      ? new File([readyBlob.registroFile.blob], readyBlob.registroFile.fileName, { type: 'application/octet-stream' })
       : null;
     const riepilogoFileObj = readyBlob.riepilogoFile
-      ? new File([readyBlob.riepilogoFile.blob], readyBlob.riepilogoFile.fileName, { type: 'application/pdf' })
+      ? new File([readyBlob.riepilogoFile.blob], readyBlob.riepilogoFile.fileName, { type: 'application/octet-stream' })
       : null;
 
     const pdfFiles = [primaryFile, ...(resumenFileObj ? [resumenFileObj] : []), ...(registroFileObj ? [registroFileObj] : []), ...(riepilogoFileObj ? [riepilogoFileObj] : [])];
@@ -969,7 +969,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       setReadyBlob({ blob, fileName, xmlFiles, resumenFile, registroFile, riepilogoFile });
       return;
     }
-    const file = new File([blob], fileName, { type: mimeType });
+    const file = new File([blob], fileName, { type: 'application/octet-stream' });
     if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare?.({ files: [file] })) {
       await navigator.share({ files: [file], title: fileName });
     } else {

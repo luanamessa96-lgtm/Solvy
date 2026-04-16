@@ -377,7 +377,7 @@ export async function generateInvoicePDF(doc: Document, profile: Profile): Promi
     ? `factura_${doc.invoiceNumber?.replace('/', '-') || doc.id}_${profile.name.replace(/\s+/g, '_')}.pdf`
     : `fattura_${doc.invoiceNumber?.replace('/', '-') || doc.id}_${profile.name.replace(/\s+/g, '_')}.pdf`;
   const blob = pdf.output('blob');
-  const file = new File([blob], fileName, { type: 'application/pdf' });
+  const file = new File([blob], fileName, { type: 'application/octet-stream' });
 
   if (navigator.share && navigator.canShare?.({ files: [file] })) {
     await navigator.share({ files: [file], title: fileName });

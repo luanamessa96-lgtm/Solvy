@@ -499,7 +499,7 @@ export default function ResumenTrimestralModal({
                           const mergedBlob = new Blob([mergedBytes], { type: 'application/pdf' });
                           const nif = (profile.nie || profile.piva || 'ES').replace(/\s/g, '');
                           const mergedFileName = `ES_${nif}_T${quarter}_${year}.pdf`;
-                          const mergedFile = new File([mergedBlob], mergedFileName, { type: 'application/pdf' });
+                          const mergedFile = new File([mergedBlob], mergedFileName, { type: 'application/octet-stream' });
                           const downloadAll = () => {
                             downloadBlob({ blob: mergedBlob, fileName: mergedFileName });
                             imgFiles.forEach(f => downloadBlob(f));

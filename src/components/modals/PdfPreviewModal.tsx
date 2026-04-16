@@ -38,7 +38,7 @@ export default function PdfPreviewModal({ isOpen, onClose, blob, fileName, darkM
   if (!isOpen || !blocked) return null;
 
   const handleShare = async () => {
-    const file = new File([blob], fileName, { type: 'application/pdf' });
+    const file = new File([blob], fileName, { type: 'application/octet-stream' });
     if (navigator.share && navigator.canShare?.({ files: [file] })) {
       await navigator.share({ files: [file], title: fileName });
     } else {
