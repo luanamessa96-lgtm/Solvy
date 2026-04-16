@@ -185,7 +185,6 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     const { blob, fileName, xmlFiles } = readyBlob;
 
     const primaryFile = new File([blob], fileName, { type: 'application/pdf' });
-    const xmlFileObjs = (xmlFiles || []).map(f => new File([f.blob], f.fileName, { type: 'application/xml' }));
     const resumenFileObj = readyBlob.resumenFile
       ? new File([readyBlob.resumenFile.blob], readyBlob.resumenFile.fileName, { type: 'application/pdf' })
       : null;
@@ -196,8 +195,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       ? new File([readyBlob.riepilogoFile.blob], readyBlob.riepilogoFile.fileName, { type: 'application/pdf' })
       : null;
 
+    // XMLs always downloaded separately — never included in share sheet
     const pdfFiles = [primaryFile, ...(resumenFileObj ? [resumenFileObj] : []), ...(registroFileObj ? [registroFileObj] : []), ...(riepilogoFileObj ? [riepilogoFileObj] : [])];
-    const allFiles = [...pdfFiles, ...xmlFileObjs];
 
     const downloadFile = (f: { blob: Blob; fileName: string }) => {
       const u = URL.createObjectURL(f.blob);
@@ -206,19 +205,16 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       URL.revokeObjectURL(u);
     };
 
+    // Download XMLs to device before sharing PDFs
+    for (const f of xmlFiles || []) downloadFile(f);
+
     const shareTitle = `Documenti ${periodLabel} — Solvy`;
     try {
-      if (navigator.share && navigator.canShare?.({ files: allFiles })) {
-        // All files (PDF + XML) shareable together
-        await navigator.share({ files: allFiles, title: shareTitle });
-      } else if (navigator.share && navigator.canShare?.({ files: pdfFiles })) {
-        // XML not shareable on this device — download XMLs, share PDFs via share sheet
-        for (const f of xmlFiles || []) downloadFile(f);
+      if (navigator.share && navigator.canShare?.({ files: pdfFiles })) {
         await navigator.share({ files: pdfFiles, title: shareTitle });
       } else {
-        // No share support — download everything
+        // No share support — download PDFs too
         downloadFile({ blob, fileName });
-        for (const f of xmlFiles || []) downloadFile(f);
         if (readyBlob.resumenFile) downloadFile(readyBlob.resumenFile);
         if (readyBlob.registroFile) downloadFile(readyBlob.registroFile);
         if (readyBlob.riepilogoFile) downloadFile(readyBlob.riepilogoFile);
@@ -228,7 +224,6 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       if (err instanceof Error && err.name === 'AbortError') return;
       // Any other error: fall back to download
       downloadFile({ blob, fileName });
-      for (const f of xmlFiles || []) downloadFile(f);
       if (readyBlob.resumenFile) downloadFile(readyBlob.resumenFile);
       if (readyBlob.registroFile) downloadFile(readyBlob.registroFile);
       if (readyBlob.riepilogoFile) downloadFile(readyBlob.riepilogoFile);
