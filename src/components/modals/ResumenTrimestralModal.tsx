@@ -560,6 +560,17 @@ export default function ResumenTrimestralModal({
                     </button>
                   )}
 
+                  {accountant && (
+                    <button
+                      onClick={handleSendGestor}
+                      disabled={isWorking}
+                      className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold transition-all active:scale-[0.98] disabled:opacity-60 ${dm ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-900'}`}
+                    >
+                      <Mail size={18} />
+                      {isSending ? 'Preparando…' : `Enviar al gestor · ${accountant.email}`}
+                    </button>
+                  )}
+
                   {justificanteCount > 0 && (
                     <button
                       onClick={handleShareJustificantes}
