@@ -56,7 +56,7 @@ const ChangePasswordModal = ({ isOpen, onClose, darkMode }: ChangePasswordModalP
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -65,11 +65,11 @@ const ChangePasswordModal = ({ isOpen, onClose, darkMode }: ChangePasswordModalP
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
           />
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-            className="relative w-full rounded-t-[32px] p-8 shadow-2xl space-y-6 transition-colors"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className="relative w-full max-w-sm rounded-[32px] p-8 shadow-2xl space-y-6 transition-colors"
             style={{ backgroundColor: 'var(--color-card)' }}
           >
             {/* Header */}
