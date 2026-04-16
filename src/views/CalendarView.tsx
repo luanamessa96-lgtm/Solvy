@@ -568,10 +568,13 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                               );
                             }
                             if (daysToDeadline <= 30) {
+                              const isFiscal = fiscalTitleSet.has(deadline.title);
                               return (
                                 <>
                                   <div className={`w-1 h-1 rounded-full ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-red-500">{t('calendar.urgent')}</span>
+                                  <span className={`text-[10px] font-bold uppercase tracking-wider ${isFiscal ? 'text-red-500' : 'text-blue-500'}`}>
+                                    {isFiscal ? t('calendar.urgent') : t('calendar.expiring')}
+                                  </span>
                                 </>
                               );
                             }
