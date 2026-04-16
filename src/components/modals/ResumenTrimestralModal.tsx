@@ -469,12 +469,13 @@ export default function ResumenTrimestralModal({
                       >
                         <div className="min-w-0 flex-1 text-left space-y-1.5">
                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Listo para enviar</p>
-                          {readyBlob.files.map(f => (
-                            <div key={f.fileName} className="flex items-center gap-1.5">
-                              <Check size={13} className="text-emerald-500 shrink-0" />
-                              <p className="text-xs text-slate-500 truncate">{f.fileName}</p>
-                            </div>
-                          ))}
+                          {includeResumenPDF && <div className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /><p className="text-[11px] text-emerald-600 font-medium">Resumen Trimestral T{quarter} {year}</p></div>}
+                          {includeLibroEmitidas && <div className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /><p className="text-[11px] text-emerald-600 font-medium">+ Libro Facturas Emitidas {year}</p></div>}
+                          {includeLibroRecibidas && <div className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /><p className="text-[11px] text-emerald-600 font-medium">+ Libro Facturas Recibidas {year}</p></div>}
+                          {includeFacturas && <div className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /><p className="text-[11px] text-emerald-600 font-medium">+ Facturas T{quarter} {year}</p></div>}
+                          {includeGastos && <div className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /><p className="text-[11px] text-emerald-600 font-medium">+ Gastos T{quarter} {year}</p></div>}
+                          {includeResumenAnual && <div className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /><p className="text-[11px] text-emerald-600 font-medium">+ Resumen Anual {year}</p></div>}
+                          {includeResumenAnualIVA && <div className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /><p className="text-[11px] text-emerald-600 font-medium">+ Resumen Anual IVA {year}</p></div>}
                         </div>
                         <div className="flex items-center gap-1.5 text-primary shrink-0">
                           <Eye size={16} />
