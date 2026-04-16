@@ -494,7 +494,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
             <div className="space-y-3">
               {filteredDeadlines.length > 0 ? filteredDeadlines.map(deadline => (
                 <motion.button variants={item} key={deadline.id} onClick={() => { if (!deadline.id.startsWith('reta-virtual-') && !deadline.id.startsWith('fiscal-virtual-')) setSelectedDeadline(deadline); }} className={`w-full p-4 border rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] hover:shadow-xl text-left ${deadline.completed ? 'opacity-50' : ''} ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40 hover:shadow-primary/10' : 'bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5'}`}>
-                  <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center shrink-0 ${deadline.completed ? (darkMode ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400') : deadline.type === 'tax' ? (darkMode ? 'bg-red-500/10 text-red-500' : 'bg-red-50 text-red-600') : (darkMode ? 'bg-blue-500/10 text-blue-500' : 'bg-blue-50 text-blue-600')}`}>
+                  <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center shrink-0 ${deadline.completed ? (darkMode ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400') : Math.ceil((parseLocalDate(deadline.date).getTime() - new Date().getTime()) / 86400000) < 0 ? (darkMode ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400') : deadline.type === 'tax' ? (darkMode ? 'bg-red-500/10 text-red-500' : 'bg-red-50 text-red-600') : (darkMode ? 'bg-blue-500/10 text-blue-500' : 'bg-blue-50 text-blue-600')}`}>
                     <span className="text-[9px] font-bold uppercase tracking-tighter">{new Date(deadline.date).toLocaleDateString(isSpain ? 'es-ES' : 'it-IT', { month: 'short' })}</span>
                     <span className="text-lg font-black leading-none">{new Date(deadline.date).getDate()}</span>
                   </div>
@@ -553,12 +553,20 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                                 <>
                                   <div className={`w-1 h-1 rounded-full ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
                                   <span className={`text-[10px] font-bold uppercase tracking-wider ${daysLeft < 0 ? 'text-slate-400' : 'text-blue-500'}`}>
-                                    {daysLeft < 0 ? t('calendar.status_badge_overdue') : t('calendar.expiring')}
+                                    {daysLeft < 0 ? t('documents.status_badge_overdue') : t('calendar.expiring')}
                                   </span>
                                 </>
                               );
                             }
                             const daysToDeadline = Math.ceil((parseLocalDate(deadline.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                            if (daysToDeadline < 0) {
+                              return (
+                                <>
+                                  <div className={`w-1 h-1 rounded-full ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('documents.status_badge_overdue')}</span>
+                                </>
+                              );
+                            }
                             if (daysToDeadline <= 30) {
                               return (
                                 <>
