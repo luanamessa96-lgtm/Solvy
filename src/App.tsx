@@ -557,17 +557,42 @@ function AppInner() {
     return Math.round((yearDocs.filter(doc => doc.status === 'paid').length / yearDocs.length) * 100);
   }, [documents]);
 
+  // Filtra le scadenze INPS per mostrare solo la categoria corrente del profilo IT
+  // (rimuove scadenze stantie di categorie precedenti salvate nel DB)
+  const notifDeadlines = useMemo(() => {
+    if (activeProfile?.country !== 'Italy') return deadlines;
+    const coeff = activeProfile?.coefficiente;
+    const inpsType =
+      coeff === 67 ? 'artigiani' :
+      coeff === 86 ? 'costruzioni' :
+      coeff === 40 ? 'ristorazione' :
+      coeff === 62 ? 'intermediari' : 'professionisti';
+    const ALL_INPS_TITLES = new Set([
+      '1° acconto INPS gestione separata', '2° acconto INPS gestione separata',
+      '1° rata INPS artigiani', '2° rata INPS artigiani', '3° rata INPS artigiani', 'Saldo INPS artigiani',
+      '1° rata INPS costruzioni', '2° rata INPS costruzioni', '3° rata INPS costruzioni', 'Saldo INPS costruzioni',
+      '1° rata INPS commercianti', '2° rata INPS commercianti', '3° rata INPS commercianti', 'Saldo INPS commercianti',
+      '1° rata INPS ristorazione', '2° rata INPS ristorazione', '3° rata INPS ristorazione', 'Saldo INPS ristorazione',
+    ]);
+    const currentTitles = new Set(
+      inpsType === 'professionisti' || inpsType === 'intermediari'
+        ? ['1° acconto INPS gestione separata', '2° acconto INPS gestione separata']
+        : [`1° rata INPS ${inpsType}`, `2° rata INPS ${inpsType}`, `3° rata INPS ${inpsType}`, `Saldo INPS ${inpsType}`]
+    );
+    return deadlines.filter(d => !ALL_INPS_TITLES.has(d.title) || currentTitles.has(d.title));
+  }, [deadlines, activeProfile]);
+
   const notificationCount = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return deadlines.filter(d => {
+    return notifDeadlines.filter(d => {
       if (d.completed) return false;
       const date = parseLocalDate(d.date);
       date.setHours(0, 0, 0, 0);
       const diff = Math.ceil((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
       return diff >= 0 && diff <= 30;
     }).length;
-  }, [deadlines]);
+  }, [notifDeadlines]);
 
   const viewTitle = useMemo(() => {
     if (isProfilePage) return t('page_titles.profile');
@@ -847,7 +872,7 @@ function AppInner() {
       />
 
       <Suspense fallback={null}>
-        <NotificationsPanel isOpen={isNotificationsOpen} deadlines={deadlines} onClose={() => setIsNotificationsOpen(false)} onUpdateDeadline={handleUpdateDeadline} darkMode={darkMode} theme={theme} isPro={activeProfile?.isPro ?? false} />
+        <NotificationsPanel isOpen={isNotificationsOpen} deadlines={notifDeadlines} onClose={() => setIsNotificationsOpen(false)} onUpdateDeadline={handleUpdateDeadline} darkMode={darkMode} theme={theme} isPro={activeProfile?.isPro ?? false} />
       </Suspense>
 
       <main ref={mainRef} className="flex-1 overflow-y-auto min-h-screen" style={{ backgroundColor: 'var(--color-bg)' }}>
