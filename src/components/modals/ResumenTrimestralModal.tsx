@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Download, Lock, Check, Mail, Share2, Eye } from 'lucide-react';
+import { X, Download, Lock, Check, Share2, Eye } from 'lucide-react';
 import { Document, Profile, Accountant } from '../../types';
 import {
   calcularTrimestre,
@@ -39,7 +39,7 @@ export default function ResumenTrimestralModal({
   const [quarter, setQuarter] = useState<1 | 2 | 3 | 4>(getCurrentQuarter());
   const [year, setYear] = useState<number>(currentYear);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isSending, setIsSending] = useState(false);
+
   const [isSharing, setIsSharing] = useState(false);
   const [pdfPreview, setPdfPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
   const [includeLibroEmitidas, setIncludeLibroEmitidas] = useState(false);
@@ -182,55 +182,6 @@ export default function ResumenTrimestralModal({
     }
   };
 
-  const handleSendGestor = async () => {
-    if (!accountant) return;
-    if (!hasTaxId) {
-      showToast(
-        'Añade tu NIF o NIE en el perfil para generar el resumen',
-        'error',
-        onNavigateToProfile
-          ? { label: 'Ir al perfil', onClick: () => { onClose(); onNavigateToProfile(); } }
-          : undefined
-      );
-      return;
-    }
-
-    setIsSending(true);
-    try {
-      const { resumenResult, libroE, libroR, facturasResult, gastosResult, anualResult, anualIVAResult } = await generateAll();
-
-      const subject = `Documentos T${quarter} ${year} — Solvy`;
-
-      const imgFiles = gastosResult ? await buildImageFiles(resumen.expenses) : [];
-      const allFiles: File[] = [
-        new File([resumenResult.blob], resumenResult.fileName, { type: 'application/pdf' }),
-        ...(libroE ? [new File([libroE.blob], libroE.fileName, { type: 'application/pdf' })] : []),
-        ...(libroR ? [new File([libroR.blob], libroR.fileName, { type: 'application/pdf' })] : []),
-        ...(facturasResult ? [new File([facturasResult.blob], facturasResult.fileName, { type: 'application/pdf' })] : []),
-        ...(gastosResult ? [new File([gastosResult.blob], gastosResult.fileName, { type: 'application/pdf' })] : []),
-        ...imgFiles.map(f => new File([f.blob], f.fileName, { type: f.blob.type })),
-        ...(anualResult ? [new File([anualResult.blob], anualResult.fileName, { type: 'application/pdf' })] : []),
-        ...(anualIVAResult ? [new File([anualIVAResult.blob], anualIVAResult.fileName, { type: 'application/pdf' })] : []),
-      ];
-
-      if (navigator.share && navigator.canShare?.({ files: allFiles })) {
-        await navigator.share({ files: allFiles, title: subject });
-      } else {
-        downloadBlob(resumenResult);
-        if (libroE) downloadBlob(libroE);
-        if (libroR) downloadBlob(libroR);
-        if (facturasResult) downloadBlob(facturasResult);
-        if (gastosResult) downloadBlob(gastosResult);
-        if (anualResult) downloadBlob(anualResult);
-        if (anualIVAResult) downloadBlob(anualIVAResult);
-      }
-    } catch {
-      showToast('Error al generar los PDFs', 'error');
-    } finally {
-      setIsSending(false);
-    }
-  };
-
   const handleShareJustificantes = async () => {
     setIsSharing(true);
     try {
@@ -255,7 +206,7 @@ export default function ResumenTrimestralModal({
     `${n < 0 ? '-' : ''}€${Math.abs(n).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const dm = darkMode;
-  const isWorking = isGenerating || isSending || isSharing;
+  const isWorking = isGenerating || isSharing;
   const gastosDificilImporte = Math.max(0, resumen.ingresosCumulativos - resumen.gastosCumulativos - resumen.baseImponible130);
 
   const Toggle = ({
@@ -557,17 +508,6 @@ export default function ResumenTrimestralModal({
                     >
                       <Download size={18} />
                       {isGenerating ? 'Generando…' : 'Descargar PDF'}
-                    </button>
-                  )}
-
-                  {accountant && (
-                    <button
-                      onClick={handleSendGestor}
-                      disabled={isWorking}
-                      className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold transition-all active:scale-[0.98] disabled:opacity-60 ${dm ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-900'}`}
-                    >
-                      <Mail size={18} />
-                      {isSending ? 'Preparando…' : `Enviar al gestor · ${accountant.email}`}
                     </button>
                   )}
 
