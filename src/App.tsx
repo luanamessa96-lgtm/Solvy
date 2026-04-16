@@ -492,7 +492,7 @@ function AppInner() {
           fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/loops-sync`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-            body: JSON.stringify({ action: 'update_fatture', email: activeProfile.email, fattureCount }),
+            body: JSON.stringify({ action: 'update_fatture', email: activeProfile.email, fattureCount, isPro: activeProfile.isPro ?? false }),
           }).catch(() => {});
         }).catch(() => {});
       }
