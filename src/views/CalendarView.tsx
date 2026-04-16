@@ -190,7 +190,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   const fiscalAmounts = useMemo<Record<string, number>>(() => {
     const empty: Record<string, number> = {};
     if (isSpain) return empty;
-    if (isPrimoAnnoIT) return empty;
+    if (isPrimoAnnoIT && (profile?.regime ?? 'forfettario') !== 'ordinario') return empty;
     // IT-33: usa reddito N-1 se disponibile, altrimenti reddito corrente
     const baseInc = (redditoN1 != null && redditoN1 > 0)
       ? redditoN1
