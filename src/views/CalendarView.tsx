@@ -725,13 +725,16 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl" style={{ backgroundColor: 'var(--color-card)' }}>
               <div className="p-8 space-y-5">
                 <div className="flex justify-between items-start">
-                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('calendar.edit_deadline_title')}</h2>
+                  <div>
+                    <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('calendar.edit_deadline_title')}</h2>
+                    <p className="text-sm text-slate-500">{t('calendar.add_modal_subtitle')}</p>
+                  </div>
                   <button onClick={() => setDeadlineToEdit(null)} className={`p-2 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><Plus className="rotate-45" size={24} /></button>
                 </div>
                 <div className="space-y-3">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('calendar.field_title')}</label>
-                    <input type="text" value={deadlineToEdit.title} onChange={e => setDeadlineToEdit({ ...deadlineToEdit, title: e.target.value })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
+                    <input type="text" value={deadlineToEdit.title} onChange={e => setDeadlineToEdit({ ...deadlineToEdit, title: e.target.value })} placeholder={t('calendar.deadline_placeholder')} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`} />
                   </div>
                   <div className="flex flex-col gap-3">
                     <div className="space-y-1.5">
@@ -740,7 +743,17 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('calendar.field_amount')}</label>
-                      <input type="number" value={deadlineToEdit.amount || ''} onChange={e => setDeadlineToEdit({ ...deadlineToEdit, amount: parseFloat(e.target.value) || undefined })} className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
+                      <input type="number" value={deadlineToEdit.amount || ''} onChange={e => setDeadlineToEdit({ ...deadlineToEdit, amount: parseFloat(e.target.value) || undefined })} placeholder="0.00" className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${darkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-900 placeholder:text-slate-400'}`} />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('calendar.field_type')}</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(['tax', 'payment', 'other'] as const).map(type => (
+                        <button key={type} onClick={() => setDeadlineToEdit({ ...deadlineToEdit, type })} className={`py-3 rounded-xl text-xs font-bold border transition-all ${deadlineToEdit.type === type ? 'bg-primary border-primary text-white' : (darkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-600')}`}>
+                          {type === 'tax' ? t('calendar.type_fiscal') : type === 'payment' ? t('calendar.type_payment_btn') : t('calendar.type_other_btn')}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
