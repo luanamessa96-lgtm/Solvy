@@ -484,16 +484,36 @@ export default function ResumenTrimestralModal({
                       </button>
                       <button
                         onClick={async () => {
-                          const pdfFiles = readyBlob.files
-                            .filter(f => !f.type || f.type === 'application/pdf')
-                            .map(f => new File([f.blob], f.fileName, { type: 'application/pdf' }));
+                          const pdfBlobs = readyBlob.files.filter(f => !f.type || f.type === 'application/pdf');
                           const imgFiles = readyBlob.files.filter(f => f.type?.startsWith('image/'));
-                          if (navigator.share && navigator.canShare?.({ files: pdfFiles })) {
-                            // Immagini scaricate separatamente — solo PDF nel share (come Italia)
+                          // Unisce tutti i PDF in uno solo (come fa il profilo IT)
+                          const { PDFDocument } = await import('pdf-lib');
+                          const merged = await PDFDocument.create();
+                          for (const f of pdfBlobs) {
+                            const arrayBuffer = await f.blob.arrayBuffer();
+                            const doc = await PDFDocument.load(arrayBuffer);
+                            const pages = await merged.copyPages(doc, doc.getPageIndices());
+                            pages.forEach(p => merged.addPage(p));
+                          }
+                          const mergedBytes = await merged.save();
+                          const mergedBlob = new Blob([mergedBytes], { type: 'application/pdf' });
+                          const nif = (profile.nie || profile.piva || 'ES').replace(/\s/g, '');
+                          const mergedFileName = `ES_${nif}_T${quarter}_${year}.pdf`;
+                          const mergedFile = new File([mergedBlob], mergedFileName, { type: 'application/pdf' });
+                          const downloadAll = () => {
+                            downloadBlob({ blob: mergedBlob, fileName: mergedFileName });
                             imgFiles.forEach(f => downloadBlob(f));
-                            await navigator.share({ files: pdfFiles, title: pdfFiles[0]?.name ?? 'Documentos' });
-                          } else {
-                            readyBlob.files.forEach(f => downloadBlob(f));
+                          };
+                          try {
+                            if (navigator.share && navigator.canShare?.({ files: [mergedFile] })) {
+                              imgFiles.forEach(f => downloadBlob(f));
+                              await navigator.share({ files: [mergedFile], title: mergedFileName });
+                            } else {
+                              downloadAll();
+                            }
+                          } catch (err) {
+                            if (err instanceof Error && err.name === 'AbortError') return;
+                            downloadAll();
                           }
                         }}
                         className="w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
