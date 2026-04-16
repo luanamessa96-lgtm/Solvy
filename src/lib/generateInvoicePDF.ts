@@ -83,6 +83,7 @@ export async function buildInvoicePage(
   );
 
   // Regime
+  pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(8);
   pdf.setTextColor(...grey);
   const regimeLabel = isCreditNote
