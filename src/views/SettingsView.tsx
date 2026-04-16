@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { getClient } from '../lib/supabase';
 import PaywallModal from '../components/modals/PaywallModal';
 import DeleteAccountModal from '../components/modals/DeleteAccountModal';
+import ChangePasswordModal from '../components/modals/ChangePasswordModal';
 import { useProStatus } from '../hooks/useProStatus';
 import { Profile, Document, Deadline } from '../types';
 
@@ -31,6 +32,7 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
   const isProLight = theme === 'pro-light';
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
   // Refund flow state: idle → confirming → loading → success | error
@@ -276,6 +278,24 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
         </motion.div>
       )}
 
+      <motion.div variants={item} className="space-y-3">
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('settings.security')}</p>
+        <button
+          onClick={() => setIsChangePasswordOpen(true)}
+          className={`w-full flex items-center gap-4 p-4 rounded-3xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-900 border-slate-800 hover:border-primary/40' : 'bg-white border-slate-100 hover:border-primary/20'}`}
+          style={isProLight ? { backgroundColor: '#ffffff', border: '1.5px solid rgba(200,85,247,0.35)' } : undefined}
+        >
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${darkMode ? 'bg-slate-800 text-primary' : 'bg-primary/10 text-primary'}`}>
+            <Lock size={18} />
+          </div>
+          <div className="text-left flex-1">
+            <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('settings.change_password')}</p>
+            <p className="text-xs text-slate-400">{t('settings.change_password_subtitle')}</p>
+          </div>
+          <ChevronRight size={16} className="text-slate-400 shrink-0" />
+        </button>
+      </motion.div>
+
       <motion.div variants={item} className="rounded-3xl border overflow-hidden transition-colors" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-5 pt-5 pb-3">{t('settings.legal')}</p>
         {legalItems.map(({ label, href }, i, arr) => (
@@ -303,6 +323,7 @@ const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount
     </motion.div>
     <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} darkMode={darkMode} />
     <DeleteAccountModal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} darkMode={darkMode} profile={profile} profilesCount={profilesCount} />
+    <ChangePasswordModal isOpen={isChangePasswordOpen} onClose={() => setIsChangePasswordOpen(false)} darkMode={darkMode} />
     </>
   );
 };

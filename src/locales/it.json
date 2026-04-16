@@ -271,7 +271,23 @@
     "subscription_refund_cancel_btn": "Annulla",
     "subscription_refund_success": "Rimborso elaborato con successo. Il tuo account è stato ripristinato al piano Free.",
     "subscription_refund_error": "Errore durante il rimborso. Contatta support@solvyapp.com.",
-    "delete_account": "Elimina account"
+    "delete_account": "Elimina account",
+    "security": "Sicurezza",
+    "change_password": "Cambia password",
+    "change_password_subtitle": "Aggiorna la tua password di accesso"
+  },
+  "change_password_modal": {
+    "title": "Cambia password",
+    "new_password": "Nuova password",
+    "confirm_password": "Conferma password",
+    "new_password_placeholder": "Minimo 8 caratteri",
+    "confirm_password_placeholder": "Ripeti la nuova password",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "error_min_length": "La password deve essere di almeno 8 caratteri",
+    "error_mismatch": "Le password non coincidono",
+    "error_generic": "Errore durante l'aggiornamento. Riprova.",
+    "success": "Password aggiornata con successo!"
   },
   "menu": {
     "accountant": "Il mio Commercialista",

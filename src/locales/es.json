@@ -265,7 +265,23 @@
     "subscription_refund_cancel_btn": "Cancelar",
     "subscription_refund_success": "Reembolso procesado correctamente. Tu cuenta ha sido revertida al plan Free.",
     "subscription_refund_error": "Error al procesar el reembolso. Contacta support@solvyapp.com.",
-    "delete_account": "Eliminar cuenta"
+    "delete_account": "Eliminar cuenta",
+    "security": "Seguridad",
+    "change_password": "Cambiar contraseña",
+    "change_password_subtitle": "Actualiza tu contraseña de acceso"
+  },
+  "change_password_modal": {
+    "title": "Cambiar contraseña",
+    "new_password": "Nueva contraseña",
+    "confirm_password": "Confirmar contraseña",
+    "new_password_placeholder": "Mínimo 8 caracteres",
+    "confirm_password_placeholder": "Repite la nueva contraseña",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "error_min_length": "La contraseña debe tener al menos 8 caracteres",
+    "error_mismatch": "Las contraseñas no coinciden",
+    "error_generic": "Error al actualizar. Inténtalo de nuevo.",
+    "success": "¡Contraseña actualizada correctamente!"
   },
   "menu": {
     "accountant": "Mi Gestor",
