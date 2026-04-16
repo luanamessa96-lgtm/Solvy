@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import fs from 'fs';
 import path from 'path';
 import {defineConfig, loadEnv} from 'vite';
 
@@ -9,6 +10,16 @@ export default defineConfig(({mode}) => {
     plugins: [
       react(),
       tailwindcss(),
+      {
+        name: 'sw-version-inject',
+        closeBundle() {
+          const swPath = path.resolve(__dirname, 'dist/sw.js');
+          if (!fs.existsSync(swPath)) return;
+          const content = fs.readFileSync(swPath, 'utf-8');
+          const version = Date.now().toString();
+          fs.writeFileSync(swPath, content.replace(/const VERSION\s*=\s*'[^']*'/, `const VERSION = '${version}'`));
+        },
+      },
       {
         name: 'non-blocking-css',
         transformIndexHtml(html: string) {
