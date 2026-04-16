@@ -484,9 +484,14 @@ export default function ResumenTrimestralModal({
                       </button>
                       <button
                         onClick={async () => {
-                          const allFiles = readyBlob.files.map(f => new File([f.blob], f.fileName, { type: f.type ?? 'application/pdf' }));
-                          if (navigator.share && navigator.canShare?.({ files: allFiles })) {
-                            await navigator.share({ files: allFiles, title: allFiles[0]?.name ?? 'Documentos' });
+                          const pdfFiles = readyBlob.files
+                            .filter(f => !f.type || f.type === 'application/pdf')
+                            .map(f => new File([f.blob], f.fileName, { type: 'application/pdf' }));
+                          const imgFiles = readyBlob.files.filter(f => f.type?.startsWith('image/'));
+                          if (navigator.share && navigator.canShare?.({ files: pdfFiles })) {
+                            // Immagini scaricate separatamente — solo PDF nel share (come Italia)
+                            imgFiles.forEach(f => downloadBlob(f));
+                            await navigator.share({ files: pdfFiles, title: pdfFiles[0]?.name ?? 'Documentos' });
                           } else {
                             readyBlob.files.forEach(f => downloadBlob(f));
                           }
