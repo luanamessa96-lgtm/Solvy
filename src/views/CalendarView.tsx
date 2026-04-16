@@ -548,10 +548,13 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                           <span className="text-[10px] font-medium text-slate-400">{deadline.type === 'tax' ? t('calendar.type_tax') : deadline.type === 'payment' ? t('calendar.type_payment') : t('calendar.type_other')}</span>
                           {(() => {
                             if (deadline.type !== 'tax') {
+                              const daysLeft = Math.ceil((parseLocalDate(deadline.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
                               return (
                                 <>
                                   <div className={`w-1 h-1 rounded-full ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-500">{t('calendar.expiring')}</span>
+                                  <span className={`text-[10px] font-bold uppercase tracking-wider ${daysLeft < 0 ? 'text-slate-400' : 'text-blue-500'}`}>
+                                    {daysLeft < 0 ? t('calendar.status_badge_overdue') : t('calendar.expiring')}
+                                  </span>
                                 </>
                               );
                             }
