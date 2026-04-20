@@ -87,6 +87,7 @@ Deno.serve(async (req) => {
       await loopsRequest('/contacts/update', 'PUT', {
         email,
         fattureCount: fattureCount ?? 0,
+        isPro: isPro ?? false,
       });
     } else if (action === 'update_active') {
       await loopsRequest('/contacts/update', 'PUT', {
