@@ -486,7 +486,6 @@ export default function ResumenTrimestralModal({
                         onClick={async () => {
                           const pdfBlobs = readyBlob.files.filter(f => !f.type || f.type === 'application/pdf');
                           const imgFiles = readyBlob.files.filter(f => f.type?.startsWith('image/'));
-                          // Unisce tutti i PDF in uno solo (come fa il profilo IT)
                           const { PDFDocument } = await import('pdf-lib');
                           const merged = await PDFDocument.create();
                           for (const f of pdfBlobs) {
@@ -498,17 +497,17 @@ export default function ResumenTrimestralModal({
                           const mergedBytes = await merged.save();
                           const mergedBlob = new Blob([mergedBytes], { type: 'application/pdf' });
                           const nif = (profile.nie || profile.piva || 'ES').replace(/\s/g, '');
-                          const mergedFileName = `ES_${nif}_T${quarter}_${year}.pdf`;
-                          const mergedFile = new File([mergedBlob], mergedFileName, { type: 'application/octet-stream' });
-                          const downloadAll = () => {
-                            downloadBlob({ blob: mergedBlob, fileName: mergedFileName });
-                            imgFiles.forEach(f => downloadBlob(f));
-                          };
-                          const imgFileObjs = imgFiles.map(f => new File([f.blob], f.fileName, { type: f.blob.type }));
-                          const allFiles = [mergedFile, ...imgFileObjs];
+                          const zipFileName = `ES_${nif}_T${quarter}_${year}.zip`;
+                          const { default: JSZip } = await import('jszip');
+                          const zip = new JSZip();
+                          zip.file(`ES_${nif}_T${quarter}_${year}.pdf`, mergedBlob);
+                          imgFiles.forEach(f => zip.file(f.fileName, f.blob));
+                          const zipBlob = await zip.generateAsync({ type: 'blob' });
+                          const zipFile = new File([zipBlob], zipFileName, { type: 'application/zip' });
+                          const downloadAll = () => downloadBlob({ blob: zipBlob, fileName: zipFileName });
                           try {
-                            if (navigator.share && navigator.canShare?.({ files: allFiles })) {
-                              await navigator.share({ files: allFiles, title: mergedFileName });
+                            if (navigator.share && navigator.canShare?.({ files: [zipFile] })) {
+                              await navigator.share({ files: [zipFile], title: zipFileName });
                             } else {
                               downloadAll();
                             }
