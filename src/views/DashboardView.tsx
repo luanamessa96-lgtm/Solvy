@@ -733,7 +733,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
 
                 {income > 0 && proiezione !== income && (
                   <div className={`pt-3 border-t flex items-start gap-2 ${darkMode ? 'border-slate-800 text-slate-400' : 'border-slate-50 text-slate-400'}`}>
-                    <Info size={13} className="mt-0.5 shrink-0" />
+                    <InfoTooltip text="Stima del fatturato annuale calcolata sulla media dei mesi con entrate. Stimato · può variare." darkMode={darkMode} />
                     <p className="text-[11px] leading-relaxed">{t('dashboard.annual_projection')}<span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{fmt(proiezione)}</span></p>
                   </div>
                 )}

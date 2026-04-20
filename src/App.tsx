@@ -426,19 +426,38 @@ function AppInner() {
     return () => { sb.removeChannel(profilesChannel); };
   }, [isAuthenticated, userId]);
 
-  // Mostra feedback dopo redirect Stripe
+  // Dopo redirect Stripe: polling is_pro finché webhook non aggiorna il DB (max 20s)
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || !userId) return;
     const params = new URLSearchParams(window.location.search);
     if (params.get('checkout') === 'success') {
       window.gtag?.('event', 'purchase', { currency: 'EUR' });
-      showToast('Benvenuto in Solvy Pro! Il tuo abbonamento è attivo.', 'success');
       window.history.replaceState({}, '', window.location.pathname);
+      let attempts = 0;
+      const poll = setInterval(async () => {
+        attempts++;
+        try {
+          const fresh = await getProfiles(userId);
+          const updated = fresh.find(p => p.isPro);
+          if (updated) {
+            clearInterval(poll);
+            setProfiles(fresh);
+            setActiveProfile(prev => fresh.find(p => p.id === prev.id) ?? prev);
+            showToast('Benvenuto in Solvy Pro! Il tuo abbonamento è attivo.', 'success');
+            return;
+          }
+        } catch { /* ignora errori transitori */ }
+        if (attempts >= 10) {
+          clearInterval(poll);
+          showToast('Benvenuto in Solvy Pro! Il tuo abbonamento è attivo.', 'success');
+        }
+      }, 2000);
+      return () => clearInterval(poll);
     } else if (params.get('checkout') === 'cancelled') {
       showToast('Pagamento annullato.', 'error');
       window.history.replaceState({}, '', window.location.pathname);
     }
-  }, [isLoading]);
+  }, [isLoading, userId]);
 
   useEffect(() => {
     localStorage.setItem('activeProfileId', activeProfile.id);
