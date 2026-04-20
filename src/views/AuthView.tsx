@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getClient } from '../lib/supabase';
+import InstallPWABanner from '../components/ui/InstallPWABanner';
 
 type Screen = 'login' | 'register' | 'forgot' | 'forgot-sent' | 'reset' | 'register-sent';
 
@@ -380,6 +381,8 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
 
         </AnimatePresence>
       </div>
+
+      <InstallPWABanner />
 
       {/* Legal modal — privacy / terms in-app, no navigazione */}
       <AnimatePresence>
