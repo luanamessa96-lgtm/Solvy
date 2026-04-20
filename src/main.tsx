@@ -58,5 +58,9 @@ if ('serviceWorker' in navigator) {
     });
 
     setInterval(() => registration.update(), 60_000);
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') registration.update();
+    });
   });
 }
