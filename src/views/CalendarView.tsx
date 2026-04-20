@@ -182,7 +182,22 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
   // ORDINE DICHIARAZIONI: redditoN1 deve stare prima di isPrimoAnnoIT (evita TDZ crash)
   const annoInizio = profile?.annoInizioAttivita != null ? Number(profile.annoInizioAttivita) : null;
   const redditoN1 = profile?.redditoN1;
-  const savedRetaMensile = isSpain && profile?.id ? (() => { const v = profileStorage.get(`reta_${profile.id}`); return v ? parseFloat(v) : null; })() : null;
+  const [savedRetaMensile, setSavedRetaMensile] = useState<number | null>(() => {
+    if (!isSpain || !profile?.id) return null;
+    const v = profileStorage.get(`reta_${profile.id}`);
+    return v ? parseFloat(v) : null;
+  });
+  useEffect(() => {
+    if (!isSpain || !profile?.id) { setSavedRetaMensile(null); return; }
+    const profileId = profile.id;
+    const read = () => {
+      const v = profileStorage.get(`reta_${profileId}`);
+      setSavedRetaMensile(v ? parseFloat(v) : null);
+    };
+    read();
+    document.addEventListener('visibilitychange', read);
+    return () => document.removeEventListener('visibilitychange', read);
+  }, [profile?.id, isSpain]);
   const isPrimoAnnoIT = !isSpain && annoInizio != null && annoInizio === selectedYear && !(redditoN1 != null && redditoN1 > 0);
 
   // IT-21 + IT-22: importi stimati per scadenze fiscali IT
@@ -337,7 +352,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     }
     if (searchQuery.trim()) return base.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
     return base;
-  }, [selectedMonth, yearDeadlines, searchQuery, isSpain, selectedYear, redditoN1, annoInizio, scadenzeFiscaliRaw, fiscalAmounts]);
+  }, [selectedMonth, yearDeadlines, searchQuery, isSpain, selectedYear, redditoN1, annoInizio, scadenzeFiscaliRaw, fiscalAmounts, savedRetaMensile]);
 
   const nextReta = isSpain
     ? getNextRetaDeadline({ redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined, currentIncome: income ?? undefined, savedRetaMensile: savedRetaMensile ?? undefined })
