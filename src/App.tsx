@@ -431,6 +431,7 @@ function AppInner() {
     if (isLoading) return;
     const params = new URLSearchParams(window.location.search);
     if (params.get('checkout') === 'success') {
+      window.gtag?.('event', 'purchase', { currency: 'EUR' });
       showToast('Benvenuto in Solvy Pro! Il tuo abbonamento è attivo.', 'success');
       window.history.replaceState({}, '', window.location.pathname);
     } else if (params.get('checkout') === 'cancelled') {
