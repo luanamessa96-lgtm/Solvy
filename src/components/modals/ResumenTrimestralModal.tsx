@@ -504,10 +504,11 @@ export default function ResumenTrimestralModal({
                             downloadBlob({ blob: mergedBlob, fileName: mergedFileName });
                             imgFiles.forEach(f => downloadBlob(f));
                           };
+                          const imgFileObjs = imgFiles.map(f => new File([f.blob], f.fileName, { type: f.blob.type }));
+                          const allFiles = [mergedFile, ...imgFileObjs];
                           try {
-                            if (navigator.share && navigator.canShare?.({ files: [mergedFile] })) {
-                              imgFiles.forEach(f => downloadBlob(f));
-                              await navigator.share({ files: [mergedFile], title: mergedFileName });
+                            if (navigator.share && navigator.canShare?.({ files: allFiles })) {
+                              await navigator.share({ files: allFiles, title: mergedFileName });
                             } else {
                               downloadAll();
                             }
