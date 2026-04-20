@@ -191,7 +191,7 @@ export default function MediaLibraryView({ documents, onDeleteDocument, onUpdate
           </div>
         </div>
       ) : (
-        <div className="space-y-6 pt-2">
+        <div className="space-y-6 pt-2 overflow-y-auto" style={{ maxHeight: 'calc(100dvh - 130px)' }}>
           {monthKeys.map(month => (
             <div key={month}>
               <h2 className={`text-xl font-bold capitalize px-5 pb-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>{month}</h2>
