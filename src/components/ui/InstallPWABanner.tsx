@@ -73,7 +73,7 @@ export default function InstallPWABanner() {
     // iOS modal
     iosTitle: isES ? 'Instalar en iPhone / iPad' : 'Installa su iPhone / iPad',
     iosStep1title: isES ? 'Toca el botón Compartir ↑' : 'Tocca il tasto Condividi ↑',
-    iosStep1sub: isES ? 'En la barra inferior del navegador' : 'Nella barra in basso del browser',
+    iosStep1sub: isES ? 'Botón ↑ o los tres puntos ··· en la barra inferior' : 'Tasto ↑ o i tre puntini ··· nella barra in basso',
     iosStep2title: isES ? 'Toca "Añadir a pantalla de inicio"' : 'Tocca "Aggiungi a Home"',
     iosStep2sub: isES ? 'Desplázate por el menú hacia abajo' : 'Scorri il menu verso il basso',
     iosStep3title: isES ? 'Toca "Añadir"' : 'Tocca "Aggiungi"',
