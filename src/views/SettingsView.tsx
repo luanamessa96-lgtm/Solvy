@@ -28,7 +28,7 @@ interface SettingsViewProps {
 const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount = 1, documents = [], deadlines = [] }: SettingsViewProps) => {
   const { t } = useTranslation();
   const isPro = useProStatus(profile);
-  const darkMode = theme === 'dark' || theme === 'pro-dark';
+  const darkMode = theme === 'free-dark' || theme === 'pro-dark';
   const isProLight = theme === 'pro-light';
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
