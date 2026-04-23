@@ -89,7 +89,7 @@ const NotificationsPanel = ({ isOpen, deadlines, onClose, onUpdateDeadline, dark
                           <p className={`text-sm font-bold truncate ${n.completed ? 'line-through text-slate-400' : (darkMode ? 'text-white' : 'text-slate-900')}`}>{n.title}</p>
                           <p className="text-xs text-slate-400">
                             {n.diffDays === 0 ? t('notifications.expires_today') : n.diffDays === 1 ? t('notifications.expires_tomorrow') : t('notifications.expires_in_days', { count: n.diffDays })}
-                            {n.amount ? ` · €${n.amount.toLocaleString()}` : ''}
+                            {n.amount ? ` · €${n.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''}
                           </p>
                         </div>
                         <button

@@ -65,7 +65,7 @@ const SearchOverlay = ({ documents, onClose, onSelectDoc, darkMode }: SearchOver
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-0.5">
                     <h3 className={`text-sm font-bold truncate pr-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>{doc.client || doc.title}</h3>
-                    <p className={`text-sm font-bold shrink-0 ${doc.type === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>{doc.type === 'expense' ? '-' : '+'}€{doc.amount.toLocaleString()}</p>
+                    <p className={`text-sm font-bold shrink-0 ${doc.type === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>{doc.type === 'expense' ? '-' : '+'}€{doc.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-medium text-slate-400">{new Date(doc.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
