@@ -353,7 +353,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
               </div>
               <div className="space-y-1">
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Gen, {displayYear} - Dic, {displayYear}</p>
-                <h2 className={`text-3xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{income.toLocaleString()}</h2>
+                <h2 className={`text-3xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{income.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
               </div>
               <div className={`pt-4 border-t flex justify-between items-center ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('dashboard.paid_invoices')}</span>
@@ -366,7 +366,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
               <div className={`px-6 py-5 flex items-center justify-between border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
                 <div className="space-y-0.5">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('dashboard.net_margin')}</p>
-                  <p className={`text-2xl font-bold ${income - expenses >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{income - expenses < 0 ? '-' : ''}€{Math.abs(income - expenses).toLocaleString()}</p>
+                  <p className={`text-2xl font-bold ${income - expenses >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{income - expenses < 0 ? '-' : ''}€{Math.abs(income - expenses).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className={`px-3 py-1.5 rounded-full text-xs font-bold ${income - expenses >= 0 ? (darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600') : (darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600')}`}>
                   {income > 0 ? `${Math.round(((income - expenses) / income) * 100)}%` : '0%'}
@@ -380,7 +380,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                       <InfoTooltip text="Spese deducibili al netto dell'aliquota di deducibilità per categoria. Le uscite lorde sono visibili nella sezione Fatture." darkMode={darkMode} />
                     )}
                   </div>
-                  <p className={`text-base font-bold leading-none ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{expenses.toLocaleString()}</p>
+                  <p className={`text-base font-bold leading-none ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{expenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className={`w-full h-1 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                     <div className="bg-red-400 h-full rounded-full" style={{ width: income > 0 ? `${Math.min((expenses / income) * 100, 100)}%` : '0%' }} />
                   </div>
@@ -486,7 +486,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                 <div className="px-6 py-4 space-y-3">
                   <div className="flex justify-between">
                     <span className="text-xs font-bold text-slate-400">Facturación bruta</span>
-                    <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>€{income.toLocaleString()}</span>
+                    <span className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>€{income.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
@@ -558,7 +558,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                         <div key={d.id} className="flex items-center justify-between gap-2">
                           <div className="min-w-0">
                             <p className={`text-xs font-bold truncate ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{d.client || d.title}</p>
-                            <p className="text-[10px] text-slate-400">{retencionRate}% · base €{d.amount.toLocaleString('es-ES')}</p>
+                            <p className="text-[10px] text-slate-400">{retencionRate}% · base €{d.amount.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                           </div>
                           <span className="text-xs font-bold text-rose-500 shrink-0">-€{Math.round(impRet).toLocaleString('es-ES')}</span>
                         </div>
@@ -583,10 +583,10 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                 >
                   <div className="space-y-2 mb-3">
                     <p className={`text-sm font-bold ${darkMode ? 'text-violet-300' : 'text-violet-800'}`}>
-                      💰 Aparta €{rataMensileES.toLocaleString('es-ES')}/mes para estar tranquilo
+                      💰 Aparta €{rataMensileES.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/mes para estar tranquilo
                     </p>
                     <p className={`text-sm font-bold ${darkMode ? 'text-violet-400' : 'text-violet-700'}`}>
-                      📅 Próximo pago: €{quarterlyAmountES.toLocaleString('es-ES')} el {nextQuarterlyES.label} ({nextQuarterlyES.modelo})
+                      📅 Próximo pago: €{quarterlyAmountES.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} el {nextQuarterlyES.label} ({nextQuarterlyES.modelo})
                     </p>
                   </div>
                   <p className={`text-[10px] leading-relaxed ${darkMode ? 'text-violet-500' : 'text-violet-500'}`}>
@@ -763,10 +763,10 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
               >
                 <div className="space-y-2 mb-3">
                   <p className={`text-sm font-bold ${darkMode ? 'text-violet-300' : 'text-violet-800'}`}>
-                    💰 Metti da parte €{mettiDaParte.rataMensile.toLocaleString('it-IT')}/mese per essere tranquillo a {mettiDaParte.next.month}
+                    💰 Metti da parte €{mettiDaParte.rataMensile.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/mese per essere tranquillo a {mettiDaParte.next.month}
                   </p>
                   <p className={`text-sm font-bold ${darkMode ? 'text-violet-400' : 'text-violet-700'}`}>
-                    📅 Prossimo pagamento fiscale: €{mettiDaParte.next.amount.toLocaleString('it-IT')} il {mettiDaParte.next.label}
+                    📅 Prossimo pagamento fiscale: €{mettiDaParte.next.amount.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} il {mettiDaParte.next.label}
                   </p>
                 </div>
                 <p className={`text-[10px] leading-relaxed ${darkMode ? 'text-violet-500' : 'text-violet-500'}`}>
@@ -791,7 +791,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                 <div className={`px-6 py-5 flex items-center justify-between border-b ${darkMode ? 'border-slate-800' : 'border-slate-50'}`}>
                   <div className="space-y-0.5">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('dashboard.expenses_by_category')}</p>
-                    <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{expenses.toLocaleString()}</p>
+                    <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{expenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   </div>
                   <div
                     className={`p-2 rounded-xl ${isProDark ? '' : darkMode ? 'bg-slate-800 text-red-400' : 'bg-red-50 text-red-500'}`}
@@ -824,11 +824,11 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
                             <span className="text-[10px] font-bold text-slate-400">{Math.round(pct)}%</span>
                             {showDeductibility ? (
                               <div className="text-right">
-                                <p className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{amount.toLocaleString()} <span className="text-[10px] font-semibold text-slate-400">deducibile</span></p>
-                                <p className="text-[10px] text-slate-400">€{gross.toLocaleString()} lordo · {Math.round(rate * 100)}%</p>
+                                <p className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-[10px] font-semibold text-slate-400">deducibile</span></p>
+                                <p className="text-[10px] text-slate-400">€{gross.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} lordo · {Math.round(rate * 100)}%</p>
                               </div>
                             ) : (
-                              <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{amount.toLocaleString()}</span>
+                              <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>€{amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             )}
                           </div>
                         </div>

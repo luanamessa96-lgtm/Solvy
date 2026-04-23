@@ -45,7 +45,7 @@ function DocCard({ doc, darkMode, profile, i18nLanguage, t, onClick }: { doc: Do
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start mb-0.5">
           <h3 className={`text-sm font-bold truncate pr-2 transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>{doc.client || doc.title}</h3>
-          <p className={`text-sm font-bold shrink-0 ${doc.type === 'expense' || doc.type === 'credit_note' || doc.type === 'factura_rectificativa' ? 'text-red-500' : doc.type === 'proforma' ? (darkMode ? 'text-slate-400' : 'text-slate-500') : doc.type === 'presupuesto' ? (darkMode ? 'text-amber-400' : 'text-amber-600') : 'text-emerald-500'}`}>{doc.type === 'expense' || doc.type === 'credit_note' || doc.type === 'factura_rectificativa' ? '-' : ''}€{doc.amount.toLocaleString()}</p>
+          <p className={`text-sm font-bold shrink-0 ${doc.type === 'expense' || doc.type === 'credit_note' || doc.type === 'factura_rectificativa' ? 'text-red-500' : doc.type === 'proforma' ? (darkMode ? 'text-slate-400' : 'text-slate-500') : doc.type === 'presupuesto' ? (darkMode ? 'text-amber-400' : 'text-amber-600') : 'text-emerald-500'}`}>{doc.type === 'expense' || doc.type === 'credit_note' || doc.type === 'factura_rectificativa' ? '-' : ''}€{doc.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[10px] font-medium text-slate-400">{parseLocalDate(doc.date).toLocaleDateString(i18nLanguage, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
@@ -258,7 +258,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
               style={filter === 'income' && isProDark ? { background: 'rgba(45, 212, 191, 0.12)', border: '1px solid rgba(45, 212, 191, 0.4)', color: '#2dd4bf', boxShadow: '0 20px 25px -5px rgba(45, 212, 191, 0.25), 0 8px 10px -6px rgba(45, 212, 191, 0.2)' } : undefined}
             >
               <p className={`text-[9px] font-bold uppercase tracking-wider opacity-60`}>Entrate</p>
-              <p className="text-sm font-bold">€{totals.income.toLocaleString()}</p>
+              <p className="text-sm font-bold">€{totals.income.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </button>
             <button
               onClick={() => setFilter('expense')}
@@ -266,11 +266,11 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
               style={filter === 'expense' && isProDark ? { background: 'rgba(200, 85, 247, 0.12)', border: '1px solid rgba(200, 85, 247, 0.4)', color: '#c855f7', boxShadow: '0 20px 25px -5px rgba(200, 85, 247, 0.25), 0 8px 10px -6px rgba(200, 85, 247, 0.2)' } : undefined}
             >
               <p className={`text-[9px] font-bold uppercase tracking-wider opacity-60`}>Uscite</p>
-              <p className="text-sm font-bold">€{totals.expenses.toLocaleString()}</p>
+              <p className="text-sm font-bold">€{totals.expenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </button>
             <button onClick={() => setFilter('all')} className={`p-4 rounded-3xl border transition-all text-left space-y-2 active:scale-[0.95] ${filter === 'all' ? (darkMode ? 'bg-white border-white text-slate-900 shadow-xl shadow-white/20' : 'bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-900/40') : (darkMode ? 'bg-slate-900 border-slate-800 text-slate-400 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10' : 'bg-white border-slate-100 text-slate-600 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5')}`}>
               <p className={`text-[9px] font-bold uppercase tracking-wider ${filter === 'all' ? (darkMode ? 'text-slate-900/60' : 'text-white/60') : 'text-slate-400'}`}>Bilancio</p>
-              <p className="text-sm font-bold whitespace-nowrap">{balance < 0 ? '-' : ''}€{Math.abs(balance).toLocaleString()}</p>
+              <p className="text-sm font-bold whitespace-nowrap">{balance < 0 ? '-' : ''}€{Math.abs(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </button>
           </div>
         </motion.div>
@@ -288,7 +288,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
               style={filter === 'income' && isProDark ? { background: 'rgba(45, 212, 191, 0.12)', border: '1px solid rgba(45, 212, 191, 0.4)', color: '#2dd4bf', boxShadow: '0 20px 25px -5px rgba(45, 212, 191, 0.25), 0 8px 10px -6px rgba(45, 212, 191, 0.2)' } : undefined}
             >
               <p className="text-[9px] font-bold uppercase tracking-wider opacity-60">Ingresos</p>
-              <p className="text-sm font-bold">€{totals.income.toLocaleString()}</p>
+              <p className="text-sm font-bold">€{totals.income.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </button>
             <button
               onClick={() => setFilter('expense')}
@@ -296,11 +296,11 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
               style={filter === 'expense' && isProDark ? { background: 'rgba(200, 85, 247, 0.12)', border: '1px solid rgba(200, 85, 247, 0.4)', color: '#c855f7', boxShadow: '0 20px 25px -5px rgba(200, 85, 247, 0.25), 0 8px 10px -6px rgba(200, 85, 247, 0.2)' } : undefined}
             >
               <p className="text-[9px] font-bold uppercase tracking-wider opacity-60">Gastos</p>
-              <p className="text-sm font-bold">€{totals.expenses.toLocaleString()}</p>
+              <p className="text-sm font-bold">€{totals.expenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </button>
             <button onClick={() => setFilter('all')} className={`p-4 rounded-3xl border transition-all text-left space-y-2 active:scale-[0.95] ${filter === 'all' ? (darkMode ? 'bg-white border-white text-slate-900 shadow-xl shadow-white/20' : 'bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-900/40') : (darkMode ? 'bg-slate-900 border-slate-800 text-slate-400 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10' : 'bg-white border-slate-100 text-slate-600 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5')}`}>
               <p className={`text-[9px] font-bold uppercase tracking-wider ${filter === 'all' ? (darkMode ? 'text-slate-900/60' : 'text-white/60') : 'text-slate-400'}`}>Balance</p>
-              <p className="text-sm font-bold whitespace-nowrap">{balance < 0 ? '-' : ''}€{Math.abs(balance).toLocaleString()}</p>
+              <p className="text-sm font-bold whitespace-nowrap">{balance < 0 ? '-' : ''}€{Math.abs(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </button>
           </div>
         </motion.div>
@@ -370,8 +370,8 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                       >
                         <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{group.label}</span>
                         <div className="flex items-center gap-3">
-                          {group.income > 0 && <span className="text-[11px] font-bold text-emerald-500">+€{group.income.toLocaleString()}</span>}
-                          {group.expenses > 0 && <span className="text-[11px] font-bold text-red-500">-€{group.expenses.toLocaleString()}</span>}
+                          {group.income > 0 && <span className="text-[11px] font-bold text-emerald-500">+€{group.income.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
+                          {group.expenses > 0 && <span className="text-[11px] font-bold text-red-500">-€{group.expenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
                           <span className={`text-[11px] ${darkMode ? 'text-slate-600' : 'text-slate-400'}`}>{group.docs.length}</span>
                           <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
                             <ChevronDown size={16} className={darkMode ? 'text-slate-500' : 'text-slate-400'} />
@@ -532,7 +532,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                     {selectedDoc.type === 'proforma' && <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-200 text-slate-500'}`}>PROFORMA</span>}
                     {selectedDoc.type === 'presupuesto' && <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}>PRESUPUESTO</span>}
                   </div>
-                  <p className={`text-sm font-bold mt-0.5 ${selectedDoc.type === 'expense' || selectedDoc.type === 'credit_note' || selectedDoc.type === 'factura_rectificativa' ? 'text-red-500' : selectedDoc.type === 'proforma' ? (darkMode ? 'text-slate-400' : 'text-slate-500') : selectedDoc.type === 'presupuesto' ? (darkMode ? 'text-amber-400' : 'text-amber-600') : 'text-emerald-500'}`}>{selectedDoc.type === 'expense' || selectedDoc.type === 'credit_note' || selectedDoc.type === 'factura_rectificativa' ? '-' : ''}€{selectedDoc.amount.toLocaleString()}</p>
+                  <p className={`text-sm font-bold mt-0.5 ${selectedDoc.type === 'expense' || selectedDoc.type === 'credit_note' || selectedDoc.type === 'factura_rectificativa' ? 'text-red-500' : selectedDoc.type === 'proforma' ? (darkMode ? 'text-slate-400' : 'text-slate-500') : selectedDoc.type === 'presupuesto' ? (darkMode ? 'text-amber-400' : 'text-amber-600') : 'text-emerald-500'}`}>{selectedDoc.type === 'expense' || selectedDoc.type === 'credit_note' || selectedDoc.type === 'factura_rectificativa' ? '-' : ''}€{selectedDoc.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
 
                 {/* ─── Action sheet presupuesto (Spain only) ────────────── */}

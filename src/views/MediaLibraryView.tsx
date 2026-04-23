@@ -219,7 +219,7 @@ export default function MediaLibraryView({ documents, onDeleteDocument, onUpdate
                     </div>
                     {/* Amount */}
                     <p className={`text-sm font-bold shrink-0 ${item.type === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>
-                      {item.type === 'expense' ? '-' : '+'}€{item.amount.toLocaleString()}
+                      {item.type === 'expense' ? '-' : '+'}€{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </motion.button>
                 ))}
@@ -261,7 +261,7 @@ export default function MediaLibraryView({ documents, onDeleteDocument, onUpdate
                     {selectedItem.fileName && <p className="text-xs text-slate-400 mt-0.5">{selectedItem.fileName}</p>}
                   </div>
                   <p className={`text-xl font-bold shrink-0 ${selectedItem.type === 'expense' ? 'text-red-500' : 'text-emerald-500'}`}>
-                    {selectedItem.type === 'expense' ? '-' : '+'}€{selectedItem.amount.toLocaleString()}
+                    {selectedItem.type === 'expense' ? '-' : '+'}€{selectedItem.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div className="rounded-2xl p-3 grid grid-cols-2 gap-2" style={{ backgroundColor: 'var(--color-card-bg)' }}>
