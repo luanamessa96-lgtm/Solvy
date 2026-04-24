@@ -127,6 +127,7 @@ Deno.serve(async (req) => {
               plan: session.metadata?.plan ?? 'monthly',
             }),
           }).catch(e => console.error('telegram-alert (new_pro) failed:', e));
+
         }
         break;
       }
