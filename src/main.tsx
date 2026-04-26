@@ -6,6 +6,9 @@ import App from './App.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import './index.css';
 
+// Reload silently when a deploy invalidates old JS chunks (stale tab after deploy)
+window.addEventListener('vite:preloadError', () => { window.location.reload(); });
+
 // Render React immediately — Sentry loaded after page is interactive
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -62,5 +65,7 @@ if ('serviceWorker' in navigator) {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') registration.update();
     });
+  }).catch(() => {
+    // SW non disponibile (blocco browser, deploy in corso) — non critico
   });
 }
