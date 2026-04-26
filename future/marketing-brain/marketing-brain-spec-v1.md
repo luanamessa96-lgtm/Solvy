@@ -1,3 +1,14 @@
+---
+status: PARKED
+parked_on: 2026-04-26
+reason: Premature automation. Validate channels manually first.
+reactivation_criteria:
+  - Almeno 5 utenti Solvy reali attivi (non solo registrati)
+  - Almeno 2 formati di post LinkedIn/TikTok con engagement provato
+  - Almeno 5 asesores spagnoli contattati a mano con almeno 2 risposte di interesse
+  - Decisione esplicita di Luana di scalare (non di automatizzare per non agire)
+---
+
 # Solvy Marketing Brain — Spec di Sistema
 
 **Data:** 26 aprile 2026  
@@ -171,4 +182,4 @@ Costruire in questo ordine segue il curriculum Anthropic Academy:
 
 ---
 
-*Spec approvata il 26 aprile 2026*
+*Spec approvata il 26 aprile 2026 — Parcheggiata il 26 aprile 2026*
