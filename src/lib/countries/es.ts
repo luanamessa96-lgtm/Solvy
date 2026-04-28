@@ -221,6 +221,17 @@ function getSpanishDeadlines(year: number): FiscalDeadline[] {
   ];
 }
 
+// ── Canarias — aliquote dinamiche per territorio ───────────────────────────
+export function getSpainVatRates(territory: 'peninsula' | 'canarias' | undefined): number[] {
+  if (territory === 'canarias') return [0, 3, 7];
+  return [0, 4, 10, 21];
+}
+
+export function getSpainDefaultVatRate(territory: 'peninsula' | 'canarias' | undefined): number {
+  if (territory === 'canarias') return 7;
+  return 21;
+}
+
 // ── CountryModule implementation ───────────────────────────────────────────
 export const spainModule: CountryModule = {
   code: 'ES',

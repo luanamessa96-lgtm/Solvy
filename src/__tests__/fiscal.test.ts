@@ -1046,6 +1046,34 @@ describe('REGRESSIONE — Spain penisola invariata', () => {
   });
 });
 
+describe('Task 5 — vatRates dinamici per territorio', () => {
+  it('penisola: getSpainVatRates → [0, 4, 10, 21]', async () => {
+    const { getSpainVatRates } = await import('../lib/countries/es');
+    expect(getSpainVatRates('peninsula')).toEqual([0, 4, 10, 21]);
+  });
+
+  it('penisola: getSpainDefaultVatRate → 21', async () => {
+    const { getSpainDefaultVatRate } = await import('../lib/countries/es');
+    expect(getSpainDefaultVatRate('peninsula')).toBe(21);
+  });
+
+  it('canarias: getSpainVatRates → [0, 3, 7]', async () => {
+    const { getSpainVatRates } = await import('../lib/countries/es');
+    expect(getSpainVatRates('canarias')).toEqual([0, 3, 7]);
+  });
+
+  it('canarias: getSpainDefaultVatRate → 7', async () => {
+    const { getSpainDefaultVatRate } = await import('../lib/countries/es');
+    expect(getSpainDefaultVatRate('canarias')).toBe(7);
+  });
+
+  it('undefined → penisola (default sicuro)', async () => {
+    const { getSpainVatRates, getSpainDefaultVatRate } = await import('../lib/countries/es');
+    expect(getSpainVatRates(undefined)).toEqual([0, 4, 10, 21]);
+    expect(getSpainDefaultVatRate(undefined)).toBe(21);
+  });
+});
+
 describe('Task 3 — IGIC Canarias', () => {
   it('IGIC_DEFAULT_RATE è 7', async () => {
     const { IGIC_DEFAULT_RATE } = await import('../lib/es/canarias');
