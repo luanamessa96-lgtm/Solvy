@@ -112,14 +112,6 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
           lang: selectedCountry === 'Spain' ? 'es' : 'it',
         },
       }).catch(() => {});
-      getClient().functions.invoke('telegram-alert', {
-        body: {
-          type: 'new_user',
-          email: profile.email,
-          name: updated.name ?? '',
-          country: selectedCountry,
-        },
-      }).catch(() => {});
     } catch {
       setIsSubmitting(false);
     }
