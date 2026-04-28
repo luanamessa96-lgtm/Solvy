@@ -1046,6 +1046,48 @@ describe('REGRESSIONE — Spain penisola invariata', () => {
   });
 });
 
+describe('Task 3 — IGIC Canarias', () => {
+  it('IGIC_DEFAULT_RATE è 7', async () => {
+    const { IGIC_DEFAULT_RATE } = await import('../lib/es/canarias');
+    expect(IGIC_DEFAULT_RATE).toBe(7);
+  });
+
+  it('getIgicRates restituisce [0, 3, 7]', async () => {
+    const { getIgicRates } = await import('../lib/es/canarias');
+    expect(getIgicRates()).toEqual([0, 3, 7]);
+  });
+
+  it('getIgicLabel(7) restituisce "IGIC 7%"', async () => {
+    const { getIgicLabel } = await import('../lib/es/canarias');
+    expect(getIgicLabel(7)).toBe('IGIC 7%');
+  });
+
+  it('getIgicLabel(3) restituisce "IGIC 3%"', async () => {
+    const { getIgicLabel } = await import('../lib/es/canarias');
+    expect(getIgicLabel(3)).toBe('IGIC 3%');
+  });
+
+  it('getIgicLabel(0) restituisce "IGIC 0%"', async () => {
+    const { getIgicLabel } = await import('../lib/es/canarias');
+    expect(getIgicLabel(0)).toBe('IGIC 0%');
+  });
+
+  it('isCanarias("canarias") → true', async () => {
+    const { isCanarias } = await import('../lib/es/canarias');
+    expect(isCanarias('canarias')).toBe(true);
+  });
+
+  it('isCanarias("peninsula") → false', async () => {
+    const { isCanarias } = await import('../lib/es/canarias');
+    expect(isCanarias('peninsula')).toBe(false);
+  });
+
+  it('isCanarias(undefined) → false', async () => {
+    const { isCanarias } = await import('../lib/es/canarias');
+    expect(isCanarias(undefined)).toBe(false);
+  });
+});
+
 describe('Task 1 — territory field', () => {
   it('territory peninsula è il default atteso', () => {
     const profile = { territory: 'peninsula' as const };
