@@ -5,7 +5,6 @@ import { IT_PROVINCE, getRegionFromProvince } from '../lib/it/province';
 import { useKeyboardPadding, scrollFieldIntoView } from '../hooks/useKeyboardPadding';
 import { Profile } from '../types';
 import { profileStorage, getClient } from '../lib/supabase';
-import { setLanguageByCountry } from '../lib/i18n';
 import AtecoSelector from '../components/AtecoSelector';
 
 interface OnboardingViewProps {
@@ -215,7 +214,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
               </div>
               <div className="w-full space-y-4">
                 <button
-                  onClick={() => { setSelectedCountry('Italy'); setLanguageByCountry('Italy'); goNext(1); }}
+                  onClick={() => { setSelectedCountry('Italy'); goNext(1); }}
                   className="w-full p-6 rounded-3xl border-2 flex items-center gap-5 transition-all active:scale-[0.98] hover:border-primary shadow-sm hover:shadow-lg hover:shadow-primary/10"
                   style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
                 >
@@ -227,7 +226,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                   <ChevronRight size={20} className="ml-auto text-slate-300" />
                 </button>
                 <button
-                  onClick={() => { setSelectedCountry('Spain'); setTerritory('peninsula'); setLanguageByCountry('Spain'); goNext('territory'); }}
+                  onClick={() => { setSelectedCountry('Spain'); setTerritory('peninsula'); goNext('territory'); }}
                   className="w-full p-6 rounded-3xl border-2 flex items-center gap-5 transition-all active:scale-[0.98] hover:border-primary shadow-sm hover:shadow-lg hover:shadow-primary/10"
                   style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
                 >
