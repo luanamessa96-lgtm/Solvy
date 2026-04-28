@@ -456,7 +456,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                       </>
                     )}
                   </select>
-                  <HelpText text={territory === 'canarias' ? 'El IGIC no incluye retención en factura. La retención IRPF (7% o 15%) se gestiona por separado según tu situación.' : 'La retención IRPF se calcula automáticamente: 7% los primeros 3 años, 15% a partir del 4º.'} />
+                  <HelpText text={territory === 'canarias' ? 'El IGIC es el impuesto equivalente al IVA en las Islas Canarias. Se aplica en tus facturas según el tipo seleccionado.' : 'La retención IRPF se calcula automáticamente: 7% los primeros 3 años, 15% a partir del 4º.'} />
                 </div>
                 <div className="space-y-1.5">
                   <label className={lc}>Cuota RETA mensual</label>
