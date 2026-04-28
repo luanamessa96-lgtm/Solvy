@@ -54,7 +54,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
   const [capEs, setCapEs] = useState('');
   const [cityEs, setCityEs] = useState('');
   const [regimenFiscal, setRegimenFiscal] = useState<'simplificada' | 'normal' | 'modulos'>('simplificada');
-  const [ivaHabitual, setIvaHabitual] = useState<'21' | '10' | '4'>('21');
+  const [ivaHabitual, setIvaHabitual] = useState<'21' | '10' | '4' | '7' | '3' | '0'>('21');
 
   const goNext = (nextStep: OnboardingStep) => { setDirection(1); setStep(nextStep); };
   const goBack = (prevStep: OnboardingStep) => { setDirection(-1); setStep(prevStep); };
@@ -81,7 +81,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
         address: [streetEs, capEs && cityEs ? `${capEs} ${cityEs}` : cityEs].filter(Boolean).join(', ') || undefined,
         regimenFiscal,
         territory,
-        ivaHabitual: parseInt(ivaHabitual) as 21 | 10 | 4,
+        ivaHabitual: parseInt(ivaHabitual) as 21 | 10 | 4 | 7 | 3 | 0,
       } : {
         regime,
         coefficiente,
@@ -271,7 +271,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                   <ChevronRight size={20} className="ml-auto text-slate-300" />
                 </button>
                 <button
-                  onClick={() => { setTerritory('canarias'); goNext(1); }}
+                  onClick={() => { setTerritory('canarias'); setIvaHabitual('7'); goNext(1); }}
                   className="w-full p-6 rounded-3xl border-2 flex items-center gap-5 transition-all active:scale-[0.98] hover:border-primary shadow-sm hover:shadow-lg hover:shadow-primary/10"
                   style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
                 >
@@ -440,11 +440,21 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                   <p className="text-[10px] text-slate-400 ml-1">Solvy v1 cubre la Estimación Directa Simplificada. La EDN y Módulos llegarán en futuras versiones.</p>
                 </div>
                 <div className="space-y-1.5">
-                  <label className={lc}>Tipo IVA habitual</label>
+                  <label className={lc}>{territory === 'canarias' ? 'Tipo IGIC habitual' : 'Tipo IVA habitual'}</label>
                   <select value={ivaHabitual} onChange={e => setIvaHabitual(e.target.value as typeof ivaHabitual)} className={ic}>
-                    <option value="21">21%</option>
-                    <option value="10">10%</option>
-                    <option value="4">4%</option>
+                    {territory === 'canarias' ? (
+                      <>
+                        <option value="7">IGIC 7%</option>
+                        <option value="3">IGIC 3%</option>
+                        <option value="0">IGIC 0%</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="21">21%</option>
+                        <option value="10">10%</option>
+                        <option value="4">4%</option>
+                      </>
+                    )}
                   </select>
                   <HelpText text="La retención IRPF se calcula automáticamente: 7% los primeros 3 años, 15% a partir del 4º." />
                 </div>
