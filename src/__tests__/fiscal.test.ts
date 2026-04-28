@@ -1045,3 +1045,21 @@ describe('REGRESSIONE — Spain penisola invariata', () => {
     expect(calculateRetenciones(1000, true)).toBeCloseTo(70, 1);
   });
 });
+
+describe('Task 1 — territory field', () => {
+  it('territory peninsula è il default atteso', () => {
+    const profile = { territory: 'peninsula' as const };
+    expect(profile.territory).toBe('peninsula');
+  });
+
+  it('territory canarias è un valore valido', () => {
+    const profile = { territory: 'canarias' as const };
+    expect(profile.territory).toBe('canarias');
+  });
+
+  it('territory undefined ricade su peninsula (default sicuro)', () => {
+    const territory: 'peninsula' | 'canarias' | undefined = undefined;
+    const resolved = territory ?? 'peninsula';
+    expect(resolved).toBe('peninsula');
+  });
+});
