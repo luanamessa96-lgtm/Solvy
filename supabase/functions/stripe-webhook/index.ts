@@ -83,16 +83,14 @@ Deno.serve(async (req) => {
           console.log(`Pro attivato per user_id: ${userId}, righe aggiornate: ${count}, primo acquisto: ${isFirstSubscription}`);
         }
 
-        // Loops upgrade_pro (aggiorna contatto + spara evento email) — fire-and-forget
         if (existing?.[0]?.email) {
-          fetch(`${supabaseUrl}/functions/v1/loops-sync`, {
+          await fetch(`${supabaseUrl}/functions/v1/loops-sync`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
             body: JSON.stringify({ action: 'upgrade_pro', email: existing[0].email, paese: existing[0].country }),
           }).catch(e => console.error('loops-sync (upgrade_pro) failed:', e));
 
-          // Alert Telegram nuovo Pro — fire-and-forget
-          fetch(`${supabaseUrl}/functions/v1/telegram-alert`, {
+          await fetch(`${supabaseUrl}/functions/v1/telegram-alert`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
             body: JSON.stringify({
@@ -103,7 +101,6 @@ Deno.serve(async (req) => {
               plan: session.metadata?.plan ?? 'monthly',
             }),
           }).catch(e => console.error('telegram-alert (new_pro) failed:', e));
-
         }
         break;
       }
@@ -162,9 +159,8 @@ Deno.serve(async (req) => {
 
           console.log(`Pro revocato per customer: ${customerId}`);
 
-          // Loops cancellation (aggiorna contatto + spara evento email) — fire-and-forget
           if (profiles[0].email) {
-            fetch(`${supabaseUrl}/functions/v1/loops-sync`, {
+            await fetch(`${supabaseUrl}/functions/v1/loops-sync`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
               body: JSON.stringify({ action: 'cancellation', email: profiles[0].email, paese: profiles[0].country }),
