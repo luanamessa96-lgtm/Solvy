@@ -15,6 +15,7 @@ import {
   getReduccionInicio,
   getMesesDeAlta,
   RETA_BRACKETS,
+  spainModule,
 } from '../lib/countries/es';
 import { getEsDeductibilityRate } from '../lib/es/deductibility';
 import { calcularTrimestre } from '../services/modelosES';
@@ -933,5 +934,114 @@ describe('Spain — Operazioni intracomunitarie (inversión del sujeto pasivo)',
     const r = calcularTrimestre(docs, 1, year);
     // totalIngresos include entrambe (l'intracomunitaria è comunque reddito)
     expect(r.totalIngresos).toBeCloseTo(3000, 1);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REGRESSIONE — questi test non devono MAI fallire durante l'implementazione
+// delle Canarie. Se falliscono ci si ferma immediatamente.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe('REGRESSIONE — Italy forfettario invariato', () => {
+  it('aliquota 15% su reddito imponibile standard', () => {
+    const result = italyModule.calculateTax({
+      grossIncome: 30000,
+      regime: 'forfettario',
+      categoryCoeff: 0.78,
+      startYear: 2015,
+    });
+    const taxable = 30000 * 0.78;
+    const inps = taxable * 0.2607;
+    const base = taxable - inps;
+    expect(result.taxableIncome).toBeCloseTo(taxable, 1);
+    expect(result.incomeTax).toBeCloseTo(base * 0.15, 1);
+  });
+
+  it('aliquota 5% nei primi 5 anni', () => {
+    const currentYear = new Date().getFullYear();
+    const result = italyModule.calculateTax({
+      grossIncome: 20000,
+      regime: 'forfettario',
+      categoryCoeff: 0.67,
+      startYear: currentYear - 1,
+    });
+    const taxable = 20000 * 0.67;
+    const inps = taxable * 0.2607;
+    const base = taxable - inps;
+    expect(result.incomeTax).toBeCloseTo(base * 0.05, 1);
+  });
+
+  it('INPS 26.07% sul reddito imponibile', () => {
+    const result = italyModule.calculateTax({
+      grossIncome: 40000,
+      regime: 'forfettario',
+      categoryCoeff: 0.78,
+      startYear: 2010,
+    });
+    const taxable = 40000 * 0.78;
+    expect(result.socialContributions).toBeCloseTo(taxable * 0.2607, 1);
+  });
+
+  it('reddito netto = lordo − INPS − imposta', () => {
+    const result = italyModule.calculateTax({
+      grossIncome: 25000,
+      regime: 'forfettario',
+      categoryCoeff: 0.78,
+      startYear: 2010,
+    });
+    expect(result.netIncome).toBeCloseTo(
+      result.grossIncome - result.socialContributions - result.incomeTax, 1
+    );
+  });
+});
+
+describe('REGRESSIONE — Spain penisola invariata', () => {
+  it('calculateRETA penisola: €500/mese → €206', () => {
+    expect(calculateRETA(500)).toBe(206);
+  });
+
+  it('calculateRETA penisola: €1.500/mese → €303', () => {
+    expect(calculateRETA(1500)).toBe(303);
+  });
+
+  it('calculateRETA penisola: €7.000/mese → €607', () => {
+    expect(calculateRETA(7000)).toBe(607);
+  });
+
+  it('calculateIRPF penisola: €30.000 → aliquota progressiva corretta', () => {
+    const result = calculateIRPF(30000);
+    // 12450 × 19% + (20200-12450) × 24% + (30000-20200) × 30%
+    const expected = 12450 * 0.19 + 7750 * 0.24 + 9800 * 0.30;
+    expect(result).toBeCloseTo(expected, 1);
+  });
+
+  it('calculateSpanishTaxes penisola: reddito netto corretto su €40.000', () => {
+    const result = calculateSpanishTaxes(40000, false, false, 2010, 2026, 0, 12);
+    expect(result.grossIncome).toBe(40000);
+    expect(result.reta).toBeGreaterThan(0);
+    expect(result.irpf).toBeGreaterThan(0);
+    expect(result.netIncome).toBeCloseTo(40000 - result.irpf - result.reta, 1);
+  });
+
+  it('spainModule.vatRates penisola = [0, 4, 10, 21]', () => {
+    expect(spainModule.vatRates).toEqual([0, 4, 10, 21]);
+  });
+
+  it('spainModule.defaultVatRate penisola = 21', () => {
+    expect(spainModule.defaultVatRate).toBe(21);
+  });
+
+  it('calcolarTrimestre penisola: IVA 21% su €1.000 → ivaRepercutida €210', () => {
+    const docs = [makeInvoice(1000, '2026-01-10', 21)];
+    const r = calcularTrimestre(docs, 1, 2026);
+    expect(r.ivaRepercutida).toBeCloseTo(210, 1);
+  });
+
+  it('retenciones penisola: 15% standard', () => {
+    expect(calculateRetenciones(1000, false)).toBeCloseTo(150, 1);
+  });
+
+  it('retenciones penisola: 7% primi 3 anni', () => {
+    expect(calculateRetenciones(1000, true)).toBeCloseTo(70, 1);
   });
 });
