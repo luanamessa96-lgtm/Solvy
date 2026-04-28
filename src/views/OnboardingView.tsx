@@ -4,7 +4,7 @@ import { ChevronRight, ChevronLeft, Info } from 'lucide-react';
 import { IT_PROVINCE, getRegionFromProvince } from '../lib/it/province';
 import { useKeyboardPadding, scrollFieldIntoView } from '../hooks/useKeyboardPadding';
 import { Profile } from '../types';
-import { profileStorage } from '../lib/supabase';
+import { profileStorage, getClient } from '../lib/supabase';
 import AtecoSelector from '../components/AtecoSelector';
 
 interface OnboardingViewProps {
@@ -103,6 +103,23 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
     localStorage.setItem('onboardingComplete', 'true');
     try {
       await onComplete(updated);
+      // fire-and-forget: welcome email + telegram new_user
+      getClient().functions.invoke('send-email', {
+        body: {
+          type: 'welcome',
+          email: profile.email,
+          name: updated.name ?? 'utente',
+          lang: selectedCountry === 'Spain' ? 'es' : 'it',
+        },
+      }).catch(() => {});
+      getClient().functions.invoke('telegram-alert', {
+        body: {
+          type: 'new_user',
+          email: profile.email,
+          name: updated.name ?? '',
+          country: selectedCountry,
+        },
+      }).catch(() => {});
     } catch {
       setIsSubmitting(false);
     }
