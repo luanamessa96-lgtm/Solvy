@@ -16,7 +16,7 @@ interface OnboardingViewProps {
 
 
 // Steps vary by country: 0=welcome, 'country'=country selection, 1-N=data steps, 'done'=done
-type OnboardingStep = 0 | 'country' | 1 | 2 | 3 | 'done';
+type OnboardingStep = 0 | 'country' | 'territory' | 1 | 2 | 3 | 'done';
 
 export default function OnboardingView({ profile, onComplete, onCancel, darkMode }: OnboardingViewProps) {
   const keyboardPadding = useKeyboardPadding();
@@ -26,6 +26,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
 
   // Country selection
   const [selectedCountry, setSelectedCountry] = useState<'Italy' | 'Spain'>('Italy');
+  const [territory, setTerritory] = useState<'peninsula' | 'canarias'>('peninsula');
 
   // Common fields
   const [name, setName] = useState('');
@@ -79,6 +80,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
         city: cityEs || undefined,
         address: [streetEs, capEs && cityEs ? `${capEs} ${cityEs}` : cityEs].filter(Boolean).join(', ') || undefined,
         regimenFiscal,
+        territory,
         ivaHabitual: parseInt(ivaHabitual) as 21 | 10 | 4,
       } : {
         regime,
@@ -224,7 +226,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                   <ChevronRight size={20} className="ml-auto text-slate-300" />
                 </button>
                 <button
-                  onClick={() => { setSelectedCountry('Spain'); goNext(1); }}
+                  onClick={() => { setSelectedCountry('Spain'); setTerritory('peninsula'); goNext('territory'); }}
                   className="w-full p-6 rounded-3xl border-2 flex items-center gap-5 transition-all active:scale-[0.98] hover:border-primary shadow-sm hover:shadow-lg hover:shadow-primary/10"
                   style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
                 >
@@ -245,6 +247,45 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                   Annulla
                 </button>
               )}
+            </motion.div>
+          )}
+
+          {/* TERRITORY SELECTION — solo Spain */}
+          {step === 'territory' && (
+            <motion.div key="territory" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col items-center justify-center p-8 space-y-8">
+              <div className="w-full space-y-3 text-center">
+                <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>¿Dónde ejerces tu actividad?</h2>
+                <p className="text-sm text-slate-500">El régimen fiscal varía según el territorio</p>
+              </div>
+              <div className="w-full space-y-4">
+                <button
+                  onClick={() => { setTerritory('peninsula'); goNext(1); }}
+                  className="w-full p-6 rounded-3xl border-2 flex items-center gap-5 transition-all active:scale-[0.98] hover:border-primary shadow-sm hover:shadow-lg hover:shadow-primary/10"
+                  style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
+                >
+                  <span className="text-4xl">🇪🇸</span>
+                  <div className="text-left">
+                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Península e Islas Baleares</p>
+                    <p className="text-sm text-slate-400">IVA estándar 21% · Régimen general</p>
+                  </div>
+                  <ChevronRight size={20} className="ml-auto text-slate-300" />
+                </button>
+                <button
+                  onClick={() => { setTerritory('canarias'); goNext(1); }}
+                  className="w-full p-6 rounded-3xl border-2 flex items-center gap-5 transition-all active:scale-[0.98] hover:border-primary shadow-sm hover:shadow-lg hover:shadow-primary/10"
+                  style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
+                >
+                  <span className="text-4xl">🌋</span>
+                  <div className="text-left">
+                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Islas Canarias</p>
+                    <p className="text-sm text-slate-400">IGIC 7% en lugar de IVA · Régimen especial</p>
+                  </div>
+                  <ChevronRight size={20} className="ml-auto text-slate-300" />
+                </button>
+              </div>
+              <button onClick={() => goBack('country')} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 text-slate-400`} style={{ backgroundColor: 'var(--color-card-bg)' }}>
+                <ChevronLeft size={20} />
+              </button>
             </motion.div>
           )}
 
