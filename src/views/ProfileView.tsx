@@ -115,7 +115,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     nie: activeProfile.nie || '',
     retaMensile: profileStorage.get(`reta_${activeProfile.id}`) || '',
     regimenFiscal: activeProfile.regimenFiscal || 'simplificada',
-    ivaHabitual: activeProfile.ivaHabitual?.toString() || '21',
+    ivaHabitual: activeProfile.ivaHabitual?.toString() || (activeProfile.territory === 'canarias' ? '7' : '21'),
     hasOstativaCause: activeProfile.hasOstativaCause || false,
   });
 
@@ -175,7 +175,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
         annoInizioAttivita: editData.annoInizioAttivita ? parseInt(editData.annoInizioAttivita) : undefined,
         meseInizioAttivita: isSpain && editData.meseInizioAttivita ? parseInt(editData.meseInizioAttivita) : undefined,
         regimenFiscal: isSpain ? (editData.regimenFiscal as 'simplificada' | 'normal' | 'modulos') : undefined,
-        ivaHabitual: isSpain && editData.ivaHabitual ? parseInt(editData.ivaHabitual) as 21 | 10 | 4 : undefined,
+        ivaHabitual: isSpain && editData.ivaHabitual ? parseInt(editData.ivaHabitual) as 21 | 10 | 4 | 7 | 3 | 0 : undefined,
         hasOstativaCause: !isSpain && editData.regime === 'forfettario' ? editData.hasOstativaCause : undefined,
       };
 
@@ -338,11 +338,21 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                         <p className="text-[10px] text-slate-400 ml-1">Solvy v1 cubre la Estimación Directa Simplificada. La EDN y Módulos llegarán en futuras versiones.</p>
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Tipo IVA habitual</label>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{activeProfile.territory === 'canarias' ? 'Tipo IGIC habitual' : 'Tipo IVA habitual'}</label>
                         <select value={editData.ivaHabitual} onChange={e => setEditData({ ...editData, ivaHabitual: e.target.value })} className={inputClass()}>
-                          <option value="21">21%</option>
-                          <option value="10">10%</option>
-                          <option value="4">4%</option>
+                          {activeProfile.territory === 'canarias' ? (
+                            <>
+                              <option value="7">IGIC 7%</option>
+                              <option value="3">IGIC 3%</option>
+                              <option value="0">IGIC 0%</option>
+                            </>
+                          ) : (
+                            <>
+                              <option value="21">21%</option>
+                              <option value="10">10%</option>
+                              <option value="4">4%</option>
+                            </>
+                          )}
                         </select>
                       </div>
                       <div className="space-y-1.5">
@@ -515,7 +525,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
               { icon: Briefcase, label: t('profile.label_regime'), value: activeProfile.country === 'Spain' ? ({ simplificada: 'Est. Directa Simplificada', normal: 'Est. Directa Normal', modulos: 'Est. Objetiva / Módulos' }[activeProfile.regimenFiscal || 'simplificada']) : (activeProfile.regime ? activeProfile.regime.charAt(0).toUpperCase() + activeProfile.regime.slice(1) : 'Forfettario') },
               ...(activeProfile.country !== 'Spain' && activeProfile.coefficiente ? [{ icon: Receipt, label: t('profile.label_category'), value: `${CATEGORIE_COEFFICIENTE[activeProfile.coefficiente] || activeProfile.coefficiente + '%'} (${activeProfile.coefficiente}%)` }] : []),
               ...(activeProfile.country !== 'Spain' && activeProfile.annoInizioAttivita ? [{ icon: Receipt, label: 'Anno inizio attività', value: activeProfile.annoInizioAttivita.toString() }] : []),
-              ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'IVA habitual', value: `${activeProfile.ivaHabitual ?? 21}%` }] : []),
+              ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: activeProfile.territory === 'canarias' ? 'IGIC habitual' : 'IVA habitual', value: activeProfile.territory === 'canarias' ? `IGIC ${activeProfile.ivaHabitual ?? 7}%` : `${activeProfile.ivaHabitual ?? 21}%` }] : []),
               ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'Año inicio actividad', value: activeProfile.annoInizioAttivita ? activeProfile.annoInizioAttivita.toString() : '—' }] : []),
               ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'Ret. IRPF (auto)', value: (() => { const y = activeProfile.annoInizioAttivita ? new Date().getFullYear() - activeProfile.annoInizioAttivita : 10; return `${y <= 3 ? 7 : 15}%`; })() }] : []),
               ...(activeProfile.country === 'Spain' ? [{ icon: Receipt, label: 'RETA mensual', value: (() => { const v = profileStorage.get(`reta_${activeProfile.id}`); return v ? `€${v}/mes` : '—'; })() }] : []),
