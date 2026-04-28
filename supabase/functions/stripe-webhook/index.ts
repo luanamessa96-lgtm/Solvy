@@ -7,30 +7,6 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
 
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') ?? '';
 
-// Chiama la edge function send-email in modo fire-and-forget (non blocca il webhook)
-async function sendEmail(
-  supabaseUrl: string,
-  serviceRoleKey: string,
-  payload: { type: string; email: string; name: string; lang: 'it' | 'es'; amount?: string }
-): Promise<void> {
-  try {
-    await fetch(`${supabaseUrl}/functions/v1/send-email`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${serviceRoleKey}`,
-      },
-      body: JSON.stringify(payload),
-    });
-  } catch (err) {
-    // Non blocca il webhook su errore email
-    console.error('send-email call failed:', err);
-  }
-}
-
-function langFromCountry(country: string | null | undefined): 'it' | 'es' {
-  return country === 'Spain' ? 'es' : 'it';
-}
 
 Deno.serve(async (req) => {
   const signature = req.headers.get('stripe-signature');
@@ -107,13 +83,13 @@ Deno.serve(async (req) => {
           console.log(`Pro attivato per user_id: ${userId}, righe aggiornate: ${count}, primo acquisto: ${isFirstSubscription}`);
         }
 
-        // Loops update_pro — fire-and-forget
+        // Loops upgrade_pro (aggiorna contatto + spara evento email) — fire-and-forget
         if (existing?.[0]?.email) {
           fetch(`${supabaseUrl}/functions/v1/loops-sync`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
-            body: JSON.stringify({ action: 'update_pro', email: existing[0].email, isPro: true }),
-          }).catch(e => console.error('loops-sync (update_pro) failed:', e));
+            body: JSON.stringify({ action: 'upgrade_pro', email: existing[0].email, paese: existing[0].country }),
+          }).catch(e => console.error('loops-sync (upgrade_pro) failed:', e));
 
           // Alert Telegram nuovo Pro — fire-and-forget
           fetch(`${supabaseUrl}/functions/v1/telegram-alert`, {
@@ -186,21 +162,13 @@ Deno.serve(async (req) => {
 
           console.log(`Pro revocato per customer: ${customerId}`);
 
-          // Invia email cancellazione (fire-and-forget)
+          // Loops cancellation (aggiorna contatto + spara evento email) — fire-and-forget
           if (profiles[0].email) {
-            sendEmail(supabaseUrl, serviceRoleKey, {
-              type: 'cancellation',
-              email: profiles[0].email,
-              name: profiles[0].name ?? 'utente',
-              lang: langFromCountry(profiles[0].country),
-            });
-
-            // Loops update_pro false — fire-and-forget
             fetch(`${supabaseUrl}/functions/v1/loops-sync`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
-              body: JSON.stringify({ action: 'update_pro', email: profiles[0].email, isPro: false }),
-            }).catch(e => console.error('loops-sync (update_pro false) failed:', e));
+              body: JSON.stringify({ action: 'cancellation', email: profiles[0].email, paese: profiles[0].country }),
+            }).catch(e => console.error('loops-sync (cancellation) failed:', e));
           }
         }
         break;

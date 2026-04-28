@@ -357,38 +357,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    let resendId: string | null = null;
-    if (payload.type !== 'welcome') {
-      const { subject, html } = buildEmail(payload);
-
-      const resendKey = Deno.env.get('RESEND_API_KEY') ?? '';
-      if (!resendKey) throw new Error('RESEND_API_KEY not configured');
-
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${resendKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'Solvy <hello@solvyapp.com>',
-          to: [payload.email],
-          subject,
-          html,
-        }),
-      });
-
-      const resData = await res.json();
-
-      if (!res.ok) {
-        console.error('Resend error:', resData);
-        throw new Error(resData.message ?? 'Resend API error');
-      }
-
-      resendId = resData.id;
-      console.log(`Email inviata [${payload.type}] → ${payload.email} (id: ${resData.id})`);
-    }
-
     if (payload.type === 'welcome') {
       const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
       const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
@@ -411,7 +379,7 @@ Deno.serve(async (req) => {
       }).catch(e => console.error('loops-sync (signup) failed:', e));
     }
 
-    return new Response(JSON.stringify({ success: true, id: resendId }), {
+    return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 

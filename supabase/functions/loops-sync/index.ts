@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-type Action = 'signup' | 'update_pro' | 'update_fatture' | 'update_active';
+type Action = 'signup' | 'update_pro' | 'upgrade_pro' | 'cancellation' | 'update_fatture' | 'update_active';
 
 interface SyncPayload {
   action: Action;
@@ -82,6 +82,18 @@ Deno.serve(async (req) => {
       await loopsRequest('/contacts/update', 'PUT', {
         email,
         isPro: isPro ?? true,
+      });
+    } else if (action === 'upgrade_pro') {
+      await loopsRequest('/contacts/update', 'PUT', { email, isPro: true });
+      await loopsRequest('/events/send', 'POST', {
+        email,
+        eventName: paese === 'Spain' ? 'upgrade_pro_es' : 'upgrade_pro_it',
+      });
+    } else if (action === 'cancellation') {
+      await loopsRequest('/contacts/update', 'PUT', { email, isPro: false });
+      await loopsRequest('/events/send', 'POST', {
+        email,
+        eventName: paese === 'Spain' ? 'cancellation_es' : 'cancellation_it',
       });
     } else if (action === 'update_fatture') {
       await loopsRequest('/contacts/update', 'PUT', {
