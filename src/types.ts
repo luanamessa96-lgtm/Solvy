@@ -22,12 +22,13 @@ export interface Profile {
   subscriptionStartedAt?: string;
   subscriptionPlan?: 'monthly' | 'yearly';
   regimenFiscal?: 'simplificada' | 'normal' | 'modulos';
-  ivaHabitual?: 21 | 10 | 4;
+  ivaHabitual?: 21 | 10 | 4 | 7 | 3;
   street?: string;
   cap?: string;
   city?: string;
   province?: string;
   region?: string;
+  territory?: 'peninsula' | 'canarias';
   redditoN1?: number;
   invoiceCounters?: Record<string, number>;
   deletedInvoiceNumbers?: string[];
