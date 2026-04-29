@@ -223,7 +223,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                 >
                   <span className="text-4xl">🇪🇸</span>
                   <div className="text-left">
-                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Spagna</p>
+                    <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>España</p>
                     <p className="text-sm text-slate-400">Estimación directa simplificada</p>
                   </div>
                   <ChevronRight size={20} className="ml-auto text-slate-300" />
