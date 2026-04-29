@@ -21,7 +21,7 @@ export const CountryBadge: React.FC<CountryBadgeProps> = ({ country, size = 'sm'
   return (
     <span className={`inline-flex items-center ${sizeClasses} rounded-full bg-white/15 backdrop-blur-sm border border-white/20 font-medium text-white`}>
       <span>{config.flag}</span>
-      <span>{config.name}</span>
+      <span>{config.nameEs}</span>
     </span>
   );
 };

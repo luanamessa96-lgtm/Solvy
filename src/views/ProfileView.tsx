@@ -493,7 +493,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-2">{t('profile.profile_settings')}</h3>
           <div className="rounded-2xl border overflow-hidden transition-colors" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
             {[
-              { icon: Globe, label: t('profile.label_country'), value: activeProfile.country },
+              { icon: Globe, label: t('profile.label_country'), value: activeProfile.country === 'Spain' ? t('profile.country_spain') : t('profile.country_italy') },
               { icon: CreditCard, label: t('profile.label_currency'), value: activeProfile.currency },
               { icon: Briefcase, label: t('profile.label_job_type'), value: activeProfile.jobType },
             ].map(({ icon: Icon, label, value }, i, arr) => (
