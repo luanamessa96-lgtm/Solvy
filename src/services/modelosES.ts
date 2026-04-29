@@ -208,6 +208,8 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
   const lightGrey: [number, number, number] = [226, 232, 240];
   const primary:   [number, number, number] = [79, 70, 229];
   const bgLight:   [number, number, number] = [248, 250, 252];
+  const isCanarias = profile.territory === 'canarias';
+  const taxLabel = isCanarias ? 'IGIC' : 'IVA';
 
   const nif = profile.nie || profile.piva || '';
   const nifLabel = profile.nie ? 'NIE' : 'NIF';
@@ -291,7 +293,7 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
 
   autoTable(pdf, {
     startY: y,
-    head: [['N° Factura', 'Cliente/Descripción', 'Fecha', 'Base', 'IVA', 'Total']],
+    head: [['N° Factura', 'Cliente/Descripción', 'Fecha', 'Base', taxLabel, 'Total']],
     body: invoiceRows,
     ...(allIngresosDocs.length > 0 ? {
       foot: [['', 'TOTAL INGRESOS', '', fmtES(totalIngresos), '', fmtES(totalIngresos + ivaRepercutida)]],
@@ -348,7 +350,7 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
 
   autoTable(pdf, {
     startY: y,
-    head: [['Descripción', 'Categoría', 'Fecha', 'Base', 'IVA', 'Cuota IVA']],
+    head: [['Descripción', 'Categoría', 'Fecha', 'Base', taxLabel, `Cuota ${taxLabel}`]],
     body: expenseRows,
     ...(expenses.length > 0 ? {
       foot: [['TOTAL GASTOS', '', '', fmtES(totalGastos), '', `- ${fmtES(ivaSoportada)}`]],
@@ -436,8 +438,8 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
 
   // ── Modelo 303 rows (right column) ─────────────────────────────────────────
   const rows303: [string, string][] = [
-    ['IVA repercutida (devengada)',    fmtES(ivaRepercutida)],
-    ['IVA soportada (deducible)*',    `- ${fmtES(ivaSoportada)}`],
+    [`${taxLabel} repercutid${isCanarias ? 'o' : 'a'} (devengad${isCanarias ? 'o' : 'a'})`, fmtES(ivaRepercutida)],
+    [`${taxLabel} soportad${isCanarias ? 'o' : 'a'} (deducible)*`,                         `- ${fmtES(ivaSoportada)}`],
     ['', ''],
     ['', ''],
   ];
@@ -475,7 +477,7 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(6.5);
     pdf.setTextColor(...grey);
-    pdf.text('* IVA soportada: €0,00. Añade el tipo de IVA al registrar los gastos para calcular la deducción correctamente.', M, y);
+    pdf.text(`* ${taxLabel} soportad${isCanarias ? 'o' : 'a'}: €0,00. Añade el tipo de ${taxLabel} al registrar los gastos para calcular la deducción correctamente.`, M, y);
   }
 
   // ── Footer ─────────────────────────────────────────────────────────────────
