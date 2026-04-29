@@ -235,10 +235,10 @@ function AppInner() {
       setUserId(user.id);
       const data = await getProfiles(user.id, user.email ?? undefined).catch(() => null);
 
-      // Profili completi = onboarding già completato (jobType valorizzato dall'utente)
-      // jobType='' significa profilo creato dal trigger DB ma onboarding non ancora completato
+      // Profilo primario (id === user.id): creato dal trigger DB → completo solo se jobType valorizzato
+      // Profili secondari (UUID diverso): creati da handleNewProfileComplete → basta il nome (obbligatorio)
       const completeProfiles = data
-        ? data.filter(p => !!(p.jobType))
+        ? data.filter(p => p.id === user.id ? !!(p.jobType) : !!(p.name))
         : null;
 
       if (completeProfiles && completeProfiles.length > 0) {
