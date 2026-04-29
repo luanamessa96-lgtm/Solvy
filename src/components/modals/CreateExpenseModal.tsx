@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { getItDeductibilityRate } from '../../lib/it/deductibility';
 import { getEsDeductibilityRate } from '../../lib/es/deductibility';
 import { todayLocalISO } from '../../utils/date';
+import { getSpainVatRates, getSpainDefaultVatRate } from '../../lib/countries/es';
 
 interface CreateExpenseModalProps {
   isOpen: boolean;
@@ -17,13 +18,15 @@ interface CreateExpenseModalProps {
   profile?: import('../../types').Profile;
 }
 
-const IVA_RATES = [0, 4, 10, 21] as const;
-
 const CreateExpenseModal = ({ isOpen, onClose, onSave, onUpdate, editDoc, darkMode, profile }: CreateExpenseModalProps) => {
   useBodyScrollLock(isOpen);
   const { t } = useTranslation();
   const isSpain = profile?.country === 'Spain';
   const isItaly = profile?.country === 'Italy';
+  const isCanarias = isSpain && profile?.territory === 'canarias';
+  const taxLabel = isCanarias ? 'IGIC' : 'IVA';
+  const ivaOptions = getSpainVatRates(profile?.territory);
+  const defaultIvaRate = getSpainDefaultVatRate(profile?.territory);
   const isOrdinario = isItaly && profile?.regime === 'ordinario';
   const defaultCategory = isOrdinario ? 'software' : isSpain ? 'suscripcion' : 'abbonamento';
 
@@ -33,7 +36,7 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, onUpdate, editDoc, darkMo
     date: todayLocalISO(),
     category: defaultCategory,
   });
-  const [ivaRate, setIvaRate] = useState<number>(21);
+  const [ivaRate, setIvaRate] = useState<number>(defaultIvaRate);
   const [nifProveedor, setNifProveedor] = useState('');
   const [attachData, setAttachData] = useState<string | undefined>(undefined);
   const [attachName, setAttachName] = useState<string | undefined>(undefined);
@@ -47,7 +50,7 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, onUpdate, editDoc, darkMo
         date: editDoc.date,
         category: editDoc.category || defaultCategory,
       });
-      setIvaRate(editDoc.ivaRate ?? 21);
+      setIvaRate(editDoc.ivaRate ?? defaultIvaRate);
       setNifProveedor(editDoc.nifProveedor || '');
       setAttachData(editDoc.imageData);
       setAttachName(editDoc.fileName);
@@ -90,7 +93,7 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, onUpdate, editDoc, darkMo
     }
     onClose();
     setFormData({ title: '', amount: '', date: todayLocalISO(), category: defaultCategory });
-    setIvaRate(21);
+    setIvaRate(defaultIvaRate);
     setNifProveedor('');
     setAmountTouched(false);
     setAttachData(undefined);
@@ -193,9 +196,9 @@ const CreateExpenseModal = ({ isOpen, onClose, onSave, onUpdate, editDoc, darkMo
                 </div>
               {isSpain && (
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">IVA Soportado</label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {IVA_RATES.map(rate => (
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{taxLabel} Soportado</label>
+                  <div className={`grid gap-2 ${isCanarias ? 'grid-cols-3' : 'grid-cols-4'}`}>
+                    {ivaOptions.map(rate => (
                       <button
                         key={rate}
                         onClick={() => setIvaRate(rate)}
