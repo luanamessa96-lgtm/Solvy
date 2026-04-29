@@ -566,6 +566,8 @@ export async function generateLibroEmitidaBlob(
   const taxId = profile.nie || profile.piva || '';
   const nifLabel = profile.nie ? 'NIE' : 'NIF';
   const fmtES = (n: number) => `€ ${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const isCanariasEmitida = profile.territory === 'canarias';
+  const taxLabelEmitida = isCanariasEmitida ? 'IGIC' : 'IVA';
 
   const libroDocs = documents
     .filter(d => (d.type === 'invoice' || d.type === 'factura_rectificativa') && getLocalYear(d.date) === year)
@@ -619,7 +621,7 @@ export async function generateLibroEmitidaBlob(
 
   autoTable(pdf, {
     startY: 26,
-    head: [['Nº Factura', 'Fecha Exp.', 'NIF/NIE Dest.', 'Nombre/Razón Social', 'Base Imponible', 'Tipo IVA', 'Cuota IVA', 'Ret. IRPF', 'Imp. Ret.', 'Total Factura']],
+    head: [['Nº Factura', 'Fecha Exp.', 'NIF/NIE Dest.', 'Nombre/Razón Social', 'Base Imponible', `Tipo ${taxLabelEmitida}`, `Cuota ${taxLabelEmitida}`, 'Ret. IRPF', 'Imp. Ret.', 'Total Factura']],
     body: rows,
     styles: { fontSize: 7.5, cellPadding: { top: 3, bottom: 3, left: 2, right: 2 }, textColor: black },
     headStyles: { fillColor: [241, 245, 249], textColor: grey, fontStyle: 'bold', fontSize: 7, lineColor: lightGrey, lineWidth: 0.3 },
