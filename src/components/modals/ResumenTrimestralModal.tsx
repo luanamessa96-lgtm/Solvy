@@ -340,7 +340,7 @@ export default function ResumenTrimestralModal({
                     <p className="text-[10px] text-slate-400 mt-0.5">cuota a ingresar</p>
                   </div>
                   <div className="p-4">
-                    <p className="text-[9px] font-bold uppercase tracking-wider text-primary mb-1">Mod. 303 — IVA</p>
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-primary mb-1">Mod. 303 — {profile.territory === 'canarias' ? 'IGIC' : 'IVA'}</p>
                     <p className={`text-sm font-bold ${resumen.diferenciaIVA >= 0 ? 'text-red-500' : 'text-emerald-500'}`}>
                       {resumen.diferenciaIVA >= 0 ? '' : '↓ '}{fmtPreview(Math.abs(resumen.diferenciaIVA))}
                     </p>
