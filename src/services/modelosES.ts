@@ -1040,6 +1040,8 @@ export async function generateResumenAnualIVABlob(
   const nif = profile.nie || profile.piva || '';
   const nifLabel = profile.nie ? 'NIE' : 'NIF';
   const fmt = (n: number) => `€ ${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const isCanarias390 = profile.territory === 'canarias';
+  const tl390 = isCanarias390 ? 'IGIC' : 'IVA';
 
   const yearInvoices = documents.filter(d => d.type === 'invoice' && getLocalYear(d.date) === year);
   const yearRect     = documents.filter(d => d.type === 'factura_rectificativa' && getLocalYear(d.date) === year);
@@ -1104,16 +1106,16 @@ export async function generateResumenAnualIVABlob(
 
   // ── IVA Repercutida ────────────────────────────────────────────────────────
   pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(...grey);
-  pdf.text('IVA REPERCUTIDA — FACTURAS EMITIDAS', M, y);
+  pdf.text(`${tl390} REPERCUTID${isCanarias390 ? 'O' : 'A'} — FACTURAS EMITIDAS`, M, y);
   y += 4;
 
   const repRates = Object.keys(ivaRepRates).map(Number).sort((a, b) => a - b);
   autoTable(pdf, {
     startY: y,
-    head: [['Tipo IVA', 'Base Imponible', 'Cuota IVA']],
+    head: [[`Tipo ${tl390}`, 'Base Imponible', `Cuota ${tl390}`]],
     body: repRates.length > 0
       ? repRates.map(r => [`${r}%`, fmt(ivaRepRates[r].base), fmt(ivaRepRates[r].cuota)])
-      : [['—', 'Sin facturas con IVA', '—']],
+      : [['—', `Sin facturas con ${tl390}`, '—']],
     ...(repRates.length > 0 ? {
       foot: [['TOTAL', fmt(repRates.reduce((s, r) => s + ivaRepRates[r].base, 0)), fmt(totalIvaRep)]],
       footStyles: { fillColor: bgLight, textColor: black, fontStyle: 'bold', fontSize: 8 },
@@ -1135,16 +1137,16 @@ export async function generateResumenAnualIVABlob(
 
   // ── IVA Soportada ─────────────────────────────────────────────────────────
   pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(...grey);
-  pdf.text('IVA SOPORTADA — GASTOS DEDUCIBLES', M, y);
+  pdf.text(`${tl390} SOPORTAD${isCanarias390 ? 'O' : 'A'} — GASTOS DEDUCIBLES`, M, y);
   y += 4;
 
   const sopRates = Object.keys(ivaSopRates).map(Number).sort((a, b) => a - b);
   autoTable(pdf, {
     startY: y,
-    head: [['Tipo IVA', 'Base Imponible', 'Cuota IVA']],
+    head: [[`Tipo ${tl390}`, 'Base Imponible', `Cuota ${tl390}`]],
     body: sopRates.length > 0
       ? sopRates.map(r => [`${r}%`, fmt(ivaSopRates[r].base), fmt(ivaSopRates[r].cuota)])
-      : [['—', 'Sin gastos con IVA deducible', '—']],
+      : [['—', `Sin gastos con ${tl390} deducible`, '—']],
     ...(sopRates.length > 0 ? {
       foot: [['TOTAL', fmt(sopRates.reduce((s, r) => s + ivaSopRates[r].base, 0)), fmt(totalIvaSop)]],
       footStyles: { fillColor: bgLight, textColor: black, fontStyle: 'bold', fontSize: 8 },
@@ -1166,12 +1168,12 @@ export async function generateResumenAnualIVABlob(
 
   // ── Diferencia per trimestre ───────────────────────────────────────────────
   pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(...grey);
-  pdf.text('DIFERENCIA IVA POR TRIMESTRE', M, y);
+  pdf.text(`DIFERENCIA ${tl390} POR TRIMESTRE`, M, y);
   y += 4;
 
   autoTable(pdf, {
     startY: y,
-    head: [['Trimestre', 'IVA Repercutida', 'IVA Soportada', 'Diferencia', 'Resultado']],
+    head: [['Trimestre', `${tl390} Repercutid${isCanarias390 ? 'o' : 'a'}`, `${tl390} Soportad${isCanarias390 ? 'o' : 'a'}`, 'Diferencia', 'Resultado']],
     body: quarterData.map(({ q, ivaRep, ivaSop, dif }) => [
       QUARTER_LABELS[q],
       fmt(ivaRep),
