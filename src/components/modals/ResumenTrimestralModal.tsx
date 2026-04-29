@@ -445,15 +445,15 @@ export default function ResumenTrimestralModal({
                     emoji="📊"
                     label="Resumen Anual"
                     badge="PRO"
-                    subtitle={`Ingresos, gastos por categoría, IVA y estimación Mod. 100 · ${year}`}
+                    subtitle={`Ingresos, gastos por categoría, ${profile.territory === 'canarias' ? 'IGIC' : 'IVA'} y estimación Mod. 100 · ${year}`}
                   />
                   <Toggle
                     checked={includeResumenAnualIVA}
                     onToggle={() => setIncludeResumenAnualIVA(p => !p)}
                     emoji="📊"
-                    label="Resumen Anual IVA"
+                    label={`Resumen Anual ${profile.territory === 'canarias' ? 'IGIC' : 'IVA'}`}
                     badge="PRO"
-                    subtitle={`IVA por aliquota, diferencia trimestral, Mod. 390 · ${year}`}
+                    subtitle={`${profile.territory === 'canarias' ? 'IGIC' : 'IVA'} por aliquota, diferencia trimestral, Mod. 390 · ${year}`}
                   />
                 </div>
               )}
