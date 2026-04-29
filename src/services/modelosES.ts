@@ -1252,6 +1252,8 @@ export async function generateGastosTrimestreBlob(
   const nifLabel = profile.nie ? 'NIE' : 'NIF';
   const fmtES = (n: number) => `€ ${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const qLabel = QUARTER_LABELS[quarter];
+  const isCanariasGastos = profile.territory === 'canarias';
+  const taxLabelGastos = isCanariasGastos ? 'IGIC' : 'IVA';
 
   const docs = [...expenseDocs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
@@ -1283,7 +1285,7 @@ export async function generateGastosTrimestreBlob(
 
   autoTable(pdf, {
     startY: 26,
-    head: [['Nº Ref.', 'Fecha', 'NIF Proveedor', 'Concepto', 'Base Imponible', 'Tipo IVA', 'Cuota IVA', 'Total']],
+    head: [['Nº Ref.', 'Fecha', 'NIF Proveedor', 'Concepto', 'Base Imponible', `Tipo ${taxLabelGastos}`, `Cuota ${taxLabelGastos}`, 'Total']],
     body: rows,
     styles: { fontSize: 8, cellPadding: { top: 3, bottom: 3, left: 2, right: 2 }, textColor: black },
     headStyles: { fillColor: [241, 245, 249], textColor: grey, fontStyle: 'bold', fontSize: 7.5, lineColor: lightGrey, lineWidth: 0.3 },
