@@ -681,6 +681,8 @@ export async function generateLibroRecibidaBlob(
   const taxId = profile.nie || profile.piva || '';
   const nifLabel = profile.nie ? 'NIE' : 'NIF';
   const fmtES = (n: number) => `€ ${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const isCanariasRecibida = profile.territory === 'canarias';
+  const taxLabelRecibida = isCanariasRecibida ? 'IGIC' : 'IVA';
 
   const recibidaDocs = documents
     .filter(d => d.type === 'expense' && getLocalYear(d.date) === year)
@@ -729,7 +731,7 @@ export async function generateLibroRecibidaBlob(
 
   autoTable(pdf, {
     startY: 26,
-    head: [['Nº Factura Recibida', 'Fecha Recepción', 'NIF Proveedor', 'Nombre/Razón Social', 'Base Imponible', 'Tipo IVA Ded.', 'Cuota IVA Ded.', 'Total Factura']],
+    head: [['Nº Factura Recibida', 'Fecha Recepción', 'NIF Proveedor', 'Nombre/Razón Social', 'Base Imponible', `Tipo ${taxLabelRecibida} Ded.`, `Cuota ${taxLabelRecibida} Ded.`, 'Total Factura']],
     body: rows,
     styles: { fontSize: 8, cellPadding: { top: 3, bottom: 3, left: 2, right: 2 }, textColor: black },
     headStyles: { fillColor: [241, 245, 249], textColor: grey, fontStyle: 'bold', fontSize: 7.5, lineColor: lightGrey, lineWidth: 0.3 },
