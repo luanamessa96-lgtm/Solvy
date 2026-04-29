@@ -4,6 +4,7 @@ import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { Plus, CheckCircle2, ChevronDown } from 'lucide-react';
 import { Document, Profile } from '../../types';
 import { getLocalYear, todayLocalISO } from '../../utils/date';
+import { getSpainDefaultVatRate } from '../../lib/countries/es';
 
 const MOTIVOS = [
   'Error en datos',
@@ -26,6 +27,9 @@ const CreateFacturaRectificativaModal = ({
   isOpen, onClose, onSave, profile, documents, darkMode,
 }: CreateFacturaRectificativaModalProps) => {
   useBodyScrollLock(isOpen);
+  const isCanarias = profile.territory === 'canarias';
+  const taxLabel = isCanarias ? 'IGIC' : 'IVA';
+  const defaultVatRate = getSpainDefaultVatRate(profile.territory);
 
   const facturas = useMemo(
     () => documents.filter(d => d.type === 'invoice'),
@@ -89,7 +93,7 @@ const CreateFacturaRectificativaModal = ({
       client: selectedFactura.client,
       clientAddress: selectedFactura.clientAddress,
       clientPiva: selectedFactura.clientPiva,
-      ivaRate: selectedFactura.ivaRate ?? profile.ivaHabitual ?? 21,
+      ivaRate: selectedFactura.ivaRate ?? profile.ivaHabitual ?? defaultVatRate,
       ritenuta: selectedFactura.ritenuta,
       category: selectedFactura.invoiceNumber ?? selectedFactura.id,
       title: `Factura rectificativa — ${motivo}`,
@@ -220,11 +224,11 @@ const CreateFacturaRectificativaModal = ({
                       <span className="text-slate-400">Base imponible rectificada</span>
                       <span className="font-bold text-red-500">-€{selectedFactura.amount.toLocaleString('es-ES')}</span>
                     </div>
-                    {(selectedFactura.ivaRate ?? profile.ivaHabitual ?? 21) > 0 && (
+                    {(selectedFactura.ivaRate ?? profile.ivaHabitual ?? defaultVatRate) > 0 && (
                       <div className="flex justify-between text-xs">
-                        <span className="text-slate-400">IVA {selectedFactura.ivaRate ?? profile.ivaHabitual ?? 21}%</span>
+                        <span className="text-slate-400">{taxLabel} {selectedFactura.ivaRate ?? profile.ivaHabitual ?? defaultVatRate}%</span>
                         <span className="font-bold text-red-500">
-                          -€{(selectedFactura.amount * ((selectedFactura.ivaRate ?? profile.ivaHabitual ?? 21) / 100)).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          -€{(selectedFactura.amount * ((selectedFactura.ivaRate ?? profile.ivaHabitual ?? defaultVatRate) / 100)).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </div>
                     )}
