@@ -4,6 +4,7 @@ import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { Plus, FileText, CheckCircle2 } from 'lucide-react';
 import { Document, Profile } from '../../types';
 import { todayLocalISO } from '../../utils/date';
+import { getSpainVatRates, getSpainDefaultVatRate } from '../../lib/countries/es';
 
 interface CreateFacturaModalProps {
   isOpen: boolean;
@@ -17,12 +18,13 @@ interface CreateFacturaModalProps {
   editDoc?: Document;
 }
 
-const IVA_OPTIONS = [0, 4, 10, 21] as const;
-
 const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile, profile, documents, darkMode, editDoc }: CreateFacturaModalProps) => {
   useBodyScrollLock(isOpen);
   const currentYear = new Date().getFullYear();
   const isEditMode = !!editDoc;
+  const isCanarias = profile.territory === 'canarias';
+  const ivaOptions = getSpainVatRates(profile.territory);
+  const taxLabel = isCanarias ? 'IGIC' : 'IVA';
 
   const nextInvoiceNumber = useMemo(() => {
     const yearStr = String(currentYear);
@@ -37,7 +39,7 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
     return 15;
   }, [profile.annoInizioAttivita, currentYear]);
 
-  const defaultIva = profile.ivaHabitual ?? 21;
+  const defaultIva = profile.ivaHabitual ?? getSpainDefaultVatRate(profile.territory);
 
   const [form, setForm] = useState({
     date: todayLocalISO(),
@@ -67,7 +69,7 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
         clientAddress: editDoc.clientAddress ?? '',
         title: editDoc.title,
         amount: String(editDoc.amount),
-        ivaRate: editDoc.ivaRate ?? (profile.ivaHabitual ?? 21),
+        ivaRate: editDoc.ivaRate ?? (profile.ivaHabitual ?? getSpainDefaultVatRate(profile.territory)),
         retencionIrpf: editDoc.ritenuta ?? false,
         intracomunitaria: editDoc.intracomunitaria ?? false,
         status: (editDoc.status === 'paid' || editDoc.status === 'pending') ? editDoc.status : 'pending',
@@ -81,7 +83,7 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
         clientAddress: '',
         title: '',
         amount: '',
-        ivaRate: profile.ivaHabitual ?? 21,
+        ivaRate: profile.ivaHabitual ?? getSpainDefaultVatRate(profile.territory),
         retencionIrpf: false,
         intracomunitaria: false,
         status: 'pending',
@@ -294,12 +296,12 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
                 </div>
               </div>
 
-              {/* IVA repercutida */}
+              {/* IVA/IGIC repercutida */}
               <div className="space-y-3">
-                <label className={lc}>IVA Repercutida</label>
+                <label className={lc}>{taxLabel} Repercutid{isCanarias ? 'o' : 'a'}</label>
                 <div className={`p-4 rounded-2xl border space-y-3 ${form.intracomunitaria ? (darkMode ? 'bg-slate-800/40 border-slate-700/40 opacity-50' : 'bg-slate-50/50 border-slate-100 opacity-50') : (darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100')}`}>
                   <div className="flex gap-2 flex-wrap">
-                    {IVA_OPTIONS.map(rate => (
+                    {ivaOptions.map(rate => (
                       <button key={rate} type="button"
                         disabled={form.intracomunitaria}
                         onClick={() => set('ivaRate', rate)}
@@ -316,7 +318,7 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
                     <p className="text-xs text-slate-400">
                       {form.intracomunitaria
                         ? 'IVA 0% — inversión del sujeto pasivo'
-                        : <>IVA {form.ivaRate}% = <span className="font-bold text-primary">€{ivaAmount.toFixed(2)}</span></>
+                        : <>{taxLabel} {form.ivaRate}% = <span className="font-bold text-primary">€{ivaAmount.toFixed(2)}</span></>
                       }
                     </p>
                   )}
@@ -371,7 +373,7 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-slate-400">
-                      {form.intracomunitaria ? 'IVA 0% (inv. sujeto pasivo)' : `IVA ${effectiveIvaRate}%`}
+                      {form.intracomunitaria ? 'IVA 0% (inv. sujeto pasivo)' : `${taxLabel} ${effectiveIvaRate}%`}
                     </span>
                     <span className="text-sm font-bold text-slate-500">+€{ivaAmount.toFixed(2)}</span>
                   </div>
