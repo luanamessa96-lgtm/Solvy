@@ -282,7 +282,7 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
         const iva = base * ((d.ivaRate ?? 0) / 100);
         return [
           d.invoiceNumber || '—',
-          isRect ? `<< ${d.client || d.title}` : (d.client || d.title),
+          d.client || d.title,
           new Date(d.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
           fmtES(base),
           d.ivaRate ? `${d.ivaRate}%` : '—',
