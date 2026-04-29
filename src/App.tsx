@@ -732,7 +732,7 @@ function AppInner() {
     localStorage.setItem('onboardingComplete', 'true');
     setShowOnboarding(false);
 
-    // Email di benvenuto via Loops — signup event
+    // Email di benvenuto via Loops + notifica Telegram — solo al primo signup
     const loopsEmail = normalized.email || session?.user?.email;
     if (loopsEmail && session) {
       fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/loops-sync`, {
@@ -744,6 +744,15 @@ function AppInner() {
           name: normalized.name || '',
           paese: normalized.country === 'Spain' ? 'Spain' : 'Italy',
         }),
+      }).catch(() => {});
+
+      getClient().functions.invoke('telegram-alert', {
+        body: {
+          type: 'new_user',
+          email: loopsEmail,
+          name: normalized.name || '',
+          country: normalized.country === 'Spain' ? 'Spain' : 'Italy',
+        },
       }).catch(() => {});
     }
   };

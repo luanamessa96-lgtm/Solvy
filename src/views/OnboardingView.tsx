@@ -105,15 +105,6 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
     localStorage.setItem('onboardingComplete', 'true');
     try {
       await onComplete(updated);
-      // fire-and-forget: welcome email + telegram new_user
-      getClient().functions.invoke('send-email', {
-        body: {
-          type: 'welcome',
-          email: profile.email,
-          name: updated.name ?? 'utente',
-          lang: selectedCountry === 'Spain' ? 'es' : 'it',
-        },
-      }).catch(() => {});
     } catch {
       setIsSubmitting(false);
     }
