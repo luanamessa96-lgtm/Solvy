@@ -8,6 +8,7 @@ import { generateFatturaPA, getMissingProfileFields } from '../../services/fattu
 import { parseLocalDate, getLocalYear, getLocalMonth } from '../../utils/date';
 import { getItDeductibilityRate } from '../../lib/it/deductibility';
 import { getAddizionaliRate } from '../../lib/it/addizionali';
+import { getSpainDefaultVatRate } from '../../lib/countries/es';
 import { calcularTrimestre, generateResumenPDF, getCurrentQuarter, QUARTER_LABELS } from '../../services/modelosES';
 import PdfPreviewModal from './PdfPreviewModal';
 
@@ -268,7 +269,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const R = rightCol;
 
       const taxId = profile.nie || profile.piva || '';
-      const ivaRate = profile.ivaHabitual ?? 21;
+      const ivaRate = inv.ivaRate ?? profile.ivaHabitual ?? getSpainDefaultVatRate(profile.territory);
+      const taxLabel = profile.territory === 'canarias' ? 'IGIC' : 'IVA';
       const currentYr = new Date().getFullYear();
       const yearsActive = profile.annoInizioAttivita ? currentYr - profile.annoInizioAttivita : 10;
       const retencionRate = yearsActive <= 3 ? 7 : 15;
@@ -378,12 +380,12 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const summaryRows: [string, string][] = isRectificativaES
         ? [
             ['Base imponible', `– € ${inv.amount.toFixed(2)}`],
-            [`IVA ${ivaRate}%`, `– € ${ivaAmount.toFixed(2)}`],
+            [`${taxLabel} ${ivaRate}%`, `– € ${ivaAmount.toFixed(2)}`],
             [`Ret. IRPF ${retencionRate}%`, `+ € ${retencionAmount.toFixed(2)}`],
           ]
         : [
             ['Base imponible', `€ ${inv.amount.toFixed(2)}`],
-            [`IVA ${ivaRate}%`, `+ € ${ivaAmount.toFixed(2)}`],
+            [`${taxLabel} ${ivaRate}%`, `+ € ${ivaAmount.toFixed(2)}`],
             [`Ret. IRPF ${retencionRate}%`, `- € ${retencionAmount.toFixed(2)}`],
           ];
 
