@@ -815,6 +815,8 @@ export async function generateResumenAnualBlob(
   const nif = profile.nie || profile.piva || '';
   const nifLabel = profile.nie ? 'NIE' : 'NIF';
   const fmt = (n: number) => `€ ${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const isCanariasAnual = profile.territory === 'canarias';
+  const taxLabelAnual = isCanariasAnual ? 'IGIC' : 'IVA';
 
   const currentYr = new Date().getFullYear();
   const yearsActive = profile.annoInizioAttivita ? currentYr - profile.annoInizioAttivita : 10;
@@ -880,7 +882,7 @@ export async function generateResumenAnualBlob(
 
   autoTable(pdf, {
     startY: y,
-    head: [['Período', 'Base Imponible', 'IVA Repercutida', 'Total Facturado']],
+    head: [['Período', 'Base Imponible', `${taxLabelAnual} Repercutid${isCanariasAnual ? 'o' : 'a'}`, 'Total Facturado']],
     body: quarterData.map(({ q, totalIngresos: ti, ivaRepercutida: ivR }) => [
       QUARTER_LABELS[q],
       fmt(ti),
@@ -943,7 +945,7 @@ export async function generateResumenAnualBlob(
   const col1 = M, col2 = M + colW + gap, col3 = M + (colW + gap) * 2;
 
   pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7.5); pdf.setTextColor(...grey);
-  pdf.text('IVA — MODELO 303', col1, y);
+  pdf.text(`${taxLabelAnual} — MODELO 303`, col1, y);
   pdf.text('RETENCIONES IRPF', col2, y);
   pdf.text('BASE ESTIMADA MOD. 100', col3, y);
   y += 5;
@@ -973,7 +975,7 @@ export async function generateResumenAnualBlob(
 
   const isDevolver = diferenciaIVA < 0;
   const yAfterIVA = drawRows(col1,
-    [['IVA repercutida', fmt(ivaRepercutida)], ['IVA soportada', `- ${fmt(ivaSoportada)}`]],
+    [[`${taxLabelAnual} repercutid${isCanariasAnual ? 'o' : 'a'}`, fmt(ivaRepercutida)], [`${taxLabelAnual} soportad${isCanariasAnual ? 'o' : 'a'}`, `- ${fmt(ivaSoportada)}`]],
     isDevolver ? 'A devolver' : 'A ingresar',
     fmt(Math.abs(diferenciaIVA)),
     isDevolver ? green : red,
