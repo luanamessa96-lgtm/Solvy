@@ -16,7 +16,7 @@ const RITENUTA_RATE = 0.20;
 const INPS_RATE = 0.04;
 
 function fmt(n: number) {
-  return `${n < 0 ? '-' : ''}€${Math.abs(n).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `${n < 0 ? '- ' : ''}€ ${Math.abs(n).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 /**
@@ -35,6 +35,8 @@ export async function buildInvoicePage(
   const isProforma = doc.type === 'proforma';
   const isPresupuesto = doc.type === 'presupuesto';
   const isSpain = profile.country === 'Spain';
+  const isCanarias = isSpain && profile.territory === 'canarias';
+  const taxLabel = isCanarias ? 'IGIC' : 'IVA';
   const W = 210;
   const M = 16;
   const R = W - M;
@@ -225,7 +227,7 @@ export async function buildInvoicePage(
     : isRectificativa
     ? [
         ['Base imponible', fmt(-doc.amount), false],
-        ...(ivaRate > 0 ? [[`Cuota IVA ${ivaRate}%`, `- ${fmt(ivaAmount)}`, false] as [string, string, boolean]] : []),
+        ...(ivaRate > 0 ? [[`Cuota ${taxLabel} ${ivaRate}%`, `- ${fmt(ivaAmount)}`, false] as [string, string, boolean]] : []),
         ...(ritenutaApplicata ? [['Retención IRPF', `+ ${fmt(ritenutaAmount)}`, false] as [string, string, boolean]] : []),
       ]
     : isCreditNote
@@ -233,7 +235,7 @@ export async function buildInvoicePage(
     : isSpain
     ? [
         ['Base imponible', fmt(doc.amount), false],
-        ...(isOrdinario ? [[`Cuota IVA ${ivaRate}%`, `+ ${fmt(ivaAmount)}`, false] as [string, string, boolean]] : []),
+        ...(isOrdinario ? [[`Cuota ${taxLabel} ${ivaRate}%`, `+ ${fmt(ivaAmount)}`, false] as [string, string, boolean]] : []),
         ...(ritenutaApplicata ? [['Retención IRPF (15%)', `- ${fmt(ritenutaAmount)}`, false] as [string, string, boolean]] : []),
       ]
     : [
