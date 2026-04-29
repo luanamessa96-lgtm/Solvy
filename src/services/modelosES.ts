@@ -1,7 +1,7 @@
 import { Document, Profile } from '../types';
 import { getLocalYear } from '../utils/date';
 import { getEsDeductibilityRate } from '../lib/es/deductibility';
-import { calculateGastosDificilJustificacion, getReduccionInicio } from '../lib/countries/es';
+import { calculateGastosDificilJustificacion, getReduccionInicio, getSpainDefaultVatRate } from '../lib/countries/es';
 
 type jsPDFWithAutoTable = import('jspdf').jsPDF & { lastAutoTable: { finalY: number } };
 
@@ -560,7 +560,7 @@ export async function generateLibroEmitidaBlob(
   const currentYr = new Date().getFullYear();
   const yearsActive = profile.annoInizioAttivita ? currentYr - profile.annoInizioAttivita : 10;
   const retencionRate = yearsActive <= 3 ? 7 : 15;
-  const defaultIvaRate = profile.ivaHabitual ?? 21;
+  const defaultIvaRate = profile.ivaHabitual ?? getSpainDefaultVatRate(profile.territory);
   const taxId = profile.nie || profile.piva || '';
   const nifLabel = profile.nie ? 'NIE' : 'NIF';
   const fmtES = (n: number) => `€ ${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -1040,13 +1040,13 @@ export async function generateResumenAnualIVABlob(
   // IVA repercutida grouped by rate — operaciones intracomunitarias excluidas (inversión del sujeto pasivo)
   const ivaRepRates: Record<number, { base: number; cuota: number }> = {};
   for (const d of yearInvoices.filter(d => !d.intracomunitaria)) {
-    const rate = d.ivaRate ?? 21;
+    const rate = d.ivaRate ?? getSpainDefaultVatRate(profile.territory);
     if (!ivaRepRates[rate]) ivaRepRates[rate] = { base: 0, cuota: 0 };
     ivaRepRates[rate].base += d.amount;
     ivaRepRates[rate].cuota += d.amount * (rate / 100);
   }
   for (const d of yearRect) {
-    const rate = d.ivaRate ?? 21;
+    const rate = d.ivaRate ?? getSpainDefaultVatRate(profile.territory);
     if (!ivaRepRates[rate]) ivaRepRates[rate] = { base: 0, cuota: 0 };
     ivaRepRates[rate].base -= d.amount;
     ivaRepRates[rate].cuota -= d.amount * (rate / 100);
