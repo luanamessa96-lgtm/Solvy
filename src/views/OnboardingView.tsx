@@ -139,7 +139,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
 
   const stepLabels: Record<string, Record<number, string>> = {
     Italy: { 1: 'Chi sei', 2: 'Regime fiscale', 3: 'Dati fiscali' },
-    Spain: { 1: 'Chi sei', 2: 'Dati fiscali' },
+    Spain: { 1: '¿Quién eres?', 2: 'Datos fiscales' },
   };
 
   const progressInfo = getProgressInfo();
@@ -156,7 +156,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
             ))}
           </div>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            {progressInfo.current} di {progressInfo.total} — {stepLabels[selectedCountry][progressInfo.current]}
+            {progressInfo.current} {selectedCountry === 'Spain' ? 'de' : 'di'} {progressInfo.total} — {stepLabels[selectedCountry][progressInfo.current]}
           </p>
         </div>
       )}
@@ -285,30 +285,30 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
             <motion.div key="step1" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col p-8 pt-6 space-y-6 overflow-y-auto" style={{ paddingBottom: Math.max(32, keyboardPadding + 32) }} onFocus={scrollFieldIntoView}>
               {/* Country badge */}
               <div className="flex items-center gap-2">
-                <span className={`text-lg font-black ${darkMode ? 'text-white' : 'text-slate-900'}`}>Chi sei?</span>
+                <span className={`text-lg font-black ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedCountry === 'Spain' ? '¿Quién eres?' : 'Chi sei?'}</span>
                 <span className={`ml-auto text-xs font-bold px-3 py-1 rounded-full ${selectedCountry === 'Spain' ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600'}`}>
-                  {selectedCountry === 'Spain' ? '🇪🇸 Spagna' : '🇮🇹 Italia'}
+                  {selectedCountry === 'Spain' ? '🇪🇸 España' : '🇮🇹 Italia'}
                 </span>
               </div>
-              <p className="text-sm text-slate-500 -mt-4">Iniziamo con le informazioni base del tuo profilo.</p>
+              <p className="text-sm text-slate-500 -mt-4">{selectedCountry === 'Spain' ? 'Empecemos con la información básica de tu perfil.' : 'Iniziamo con le informazioni base del tuo profilo.'}</p>
               <div className="space-y-5 flex-1">
                 <div className="space-y-1.5">
-                  <label className={lc}>Nome e Cognome *</label>
-                  <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Es. Mario Rossi" className={ic} autoFocus />
-                  <HelpText text="Il nome apparirà su tutte le fatture che generi." />
+                  <label className={lc}>{selectedCountry === 'Spain' ? 'Nombre y Apellidos *' : 'Nome e Cognome *'}</label>
+                  <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={selectedCountry === 'Spain' ? 'Ej. María García' : 'Es. Mario Rossi'} className={ic} autoFocus />
+                  <HelpText text={selectedCountry === 'Spain' ? 'Aparecerá en todas las facturas que emitas.' : 'Il nome apparirà su tutte le fatture che generi.'} />
                 </div>
                 <div className="space-y-1.5">
-                  <label className={lc}>Tipo di Lavoro</label>
-                  <input type="text" value={jobType} onChange={e => setJobType(e.target.value)} placeholder="Es. Freelance Designer" className={ic} />
-                  <HelpText text="Usato solo per personalizzare la tua dashboard. Puoi cambiarlo in qualsiasi momento." />
+                  <label className={lc}>{selectedCountry === 'Spain' ? 'Tipo de Trabajo' : 'Tipo di Lavoro'}</label>
+                  <input type="text" value={jobType} onChange={e => setJobType(e.target.value)} placeholder={selectedCountry === 'Spain' ? 'Ej. Freelance Digital' : 'Es. Freelance Designer'} className={ic} />
+                  <HelpText text={selectedCountry === 'Spain' ? 'Solo para personalizar tu dashboard. Puedes cambiarlo en cualquier momento.' : 'Usato solo per personalizzare la tua dashboard. Puoi cambiarlo in qualsiasi momento.'} />
                 </div>
               </div>
               <div className="flex gap-3">
-                <button onClick={() => goBack('country')} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 text-slate-400`} style={{ backgroundColor: 'var(--color-card-bg)' }}>
+                <button onClick={() => goBack(selectedCountry === 'Spain' ? 'territory' : 'country')} className={`w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95 transition-all shrink-0 text-slate-400`} style={{ backgroundColor: 'var(--color-card-bg)' }}>
                   <ChevronLeft size={20} />
                 </button>
                 <button onClick={() => goNext(2)} disabled={!name.trim()} className="flex-1 bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-                  Continua
+                  {selectedCountry === 'Spain' ? 'Continuar' : 'Continua'}
                 </button>
               </div>
             </motion.div>
@@ -399,10 +399,10 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
             <motion.div key="step2-spain" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col p-8 pt-6 space-y-6 overflow-y-auto" style={{ paddingBottom: Math.max(32, keyboardPadding + 32) }} onFocus={scrollFieldIntoView}>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Dati fiscali</h2>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400'}`}>OPZIONALE</span>
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Datos fiscales</h2>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400'}`}>OPCIONAL</span>
                 </div>
-                <p className="text-sm text-slate-500">Appariranno sulle tue fatture. Puoi aggiungerli in seguito dal Profilo.</p>
+                <p className="text-sm text-slate-500">Aparecerán en tus facturas. Puedes añadirlos más tarde desde el Perfil.</p>
               </div>
               <div className="space-y-4 flex-1">
                 <div className="space-y-2">
@@ -414,12 +414,12 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                   {taxIdType === 'nif' ? (
                     <div className="space-y-1.5">
                       <input type="text" value={nif} onChange={e => { setNif(e.target.value.toUpperCase()); setNie(''); }} placeholder="Es. 12345678A" className={ic} />
-                      <HelpText text="8 cifre + lettera. Per cittadini spagnoli." />
+                      <HelpText text="8 dígitos + letra. Para ciudadanos españoles." />
                     </div>
                   ) : (
                     <div className="space-y-1.5">
                       <input type="text" value={nie} onChange={e => { setNie(e.target.value.toUpperCase()); setNif(''); }} placeholder="Es. X1234567A" className={ic} />
-                      <HelpText text="X/Y/Z + 7 cifre + lettera. Per stranieri residenti in Spagna." />
+                      <HelpText text="X/Y/Z + 7 dígitos + letra. Para extranjeros residentes en España." />
                     </div>
                   )}
                 </div>
