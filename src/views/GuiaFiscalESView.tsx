@@ -253,6 +253,14 @@ const SECTIONS: Section[] = [
         body: 'Al igual que en la península se presenta el Modelo 390 (resumen anual IVA) en enero, en Canarias existe el equivalente para el IGIC. Es un documento informativo que consolida las cuatro declaraciones trimestrales del año. Solvy genera el "Resumen Anual IGIC" desde el Resumen Trimestral — el mismo flujo que para la versión IVA, pero con la nomenclatura correcta para tu territorio.',
       },
       {
+        title: 'La Franquicia del minorista — exención IGIC hasta €30.000',
+        body: 'Si tu facturación anual no supera los €30.000, puedes acogerte al régimen de franquicia del minorista: no cobras IGIC a tus clientes y no presentas el Modelo 420. Ventaja: menos burocracia trimestral y facturas más sencillas. Inconveniente: tampoco puedes deducir el IGIC que pagas en tus gastos. Conviene si tus clientes son particulares (no pueden recuperar el IGIC) y tus gastos con IGIC son bajos. Si superas los €30.000 durante el año, debes salir del régimen inmediatamente. Consulta con tu gestor si esta opción es adecuada para tu situación.',
+      },
+      {
+        title: 'La RIC — Reserva para Inversiones en Canarias',
+        body: 'La Reserva para Inversiones en Canarias es uno de los mayores incentivos fiscales del sistema español para autónomos. Puedes deducir en el IRPF hasta el 80-90% de los beneficios que destines a una reserva, siempre que esos fondos se reinviertan en activos en Canarias dentro de los 3 años siguientes. Ejemplo: beneficio neto €40.000 → hasta €32.000 deducibles de la base imponible del IRPF. El ahorro fiscal puede ser muy significativo. Los activos deben estar afectos a la actividad y ubicados en las Islas Canarias. Es una medida de alta complejidad — imprescindible contar con un gestor especializado en fiscalidad canaria para aplicarla correctamente.',
+      },
+      {
         title: 'Otros territorios especiales: Baleares, Ceuta y Melilla — qué cubre Solvy',
         body: 'España tiene otros territorios con particularidades fiscales. Baleares aplica el IVA peninsular estándar (21%/10%/4%) — ninguna diferencia respecto a Madrid o Barcelona, Solvy lo gestiona correctamente. Ceuta y Melilla tienen el IPSI (Impuesto sobre la Producción, los Servicios y la Importación), con tipos muy inferiores al IVA y una normativa propia. Solvy cubre la fiscalidad peninsular (IVA) y canaria (IGIC) — si operas en Ceuta o Melilla, los cálculos de Solvy no reflejan tu situación real. Consulta con un gestor especializado en IPSI.',
       },
@@ -306,7 +314,7 @@ const GuiaFiscalESView = ({ darkMode }: GuiaFiscalESViewProps) => {
           </div>
           <div>
             <h2 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Guía Fiscal España</h2>
-            <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>50 artículos · 9 secciones · solo España</p>
+            <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>52 artículos · 9 secciones · solo España</p>
           </div>
         </div>
       </div>
