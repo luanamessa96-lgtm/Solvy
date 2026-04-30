@@ -59,9 +59,9 @@ function getCalendarInpsType(country: string | undefined, coeff: number | undefi
 }
 
 // Restituisce la label di display corretta per i titoli INPS nel calendario
-function localizeInpsTitle(title: string, inpsType: CalendarInpsType): string {
-  if (inpsType === 'professionisti' || inpsType === 'intermediari') return title;
-  return title.replace('INPS gestione separata', `INPS ${inpsType}`);
+function localizeInpsTitle(title: string, inpsType: CalendarInpsType, territory?: string): string {
+  const t = (inpsType === 'professionisti' || inpsType === 'intermediari') ? title : title.replace('INPS gestione separata', `INPS ${inpsType}`);
+  return territory === 'canarias' ? t.replace('IVA', 'IGIC') : t;
 }
 
 function isFiscalEstimate(deadline: Deadline): boolean {
@@ -434,7 +434,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                     <p className="text-sm font-bold">{daysUntilNext === 0 ? t('calendar.today') : daysUntilNext === 1 ? t('calendar.tomorrow') : t('calendar.days_left', { count: daysUntilNext })}</p>
                   </div>
                 </div>
-                <h3 className="text-lg font-bold leading-tight">{localizeInpsTitle(nextDeadline.title, calInpsType)}</h3>
+                <h3 className="text-lg font-bold leading-tight">{localizeInpsTitle(nextDeadline.title, calInpsType, profile?.territory)}</h3>
                 {(() => {
                   // Preferisce l'importo calcolato live (fiscalAmounts) rispetto a quello salvato nel DB
                   const heroAmt = FISCAL_ESTIMATE_TITLES.has(nextDeadline.title)
@@ -516,7 +516,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start mb-0.5">
                       <div className="flex items-center gap-1 flex-1 min-w-0 pr-2 flex-wrap">
-                        <h3 className={`text-sm font-bold truncate transition-colors ${deadline.completed ? 'line-through text-slate-400' : (darkMode ? 'text-white' : 'text-slate-900')}`}>{localizeInpsTitle(deadline.title, calInpsType)}</h3>
+                        <h3 className={`text-sm font-bold truncate transition-colors ${deadline.completed ? 'line-through text-slate-400' : (darkMode ? 'text-white' : 'text-slate-900')}`}>{localizeInpsTitle(deadline.title, calInpsType, profile?.territory)}</h3>
                         {DEADLINE_TOOLTIPS[deadline.title] && (
                           <InfoTooltip text={DEADLINE_TOOLTIPS[deadline.title]} darkMode={darkMode} />
                         )}
@@ -679,7 +679,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="relative w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl" style={{ backgroundColor: 'var(--color-card)' }}>
               <div className="p-6 space-y-4">
                 <div className={`p-4 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
-                  <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{localizeInpsTitle(selectedDeadline.title, calInpsType)}</p>
+                  <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{localizeInpsTitle(selectedDeadline.title, calInpsType, profile?.territory)}</p>
                   {(() => {
                     const spQ = getSpQuarter(selectedDeadline.title);
                     if (spQ && spFiscalData) {
