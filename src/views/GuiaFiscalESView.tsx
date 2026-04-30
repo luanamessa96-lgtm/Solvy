@@ -249,8 +249,8 @@ const SECTIONS: Section[] = [
         body: 'El IGIC no sustituye al IRPF — son impuestos distintos e independientes. Como autónomo canario sigues presentando el Modelo 130 (IRPF trimestral) exactamente igual que en la península. Tu factura incluye: base imponible + IGIC − retención IRPF. La retención sigue siendo el 7% los primeros tres años de actividad y el 15% a partir del cuarto. Solvy gestiona ambos automáticamente.',
       },
       {
-        title: 'El resumen anual IGIC — equivalente al Modelo 390',
-        body: 'Al igual que en la península se presenta el Modelo 390 (resumen anual IVA) en enero, en Canarias existe el equivalente para el IGIC. Es un documento informativo que consolida las cuatro declaraciones trimestrales del año. Solvy genera el "Resumen Anual IGIC" desde el Resumen Trimestral — el mismo flujo que para la versión IVA, pero con la nomenclatura correcta para tu territorio.',
+        title: 'El Modelo 425 — resumen anual IGIC',
+        body: 'El Modelo 425 es la declaración-resumen anual del IGIC, gestionada por la Agencia Tributaria Canaria (no por la AEAT). Es el equivalente canario del Modelo 390 peninsular: consolida las cuatro declaraciones trimestrales del año y se presenta antes del 30 de enero del año siguiente. No implica pago adicional — es informativo. Solvy genera el "Resumen Anual IGIC" desde el Resumen Trimestral con la nomenclatura correcta (Modelo 425) para que puedas enviárselo a tu gestor.',
       },
       {
         title: 'La Franquicia del minorista — exención IGIC hasta €30.000',
