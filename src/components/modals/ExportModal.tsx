@@ -279,6 +279,11 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
       // Title
       pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(8);
+      pdf.setTextColor(...primary);
+      pdf.text('SOLVY', M, 8);
+
+      pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(22);
       pdf.setTextColor(...black);
       pdf.text(isRectificativaES ? 'FACTURA RECTIFICATIVA' : 'FACTURA', M, 18);
@@ -432,6 +437,11 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       const redColor: [number, number, number] = [220, 38, 38];
 
       // Titolo
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(8);
+      pdf.setTextColor(...primary);
+      pdf.text('SOLVY', M, 8);
+
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(22);
       pdf.setTextColor(...(isCreditNote ? redColor : black));
