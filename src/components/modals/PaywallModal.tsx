@@ -29,6 +29,7 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [promoCode, setPromoCode] = useState('');
 
   const priceMonthly = '€7,99';
   const priceYearly = '€59,99';
@@ -66,6 +67,7 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
             price_id: priceId,
             success_url: `${window.location.origin}/?checkout=success`,
             cancel_url: `${window.location.origin}/?checkout=cancelled`,
+            ...(promoCode.trim() ? { promo_code: promoCode.trim() } : {}),
           }),
         }
       );
@@ -181,6 +183,17 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
                     </p>
                   </div>
                 )}
+              </div>
+
+              {/* Codice promo */}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={e => setPromoCode(e.target.value.toUpperCase())}
+                  placeholder="Codice promozionale (opzionale)"
+                  className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
+                />
               </div>
 
               {/* Errore */}

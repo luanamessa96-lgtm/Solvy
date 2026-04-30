@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { price_id, success_url, cancel_url } = await req.json();
+    const { price_id, success_url, cancel_url, promo_code } = await req.json();
     if (!price_id) {
       return new Response(JSON.stringify({ error: 'Missing price_id' }), {
         status: 400,
@@ -77,6 +77,15 @@ Deno.serve(async (req) => {
         .eq('user_id', user.id);
     }
 
+    // Se c'è un codice promo, lo risolve in ID Stripe
+    let resolvedPromoId: string | null = null;
+    if (promo_code) {
+      const promos = await stripe.promotionCodes.list({ code: promo_code.trim().toUpperCase(), limit: 1, active: true });
+      if (promos.data.length > 0) {
+        resolvedPromoId = promos.data[0].id;
+      }
+    }
+
     // Crea la sessione Stripe Checkout
     const session = await stripe.checkout.sessions.create({
       customer: stripeCustomerId,
@@ -89,7 +98,10 @@ Deno.serve(async (req) => {
       subscription_data: {
         metadata: { user_id: user.id },
       },
-      allow_promotion_codes: true,
+      ...(resolvedPromoId
+        ? { discounts: [{ promotion_code: resolvedPromoId }], payment_method_collection: 'if_required' }
+        : { allow_promotion_codes: true }
+      ),
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
