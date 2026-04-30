@@ -216,7 +216,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
           </div>
           <div className="text-left flex-1">
             <p className={`text-sm font-bold transition-colors ${darkMode ? 'text-white' : 'text-slate-900'}`}>Resumen Trimestral</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Modelos 130 + 303 en PDF</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">{profile.territory === 'canarias' ? 'Modelos 130 + 420 en PDF' : 'Modelos 130 + 303 en PDF'}</p>
           </div>
           {!isPro ? <Lock size={14} className="text-slate-400" /> : <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${darkMode ? 'bg-slate-800 text-slate-600 group-hover:bg-primary/20 group-hover:text-primary' : 'bg-slate-50 text-slate-300 group-hover:bg-primary/10 group-hover:text-primary'}`}><ChevronRight size={20} /></div>}
         </motion.button>

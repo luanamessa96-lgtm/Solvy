@@ -240,7 +240,7 @@ const CreateFacturaRectificativaModal = ({
               {/* Avviso trimestre diverso */}
               {showQuarterWarning && (
                 <div className={`p-4 rounded-2xl border text-xs leading-relaxed ${darkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-300' : 'bg-blue-50 border-blue-100 text-blue-700'}`}>
-                  ℹ️ La factura original pertenece al T{facturaQuarter}. Esta rectificativa se declarará en el T{rectificativaQuarter} (trimestre actual). El importe negativo se incluirá en el Modelo 303 y 130 del T{rectificativaQuarter}, reduciendo tu base imponible e IVA. La AEAT compensará la diferencia en este trimestre. Es el procedimiento estándar — tu gestor lo gestionará sin problema.
+                  ℹ️ La factura original pertenece al T{facturaQuarter}. Esta rectificativa se declarará en el T{rectificativaQuarter} (trimestre actual). El importe negativo se incluirá en el Modelo {isCanarias ? '420' : '303'} y 130 del T{rectificativaQuarter}, reduciendo tu base imponible e {isCanarias ? 'IGIC' : 'IVA'}. La AEAT compensará la diferencia en este trimestre. Es el procedimiento estándar — tu gestor lo gestionará sin problema.
                 </div>
               )}
 
