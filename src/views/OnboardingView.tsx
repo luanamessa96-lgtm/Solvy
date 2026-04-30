@@ -578,11 +578,22 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                   <span className="text-white text-4xl">✓</span>
                 </motion.div>
                 <div className="space-y-2">
-                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Tutto pronto, {name.split(' ')[0] || 'benvenuto'}!</h2>
-                  <p className="text-slate-500 text-sm leading-relaxed">Il tuo profilo è configurato. Puoi iniziare ad aggiungere fatture e gestire le scadenze.</p>
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                    {selectedCountry === 'Spain'
+                      ? `¡Todo listo, ${name.split(' ')[0] || 'bienvenido'}!`
+                      : `Tutto pronto, ${name.split(' ')[0] || 'benvenuto'}!`}
+                  </h2>
+                  <p className="text-slate-500 text-sm leading-relaxed">
+                    {selectedCountry === 'Spain'
+                      ? 'Tu perfil está configurado. Puedes empezar a añadir facturas y gestionar los vencimientos.'
+                      : 'Il tuo profilo è configurato. Puoi iniziare ad aggiungere fatture e gestire le scadenze.'}
+                  </p>
                 </div>
                 <div className={`flex flex-col gap-2 pt-2 text-sm text-left ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  {['Crea la tua prima fattura in pochi secondi', 'Monitora le scadenze fiscali automatiche', 'Calcolo tasse sempre aggiornato'].map((item, i) => (
+                  {(selectedCountry === 'Spain'
+                    ? ['Crea tu primera factura en segundos', 'Controla los vencimientos fiscales automáticos', 'Cálculo de impuestos siempre actualizado']
+                    : ['Crea la tua prima fattura in pochi secondi', 'Monitora le scadenze fiscali automatiche', 'Calcolo tasse sempre aggiornato']
+                  ).map((item, i) => (
                     <div key={i} className="flex items-center gap-2">
                       <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center text-[10px] font-black shrink-0">✓</span>
                       <span>{item}</span>
@@ -591,7 +602,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                 </div>
               </div>
               <button onClick={handleComplete} disabled={isSubmitting} className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-base shadow-xl shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed">
-                {isSubmitting ? 'Salvataggio…' : 'Vai alla Dashboard'}
+                {isSubmitting ? (selectedCountry === 'Spain' ? 'Guardando…' : 'Salvataggio…') : (selectedCountry === 'Spain' ? 'Ir al Dashboard' : 'Vai alla Dashboard')}
               </button>
             </motion.div>
           )}
