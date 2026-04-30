@@ -572,7 +572,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
 
           {/* DONE */}
           {step === 'done' && (
-            <motion.div key="done" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-8">
+            <motion.div key="done" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-8 select-none">
               <div className="space-y-4">
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.15 }} className="w-24 h-24 bg-emerald-500 rounded-3xl flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/30">
                   <span className="text-white text-4xl">✓</span>
