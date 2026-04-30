@@ -229,6 +229,35 @@ const SECTIONS: Section[] = [
       },
     ],
   },
+  {
+    title: 'Islas Canarias — IGIC',
+    articles: [
+      {
+        title: 'Qué es el IGIC y en qué se diferencia del IVA',
+        body: 'El Impuesto General Indirecto Canario (IGIC) es el equivalente al IVA en las Islas Canarias. Funciona igual — lo cobras a tus clientes, deduces el IGIC de tus gastos y declaras la diferencia trimestralmente — pero con diferencias clave: el tipo general es el 7% frente al 21% peninsular, y lo gestiona el Gobierno de Canarias, no la AEAT estatal. Las Canarias tienen un régimen fiscal especial reconocido en la Constitución y en la normativa de la UE.',
+      },
+      {
+        title: 'Tipos de IGIC — cuál aplica a tus facturas',
+        body: 'El IGIC tiene cinco tipos: 0% (bienes de primera necesidad, sanidad, educación), 3% (tipo reducido — vivienda, transporte, determinados alimentos), 7% (tipo general — el habitual para servicios profesionales), 9,5% (tipo incrementado — tabaco, bebidas alcohólicas) y 15% (tipo especial — artículos de lujo, embarcaciones). Como autónomo que presta servicios profesionales aplicarás el 7% en la mayoría de los casos. Si tienes dudas sobre tu actividad concreta, consulta con tu gestor.',
+      },
+      {
+        title: 'Cómo funciona el IGIC en tus facturas como autónomo canario',
+        body: 'El mecanismo es idéntico al IVA: cobras el IGIC a tus clientes (IGIC repercutido), pagas IGIC en tus gastos (IGIC soportado) y declaras la diferencia. Si el resultado es positivo, pagas al Gobierno de Canarias; si es negativo, te lo devuelven o compensas en el trimestre siguiente. En Solvy, si has seleccionado "Islas Canarias" como territorio en el onboarding, el IGIC se aplica automáticamente en tus facturas con el tipo configurado en el perfil.',
+      },
+      {
+        title: 'Retención IRPF e IGIC: cómo conviven en tus facturas',
+        body: 'El IGIC no sustituye al IRPF — son impuestos distintos e independientes. Como autónomo canario sigues presentando el Modelo 130 (IRPF trimestral) exactamente igual que en la península. Tu factura incluye: base imponible + IGIC − retención IRPF. La retención sigue siendo el 7% los primeros tres años de actividad y el 15% a partir del cuarto. Solvy gestiona ambos automáticamente.',
+      },
+      {
+        title: 'El resumen anual IGIC — equivalente al Modelo 390',
+        body: 'Al igual que en la península se presenta el Modelo 390 (resumen anual IVA) en enero, en Canarias existe el equivalente para el IGIC. Es un documento informativo que consolida las cuatro declaraciones trimestrales del año. Solvy genera el "Resumen Anual IGIC" desde el Resumen Trimestral — el mismo flujo que para la versión IVA, pero con la nomenclatura correcta para tu territorio.',
+      },
+      {
+        title: 'Otros territorios especiales: Baleares, Ceuta y Melilla — qué cubre Solvy',
+        body: 'España tiene otros territorios con particularidades fiscales. Baleares aplica el IVA peninsular estándar (21%/10%/4%) — ninguna diferencia respecto a Madrid o Barcelona, Solvy lo gestiona correctamente. Ceuta y Melilla tienen el IPSI (Impuesto sobre la Producción, los Servicios y la Importación), con tipos muy inferiores al IVA y una normativa propia. Solvy cubre la fiscalidad peninsular (IVA) y canaria (IGIC) — si operas en Ceuta o Melilla, los cálculos de Solvy no reflejan tu situación real. Consulta con un gestor especializado en IPSI.',
+      },
+    ],
+  },
 ];
 
 interface GuiaFiscalESViewProps {
@@ -277,7 +306,7 @@ const GuiaFiscalESView = ({ darkMode }: GuiaFiscalESViewProps) => {
           </div>
           <div>
             <h2 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Guía Fiscal España</h2>
-            <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>44 artículos · 8 secciones · solo España</p>
+            <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>50 artículos · 9 secciones · solo España</p>
           </div>
         </div>
       </div>
