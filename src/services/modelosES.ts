@@ -390,7 +390,7 @@ export async function generateResumenPDF(resumen: ResumenTrimestral, profile: Pr
   pdf.setFontSize(7.5);
   pdf.setTextColor(...grey);
   pdf.text('MODELO 130 — PAGO FRACCIONADO IRPF', col1, y);
-  pdf.text('MODELO 303 — DECLARACIÓN IVA TRIMESTRAL', col2, y);
+  pdf.text(isCanarias ? 'MODELO 420 — DECLARACIÓN IGIC TRIMESTRAL' : 'MODELO 303 — DECLARACIÓN IVA TRIMESTRAL', col2, y);
   y += 5;
 
   // ── Modelo 130 rows (left column) — valori cumulativi ─────────────────────
@@ -945,7 +945,7 @@ export async function generateResumenAnualBlob(
   const col1 = M, col2 = M + colW + gap, col3 = M + (colW + gap) * 2;
 
   pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7.5); pdf.setTextColor(...grey);
-  pdf.text(`${taxLabelAnual} — MODELO 303`, col1, y);
+  pdf.text(`${taxLabelAnual} — MODELO ${isCanariasAnual ? '420' : '303'}`, col1, y);
   pdf.text('RETENCIONES IRPF', col2, y);
   pdf.text('BASE ESTIMADA MOD. 100', col3, y);
   y += 5;
