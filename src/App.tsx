@@ -22,6 +22,15 @@ const AuthView = lazy(() => import('./views/AuthView'));
 import { ToastProvider, useToast } from './components/ui/Toast';
 import DashboardSkeleton from './components/DashboardSkeleton';
 import Spinner from './components/ui/Spinner';
+import InstallGateScreen from './components/InstallGateScreen';
+
+// Rilevato prima che Supabase consumi l'URL — se l'utente arriva da conferma email
+// in Safari (non PWA) mostriamo l'install gate invece del flusso normale.
+const _isFromEmailConfirm =
+  window.location.hash.includes('type=signup') ||
+  new URLSearchParams(window.location.search).get('type') === 'signup';
+const _isPWA = window.matchMedia('(display-mode: standalone)').matches;
+const SHOW_INSTALL_GATE = _isFromEmailConfirm && !_isPWA;
 
 function dbError(err: unknown): string {
   if (!navigator.onLine) return 'Nessuna connessione internet';
@@ -804,6 +813,9 @@ function AppInner() {
       </div>
     );
   }
+
+  // Email confermata in Safari (non PWA) → mostra install gate, blocca il flusso
+  if (SHOW_INSTALL_GATE) return <InstallGateScreen />;
 
   // Non autenticato → schermata login (sempre pro-light, gestito dall'useEffect tema)
   if (!isAuthenticated) {
