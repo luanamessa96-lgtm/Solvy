@@ -119,10 +119,6 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     if (error) {
       if (error.message.includes('already registered')) setError(t('auth.error_already_registered'));
       else setError(`Errore: ${error.message}`);
-    } else if (data.user?.identities?.length === 0) {
-      // user_repeated_signup: Supabase returns 200 but sends no email — account already exists
-      await getClient().auth.signOut();
-      setError(t('auth.error_already_registered'));
     } else {
       window.gtag?.('event', 'sign_up', { method: 'email' });
       // Always sign out after signup — user must confirm email before accessing the app.
