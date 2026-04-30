@@ -1096,7 +1096,7 @@ export async function generateResumenAnualIVABlob(
   pdf.setFont('helvetica', 'bold'); pdf.setFontSize(22); pdf.setTextColor(...primary);
   pdf.text('SOLVY', M, 18);
   pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9); pdf.setTextColor(...grey);
-  pdf.text('Resumen Anual IVA · Modelo 390', M, 25);
+  pdf.text(isCanarias390 ? 'Resumen Anual IGIC · Modelo 425' : 'Resumen Anual IVA · Modelo 390', M, 25);
   pdf.setFont('helvetica', 'bold'); pdf.setFontSize(10); pdf.setTextColor(...black);
   pdf.text(profile.name, R, 14, { align: 'right' });
   pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(...grey);
@@ -1225,7 +1225,7 @@ export async function generateResumenAnualIVABlob(
   const isDevolver = diferenciaTotal < 0;
   const resultColor: [number, number, number] = isDevolver ? green : red;
   pdf.setFont('helvetica', 'bold'); pdf.setFontSize(11); pdf.setTextColor(...black);
-  pdf.text('Resultado anual Modelo 390:', M, y);
+  pdf.text(`Resultado anual Modelo ${isCanarias390 ? '425' : '390'}:`, M, y);
   pdf.setTextColor(...resultColor);
   pdf.text(`${fmt(Math.abs(diferenciaTotal))} — ${isDevolver ? 'A devolver' : 'A ingresar'}`, R, y, { align: 'right' });
   y += 10;
@@ -1234,7 +1234,7 @@ export async function generateResumenAnualIVABlob(
   pdf.setFillColor(...bgLight);
   pdf.roundedRect(M, y, R - M, 10, 2, 2, 'F');
   pdf.setFont('helvetica', 'italic'); pdf.setFontSize(7.5); pdf.setTextColor(...grey);
-  pdf.text('Datos para el Modelo 390. Presentar con gestor fiscal.', M + 4, y + 6.5);
+  pdf.text(`Datos para el Modelo ${isCanarias390 ? '425' : '390'}. Presentar con gestor fiscal.`, M + 4, y + 6.5);
 
   // ── Footer ─────────────────────────────────────────────────────────────────
   const footerY = pdf.internal.pageSize.height - 14;

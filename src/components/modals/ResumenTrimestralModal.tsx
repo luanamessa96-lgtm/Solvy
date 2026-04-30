@@ -453,7 +453,7 @@ export default function ResumenTrimestralModal({
                     emoji="📊"
                     label={`Resumen Anual ${profile.territory === 'canarias' ? 'IGIC' : 'IVA'}`}
                     badge="PRO"
-                    subtitle={`${profile.territory === 'canarias' ? 'IGIC' : 'IVA'} por aliquota, diferencia trimestral, Mod. 390 · ${year}`}
+                    subtitle={`${profile.territory === 'canarias' ? 'IGIC' : 'IVA'} por aliquota, diferencia trimestral, Mod. ${profile.territory === 'canarias' ? '425' : '390'} · ${year}`}
                   />
                 </div>
               )}

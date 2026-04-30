@@ -61,7 +61,7 @@ function getCalendarInpsType(country: string | undefined, coeff: number | undefi
 // Restituisce la label di display corretta per i titoli INPS nel calendario
 function localizeInpsTitle(title: string, inpsType: CalendarInpsType, territory?: string): string {
   const t = (inpsType === 'professionisti' || inpsType === 'intermediari') ? title : title.replace('INPS gestione separata', `INPS ${inpsType}`);
-  return territory === 'canarias' ? t.replace('IVA', 'IGIC').replace('303', '420') : t;
+  return territory === 'canarias' ? t.replace('IVA', 'IGIC').replace('303', '420').replace('390', '425') : t;
 }
 
 function isFiscalEstimate(deadline: Deadline): boolean {
