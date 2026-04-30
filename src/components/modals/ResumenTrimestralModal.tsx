@@ -475,7 +475,7 @@ export default function ResumenTrimestralModal({
                           {includeFacturas && <div className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /><p className="text-[11px] text-emerald-600 font-medium">+ Facturas T{quarter} {year}</p></div>}
                           {includeGastos && <div className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /><p className="text-[11px] text-emerald-600 font-medium">+ Gastos T{quarter} {year}</p></div>}
                           {includeResumenAnual && <div className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /><p className="text-[11px] text-emerald-600 font-medium">+ Resumen Anual {year}</p></div>}
-                          {includeResumenAnualIVA && <div className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /><p className="text-[11px] text-emerald-600 font-medium">+ Resumen Anual IVA {year}</p></div>}
+                          {includeResumenAnualIVA && <div className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /><p className="text-[11px] text-emerald-600 font-medium">+ Resumen Anual {profile.territory === 'canarias' ? 'IGIC' : 'IVA'} {year}</p></div>}
                         </div>
                         <div className="flex items-center gap-1.5 text-primary shrink-0">
                           <Eye size={16} />
