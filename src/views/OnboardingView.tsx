@@ -129,7 +129,7 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
 
   // Progress bar logic: for Italy steps 1-3, for Spain steps 1-2
   const getProgressInfo = () => {
-    if (step === 0 || step === 'country') return null;
+    if (step === 0 || step === 'country' || step === 'territory') return null;
     if (step === 'done') return null;
     const isSpain = selectedCountry === 'Spain';
     const total = isSpain ? 2 : 3;
