@@ -48,24 +48,20 @@ export async function buildInvoicePage(
 
   // ─── Header ───────────────────────────────────────────────────────────────
   pdf.setFont('helvetica', 'bold');
-  pdf.setFontSize(8);
-  pdf.setTextColor(...primary);
-  pdf.text('SOLVY', M, 8);
-
-  pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(22);
-  pdf.setTextColor(...black);
-  if (isProforma) {
-    pdf.text('FATTURA PROFORMA', M, 18);
-  } else if (isPresupuesto) {
-    pdf.text('PRESUPUESTO', M, 18);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(9);
-    pdf.setTextColor(...grey);
-    pdf.text('DOCUMENTO NO FISCAL — ESTIMACIÓN PARA UN CLIENTE', M, 24);
-  } else {
-    pdf.text(isCreditNote ? 'NOTA DI CREDITO' : isRectificativa ? 'FACTURA RECTIFICATIVA' : isSpain ? 'FACTURA' : 'FATTURA', M, 18);
-  }
+  pdf.setTextColor(...primary);
+  pdf.text('SOLVY', M, 18);
+
+  const docSubtitle = isProforma ? 'Fattura Proforma'
+    : isPresupuesto ? 'Presupuesto'
+    : isCreditNote ? (isSpain ? 'Nota de Crédito' : 'Nota di Credito')
+    : isRectificativa ? 'Factura Rectificativa'
+    : isSpain ? 'Factura'
+    : 'Fattura';
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(9);
+  pdf.setTextColor(...grey);
+  pdf.text(docSubtitle, M, 25);
 
   // Numero fattura top right
   pdf.setFont('helvetica', 'normal');
@@ -94,21 +90,21 @@ export async function buildInvoicePage(
   pdf.setFontSize(8);
   pdf.setTextColor(...grey);
   const regimeLabel = isCreditNote
-    ? ((doc.docRegime ?? profile.regime ?? 'forfettario') === 'ordinario' ? 'REGIME ORDINARIO' : 'REGIME FORFETTARIO')
-    : isRectificativa ? 'ESTIMACIÓN DIRECTA SIMPLIFICADA'
-    : isPresupuesto ? ''
+    ? ((doc.docRegime ?? profile.regime ?? 'forfettario') === 'ordinario' ? 'Regime Ordinario' : 'Regime Forfettario')
+    : isRectificativa ? 'Estimación Directa Simplificada'
+    : isPresupuesto ? 'Documento no fiscal — estimación para un cliente'
     : isProforma ? 'Non fiscalmente valida'
-    : isSpain ? 'ESTIMACIÓN DIRECTA SIMPLIFICADA'
-    : (profile.regime === 'ordinario' ? 'Regime Ordinario' : 'Regime Forfettario').toUpperCase();
-  if (regimeLabel) pdf.text(regimeLabel, M, 24);
+    : isSpain ? 'Estimación Directa Simplificada'
+    : (profile.regime === 'ordinario' ? 'Regime Ordinario' : 'Regime Forfettario');
+  if (regimeLabel) pdf.text(regimeLabel, M, 29);
 
   // Divider
   pdf.setDrawColor(...lightGrey);
   pdf.setLineWidth(0.4);
-  pdf.line(M, 28, R, 28);
+  pdf.line(M, 33, R, 33);
 
   // ─── Fornitore + Cliente (Emisor + Receptor for Spain) ─────────────────────
-  let y = 35;
+  let y = 40;
   const colW = (R - M - 8) / 2;
   const col2 = M + colW + 8;
 

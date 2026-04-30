@@ -279,21 +279,21 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
       // Title
       pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(8);
-      pdf.setTextColor(...primary);
-      pdf.text('SOLVY', M, 8);
-
-      pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(22);
-      pdf.setTextColor(...black);
-      pdf.text(isRectificativaES ? 'FACTURA RECTIFICATIVA' : 'FACTURA', M, 18);
+      pdf.setTextColor(...primary);
+      pdf.text('SOLVY', M, 18);
 
-      // Factura original reference for rectificativas
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9);
+      pdf.setTextColor(...grey);
+      pdf.text(isRectificativaES ? 'Factura Rectificativa' : 'Factura', M, 25);
+
       if (isRectificativaES && inv.category) {
-        pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(8);
-        pdf.setTextColor(...grey);
-        pdf.text(`Factura original: ${inv.category}`, M, 24);
+        pdf.text(`Factura original: ${inv.category}`, M, 29);
+      } else {
+        pdf.setFontSize(8);
+        pdf.text('Estimación Directa Simplificada', M, 29);
       }
 
       // Nº + Fecha (right)
@@ -307,9 +307,9 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       // Divider
       pdf.setDrawColor(...lightGrey);
       pdf.setLineWidth(0.4);
-      pdf.line(M, 26, R, 26);
+      pdf.line(M, 33, R, 33);
 
-      let y = 33;
+      let y = 40;
       const colW = (R - M - 8) / 2;
       const col2 = M + colW + 8;
 
@@ -438,21 +438,20 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
       // Titolo
       pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(8);
-      pdf.setTextColor(...primary);
-      pdf.text('SOLVY', M, 8);
-
-      pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(22);
-      pdf.setTextColor(...(isCreditNote ? redColor : black));
-      pdf.text(isCreditNote ? 'NOTA DI CREDITO' : 'FATTURA', M, 18);
+      pdf.setTextColor(...primary);
+      pdf.text('SOLVY', M, 18);
 
-      // Badge "Nota di Credito · rif. XXX" sotto il titolo
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9);
+      pdf.setTextColor(...grey);
+      pdf.text(isCreditNote ? 'Nota di Credito' : 'Fattura', M, 25);
+
+      pdf.setFontSize(8);
       if (isCreditNote && inv.category) {
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(8);
-        pdf.setTextColor(...redColor);
-        pdf.text(`Nota di Credito · rif. ${inv.category}`, M, 24);
+        pdf.text(`Nota di Credito · rif. ${inv.category}`, M, 29);
+      } else {
+        pdf.text(profile.regime === 'ordinario' ? 'Regime Ordinario' : 'Regime Forfettario', M, 29);
       }
 
       // Numero + Data destra
@@ -462,19 +461,13 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       pdf.text(`N° ${inv.invoiceNumber || '—'}`, R, 14, { align: 'right' });
       pdf.setFontSize(9);
       pdf.text(new Date(inv.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' }), R, 20, { align: 'right' });
-      if (!isCreditNote || !inv.category) {
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(8);
-        pdf.setTextColor(...grey);
-        pdf.text((profile.regime === 'ordinario' ? 'Regime Ordinario' : 'Regime Forfettario').toUpperCase(), M, 24);
-      }
 
       // Divider
       pdf.setDrawColor(...lightGrey);
       pdf.setLineWidth(0.4);
-      pdf.line(M, 28, R, 28);
+      pdf.line(M, 33, R, 33);
 
-      let y = 35;
+      let y = 40;
       const colW = (R - M - 8) / 2;
       const col2 = M + colW + 8;
 
