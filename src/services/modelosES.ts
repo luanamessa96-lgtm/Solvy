@@ -574,6 +574,11 @@ export async function generateLibroEmitidaBlob(
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(8);
+  pdf.setTextColor(...primary);
+  pdf.text('SOLVY', M, 8);
+
+  pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(16);
   pdf.setTextColor(...black);
   pdf.text('LIBRO REGISTRO DE FACTURAS EMITIDAS', M, 14);
@@ -687,6 +692,11 @@ export async function generateLibroRecibidaBlob(
   const recibidaDocs = documents
     .filter(d => d.type === 'expense' && getLocalYear(d.date) === year)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(8);
+  pdf.setTextColor(...primary);
+  pdf.text('SOLVY', M, 8);
 
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(16);
@@ -1264,6 +1274,9 @@ export async function generateGastosTrimestreBlob(
   const taxLabelGastos = isCanariasGastos ? 'IGIC' : 'IVA';
 
   const docs = [...expenseDocs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(...primary);
+  pdf.text('SOLVY', M, 8);
 
   pdf.setFont('helvetica', 'bold'); pdf.setFontSize(16); pdf.setTextColor(...black);
   pdf.text(`GASTOS — T${quarter} ${year}`, M, 14);

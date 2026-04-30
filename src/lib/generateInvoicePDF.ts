@@ -48,6 +48,11 @@ export async function buildInvoicePage(
 
   // ─── Header ───────────────────────────────────────────────────────────────
   pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(8);
+  pdf.setTextColor(...primary);
+  pdf.text('SOLVY', M, 8);
+
+  pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(22);
   pdf.setTextColor(...black);
   if (isProforma) {
