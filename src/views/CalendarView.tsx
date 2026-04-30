@@ -691,7 +691,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
                             <span className="text-xs font-bold text-primary">~€{Math.round(spData.cuotaIRPF).toLocaleString('es-ES')}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-xs text-slate-400">Mod. 303 — IVA<InfoTooltip text="Declaración trimestral del IVA. Se presenta junto al Modelo 130." darkMode={darkMode} /></span>
+                            <span className="text-xs text-slate-400">{profile?.territory === 'canarias' ? 'IGIC' : 'Mod. 303 — IVA'}<InfoTooltip text={profile?.territory === 'canarias' ? 'Declaración trimestral del IGIC. Se presenta junto al Modelo 130.' : 'Declaración trimestral del IVA. Se presenta junto al Modelo 130.'} darkMode={darkMode} /></span>
                             <span className={`text-xs font-bold ${spData.diferenciaIVA < 0 ? 'text-emerald-500' : 'text-primary'}`}>
                               {spData.diferenciaIVA < 0 ? `a devolver ~€${Math.round(Math.abs(spData.diferenciaIVA)).toLocaleString('es-ES')}` : `~€${Math.round(spData.diferenciaIVA).toLocaleString('es-ES')}`}
                             </span>
