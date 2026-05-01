@@ -63,8 +63,6 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
 
   const handleComplete = async () => {
     if (isSubmitting) return;
-    const effectiveJobType = jobType.trim() || profile.jobType?.trim() || '';
-    if (!effectiveJobType) return; // jobType obbligatorio
     setIsSubmitting(true);
     const isSpain = selectedCountry === 'Spain';
     const updated: Profile = {
@@ -600,8 +598,11 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                   ))}
                 </div>
               </div>
-              <button onClick={handleComplete} disabled={isSubmitting || !(jobType.trim() || profile.jobType?.trim())} className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-base shadow-xl shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+              <button onClick={handleComplete} disabled={isSubmitting} className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-base shadow-xl shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed">
                 {isSubmitting ? (selectedCountry === 'Spain' ? 'Guardando…' : 'Salvataggio…') : (selectedCountry === 'Spain' ? 'Ir al Dashboard' : 'Vai alla Dashboard')}
+              </button>
+              <button onClick={() => goBack(selectedCountry === 'Spain' ? 2 : 3)} className="w-full py-2 text-sm text-slate-400 active:opacity-60">
+                ← {selectedCountry === 'Spain' ? 'Volver' : 'Indietro'}
               </button>
             </motion.div>
           )}
