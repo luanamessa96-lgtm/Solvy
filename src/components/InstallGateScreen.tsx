@@ -4,6 +4,7 @@ import { detectBrowserContext } from '../lib/installGate';
 const browser = detectBrowserContext(navigator.userAgent);
 
 export default function InstallGateScreen() {
+  // Vero in-app browser senza Share sheet (Facebook, Instagram, WhatsApp, WeChat)
   if (!browser.canInstall) {
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center bg-white">
@@ -76,7 +77,53 @@ export default function InstallGateScreen() {
     );
   }
 
-  // iOS Safari — flusso principale
+  // iOS Chrome — Share icon in alto a destra nella barra dell'indirizzo
+  if (browser.isChromeiOS) {
+    return (
+      <div className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center bg-white">
+        <div className="mb-8">
+          <h1 style={{ fontWeight: 300, letterSpacing: '0.15em', color: '#1a1a2e', fontSize: '2rem' }}>
+            SOLVY
+          </h1>
+        </div>
+        <div className="w-20 h-20 rounded-3xl bg-emerald-500 flex items-center justify-center mb-6 shadow-xl shadow-emerald-500/30">
+          <span className="text-white text-4xl">✓</span>
+        </div>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">Account confermato!</h2>
+
+        <div className="w-full max-w-xs bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6">
+          <p className="text-sm text-amber-800 font-medium">Hai già Solvy installata?</p>
+          <p className="text-xs text-amber-700 mt-0.5">Chiudi il browser e aprila dalla schermata Home.</p>
+        </div>
+
+        <p className="text-slate-500 text-sm leading-relaxed mb-8">
+          Per usare Solvy devi installarla sul tuo iPhone.
+        </p>
+
+        <div className="w-full max-w-xs space-y-4 text-left">
+          {[
+            { text: <>Tocca l'icona <Share size={14} className="inline mb-0.5 text-primary" /> in alto a destra (barra dell'indirizzo)</> },
+            { text: <>Scorri e tocca <strong>"Visualizza altro"</strong></> },
+            { text: <>Tocca <strong>"Aggiungi alla schermata Home"</strong></> },
+            { text: <>Apri <span className="font-bold text-slate-900">Solvy</span> dalla schermata Home e accedi</> },
+          ].map(({ text }, i) => (
+            <div key={i} className="flex items-start gap-4">
+              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center shrink-0">
+                {i + 1}
+              </div>
+              <p className="text-sm text-slate-600 leading-snug pt-1.5">{text}</p>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-10 text-xs text-slate-400 leading-relaxed">
+          Il tuo account è già pronto — non devi registrarti di nuovo.
+        </p>
+      </div>
+    );
+  }
+
+  // iOS Safari — Share icon in basso nel browser
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center bg-white">
       <div className="mb-8">
@@ -90,12 +137,8 @@ export default function InstallGateScreen() {
       <h2 className="text-2xl font-bold text-slate-900 mb-2">Account confermato!</h2>
 
       <div className="w-full max-w-xs bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6">
-        <p className="text-sm text-amber-800 font-medium">
-          Hai già Solvy installata?
-        </p>
-        <p className="text-xs text-amber-700 mt-0.5">
-          Chiudi Safari e aprila dalla schermata Home.
-        </p>
+        <p className="text-sm text-amber-800 font-medium">Hai già Solvy installata?</p>
+        <p className="text-xs text-amber-700 mt-0.5">Chiudi Safari e aprila dalla schermata Home.</p>
       </div>
 
       <p className="text-slate-500 text-sm leading-relaxed mb-8">
@@ -105,7 +148,7 @@ export default function InstallGateScreen() {
       <div className="w-full max-w-xs space-y-4 text-left">
         {[
           { text: <>Tocca l'icona <Share size={14} className="inline mb-0.5 text-primary" /> in basso nel browser</> },
-          { text: <>"Aggiungi a schermata Home"</> },
+          { text: <><strong>"Aggiungi a schermata Home"</strong></> },
           { text: <>Apri <span className="font-bold text-slate-900">Solvy</span> dalla schermata Home e accedi</> },
         ].map(({ text }, i) => (
           <div key={i} className="flex items-start gap-4">

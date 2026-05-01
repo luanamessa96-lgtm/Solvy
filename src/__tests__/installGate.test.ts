@@ -28,11 +28,12 @@ describe('detectBrowserContext', () => {
     expect(ctx.canInstall).toBe(true);
   });
 
-  it('detects iOS Chrome as not installable', () => {
+  it('detects iOS Chrome as installable (Share → Visualizza altro → Aggiungi)', () => {
     const ua = 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/109.0.0.0 Mobile/15E148 Safari/604.1';
     const ctx = detectBrowserContext(ua);
     expect(ctx.isIOS).toBe(true);
-    expect(ctx.canInstall).toBe(false);
+    expect(ctx.canInstall).toBe(true);
+    expect(ctx.isChromeiOS).toBe(true);
   });
 
   it('detects Instagram in-app browser as not installable', () => {

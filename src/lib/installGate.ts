@@ -6,6 +6,7 @@ export interface BrowserContext {
   isIOS: boolean;
   isAndroid: boolean;
   canInstall: boolean;
+  isChromeiOS: boolean;
 }
 
 export function detectBrowserContext(userAgent: string): BrowserContext {
@@ -17,14 +18,15 @@ export function detectBrowserContext(userAgent: string): BrowserContext {
 
   let canInstall: boolean;
   if (isIOS) {
-    canInstall = !isInAppBrowser && !isChromeiOS && !isFirefoxIOS;
+    // Chrome iOS installa via Share → Visualizza altro → Aggiungi alla schermata Home
+    canInstall = !isInAppBrowser && !isFirefoxIOS;
   } else if (isAndroid) {
     canInstall = !isInAppBrowser;
   } else {
     canInstall = false;
   }
 
-  return { isIOS, isAndroid, canInstall };
+  return { isIOS, isAndroid, canInstall, isChromeiOS };
 }
 
 export function needsInstall({ isMobile, isStandalone }: { isMobile: boolean; isStandalone: boolean }): boolean {
