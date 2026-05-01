@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, ChevronLeft, Info } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { IT_PROVINCE, getRegionFromProvince } from '../lib/it/province';
 import { useKeyboardPadding, scrollFieldIntoView } from '../hooks/useKeyboardPadding';
 import { Profile } from '../types';
@@ -19,6 +20,7 @@ interface OnboardingViewProps {
 type OnboardingStep = 0 | 'country' | 'territory' | 1 | 2 | 3 | 'done';
 
 export default function OnboardingView({ profile, onComplete, onCancel, darkMode }: OnboardingViewProps) {
+  const { t } = useTranslation();
   const keyboardPadding = useKeyboardPadding();
   const [step, setStep] = useState<OnboardingStep>(0);
   const [direction, setDirection] = useState(1);
@@ -174,20 +176,20 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                 <h1 style={{ fontWeight: 300, letterSpacing: '0.15em', color: '#1a1a2e', fontSize: '2.75rem', lineHeight: 1 }}>
                   SOLVY
                 </h1>
-                <p className="text-slate-400 text-sm">il tuo studio fiscale in tasca</p>
+                <p className="text-slate-400 text-sm">{t('onboarding.tagline')}</p>
               </div>
               {/* Pills + bottone */}
               <div className="w-full space-y-6">
                 <div className={`flex justify-center gap-6 text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  {['🧾 Fatture', '📅 Scadenze', '📊 Tasse'].map(item => (
+                  {[t('onboarding.feature_0'), t('onboarding.feature_1'), t('onboarding.feature_2')].map(item => (
                     <span key={item} className="font-medium">{item}</span>
                   ))}
                 </div>
                 <div className="space-y-3">
                   <button onClick={() => goNext('country')} className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-base shadow-xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                    Inizia <ChevronRight size={20} />
+                    {t('onboarding.start_btn')} <ChevronRight size={20} />
                   </button>
-                  <p className="text-[11px] text-slate-400">pochi passaggi · meno di 2 minuti</p>
+                  <p className="text-[11px] text-slate-400">{t('onboarding.start_hint')}</p>
                 </div>
               </div>
             </motion.div>
@@ -197,8 +199,8 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
           {step === 'country' && (
             <motion.div key="country" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="absolute inset-0 flex flex-col items-center justify-center p-8 space-y-8">
               <div className="w-full space-y-3 text-center">
-                <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Scegli il paese fiscale</h2>
-                <p className="text-sm text-slate-500">Determina le regole fiscali, le scadenze e il formato delle fatture.</p>
+                <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('onboarding.country_title')}</h2>
+                <p className="text-sm text-slate-500">{t('onboarding.country_subtitle')}</p>
               </div>
               <div className="w-full space-y-4">
                 <button
