@@ -971,7 +971,7 @@ function AppInner() {
     <BottomNav activeTab={(isProfilePage || isSettingsPage || isSubscriptionPage || isAccountantPage || isFiscalPage || isGuidaFiscalePage || isGuiaFiscalESPage) ? 'menu' : isMediaLibraryPage ? 'docs' : activeTab} setActiveTab={handleTabChange} darkMode={darkMode} theme={theme} onPlusPress={handlePlusPress} isNavHidden={isNavHidden} />
     <Suspense fallback={null}>
       <AnimatePresence>
-        {swRegistration && (
+        {swRegistration && !showOnboarding && (
           <UpdateBanner
             key="update-banner"
             darkMode={darkMode}
