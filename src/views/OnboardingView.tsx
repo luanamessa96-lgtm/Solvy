@@ -186,11 +186,6 @@ export default function OnboardingView({ profile, onComplete, onCancel, darkMode
                     Inizia <ChevronRight size={20} />
                   </button>
                   <p className="text-[11px] text-slate-400">pochi passaggi · meno di 2 minuti</p>
-                  {onCancel && (
-                    <button onClick={onCancel} className="w-full py-2 text-sm text-slate-400 underline underline-offset-2 active:opacity-60">
-                      Esci
-                    </button>
-                  )}
                 </div>
               </div>
             </motion.div>
