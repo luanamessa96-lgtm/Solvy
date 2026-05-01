@@ -242,7 +242,13 @@ function AppInner() {
     setProfiles([]);
     setDeadlines([]);
     getClient().auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return;
+      if (!user) {
+        // Sessione in localStorage ma utente eliminato dal DB — forza logout
+        await getClient().auth.signOut().catch(() => {});
+        setIsAuthenticated(false);
+        setIsLoading(false);
+        return;
+      }
       setUserId(user.id);
       const data = await getProfiles(user.id, user.email ?? undefined).catch(() => null);
 
