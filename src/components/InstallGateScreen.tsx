@@ -17,23 +17,24 @@ export default function InstallGateScreen() {
         </div>
         <h2 className="text-2xl font-bold text-slate-900 mb-2">Account confermato!</h2>
         <p className="text-slate-500 text-sm leading-relaxed mb-8">
-          Per installare Solvy devi aprire questo link in <strong>Safari</strong>.
+          Per installare Solvy devi aprire il link in <strong>Safari</strong>.
         </p>
-        <button
-          onClick={() => {
-            if (navigator.share) {
-              navigator.share({ url: 'https://solvyapp.com' });
-            } else {
-              navigator.clipboard?.writeText('https://solvyapp.com');
-              alert('Link copiato! Aprilo in Safari.');
-            }
-          }}
-          className="px-6 py-3 rounded-xl bg-slate-900 text-white text-sm font-medium"
-        >
-          Copia link per Safari
-        </button>
-        <p className="mt-6 text-xs text-slate-400">
-          Apri Safari → incolla il link → poi segui le istruzioni per installare.
+        <div className="w-full max-w-xs space-y-4 text-left">
+          {[
+            <>Tocca <strong>···</strong> in basso a destra</>,
+            <>&quot;Apri in Safari&quot; o &quot;Apri nel browser&quot;</>,
+            <>Segui le istruzioni per installare <strong>Solvy</strong></>,
+          ].map((text, i) => (
+            <div key={i} className="flex items-start gap-4">
+              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center shrink-0">
+                {i + 1}
+              </div>
+              <p className="text-sm text-slate-600 leading-snug pt-1.5">{text}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-10 text-xs text-slate-400">
+          Il tuo account è già pronto — non devi registrarti di nuovo.
         </p>
       </div>
     );
