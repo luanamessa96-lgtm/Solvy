@@ -311,25 +311,38 @@ function AppInner() {
             setIsLoading(false); // ← Dashboard visibile appena arrivano i documenti (o in caso di errore)
           });
       } else if (data !== null) {
-        // Nuovo utente: trigger ha creato profilo con country=NULL (o trigger fallito).
-        // Non scrivere nulla nel DB — sarà handleOnboardingComplete a farlo dopo la scelta paese.
-        const triggerProfileId = data.length > 0 ? data[0].id : user.id;
-        const shell: Profile = {
-          id: triggerProfileId,
-          name: user.user_metadata?.name || user.email?.split('@')[0] || 'Utente',
-          email: user.email || '',
-          jobType: '',
-          country: 'Italy' as Profile['country'], // placeholder UI — verrà sovrascritto in onboarding
-          currency: 'EUR' as Profile['currency'],
-          regime: 'forfettario',
-        };
-        setProfiles([shell]);
-        setActiveProfile(shell);
-        setDocuments([]);
-        setDeadlines([]);
-        localStorage.removeItem('onboardingComplete');
-        setShowOnboarding(true);
-        setIsLoading(false);
+        const alreadyCompleted = !!localStorage.getItem('onboardingComplete') || /onboardingComplete=true/.test(document.cookie);
+        if (alreadyCompleted && data.length > 0) {
+          // Utente che ha già completato l'onboarding ma il profilo non supera il filtro jobType.
+          // Non mandare mai un utente già onboardato all'inizio — usa il profilo com'è.
+          const existingProfile = data[0];
+          setProfiles([existingProfile]);
+          setActiveProfile(existingProfile);
+          setLanguageByCountry(existingProfile.country);
+          setDocuments([]);
+          setDeadlines([]);
+          setShowOnboarding(false);
+          setIsLoading(false);
+        } else {
+          // Nuovo utente: trigger ha creato profilo con country=NULL (o trigger fallito).
+          const triggerProfileId = data.length > 0 ? data[0].id : user.id;
+          const shell: Profile = {
+            id: triggerProfileId,
+            name: user.user_metadata?.name || user.email?.split('@')[0] || 'Utente',
+            email: user.email || '',
+            jobType: '',
+            country: 'Italy' as Profile['country'],
+            currency: 'EUR' as Profile['currency'],
+            regime: 'forfettario',
+          };
+          setProfiles([shell]);
+          setActiveProfile(shell);
+          setDocuments([]);
+          setDeadlines([]);
+          localStorage.removeItem('onboardingComplete');
+          setShowOnboarding(true);
+          setIsLoading(false);
+        }
       } else {
         // Errore di rete: mostra dashboard vuota
         setShowOnboarding(false);
