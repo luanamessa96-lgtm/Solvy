@@ -18,6 +18,17 @@ import { parseLocalDate, getLocalYear } from './utils/date';
 import { getItDeductibilityRate } from './lib/it/deductibility';
 import { getEsDeductibilityRate } from './lib/es/deductibility';
 const AuthView = lazy(() => import('./views/AuthView'));
+import InstallGateScreen from './components/InstallGateScreen';
+import { isConfirmedRoute, needsInstall, detectBrowserContext } from './lib/installGate';
+
+// Evaluated once at module load — before React, before any auth state change
+const _browser = detectBrowserContext(navigator.userAgent);
+const IS_MOBILE = _browser.isIOS || _browser.isAndroid;
+const IS_STANDALONE = (navigator as any).standalone === true
+  || window.matchMedia('(display-mode: standalone)').matches;
+const NEEDS_INSTALL = needsInstall({ isMobile: IS_MOBILE, isStandalone: IS_STANDALONE });
+// /confirmed route: email confirmation link landed here with a valid token
+const IS_CONFIRMED_ROUTE = isConfirmedRoute(window.location.pathname, window.location.hash);
 
 import { ToastProvider, useToast } from './components/ui/Toast';
 import DashboardSkeleton from './components/DashboardSkeleton';
@@ -796,6 +807,11 @@ function AppInner() {
     setIsAddingProfile(false);
   };
 
+  // Livello 1 — email confirmation link: mostra gate immediatamente, prima dello spinner auth
+  if (IS_CONFIRMED_ROUTE && NEEDS_INSTALL) {
+    return <InstallGateScreen />;
+  }
+
   // Schermata di caricamento auth iniziale
   if (isAuthenticated === null) {
     return (
@@ -806,8 +822,14 @@ function AppInner() {
   }
 
   // Non autenticato → schermata login (sempre pro-light, gestito dall'useEffect tema)
+  // Auth screens (login/register) sono accessibili da Safari — solo l'app autenticata è bloccata
   if (!isAuthenticated) {
     return <Suspense fallback={null}><AuthView darkMode={darkMode} /></Suspense>;
+  }
+
+  // Livello 2 — blocca uso dell'app autenticata in mobile browser (non standalone)
+  if (NEEDS_INSTALL) {
+    return <InstallGateScreen />;
   }
 
   // Recupero password → schermata nuova password (sempre pro-light, gestito dall'useEffect tema)

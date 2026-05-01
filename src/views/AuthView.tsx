@@ -113,16 +113,18 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     const { data, error } = await getClient().auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: window.location.origin },
+      options: { emailRedirectTo: `${window.location.origin}/confirmed` },
     });
     setLoading(false);
     if (error) {
       if (error.message.includes('already registered')) setError(t('auth.error_already_registered'));
       else setError(`Errore: ${error.message}`);
+    } else if (data.user?.identities?.length === 0) {
+      // Supabase returns 200 but sends no email when the address is already registered
+      await getClient().auth.signOut();
+      setError(t('auth.error_already_registered'));
     } else {
       window.gtag?.('event', 'sign_up', { method: 'email' });
-      // Always sign out after signup — user must confirm email before accessing the app.
-      // Supabase sometimes creates a session immediately even with "Confirm email" enabled.
       await getClient().auth.signOut();
       setScreen('register-sent');
     }
