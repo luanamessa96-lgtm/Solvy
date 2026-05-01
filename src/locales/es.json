@@ -336,6 +336,28 @@
     "error_forgot_send": "Error al enviar. Comprueba el email.",
     "error_reset_save": "Error al guardar. Inténtalo de nuevo."
   },
+  "install_gate": {
+    "title": "¡Cuenta confirmada!",
+    "already_installed": "¿Ya tienes Solvy instalada?",
+    "already_installed_safari": "Cierra Safari y ábrela desde la pantalla de inicio.",
+    "already_installed_chrome": "Cierra el navegador y ábrela desde la pantalla de inicio.",
+    "subtitle": "Para usar Solvy debes instalarla en tu iPhone.",
+    "account_ready": "Tu cuenta ya está lista — no necesitas registrarte de nuevo.",
+    "safari_step1": "Toca el icono compartir en la parte inferior del navegador",
+    "safari_step2": "\"Añadir a pantalla de inicio\"",
+    "safari_step3": "Abre Solvy desde la pantalla de inicio e inicia sesión",
+    "chrome_step1": "Toca el icono compartir arriba a la derecha (barra de direcciones)",
+    "chrome_step2": "Desplázate y toca \"Más opciones\"",
+    "chrome_step3": "Toca \"Añadir a pantalla de inicio\"",
+    "chrome_step4": "Abre Solvy desde la pantalla de inicio e inicia sesión",
+    "android_step1": "Toca el menú ⋮ arriba a la derecha en el navegador",
+    "android_step2": "\"Añadir a pantalla de inicio\" o \"Instalar app\"",
+    "android_step3": "Abre Solvy desde la pantalla de inicio e inicia sesión",
+    "inapp_subtitle": "Para instalar Solvy debes abrir el enlace en Safari.",
+    "inapp_step1": "Toca ··· abajo a la derecha",
+    "inapp_step2": "\"Abrir en Safari\" o \"Abrir en el navegador\"",
+    "inapp_step3": "Sigue las instrucciones para instalar Solvy"
+  },
   "pwa": {
     "update_available": "Hay una nueva versión de Solvy disponible",
     "update_btn": "Actualizar",

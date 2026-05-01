@@ -1,168 +1,109 @@
 import { Share } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { detectBrowserContext } from '../lib/installGate';
 
 const browser = detectBrowserContext(navigator.userAgent);
 
+function StepList({ steps }: { steps: React.ReactNode[] }) {
+  return (
+    <div className="w-full max-w-xs space-y-4 text-left">
+      {steps.map((text, i) => (
+        <div key={i} className="flex items-start gap-4">
+          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center shrink-0">
+            {i + 1}
+          </div>
+          <p className="text-sm text-slate-600 leading-snug pt-1.5">{text}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function GateShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center bg-white">
+      <div className="mb-8">
+        <h1 style={{ fontWeight: 300, letterSpacing: '0.15em', color: '#1a1a2e', fontSize: '2rem' }}>SOLVY</h1>
+      </div>
+      <div className="w-20 h-20 rounded-3xl bg-emerald-500 flex items-center justify-center mb-6 shadow-xl shadow-emerald-500/30">
+        <span className="text-white text-4xl">✓</span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
 export default function InstallGateScreen() {
+  const { t } = useTranslation();
+
   // Vero in-app browser senza Share sheet (Facebook, Instagram, WhatsApp, WeChat)
   if (!browser.canInstall) {
     return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center bg-white">
-        <div className="mb-8">
-          <h1 style={{ fontWeight: 300, letterSpacing: '0.15em', color: '#1a1a2e', fontSize: '2rem' }}>
-            SOLVY
-          </h1>
-        </div>
-        <div className="w-20 h-20 rounded-3xl bg-emerald-500 flex items-center justify-center mb-6 shadow-xl shadow-emerald-500/30">
-          <span className="text-white text-4xl">✓</span>
-        </div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">Account confermato!</h2>
-        <p className="text-slate-500 text-sm leading-relaxed mb-8">
-          Per installare Solvy devi aprire il link in <strong>Safari</strong>.
-        </p>
-        <div className="w-full max-w-xs space-y-4 text-left">
-          {[
-            <>Tocca <strong>···</strong> in basso a destra</>,
-            <>&quot;Apri in Safari&quot; o &quot;Apri nel browser&quot;</>,
-            <>Segui le istruzioni per installare <strong>Solvy</strong></>,
-          ].map((text, i) => (
-            <div key={i} className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center shrink-0">
-                {i + 1}
-              </div>
-              <p className="text-sm text-slate-600 leading-snug pt-1.5">{text}</p>
-            </div>
-          ))}
-        </div>
-        <p className="mt-10 text-xs text-slate-400">
-          Il tuo account è già pronto — non devi registrarti di nuovo.
-        </p>
-      </div>
+      <GateShell>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">{t('install_gate.title')}</h2>
+        <p className="text-slate-500 text-sm leading-relaxed mb-8">{t('install_gate.inapp_subtitle')}</p>
+        <StepList steps={[
+          t('install_gate.inapp_step1'),
+          t('install_gate.inapp_step2'),
+          t('install_gate.inapp_step3'),
+        ]} />
+        <p className="mt-10 text-xs text-slate-400">{t('install_gate.account_ready')}</p>
+      </GateShell>
     );
   }
 
   if (browser.isAndroid) {
     return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center bg-white">
-        <div className="mb-8">
-          <h1 style={{ fontWeight: 300, letterSpacing: '0.15em', color: '#1a1a2e', fontSize: '2rem' }}>
-            SOLVY
-          </h1>
-        </div>
-        <div className="w-20 h-20 rounded-3xl bg-emerald-500 flex items-center justify-center mb-6 shadow-xl shadow-emerald-500/30">
-          <span className="text-white text-4xl">✓</span>
-        </div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">Account confermato!</h2>
+      <GateShell>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">{t('install_gate.title')}</h2>
         <p className="text-slate-500 text-sm leading-relaxed mb-6">
-          Hai già Solvy installata? <strong>Aprila dalla schermata Home.</strong>
+          {t('install_gate.already_installed')} <strong>{t('install_gate.already_installed_chrome')}</strong>
         </p>
-        <div className="w-full max-w-xs space-y-4 text-left mb-8">
-          {[
-            'Tocca il menu ⋮ in alto a destra nel browser',
-            '"Aggiungi a schermata Home" o "Installa app"',
-            <>Apri <span className="font-bold text-slate-900">Solvy</span> dalla schermata Home e accedi</>,
-          ].map((text, i) => (
-            <div key={i} className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center shrink-0">
-                {i + 1}
-              </div>
-              <p className="text-sm text-slate-600 leading-snug pt-1.5">{text}</p>
-            </div>
-          ))}
-        </div>
-        <p className="text-xs text-slate-400 leading-relaxed">
-          Il tuo account è già pronto — non devi registrarti di nuovo.
-        </p>
-      </div>
+        <StepList steps={[
+          t('install_gate.android_step1'),
+          t('install_gate.android_step2'),
+          t('install_gate.android_step3'),
+        ]} />
+        <p className="mt-10 text-xs text-slate-400">{t('install_gate.account_ready')}</p>
+      </GateShell>
     );
   }
 
-  // iOS Chrome — Share icon in alto a destra nella barra dell'indirizzo
   if (browser.isChromeiOS) {
     return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center bg-white">
-        <div className="mb-8">
-          <h1 style={{ fontWeight: 300, letterSpacing: '0.15em', color: '#1a1a2e', fontSize: '2rem' }}>
-            SOLVY
-          </h1>
-        </div>
-        <div className="w-20 h-20 rounded-3xl bg-emerald-500 flex items-center justify-center mb-6 shadow-xl shadow-emerald-500/30">
-          <span className="text-white text-4xl">✓</span>
-        </div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">Account confermato!</h2>
-
+      <GateShell>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">{t('install_gate.title')}</h2>
         <div className="w-full max-w-xs bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6">
-          <p className="text-sm text-amber-800 font-medium">Hai già Solvy installata?</p>
-          <p className="text-xs text-amber-700 mt-0.5">Chiudi il browser e aprila dalla schermata Home.</p>
+          <p className="text-sm text-amber-800 font-medium">{t('install_gate.already_installed')}</p>
+          <p className="text-xs text-amber-700 mt-0.5">{t('install_gate.already_installed_chrome')}</p>
         </div>
-
-        <p className="text-slate-500 text-sm leading-relaxed mb-8">
-          Per usare Solvy devi installarla sul tuo iPhone.
-        </p>
-
-        <div className="w-full max-w-xs space-y-4 text-left">
-          {[
-            { text: <>Tocca l'icona <Share size={14} className="inline mb-0.5 text-primary" /> in alto a destra (barra dell'indirizzo)</> },
-            { text: <>Scorri e tocca <strong>"Visualizza altro"</strong></> },
-            { text: <>Tocca <strong>"Aggiungi alla schermata Home"</strong></> },
-            { text: <>Apri <span className="font-bold text-slate-900">Solvy</span> dalla schermata Home e accedi</> },
-          ].map(({ text }, i) => (
-            <div key={i} className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center shrink-0">
-                {i + 1}
-              </div>
-              <p className="text-sm text-slate-600 leading-snug pt-1.5">{text}</p>
-            </div>
-          ))}
-        </div>
-
-        <p className="mt-10 text-xs text-slate-400 leading-relaxed">
-          Il tuo account è già pronto — non devi registrarti di nuovo.
-        </p>
-      </div>
+        <p className="text-slate-500 text-sm leading-relaxed mb-8">{t('install_gate.subtitle')}</p>
+        <StepList steps={[
+          <><Share size={14} className="inline mr-1 mb-0.5 text-primary" />{t('install_gate.chrome_step1')}</>,
+          <strong>{t('install_gate.chrome_step2')}</strong>,
+          <strong>{t('install_gate.chrome_step3')}</strong>,
+          t('install_gate.chrome_step4'),
+        ]} />
+        <p className="mt-10 text-xs text-slate-400">{t('install_gate.account_ready')}</p>
+      </GateShell>
     );
   }
 
-  // iOS Safari — Share icon in basso nel browser
+  // iOS Safari
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center bg-white">
-      <div className="mb-8">
-        <h1 style={{ fontWeight: 300, letterSpacing: '0.15em', color: '#1a1a2e', fontSize: '2rem' }}>
-          SOLVY
-        </h1>
-      </div>
-      <div className="w-20 h-20 rounded-3xl bg-emerald-500 flex items-center justify-center mb-6 shadow-xl shadow-emerald-500/30">
-        <span className="text-white text-4xl">✓</span>
-      </div>
-      <h2 className="text-2xl font-bold text-slate-900 mb-2">Account confermato!</h2>
-
+    <GateShell>
+      <h2 className="text-2xl font-bold text-slate-900 mb-2">{t('install_gate.title')}</h2>
       <div className="w-full max-w-xs bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6">
-        <p className="text-sm text-amber-800 font-medium">Hai già Solvy installata?</p>
-        <p className="text-xs text-amber-700 mt-0.5">Chiudi Safari e aprila dalla schermata Home.</p>
+        <p className="text-sm text-amber-800 font-medium">{t('install_gate.already_installed')}</p>
+        <p className="text-xs text-amber-700 mt-0.5">{t('install_gate.already_installed_safari')}</p>
       </div>
-
-      <p className="text-slate-500 text-sm leading-relaxed mb-8">
-        Per usare Solvy devi installarla sul tuo iPhone.
-      </p>
-
-      <div className="w-full max-w-xs space-y-4 text-left">
-        {[
-          { text: <>Tocca l'icona <Share size={14} className="inline mb-0.5 text-primary" /> in basso nel browser</> },
-          { text: <><strong>"Aggiungi a schermata Home"</strong></> },
-          { text: <>Apri <span className="font-bold text-slate-900">Solvy</span> dalla schermata Home e accedi</> },
-        ].map(({ text }, i) => (
-          <div key={i} className="flex items-start gap-4">
-            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center shrink-0">
-              {i + 1}
-            </div>
-            <p className="text-sm text-slate-600 leading-snug pt-1.5">{text}</p>
-          </div>
-        ))}
-      </div>
-
-      <p className="mt-10 text-xs text-slate-400 leading-relaxed">
-        Il tuo account è già pronto — non devi registrarti di nuovo.
-      </p>
-    </div>
+      <p className="text-slate-500 text-sm leading-relaxed mb-8">{t('install_gate.subtitle')}</p>
+      <StepList steps={[
+        <><Share size={14} className="inline mr-1 mb-0.5 text-primary" />{t('install_gate.safari_step1')}</>,
+        <strong>{t('install_gate.safari_step2')}</strong>,
+        t('install_gate.safari_step3'),
+      ]} />
+      <p className="mt-10 text-xs text-slate-400">{t('install_gate.account_ready')}</p>
+    </GateShell>
   );
 }
