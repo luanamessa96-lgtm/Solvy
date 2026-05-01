@@ -887,11 +887,6 @@ function AppInner() {
       profile={activeProfile}
       onComplete={handleOnboardingComplete}
       darkMode={false}
-      onCancel={async () => {
-        await supabaseReady.then(sb => sb.auth.signOut());
-        setIsAuthenticated(false);
-        setShowOnboarding(false);
-      }}
     />;
   }
 
