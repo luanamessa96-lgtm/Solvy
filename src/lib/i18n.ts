@@ -2,7 +2,9 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import it from '../locales/it.json';
 
-// Only Italian loaded at startup — Spanish loads lazily when needed
+const BROWSER_IS_ES = /^es/i.test(navigator.language ?? '');
+
+// Italian always loaded synchronously; Spanish loads lazily if browser language is Spanish
 i18n
   .use(initReactI18next)
   .init({
@@ -13,6 +15,15 @@ i18n
     fallbackLng: 'it',
     interpolation: { escapeValue: false },
   });
+
+// Pre-load Spanish for users whose browser/device is in Spanish (AuthView, InstallGate)
+// Will be overridden by setLanguageByCountry once the profile loads
+if (BROWSER_IS_ES) {
+  import('../locales/es.json').then(({ default: es }) => {
+    i18n.addResourceBundle('es', 'translation', es);
+    i18n.changeLanguage('es');
+  });
+}
 
 // Counter to cancel stale async language changes (race condition: Spain import
 // resolves after a subsequent Italy call, overwriting the correct language)
