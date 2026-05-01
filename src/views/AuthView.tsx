@@ -341,9 +341,6 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
                 </p>
                 <p className="text-xs text-slate-500">{t('auth.register_sent_spam')}</p>
               </div>
-              <button type="button" onClick={() => { clearError(); setScreen('login'); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-500">
-                <ArrowLeft size={14} /> {t('auth.back_to_login')}
-              </button>
             </motion.div>
           )}
 
