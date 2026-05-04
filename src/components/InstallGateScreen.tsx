@@ -28,7 +28,7 @@ function StepList({ steps }: { steps: React.ReactNode[] }) {
 
 function SolvyLogo() {
   return (
-    <div className="flex items-center gap-3 mb-8">
+    <div className="flex items-center gap-3 mb-6">
       <div className="w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg" style={{ background: SOLVY_GRADIENT }}>
         <span className="text-white font-black text-xl">S</span>
       </div>
@@ -41,12 +41,6 @@ function GateShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center px-6 text-center" style={{ background: SOLVY_BG }}>
       <SolvyLogo />
-      <div
-        className="w-20 h-20 rounded-3xl flex items-center justify-center mb-6"
-        style={{ background: SOLVY_GRADIENT, boxShadow: `0 12px 32px ${SOLVY_PURPLE}40` }}
-      >
-        <span className="text-white text-4xl font-bold">✓</span>
-      </div>
       <div className="w-full max-w-xs bg-white rounded-2xl p-6 shadow-sm" style={{ border: '1px solid #E0D9F0' }}>
         {children}
       </div>
