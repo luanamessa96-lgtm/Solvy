@@ -473,18 +473,18 @@ function AppInner() {
             clearInterval(poll);
             setProfiles(fresh);
             setActiveProfile(prev => fresh.find(p => p.id === prev.id) ?? prev);
-            showToast('Benvenuto in Solvy Pro! Il tuo abbonamento è attivo.', 'success');
+            showToast(t('settings.pro_welcome_toast'), 'success');
             return;
           }
         } catch { /* ignora errori transitori */ }
         if (attempts >= 10) {
           clearInterval(poll);
-          showToast('Benvenuto in Solvy Pro! Il tuo abbonamento è attivo.', 'success');
+          showToast(t('settings.pro_welcome_toast'), 'success');
         }
       }, 2000);
       return () => clearInterval(poll);
     } else if (params.get('checkout') === 'cancelled') {
-      showToast('Pagamento annullato.', 'error');
+      showToast(t('settings.checkout_cancelled'), 'error');
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, [isLoading, userId]);

@@ -257,6 +257,8 @@
     "cookie_policy": "Política de Cookies",
     "subscription_management": "Gestión de suscripción",
     "subscription_active": "Plan Pro activo",
+    "pro_welcome_toast": "¡Bienvenido a Solvy Pro! Tu suscripción está activa.",
+    "checkout_cancelled": "Pago cancelado.",
     "subscription_refund_eligible": "Tienes {{days}} días restantes para solicitar el reembolso (derecho de desistimiento)",
     "subscription_refund_btn": "Solicitar reembolso — derecho de desistimiento",
     "subscription_refund_confirm_title": "Confirmar reembolso",

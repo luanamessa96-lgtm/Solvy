@@ -263,6 +263,8 @@
     "cookie_policy": "Cookie Policy",
     "subscription_management": "Gestione abbonamento",
     "subscription_active": "Piano Pro attivo",
+    "pro_welcome_toast": "Benvenuto in Solvy Pro! Il tuo abbonamento è attivo.",
+    "checkout_cancelled": "Pagamento annullato.",
     "subscription_refund_eligible": "Hai {{days}} giorni rimasti per richiedere il rimborso (diritto di recesso)",
     "subscription_refund_btn": "Richiedi rimborso — diritto di recesso",
     "subscription_refund_confirm_title": "Conferma rimborso",
