@@ -21,6 +21,21 @@ export default defineConfig(({mode}) => {
         },
       },
       {
+        // Swap index.html ↔ landing.html dopo il build:
+        // - React app va in dist/app.html (servita da Vercel su /app)
+        // - Landing diventa dist/index.html (servita da Vercel su / per default)
+        name: 'swap-landing-root',
+        closeBundle() {
+          const distDir = path.resolve(__dirname, 'dist');
+          const indexPath  = path.join(distDir, 'index.html');
+          const appPath    = path.join(distDir, 'app.html');
+          const landingPath = path.join(distDir, 'landing.html');
+          if (!fs.existsSync(indexPath) || !fs.existsSync(landingPath)) return;
+          fs.renameSync(indexPath, appPath);
+          fs.copyFileSync(landingPath, indexPath);
+        },
+      },
+      {
         name: 'non-blocking-css',
         transformIndexHtml(html: string) {
           return html.replace(
