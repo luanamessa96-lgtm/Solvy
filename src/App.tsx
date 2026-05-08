@@ -18,7 +18,6 @@ import { parseLocalDate, getLocalYear } from './utils/date';
 import { getItDeductibilityRate } from './lib/it/deductibility';
 import { getEsDeductibilityRate } from './lib/es/deductibility';
 const AuthView = lazy(() => import('./views/AuthView'));
-const LandingView = lazy(() => import('./views/LandingView'));
 import InstallGateScreen from './components/InstallGateScreen';
 import { isConfirmedRoute, needsInstall, detectBrowserContext } from './lib/installGate';
 
@@ -131,8 +130,6 @@ function AppInner() {
   const [accountant, setAccountant] = useState<Accountant>(MOCK_ACCOUNTANT);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [showLanding, setShowLanding] = useState(true);
-  const [authInitialScreen, setAuthInitialScreen] = useState<'login' | 'register'>('login');
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -177,11 +174,9 @@ function AppInner() {
         if (event === 'PASSWORD_RECOVERY') {
           setIsPasswordRecovery(true);
           setIsAuthenticated(true);
-          setShowLanding(false);
         } else if (event === 'SIGNED_IN') {
           setIsPasswordRecovery(false);
           setIsAuthenticated(true);
-          setShowLanding(false);
           // Loops last_active — fire-and-forget
           if (session?.user?.email) {
             fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/loops-sync`, {
@@ -195,7 +190,6 @@ function AppInner() {
           }
         } else if (event === 'SIGNED_OUT') {
           setIsAuthenticated(false);
-          setShowLanding(true); // sessione scaduta → torna alla landing, non al login diretto
         }
       });
       subscription = data.subscription;
@@ -846,24 +840,11 @@ function AppInner() {
     );
   }
 
-  // Landing: mostrata quando showLanding=true E non siamo in modalità PWA standalone
-  // (utenti da browser vedono sempre la landing; utenti con PWA installata vanno diretto all'app)
-  if (showLanding && !IS_STANDALONE) {
-    return (
-      <Suspense fallback={null}>
-        <LandingView
-          onSignup={() => { setAuthInitialScreen('login'); setShowLanding(false); }}
-          onLogin={() => { setAuthInitialScreen('login'); setShowLanding(false); }}
-        />
-      </Suspense>
-    );
-  }
-
-  // Non autenticato (senza landing) → schermata login/register
+  // Non autenticato → schermata login/register
   if (!isAuthenticated) {
     return (
       <Suspense fallback={null}>
-        <AuthView darkMode={darkMode} initialScreen={authInitialScreen} />
+        <AuthView darkMode={darkMode} />
       </Suspense>
     );
   }
