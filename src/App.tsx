@@ -853,7 +853,7 @@ function AppInner() {
       return (
         <Suspense fallback={null}>
           <LandingView
-            onSignup={() => { setAuthInitialScreen('register'); setShowLanding(false); }}
+            onSignup={() => { setAuthInitialScreen('login'); setShowLanding(false); }}
             onLogin={() => { setAuthInitialScreen('login'); setShowLanding(false); }}
           />
         </Suspense>
