@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solvy — Reset cache</title>
+<style>
+body { font-family: system-ui; background: #09090b; color: white;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; margin: 0; text-align: center; padding: 24px; }
+.box { max-width: 360px; }
+h2 { font-size: 22px; margin-bottom: 12px; }
+p { color: rgba(255,255,255,.6); font-size: 15px; line-height: 1.6; }
+.spinner { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,.2);
+  border-top-color: #8B5CF6; border-radius: 50%;
+  animation: spin 0.8s linear infinite; margin: 24px auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="spinner"></div>
+  <h2>Aggiornamento in corso…</h2>
+  <p>Stiamo pulendo la cache. Verrai reindirizzato in pochi secondi.</p>
+</div>
+<script>
+async function clearAndReload() {
+  // Deregistra tutti i service worker
+  if ('serviceWorker' in navigator) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r => r.unregister()));
+  }
+  // Svuota tutte le cache
+  if ('caches' in window) {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => caches.delete(k)));
+  }
+  // Redirect alla home con force-reload
+  window.location.replace('/?nocache=' + Date.now());
+}
+clearAndReload();
+</script>
+</body>
+</html>

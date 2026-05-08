@@ -58,6 +58,10 @@
       "destination": "/landing.html"
     },
     {
+      "source": "/reset",
+      "destination": "/reset.html"
+    },
+    {
       "source": "/app",
       "destination": "/index.html"
     },
