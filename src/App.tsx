@@ -18,6 +18,7 @@ import { parseLocalDate, getLocalYear } from './utils/date';
 import { getItDeductibilityRate } from './lib/it/deductibility';
 import { getEsDeductibilityRate } from './lib/es/deductibility';
 const AuthView = lazy(() => import('./views/AuthView'));
+const LandingView = lazy(() => import('./views/LandingView'));
 import InstallGateScreen from './components/InstallGateScreen';
 import { isConfirmedRoute, needsInstall, detectBrowserContext } from './lib/installGate';
 
@@ -130,6 +131,8 @@ function AppInner() {
   const [accountant, setAccountant] = useState<Accountant>(MOCK_ACCOUNTANT);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [showLanding, setShowLanding] = useState(true);
+  const [authInitialScreen, setAuthInitialScreen] = useState<'login' | 'register'>('login');
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -165,6 +168,7 @@ function AppInner() {
     supabaseReady.then(sb => {
       sb.auth.getSession().then(({ data: { session } }) => {
         setIsAuthenticated(!!session);
+        if (session) setShowLanding(false);
         // Rimuovi splash screen quando la sessione è nota
         const splash = document.getElementById('splash');
         if (splash) { splash.classList.add('hide'); setTimeout(() => splash.remove(), 280); }
@@ -174,9 +178,11 @@ function AppInner() {
         if (event === 'PASSWORD_RECOVERY') {
           setIsPasswordRecovery(true);
           setIsAuthenticated(true);
+          setShowLanding(false);
         } else if (event === 'SIGNED_IN') {
           setIsPasswordRecovery(false);
           setIsAuthenticated(true);
+          setShowLanding(false);
           // Loops last_active — fire-and-forget
           if (session?.user?.email) {
             fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/loops-sync`, {
@@ -840,10 +846,24 @@ function AppInner() {
     );
   }
 
-  // Non autenticato → schermata login (sempre pro-light, gestito dall'useEffect tema)
+  // Non autenticato → landing page oppure schermata login/register
   // Auth screens (login/register) sono accessibili da Safari — solo l'app autenticata è bloccata
   if (!isAuthenticated) {
-    return <Suspense fallback={null}><AuthView darkMode={darkMode} /></Suspense>;
+    if (showLanding) {
+      return (
+        <Suspense fallback={null}>
+          <LandingView
+            onSignup={() => { setAuthInitialScreen('register'); setShowLanding(false); }}
+            onLogin={() => { setAuthInitialScreen('login'); setShowLanding(false); }}
+          />
+        </Suspense>
+      );
+    }
+    return (
+      <Suspense fallback={null}>
+        <AuthView darkMode={darkMode} initialScreen={authInitialScreen} />
+      </Suspense>
+    );
   }
 
   // Livello 2 — blocca uso dell'app autenticata in mobile browser (non standalone)
