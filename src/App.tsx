@@ -168,7 +168,6 @@ function AppInner() {
     supabaseReady.then(sb => {
       sb.auth.getSession().then(({ data: { session } }) => {
         setIsAuthenticated(!!session);
-        if (session) setShowLanding(false);
         // Rimuovi splash screen quando la sessione è nota
         const splash = document.getElementById('splash');
         if (splash) { splash.classList.add('hide'); setTimeout(() => splash.remove(), 280); }
@@ -196,6 +195,7 @@ function AppInner() {
           }
         } else if (event === 'SIGNED_OUT') {
           setIsAuthenticated(false);
+          setShowLanding(true); // sessione scaduta → torna alla landing, non al login diretto
         }
       });
       subscription = data.subscription;
@@ -846,19 +846,21 @@ function AppInner() {
     );
   }
 
-  // Non autenticato → landing page oppure schermata login/register
-  // Auth screens (login/register) sono accessibili da Safari — solo l'app autenticata è bloccata
+  // Landing: mostrata quando showLanding=true E non siamo in modalità PWA standalone
+  // (utenti da browser vedono sempre la landing; utenti con PWA installata vanno diretto all'app)
+  if (showLanding && !IS_STANDALONE) {
+    return (
+      <Suspense fallback={null}>
+        <LandingView
+          onSignup={() => { setAuthInitialScreen('login'); setShowLanding(false); }}
+          onLogin={() => { setAuthInitialScreen('login'); setShowLanding(false); }}
+        />
+      </Suspense>
+    );
+  }
+
+  // Non autenticato (senza landing) → schermata login/register
   if (!isAuthenticated) {
-    if (showLanding) {
-      return (
-        <Suspense fallback={null}>
-          <LandingView
-            onSignup={() => { setAuthInitialScreen('login'); setShowLanding(false); }}
-            onLogin={() => { setAuthInitialScreen('login'); setShowLanding(false); }}
-          />
-        </Suspense>
-      );
-    }
     return (
       <Suspense fallback={null}>
         <AuthView darkMode={darkMode} initialScreen={authInitialScreen} />
