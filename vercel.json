@@ -54,6 +54,10 @@
   ],
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
       "source": "/reset",
       "destination": "/reset.html"
     },
