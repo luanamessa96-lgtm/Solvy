@@ -2,7 +2,7 @@
   "name": "Solvy",
   "short_name": "Solvy",
   "description": "Gestione fatture e finanze per freelance",
-  "start_url": "/app",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0A1628",
   "theme_color": "#0A1628",

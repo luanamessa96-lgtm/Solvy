@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /functions/
+Disallow: /app
 
-Sitemap: https://solvy.app/sitemap.xml
+Sitemap: https://solvyapp.com/sitemap.xml
