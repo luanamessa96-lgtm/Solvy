@@ -33,6 +33,10 @@ body {
   user-select: none;
 }
 
+button, a, [role="button"] {
+  outline: none;
+}
+
 /* Ripristina selezione testo negli input */
 input, textarea, select, [contenteditable] {
   -webkit-user-select: text;
