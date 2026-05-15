@@ -146,6 +146,10 @@ const SECTIONS: Section[] = [
         body: 'Solvy trasmette la fattura direttamente al Sistema di Interscambio (SdI) dell\'Agenzia delle Entrate con un click — senza scaricare file, senza portali. La fattura arriva automaticamente al cliente tramite il suo codice SDI o PEC. Lo stato si aggiorna in tempo reale: ⏳ in attesa, ✓ consegnata.',
       },
       {
+        title: 'Dati obbligatori per inviare una fattura a SdI — controlla prima di inviare',
+        body: 'Nel tuo profilo servono: P.IVA o Codice Fiscale + indirizzo completo. Sulla fattura servono i dati del cliente: P.IVA o CF del cliente, e almeno uno tra Codice SDI (7 caratteri, lo chiedi al cliente o al suo commercialista) oppure PEC. Se manca il Codice SDI usa 0000000 — la fattura arriva nel cassetto fiscale del cliente ma è comunque valida. Se i dati sono incompleti SdI scarterà la fattura.',
+      },
+      {
         title: 'Le FatturaPA XML sono già conservate dall\'AdE — non devi fare nulla',
         body: 'L\'Agenzia delle Entrate conserva automaticamente le tue FatturaPA XML per 10 anni. Non devi fare nulla — sono al sicuro. L\'Archivio Solvy è un backup aggiuntivo opzionale.',
       },
