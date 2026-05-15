@@ -125,7 +125,7 @@ function buildPayload(doc: any, profile: any) {
     fattura_elettronica_header: {
       dati_trasmissione: {
         codice_destinatario: doc.client_sdi || '0000000',
-        ...(doc.client_pec ? { pec_destinatario: doc.client_pec } : {}),
+        ...(doc.client_pec && doc.client_pec.includes('@') && doc.client_pec.length >= 7 ? { pec_destinatario: doc.client_pec.trim() } : {}),
       },
       cedente_prestatore: {
         dati_anagrafici: {
