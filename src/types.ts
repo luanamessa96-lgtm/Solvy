@@ -57,6 +57,7 @@ export interface Document {
   docRegime?: 'forfettario' | 'ordinario';
   clientSdi?: string;
   clientPec?: string;
+  sdiStatus?: 'sent' | 'delivered' | 'rejected' | 'failed';
   validezDate?: string;
   intracomunitaria?: boolean;
   nifProveedor?: string;

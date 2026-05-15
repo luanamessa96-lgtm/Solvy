@@ -42,6 +42,7 @@ export async function getDocuments(profileId: string): Promise<Document[]> {
     clientPec: d.client_pec,
     validezDate: d.validez_date,
     nifProveedor: d.nif_proveedor,
+    sdiStatus: d.sdi_status ?? undefined,
   }));
 }
 

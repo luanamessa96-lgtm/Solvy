@@ -56,6 +56,10 @@ function DocCard({ doc, darkMode, profile, i18nLanguage, t, onClick }: { doc: Do
           {doc.type === 'invoice' && doc.status === 'paid' && <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">· {t('documents.status_badge_paid')}</span>}
           {doc.type === 'invoice' && doc.status === 'pending' && <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500">· {t('documents.status_badge_pending')}</span>}
           {doc.type === 'invoice' && doc.status === 'overdue' && <span className="text-[10px] font-bold uppercase tracking-wider text-red-500">· {t('documents.status_badge_overdue')}</span>}
+          {profile.country === 'Italy' && (doc.type === 'invoice' || doc.type === 'credit_note') && doc.sdiStatus === 'sent' && <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">· SdI ⏳</span>}
+          {profile.country === 'Italy' && (doc.type === 'invoice' || doc.type === 'credit_note') && doc.sdiStatus === 'delivered' && <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">· SdI ✓</span>}
+          {profile.country === 'Italy' && (doc.type === 'invoice' || doc.type === 'credit_note') && doc.sdiStatus === 'rejected' && <span className="text-[10px] font-bold uppercase tracking-wider text-red-500">· SdI ✗</span>}
+          {profile.country === 'Italy' && (doc.type === 'invoice' || doc.type === 'credit_note') && doc.sdiStatus === 'failed' && <span className="text-[10px] font-bold uppercase tracking-wider text-red-500">· SdI ✗</span>}
           {doc.type === 'credit_note' && doc.category && <span className="text-[10px] font-medium text-slate-400">· rif. {doc.category}</span>}
           {doc.type === 'expense' && doc.category && <span className="text-[10px] font-medium text-slate-400">· {doc.category}</span>}
           {doc.type === 'expense' && (doc.ivaRate ?? 0) > 0 && <span className="text-[10px] font-bold text-primary">· {doc.ivaRate}% {profile.territory === 'canarias' ? 'IGIC' : 'IVA'}</span>}
