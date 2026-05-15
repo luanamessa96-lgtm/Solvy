@@ -1531,8 +1531,14 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
               {!(isSpain && includeResumen) && (
                 <div className={`rounded-2xl p-4 space-y-2 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
                   <div className="flex justify-between items-center">
-                    <span className={`text-sm font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Documenti selezionati</span>
-                    <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{filteredDocs.length}</span>
+                    <span className={`text-sm font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                      {includeFatturaPA && isItaly ? 'Fatture da inviare a SdI' : 'Documenti selezionati'}
+                    </span>
+                    <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                      {includeFatturaPA && isItaly
+                        ? filteredDocs.filter(d => d.type === 'invoice' || d.type === 'credit_note').length
+                        : filteredDocs.length}
+                    </span>
                   </div>
                   {docFilter !== 'expense' && (
                     <div className="flex justify-between items-center">
