@@ -41,7 +41,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const [docFilter, setDocFilter] = useState<'all' | 'invoice' | 'expense'>('all');
   const [exporting, setExporting] = useState(false);
   const [sdiSending, setSdiSending] = useState(false);
-  const [sdiResults, setSdiResults] = useState<{ sent: number; skipped: number; errors: number; incomplete: number } | null>(null);
+  const [sdiResults, setSdiResults] = useState<{ sent: number; skipped: number; errors: number; incomplete: number; incompleteDetails: { invoiceNumber: string; missing: string[] }[] } | null>(null);
   const [selectedMonths, setSelectedMonths] = useState<Set<number>>(new Set());
   const [includeFatturaPA, setIncludeFatturaPA] = useState(true);
   const [includeResumen, setIncludeResumen] = useState(true);
@@ -1637,16 +1637,21 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                             d.sdiStatus !== 'sent' && d.sdiStatus !== 'delivered'
                           );
                           if (invoicesToSend.length === 0) {
-                            setSdiResults({ sent: 0, skipped: filteredDocs.filter(d => d.type === 'invoice' || d.type === 'credit_note').length, errors: 0, incomplete: 0 });
+                            setSdiResults({ sent: 0, skipped: filteredDocs.filter(d => d.type === 'invoice' || d.type === 'credit_note').length, errors: 0, incomplete: 0, incompleteDetails: [] });
                             return;
                           }
                           setSdiSending(true);
                           setSdiResults(null);
                           let sent = 0, skipped = 0, errors = 0;
+                          const incompleteDetails: { invoiceNumber: string; missing: string[] }[] = [];
                           const { data: { session } } = await getClient().auth.getSession();
                           for (const doc of invoicesToSend) {
                             const sdiErrors = validateForSdi(doc, profile);
-                            if (sdiErrors.length > 0) { errors++; continue; }
+                            if (sdiErrors.length > 0) {
+                              errors++;
+                              incompleteDetails.push({ invoiceNumber: doc.invoiceNumber || doc.id.slice(0, 8), missing: sdiErrors.map(e => e.label) });
+                              continue;
+                            }
                             try {
                               const res = await fetch(`${SUPABASE_URL}/functions/v1/sdi-send`, {
                                 method: 'POST',
@@ -1659,7 +1664,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                             } catch { errors++; }
                           }
                           setSdiSending(false);
-                          setSdiResults({ sent, skipped, errors: 0, incomplete: errors });
+                          setSdiResults({ sent, skipped, errors: 0, incomplete: errors, incompleteDetails });
                         }}
                         className="w-full py-4 rounded-2xl font-bold text-white bg-blue-500 shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
                       >
@@ -1674,11 +1679,18 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                         </p>
                       )}
                       {sdiResults && (
-                        <div className={`w-full p-3 rounded-2xl text-[11px] font-medium text-center ${sdiResults.errors > 0 || sdiResults.incomplete > 0 ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
-                          {`✓ ${sdiResults.sent} inviate`}
-                          {sdiResults.skipped > 0 && ` · ↩ ${sdiResults.skipped} già inviate`}
-                          {sdiResults.incomplete > 0 && ` · ⚠ ${sdiResults.incomplete} dati incompleti`}
-                          {sdiResults.errors > 0 && ` · ✗ ${sdiResults.errors} errori`}
+                        <div className={`w-full p-3 rounded-2xl text-[11px] font-medium space-y-1.5 ${sdiResults.incomplete > 0 || sdiResults.errors > 0 ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                          <p className="text-center">
+                            {`✓ ${sdiResults.sent} inviate`}
+                            {sdiResults.skipped > 0 && ` · ↩ ${sdiResults.skipped} già inviate`}
+                            {sdiResults.incomplete > 0 && ` · ⚠ ${sdiResults.incomplete} dati incompleti`}
+                            {sdiResults.errors > 0 && ` · ✗ ${sdiResults.errors} errori`}
+                          </p>
+                          {sdiResults.incompleteDetails.map((d, i) => (
+                            <p key={i} className="text-[10px] text-amber-600">
+                              Fattura {d.invoiceNumber}: manca {d.missing.join(', ')}
+                            </p>
+                          ))}
                         </div>
                       )}
                     </>
