@@ -692,30 +692,6 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                     </button>
                   );
                 })()}
-                {(selectedDoc.type === 'invoice' || selectedDoc.type === 'credit_note') && profile.country === 'Italy' && (
-                  <button
-                    onClick={() => {
-                      if (!isPro) { setIsPaywallOpen(true); return; }
-                      const missing = getMissingProfileFields(profile);
-                      if (missing.length > 0) {
-                        showToast(
-                          `Dati mancanti nel profilo: ${missing.map(f => f.label).join(', ')}`,
-                          'error',
-                          onNavigateToProfile ? { label: 'Vai al profilo', onClick: () => { setSelectedDoc(null); onNavigateToProfile(); } } : undefined
-                        );
-                        return;
-                      }
-                      downloadFatturaPA(selectedDoc, profile);
-                      showToast(`XML scaricato`, 'success');
-                      setSelectedDoc(null);
-                    }}
-                    className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} ${!isPro ? 'opacity-50' : ''}`}
-                  >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${darkMode ? 'bg-slate-700 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}><FileCode size={18} /></div>
-                    <span className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{selectedDoc.type === 'credit_note' ? 'Scarica XML TD04 (Nota Credito)' : 'Scarica FatturaPA XML'}</span>
-                    {!isPro && <Lock size={11} className="ml-auto text-slate-400" />}
-                  </button>
-                )}
                 {selectedDoc.type === 'invoice' && (
                   <button onClick={() => {
                     const year = new Date().getFullYear();
