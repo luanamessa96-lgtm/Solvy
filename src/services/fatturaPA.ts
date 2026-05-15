@@ -92,7 +92,7 @@ export function generateFatturaPA(doc: Document, profile: Profile): { xml: strin
         </IdFiscaleIVA>${profile.codiceFiscale ? `
         <CodiceFiscale>${escapeXml(profile.codiceFiscale)}</CodiceFiscale>` : ''}
         <Anagrafica>
-          <Nome>${escapeXml(profile.name)}</Nome>
+          <Denominazione>${escapeXml(profile.name)}</Denominazione>
         </Anagrafica>
         <RegimeFiscale>${regimeFiscale}</RegimeFiscale>
       </DatiAnagrafici>
