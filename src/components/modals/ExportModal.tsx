@@ -1687,10 +1687,9 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                             {sdiResults.errors > 0 && ` · ✗ ${sdiResults.errors} errori`}
                           </p>
                           {sdiResults.incompleteDetails.map((d, i) => (
-                            <div key={i} className="text-[10px] text-amber-700 border-t border-amber-200 pt-1.5 mt-1">
-                              <p className="font-bold">Fattura {d.invoiceNumber} — da completare:</p>
-                              {d.missing.map((m, j) => <p key={j}>· Aggiungi: {m}</p>)}
-                            </div>
+                            <p key={i} className="text-[10px] text-amber-600">
+                              Fattura {d.invoiceNumber}: manca {d.missing.join(', ')}
+                            </p>
                           ))}
                         </div>
                       )}
