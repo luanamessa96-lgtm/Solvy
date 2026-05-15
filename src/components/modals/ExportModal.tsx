@@ -1624,7 +1624,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                   {includeFatturaPA && isItaly && isPro && (
                     <>
                       <button
-                        disabled={sdiSending || selectedMonths.size === 0 || missingProfileFields.length > 0}
+                        disabled={sdiSending || syncedMonths.size === 0 || missingProfileFields.length > 0}
                         onClick={async () => {
                           const invoicesToSend = filteredDocs.filter(d =>
                             (d.type === 'invoice' || d.type === 'credit_note') &&
