@@ -33,7 +33,7 @@ function parseAddress(address: string) {
 // ─── A-Cube auth ─────────────────────────────────────────────────────────────
 
 async function getToken(): Promise<string> {
-  const res = await fetch(`${ACUBE_AUTH}/auth`, {
+  const res = await fetch(`${ACUBE_AUTH}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
     body: JSON.stringify({ email: ACUBE_EMAIL, password: ACUBE_PASSWORD }),
@@ -220,7 +220,7 @@ Deno.serve(async (req) => {
     // Carica documento + profilo utente
     const { data: doc, error: docErr } = await supabase
       .from('documents')
-      .select('*, profiles!inner(name, email, piva, codice_fiscale, regime, address)')
+      .select('*, profiles!profile_id(name, email, piva, codice_fiscale, regime, address)')
       .eq('id', document_id)
       .single();
     if (docErr || !doc) return new Response(JSON.stringify({ error: 'Documento non trovato' }), { status: 404, headers: corsHeaders });
