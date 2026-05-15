@@ -1660,6 +1660,11 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                           ? 'Invio in corso…'
                           : `Invia ${filteredDocs.filter(d => (d.type === 'invoice' || d.type === 'credit_note') && d.sdiStatus !== 'sent' && d.sdiStatus !== 'delivered').length} fatture a SdI`}
                       </button>
+                      {missingProfileFields.length > 0 && (
+                        <p className="text-[11px] text-amber-500 text-center">
+                          ⚠ Completa il profilo per abilitare l'invio: {missingProfileFields.map(f => f.label).join(', ')}
+                        </p>
+                      )}
                       {sdiResults && (
                         <div className={`w-full p-3 rounded-2xl text-[11px] font-medium text-center ${sdiResults.errors > 0 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
                           {sdiResults.errors > 0
