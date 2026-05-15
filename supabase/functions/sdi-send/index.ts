@@ -4,7 +4,6 @@ const ACUBE_EMAIL    = Deno.env.get('ACUBE_EMAIL') ?? '';
 const ACUBE_PASSWORD = Deno.env.get('ACUBE_PASSWORD') ?? '';
 const ACUBE_SANDBOX  = Deno.env.get('ACUBE_SANDBOX') !== 'false';
 const ACUBE_BASE     = ACUBE_SANDBOX ? 'https://api-sandbox.acubeapi.com' : 'https://api.acubeapi.com';
-const ACUBE_AUTH     = ACUBE_SANDBOX ? 'https://common-sandbox.api.acubeapi.com' : 'https://common.api.acubeapi.com';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -33,14 +32,14 @@ function parseAddress(address: string) {
 // ─── A-Cube auth ─────────────────────────────────────────────────────────────
 
 async function getToken(): Promise<string> {
-  const res = await fetch(`${ACUBE_AUTH}`, {
+  const res = await fetch(`${ACUBE_BASE}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
     body: JSON.stringify({ email: ACUBE_EMAIL, password: ACUBE_PASSWORD }),
   });
   if (!res.ok) throw new Error(`A-Cube auth failed: ${res.status} ${await res.text()}`);
   const data = await res.json();
-  return data.token;
+  return data.token ?? data.access_token ?? data.jwt;
 }
 
 // ─── Registra fiscal_id utente (idempotente) ──────────────────────────────────
