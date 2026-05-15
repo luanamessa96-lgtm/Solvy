@@ -7,7 +7,7 @@ import { getClient } from '../../lib/supabase';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 import { Document as AppDoc, Profile, Accountant } from '../../types';
 import { useProStatus } from '../../hooks/useProStatus';
-import { generateFatturaPA, getMissingProfileFields } from '../../services/fatturaPA';
+import { generateFatturaPA, getMissingProfileFields, validateForSdi } from '../../services/fatturaPA';
 import { parseLocalDate, getLocalYear, getLocalMonth } from '../../utils/date';
 import { getItDeductibilityRate } from '../../lib/it/deductibility';
 import { getAddizionaliRate } from '../../lib/it/addizionali';
@@ -41,7 +41,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const [docFilter, setDocFilter] = useState<'all' | 'invoice' | 'expense'>('all');
   const [exporting, setExporting] = useState(false);
   const [sdiSending, setSdiSending] = useState(false);
-  const [sdiResults, setSdiResults] = useState<{ sent: number; skipped: number; errors: number } | null>(null);
+  const [sdiResults, setSdiResults] = useState<{ sent: number; skipped: number; errors: number; incomplete: number } | null>(null);
   const [selectedMonths, setSelectedMonths] = useState<Set<number>>(new Set());
   const [includeFatturaPA, setIncludeFatturaPA] = useState(true);
   const [includeResumen, setIncludeResumen] = useState(true);
@@ -1637,7 +1637,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                             d.sdiStatus !== 'sent' && d.sdiStatus !== 'delivered'
                           );
                           if (invoicesToSend.length === 0) {
-                            setSdiResults({ sent: 0, skipped: filteredDocs.filter(d => d.type === 'invoice' || d.type === 'credit_note').length, errors: 0 });
+                            setSdiResults({ sent: 0, skipped: filteredDocs.filter(d => d.type === 'invoice' || d.type === 'credit_note').length, errors: 0, incomplete: 0 });
                             return;
                           }
                           setSdiSending(true);
@@ -1645,6 +1645,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                           let sent = 0, skipped = 0, errors = 0;
                           const { data: { session } } = await getClient().auth.getSession();
                           for (const doc of invoicesToSend) {
+                            const sdiErrors = validateForSdi(doc, profile);
+                            if (sdiErrors.length > 0) { errors++; continue; }
                             try {
                               const res = await fetch(`${SUPABASE_URL}/functions/v1/sdi-send`, {
                                 method: 'POST',
@@ -1657,7 +1659,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                             } catch { errors++; }
                           }
                           setSdiSending(false);
-                          setSdiResults({ sent, skipped, errors });
+                          setSdiResults({ sent, skipped, errors: 0, incomplete: errors });
                         }}
                         className="w-full py-4 rounded-2xl font-bold text-white bg-blue-500 shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
                       >
@@ -1672,10 +1674,11 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                         </p>
                       )}
                       {sdiResults && (
-                        <div className={`w-full p-3 rounded-2xl text-[11px] font-medium text-center ${sdiResults.errors > 0 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
-                          {sdiResults.errors > 0
-                            ? `✓ ${sdiResults.sent} inviate · ⚠ ${sdiResults.errors} errori · ↩ ${sdiResults.skipped} già inviate`
-                            : `✓ ${sdiResults.sent} inviate · ↩ ${sdiResults.skipped} già inviate`}
+                        <div className={`w-full p-3 rounded-2xl text-[11px] font-medium text-center ${sdiResults.errors > 0 || sdiResults.incomplete > 0 ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                          {`✓ ${sdiResults.sent} inviate`}
+                          {sdiResults.skipped > 0 && ` · ↩ ${sdiResults.skipped} già inviate`}
+                          {sdiResults.incomplete > 0 && ` · ⚠ ${sdiResults.incomplete} dati incompleti`}
+                          {sdiResults.errors > 0 && ` · ✗ ${sdiResults.errors} errori`}
                         </div>
                       )}
                     </>

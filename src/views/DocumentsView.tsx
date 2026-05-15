@@ -14,7 +14,7 @@ import ExportModal from '../components/modals/ExportModal';
 import ResumenTrimestralModal from '../components/modals/ResumenTrimestralModal';
 import { buildInvoicePDFBlob } from '../lib/generateInvoicePDF';
 import PdfPreviewModal from '../components/modals/PdfPreviewModal';
-import { downloadFatturaPA, getMissingProfileFields } from '../services/fatturaPA';
+import { downloadFatturaPA, getMissingProfileFields, validateForSdi } from '../services/fatturaPA';
 import { getClient } from '../lib/supabase';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
@@ -639,9 +639,15 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                       disabled={!isPro || isSent || isDelivered || sdiSending}
                       onClick={async () => {
                         if (!isPro) { setIsPaywallOpen(true); return; }
-                        const missing = getMissingProfileFields(profile);
-                        if (missing.length > 0) {
-                          showToast(`Dati mancanti nel profilo: ${missing.map(f => f.label).join(', ')}`, 'error', onNavigateToProfile ? { label: 'Vai al profilo', onClick: () => { setSelectedDoc(null); onNavigateToProfile(); } } : undefined);
+                        const sdiErrors = validateForSdi(selectedDoc, profile);
+                        if (sdiErrors.length > 0) {
+                          const profiloErrors = sdiErrors.filter(e => e.where === 'profilo').map(e => e.label);
+                          const fatturaErrors = sdiErrors.filter(e => e.where === 'fattura').map(e => e.label);
+                          const msg = [
+                            profiloErrors.length > 0 ? `Profilo: ${profiloErrors.join(', ')}` : '',
+                            fatturaErrors.length > 0 ? `Fattura: ${fatturaErrors.join(', ')}` : '',
+                          ].filter(Boolean).join(' · ');
+                          showToast(`Dati mancanti — ${msg}`, 'error', onNavigateToProfile ? { label: 'Vai al profilo', onClick: () => { setSelectedDoc(null); onNavigateToProfile(); } } : undefined);
                           return;
                         }
                         if (!canSend) return;

@@ -45,6 +45,38 @@ export function getMissingProfileFields(profile: Profile): MissingProfileField[]
   return missing;
 }
 
+export interface SdiValidationError {
+  field: string;
+  label: string;
+  where: 'profilo' | 'fattura';
+}
+
+export function validateForSdi(doc: Document, profile: Profile): SdiValidationError[] {
+  const errors: SdiValidationError[] = [];
+
+  // Dati profilo obbligatori
+  if (!profile.piva && !profile.codiceFiscale)
+    errors.push({ field: 'piva', label: 'P.IVA o Codice Fiscale', where: 'profilo' });
+  if (!profile.address)
+    errors.push({ field: 'address', label: 'Indirizzo', where: 'profilo' });
+
+  // Dati fattura obbligatori
+  if (!doc.invoiceNumber)
+    errors.push({ field: 'invoiceNumber', label: 'Numero fattura', where: 'fattura' });
+  if (!doc.title)
+    errors.push({ field: 'title', label: 'Descrizione prestazione', where: 'fattura' });
+
+  // Dati cliente (solo se non privato)
+  if (doc.clientPiva !== 'Privato') {
+    if (!doc.clientPiva && !doc.clientCf)
+      errors.push({ field: 'clientPiva', label: 'P.IVA o CF del cliente', where: 'fattura' });
+    if (!doc.clientAddress)
+      errors.push({ field: 'clientAddress', label: 'Indirizzo del cliente', where: 'fattura' });
+  }
+
+  return errors;
+}
+
 export function generateFatturaPA(doc: Document, profile: Profile): { xml: string; filename: string } {
   const isCreditNote = doc.type === 'credit_note';
   const isForfettario = (doc.docRegime ?? profile.regime ?? 'forfettario') !== 'ordinario';
