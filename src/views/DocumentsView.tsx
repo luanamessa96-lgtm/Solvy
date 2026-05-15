@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Mail, Camera, ChevronRight, ChevronDown, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus, Download, Copy, AlertTriangle, FileCode, Lock, BarChart3, FileMinus } from 'lucide-react';
+import { Search, Mail, Camera, ChevronRight, ChevronDown, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus, Download, Copy, AlertTriangle, FileCode, Lock, BarChart3, FileMinus, Send, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { Document, Accountant, Profile } from '../types';
@@ -15,6 +15,9 @@ import ResumenTrimestralModal from '../components/modals/ResumenTrimestralModal'
 import { buildInvoicePDFBlob } from '../lib/generateInvoicePDF';
 import PdfPreviewModal from '../components/modals/PdfPreviewModal';
 import { downloadFatturaPA, getMissingProfileFields } from '../services/fatturaPA';
+import { getClient } from '../lib/supabase';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 import { useToast } from '../components/ui/Toast';
 import { parseLocalDate, getLocalYear, todayLocalISO } from '../utils/date';
 import PaywallModal from '../components/modals/PaywallModal';
@@ -109,6 +112,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [docToEdit, setDocToEdit] = useState<Document | null>(null);
   const [pdfPreview, setPdfPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
+  const [sdiSending, setSdiSending] = useState(false);
   const [openMonths, setOpenMonths] = useState<Set<string>>(() => {
     const now = new Date();
     const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -625,6 +629,69 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                     {!isPro && <span className="ml-auto text-[10px] font-bold text-primary/60 uppercase tracking-wide">Pro</span>}
                   </button>
                 )}
+                {(selectedDoc.type === 'invoice' || selectedDoc.type === 'credit_note') && profile.country === 'Italy' && (() => {
+                  const sdiStatus = selectedDoc.sdiStatus;
+                  const canSend = !sdiStatus || sdiStatus === 'rejected' || sdiStatus === 'failed';
+                  const isDelivered = sdiStatus === 'delivered';
+                  const isSent = sdiStatus === 'sent';
+                  return (
+                    <button
+                      disabled={!isPro || isSent || isDelivered || sdiSending}
+                      onClick={async () => {
+                        if (!isPro) { setIsPaywallOpen(true); return; }
+                        const missing = getMissingProfileFields(profile);
+                        if (missing.length > 0) {
+                          showToast(`Dati mancanti nel profilo: ${missing.map(f => f.label).join(', ')}`, 'error', onNavigateToProfile ? { label: 'Vai al profilo', onClick: () => { setSelectedDoc(null); onNavigateToProfile(); } } : undefined);
+                          return;
+                        }
+                        if (!canSend) return;
+                        setSdiSending(true);
+                        try {
+                          const { data: { session } } = await getClient().auth.getSession();
+                          const res = await fetch(`${SUPABASE_URL}/functions/v1/sdi-send`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+                            body: JSON.stringify({ document_id: selectedDoc.id }),
+                          });
+                          if (!res.ok) {
+                            const err = await res.json().catch(() => ({}));
+                            showToast(err.error || 'Errore invio a SdI', 'error');
+                          } else {
+                            onUpdateDocument({ ...selectedDoc, sdiStatus: 'sent' });
+                            showToast('Fattura inviata a SdI', 'success');
+                            setSelectedDoc(null);
+                          }
+                        } catch {
+                          showToast('Errore di rete — riprova', 'error');
+                        } finally {
+                          setSdiSending(false);
+                        }
+                      }}
+                      className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98]
+                        ${isDelivered ? (darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100')
+                          : sdiStatus === 'rejected' || sdiStatus === 'failed' ? (darkMode ? 'bg-red-500/10 border-red-500/20' : 'bg-red-50 border-red-100')
+                          : isSent ? (darkMode ? 'bg-slate-800 border-slate-700 opacity-60' : 'bg-slate-100 border-slate-200 opacity-60')
+                          : (darkMode ? 'bg-primary/10 border-primary/20' : 'bg-primary/5 border-primary/10')}
+                        ${!isPro ? 'opacity-50' : ''}`}
+                    >
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center
+                        ${isDelivered ? 'bg-emerald-500 text-white'
+                          : sdiStatus === 'rejected' || sdiStatus === 'failed' ? 'bg-red-500 text-white'
+                          : 'bg-primary text-white'}`}>
+                        {sdiSending ? <Loader2 size={18} className="animate-spin" /> : isDelivered ? <CheckCircle2 size={18} /> : sdiStatus === 'rejected' || sdiStatus === 'failed' ? <AlertTriangle size={18} /> : <Send size={18} />}
+                      </div>
+                      <span className={`font-bold ${isDelivered ? 'text-emerald-600' : sdiStatus === 'rejected' || sdiStatus === 'failed' ? 'text-red-500' : darkMode ? 'text-white' : 'text-slate-900'}`}>
+                        {sdiSending ? 'Invio in corso…'
+                          : isDelivered ? 'Consegnata a SdI ✓'
+                          : isSent ? 'Inviata · in attesa SdI'
+                          : sdiStatus === 'rejected' ? 'Scartata da SdI — riprova'
+                          : sdiStatus === 'failed' ? 'Errore invio — riprova'
+                          : selectedDoc.type === 'credit_note' ? 'Invia Nota Credito a SdI' : 'Invia a SdI'}
+                      </span>
+                      {!isPro && <Lock size={11} className="ml-auto text-slate-400" />}
+                    </button>
+                  );
+                })()}
                 {(selectedDoc.type === 'invoice' || selectedDoc.type === 'credit_note') && profile.country === 'Italy' && (
                   <button
                     onClick={() => {
