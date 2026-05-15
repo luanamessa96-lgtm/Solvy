@@ -1,7 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
-import { X, Download, Check, Share2, Eye, AlertTriangle } from 'lucide-react';
+import { X, Download, Check, Share2, Eye, AlertTriangle, Send, Loader2 } from 'lucide-react';
+import { getClient } from '../../lib/supabase';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 import { Document as AppDoc, Profile, Accountant } from '../../types';
 import { useProStatus } from '../../hooks/useProStatus';
 import { generateFatturaPA, getMissingProfileFields } from '../../services/fatturaPA';
@@ -37,6 +40,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
   const [docFilter, setDocFilter] = useState<'all' | 'invoice' | 'expense'>('all');
   const [exporting, setExporting] = useState(false);
+  const [sdiSending, setSdiSending] = useState(false);
+  const [sdiResults, setSdiResults] = useState<{ sent: number; skipped: number; errors: number } | null>(null);
   const [selectedMonths, setSelectedMonths] = useState<Set<number>>(new Set());
   const [includeFatturaPA, setIncludeFatturaPA] = useState(true);
   const [includeResumen, setIncludeResumen] = useState(true);
@@ -61,6 +66,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       setSelectedMonths(new Set());
       setReadyBlob(null);
       setIncludeFatturaPA(true);
+      setSdiResults(null);
       setIncludeResumen(true);
       setIncludeDocumenti(true);
       setIncludeRegistro(false);
@@ -947,17 +953,6 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
 
   const shareOrDownload = async (blob: Blob, fileName: string, mimeType: string) => {
     if (accountant) {
-      // Generate FatturaPA XMLs if toggle is on
-      let xmlFiles: { blob: Blob; fileName: string }[] | undefined;
-      if (includeFatturaPA && isItaly && isPro && missingProfileFields.length === 0) {
-        const invoices = filteredDocs.filter(d => d.type === 'invoice');
-        if (invoices.length > 0) {
-          xmlFiles = invoices.map(inv => {
-            const { xml, filename } = generateFatturaPA(inv, profile);
-            return { blob: new Blob([xml], { type: 'application/xml' }), fileName: filename };
-          });
-        }
-      }
       // Generate Resumen Trimestral PDF if toggle is on (Spain)
       let resumenFile: { blob: Blob; fileName: string } | undefined;
       if (includeResumen && isSpain && isPro && hasTaxIdSpain) {
@@ -971,7 +966,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       // Registro e Riepilogo sono già inline nel PDF principale
       const registroFile: { blob: Blob; fileName: string } | undefined = undefined;
       const riepilogoFile: { blob: Blob; fileName: string } | undefined = undefined;
-      setReadyBlob({ blob, fileName, xmlFiles, resumenFile, registroFile, riepilogoFile });
+      setReadyBlob({ blob, fileName, xmlFiles: undefined, resumenFile, registroFile, riepilogoFile });
       return;
     }
     const file = new File([blob], fileName, { type: 'application/octet-stream' });
@@ -1410,13 +1405,13 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                     <span className="text-xl shrink-0">📄</span>
                     <div className="text-left flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Includi FatturaPA XML</p>
+                        <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Invia a SdI</p>
                         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-600 shrink-0">AdE</span>
                       </div>
                       <p className="text-[10px] text-slate-400 mt-0.5">
                         {missingProfileFields.length > 0
-                          ? `⚠ Completa il profilo (${missingProfileFields.map(f => f.label).join(', ')}) per XML corretti`
-                          : 'File .xml per l\'Agenzia delle Entrate via SDI'}
+                          ? `⚠ Completa il profilo (${missingProfileFields.map(f => f.label).join(', ')}) per l'invio`
+                          : 'Trasmette le fatture del periodo all\'Agenzia delle Entrate via SdI'}
                       </p>
                     </div>
                   </button>
@@ -1625,14 +1620,64 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={handleExport}
-                  disabled={exporting || (filteredDocs.length === 0 && !includeRiepilogo && !includeRegistro)}
-                  className="w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
-                >
-                  <Download size={18} />
-                  {exporting ? 'Preparazione...' : accountant ? `Invia al Commercialista` : `Esporta PDF`}
-                </button>
+                <div className="space-y-3">
+                  {includeFatturaPA && isItaly && isPro && (
+                    <>
+                      <button
+                        disabled={sdiSending || selectedMonths.size === 0 || missingProfileFields.length > 0}
+                        onClick={async () => {
+                          const invoicesToSend = filteredDocs.filter(d =>
+                            (d.type === 'invoice' || d.type === 'credit_note') &&
+                            d.sdiStatus !== 'sent' && d.sdiStatus !== 'delivered'
+                          );
+                          if (invoicesToSend.length === 0) {
+                            setSdiResults({ sent: 0, skipped: filteredDocs.filter(d => d.type === 'invoice' || d.type === 'credit_note').length, errors: 0 });
+                            return;
+                          }
+                          setSdiSending(true);
+                          setSdiResults(null);
+                          let sent = 0, skipped = 0, errors = 0;
+                          const { data: { session } } = await getClient().auth.getSession();
+                          for (const doc of invoicesToSend) {
+                            try {
+                              const res = await fetch(`${SUPABASE_URL}/functions/v1/sdi-send`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+                                body: JSON.stringify({ document_id: doc.id }),
+                              });
+                              if (res.ok) { sent++; }
+                              else if ((await res.json().catch(() => ({}))).error?.includes('già inviata')) { skipped++; }
+                              else { errors++; }
+                            } catch { errors++; }
+                          }
+                          setSdiSending(false);
+                          setSdiResults({ sent, skipped, errors });
+                        }}
+                        className="w-full py-4 rounded-2xl font-bold text-white bg-blue-500 shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
+                      >
+                        {sdiSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                        {sdiSending
+                          ? 'Invio in corso…'
+                          : `Invia ${filteredDocs.filter(d => (d.type === 'invoice' || d.type === 'credit_note') && d.sdiStatus !== 'sent' && d.sdiStatus !== 'delivered').length} fatture a SdI`}
+                      </button>
+                      {sdiResults && (
+                        <div className={`w-full p-3 rounded-2xl text-[11px] font-medium text-center ${sdiResults.errors > 0 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                          {sdiResults.errors > 0
+                            ? `✓ ${sdiResults.sent} inviate · ⚠ ${sdiResults.errors} errori · ↩ ${sdiResults.skipped} già inviate`
+                            : `✓ ${sdiResults.sent} inviate · ↩ ${sdiResults.skipped} già inviate`}
+                        </div>
+                      )}
+                    </>
+                  )}
+                  <button
+                    onClick={handleExport}
+                    disabled={exporting || (filteredDocs.length === 0 && !includeRiepilogo && !includeRegistro)}
+                    className="w-full py-4 rounded-2xl font-bold text-white bg-primary shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
+                  >
+                    <Download size={18} />
+                    {exporting ? 'Preparazione...' : accountant ? `Invia al Commercialista` : `Esporta PDF`}
+                  </button>
+                </div>
               )}
               {/* Disclaimer IT-18 / ES-12 */}
               <p className="text-[10px] text-slate-400 leading-relaxed pt-1">
