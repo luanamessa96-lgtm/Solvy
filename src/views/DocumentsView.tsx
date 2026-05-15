@@ -634,16 +634,22 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                   const canSend = !sdiStatus || sdiStatus === 'rejected' || sdiStatus === 'failed';
                   const isDelivered = sdiStatus === 'delivered';
                   const isSent = sdiStatus === 'sent';
-                  const sdiErrors = validateForSdi(selectedDoc, profile);
-                  const hasSdiErrors = sdiErrors.length > 0;
-                  const profiloErrors = sdiErrors.filter(e => e.where === 'profilo').map(e => e.label);
-                  const fatturaErrors = sdiErrors.filter(e => e.where === 'fattura').map(e => e.label);
                   return (
-                    <>
                     <button
-                      disabled={!isPro || isSent || isDelivered || sdiSending || hasSdiErrors}
+                      disabled={!isPro || isSent || isDelivered || sdiSending}
                       onClick={async () => {
                         if (!isPro) { setIsPaywallOpen(true); return; }
+                        const sdiErrors = validateForSdi(selectedDoc, profile);
+                        if (sdiErrors.length > 0) {
+                          const profiloErrors = sdiErrors.filter(e => e.where === 'profilo').map(e => e.label);
+                          const fatturaErrors = sdiErrors.filter(e => e.where === 'fattura').map(e => e.label);
+                          const msg = [
+                            profiloErrors.length > 0 ? `Profilo: ${profiloErrors.join(', ')}` : '',
+                            fatturaErrors.length > 0 ? `Fattura: ${fatturaErrors.join(', ')}` : '',
+                          ].filter(Boolean).join(' · ');
+                          showToast(`Dati mancanti — ${msg}`, 'error', onNavigateToProfile ? { label: 'Vai al profilo', onClick: () => { setSelectedDoc(null); onNavigateToProfile(); } } : undefined);
+                          return;
+                        }
                         if (!canSend) return;
                         setSdiSending(true);
                         try {
@@ -690,14 +696,6 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                       </span>
                       {!isPro && <Lock size={11} className="ml-auto text-slate-400" />}
                     </button>
-                    {hasSdiErrors && (
-                      <div className={`w-full px-4 py-3 rounded-2xl text-[11px] space-y-1 ${darkMode ? 'bg-amber-500/10' : 'bg-amber-50'}`}>
-                        <p className="font-bold text-amber-600">⚠ Dati mancanti per inviare a SdI</p>
-                        {profiloErrors.length > 0 && <p className="text-amber-600">Nel profilo: {profiloErrors.join(', ')}</p>}
-                        {fatturaErrors.length > 0 && <p className="text-amber-600">In questa fattura: {fatturaErrors.join(', ')}</p>}
-                      </div>
-                    )}
-                    </>
                   );
                 })()}
                 {selectedDoc.type === 'invoice' && (
