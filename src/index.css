@@ -28,6 +28,16 @@ body {
   background-color: var(--color-bg);
   color: #0f172a;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Ripristina selezione testo negli input */
+input, textarea, select, [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
 }
 
 /* Prevent iOS Safari auto-zoom on input focus (requires font-size >= 16px) */
