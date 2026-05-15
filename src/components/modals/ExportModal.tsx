@@ -1546,13 +1546,13 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                       <span className="text-sm font-bold text-emerald-500">{formatAmount(totals.income)}</span>
                     </div>
                   )}
-                  {docFilter !== 'invoice' && (
+                  {docFilter !== 'invoice' && !(includeFatturaPA && isItaly) && (
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-semibold text-red-500">Uscite</span>
                       <span className="text-sm font-bold text-red-500">{formatAmount(totals.expenses)}</span>
                     </div>
                   )}
-                  {docFilter === 'all' && (
+                  {docFilter === 'all' && !(includeFatturaPA && isItaly) && (
                     <div className={`flex justify-between items-center pt-1 border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
                       <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Netto</span>
                       <span className={`text-sm font-bold ${totals.income - totals.expenses >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{formatAmount(totals.income - totals.expenses)}</span>
