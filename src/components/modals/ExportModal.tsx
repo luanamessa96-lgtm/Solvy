@@ -1356,7 +1356,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Anno</p>
                 <div className="flex gap-2 flex-wrap">
                   {availableYears.map(y => (
-                    <button key={y} onClick={() => { setYear(y); setSelectedMonths(new Set()); setReadyBlob(null); }} className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all active:scale-95 ${year === y ? 'bg-primary text-white shadow-lg shadow-primary/40' : (darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500')}`}>{y}</button>
+                    <button key={y} onClick={() => { setYear(y); setSelectedMonths(new Set()); setReadyBlob(null); }} className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all active:scale-95 ${year === y ? 'bg-primary text-white' : (darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500')}`}>{y}</button>
                   ))}
                 </div>
               </div>
@@ -1379,7 +1379,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                         <button
                           key={m}
                           onClick={() => toggleMonth(m)}
-                          className={`flex items-center gap-1.5 px-3 py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-95 border-2 ${selected ? 'bg-primary border-primary text-white shadow-md shadow-primary/30' : (darkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-500')}`}
+                          className={`flex items-center gap-1.5 px-3 py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-95 border-2 ${selected ? 'bg-primary border-transparent text-white' : (darkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-500')}`}
                         >
                           {selected && <Check size={13} strokeWidth={3} />}
                           {MONTH_NAMES[m].slice(0, 3)}
