@@ -144,7 +144,7 @@ function buildPayload(doc: any, profile: any) {
       cessionario_committente: {
         dati_anagrafici: {
           ...(doc.client_piva ? { id_fiscale_iva: { id_paese: 'IT', id_codice: doc.client_piva } } : {}),
-          ...(doc.client_cf ? { codice_fiscale: doc.client_cf } : {}),
+          ...(doc.client_cf && doc.client_cf.length <= 16 ? { codice_fiscale: doc.client_cf } : {}),
           anagrafica: { denominazione: doc.client || 'Cliente' },
         },
         sede: {
