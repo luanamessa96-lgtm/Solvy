@@ -216,15 +216,21 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Fattura già inviata a SdI' }), { status: 409, headers: corsHeaders });
     }
 
-    // Carica documento + profilo utente
+    // Carica documento
     const { data: doc, error: docErr } = await supabase
       .from('documents')
-      .select('*, profiles!profile_id(name, email, piva, codice_fiscale, regime, address)')
+      .select('*')
       .eq('id', document_id)
       .single();
     if (docErr || !doc) return new Response(JSON.stringify({ error: 'Documento non trovato' }), { status: 404, headers: corsHeaders });
 
-    const profile = doc.profiles;
+    // Carica profilo separatamente
+    const { data: profile, error: profErr } = await supabase
+      .from('profiles')
+      .select('name, email, piva, codice_fiscale, regime, address')
+      .eq('id', doc.profile_id)
+      .single();
+    if (profErr || !profile) return new Response(JSON.stringify({ error: 'Profilo non trovato' }), { status: 404, headers: corsHeaders });
     const fiscalId = (profile.piva || profile.codice_fiscale || '').replace(/\s/g, '');
     if (!fiscalId) return new Response(JSON.stringify({ error: 'Profilo incompleto: P.IVA o Codice Fiscale obbligatori' }), { status: 422, headers: corsHeaders });
 
