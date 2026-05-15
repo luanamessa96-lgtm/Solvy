@@ -142,16 +142,16 @@ const SECTIONS: Section[] = [
     title: 'La FatturaPA',
     articles: [
       {
-        title: 'Cos\'è la FatturaPA XML e come caricarla sul portale AdE',
-        body: 'File XML obbligatorio per la fatturazione elettronica verso aziende e PA. Solvy lo genera automaticamente. Devi caricarlo sul portale dell\'Agenzia delle Entrate o inviarlo al commercialista che lo carica per te.',
+        title: 'Come funziona l\'invio diretto a SdI — nessun portale, nessun file',
+        body: 'Solvy trasmette la fattura direttamente al Sistema di Interscambio (SdI) dell\'Agenzia delle Entrate con un click — senza scaricare file, senza portali. La fattura arriva automaticamente al cliente tramite il suo codice SDI o PEC. Lo stato si aggiorna in tempo reale: ⏳ in attesa, ✓ consegnata.',
       },
       {
         title: 'Le FatturaPA XML sono già conservate dall\'AdE — non devi fare nulla',
         body: 'L\'Agenzia delle Entrate conserva automaticamente le tue FatturaPA XML per 10 anni. Non devi fare nulla — sono al sicuro. L\'Archivio Solvy è un backup aggiuntivo opzionale.',
       },
       {
-        title: 'Differenza tra FatturaPA XML, Registro Cronologico e Riepilogo Annuale',
-        body: 'XML → va all\'AdE via SDI, obbligatorio. Registro Cronologico → elenco fatture per il commercialista, formato PDF. Riepilogo Annuale → documento fiscale completo per la dichiarazione dei redditi.',
+        title: 'Differenza tra invio SdI, Registro Cronologico e Riepilogo Annuale',
+        body: 'Invia a SdI → trasmette la fattura all\'AdE in tempo reale, obbligatorio per legge. Registro Cronologico → elenco fatture in PDF per il commercialista. Riepilogo Annuale → documento fiscale completo per la dichiarazione dei redditi.',
       },
     ],
   },
@@ -177,7 +177,7 @@ const SECTIONS: Section[] = [
       },
       {
         title: 'Come funziona "Invia Documenti" — guida passo passo',
-        body: 'Seleziona anno e mesi → scegli cosa includere (fatture, XML, registro, riepilogo) → genera PDF → invia al commercialista via email o condividi. Usa i toggle per personalizzare il pacchetto.',
+        body: 'Seleziona anno e mesi → scegli cosa includere → invia. "Invia a SdI" trasmette le fatture del periodo direttamente all\'AdE. "Fatture del periodo" genera un PDF per il commercialista. "Registro Cronologico" e "Riepilogo Annuale" sono documenti di supporto per la dichiarazione.',
       },
       {
         title: 'Differenza tra export periodico al commercialista e Archivio Solvy',
