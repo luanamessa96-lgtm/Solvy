@@ -1673,7 +1673,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                         {sdiSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                         {sdiSending
                           ? 'Invio in corso…'
-                          : `Invia ${filteredDocs.filter(d => (d.type === 'invoice' || d.type === 'credit_note') && d.sdiStatus !== 'sent' && d.sdiStatus !== 'delivered').length} fatture a SdI`}
+                          : (() => { const n = filteredDocs.filter(d => (d.type === 'invoice' || d.type === 'credit_note') && d.sdiStatus !== 'sent' && d.sdiStatus !== 'delivered').length; return `Invia ${n} ${n === 1 ? 'fattura' : 'fatture'} a SdI`; })()}
                       </button>
                       {missingProfileFields.length > 0 && (
                         <p className="text-[11px] text-amber-500 text-center">
