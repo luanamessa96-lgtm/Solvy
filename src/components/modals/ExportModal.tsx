@@ -1397,7 +1397,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                   {/* FatturaPA XML */}
                   <button
                     onClick={() => { setIncludeFatturaPA(prev => !prev); setReadyBlob(null); }}
-                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
+                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-transparent'}`}
                   >
                     <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeFatturaPA ? 'bg-primary border-primary' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
                       {includeFatturaPA && <Check size={12} strokeWidth={3} className="text-white" />}
@@ -1418,7 +1418,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                   {/* Fatture del periodo */}
                   <button
                     onClick={() => { setIncludeDocumenti(prev => !prev); setReadyBlob(null); }}
-                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
+                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-transparent'}`}
                   >
                     <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeDocumenti ? 'bg-primary border-primary' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
                       {includeDocumenti && <Check size={12} strokeWidth={3} className="text-white" />}
@@ -1432,7 +1432,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                   {/* Registro Cronologico */}
                   <button
                     onClick={() => { setIncludeRegistro(prev => !prev); setReadyBlob(null); }}
-                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
+                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-transparent'}`}
                   >
                     <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeRegistro ? 'bg-emerald-500 border-emerald-500' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
                       {includeRegistro && <Check size={12} strokeWidth={3} className="text-white" />}
@@ -1449,7 +1449,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                   {/* Riepilogo Annuale */}
                   <button
                     onClick={() => { setIncludeRiepilogo(prev => !prev); setReadyBlob(null); }}
-                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}
+                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-transparent'}`}
                   >
                     <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${includeRiepilogo ? 'bg-violet-500 border-violet-500' : darkMode ? 'border-slate-600' : 'border-slate-300'}`}>
                       {includeRiepilogo && <Check size={12} strokeWidth={3} className="text-white" />}
