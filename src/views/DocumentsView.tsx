@@ -52,6 +52,7 @@ function DocCard({ doc, darkMode, profile, i18nLanguage, t, onClick }: { doc: Do
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[10px] font-medium text-slate-400">{parseLocalDate(doc.date).toLocaleDateString(i18nLanguage, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+          {(doc.type === 'invoice' || doc.type === 'credit_note') && doc.invoiceNumber && <span className="text-[10px] font-medium text-slate-400">· {doc.invoiceNumber}</span>}
           {doc.type === 'proforma' && <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-200 text-slate-500'}`}>PROFORMA</span>}
           {doc.type === 'presupuesto' && <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}>PRESUPUESTO</span>}
           {doc.type === 'credit_note' && <span className="text-[10px] font-bold uppercase tracking-wider text-violet-500">· {t('documents.credit_note_label')}</span>}
