@@ -41,7 +41,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const [docFilter, setDocFilter] = useState<'all' | 'invoice' | 'expense'>('all');
   const [exporting, setExporting] = useState(false);
   const [sdiSending, setSdiSending] = useState(false);
-  const [sdiResults, setSdiResults] = useState<{ sent: number; skipped: number; errors: number; incomplete: number } | null>(null);
+  const [sdiResults, setSdiResults] = useState<{ sent: number; skipped: number; errors: number; incomplete: number; incompleteItems: { id: string; label: string; reasons: string[] }[] } | null>(null);
   const [selectedMonths, setSelectedMonths] = useState<Set<number>>(new Set());
   const [includeFatturaPA, setIncludeFatturaPA] = useState(true);
   const [includeResumen, setIncludeResumen] = useState(true);
@@ -1660,16 +1660,22 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                             d.sdiStatus !== 'sent' && d.sdiStatus !== 'delivered'
                           );
                           if (invoicesToSend.length === 0) {
-                            setSdiResults({ sent: 0, skipped: filteredDocs.filter(d => d.type === 'invoice' || d.type === 'credit_note').length, errors: 0, incomplete: 0 });
+                            setSdiResults({ sent: 0, skipped: filteredDocs.filter(d => d.type === 'invoice' || d.type === 'credit_note').length, errors: 0, incomplete: 0, incompleteItems: [] });
                             return;
                           }
                           setSdiSending(true);
                           setSdiResults(null);
                           let sent = 0, skipped = 0, errors = 0;
+                          const incompleteItems: { id: string; label: string; reasons: string[] }[] = [];
                           const { data: { session } } = await getClient().auth.getSession();
                           for (const doc of invoicesToSend) {
+                            const docLabel = doc.invoiceNumber || doc.client || doc.id.slice(0, 8);
                             const sdiErrors = validateForSdi(doc, profile);
-                            if (sdiErrors.length > 0) { errors++; continue; }
+                            if (sdiErrors.length > 0) {
+                              errors++;
+                              incompleteItems.push({ id: doc.id, label: docLabel, reasons: sdiErrors.map(e => e.label) });
+                              continue;
+                            }
                             try {
                               const res = await fetch(`${SUPABASE_URL}/functions/v1/sdi-send`, {
                                 method: 'POST',
@@ -1678,11 +1684,16 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                               });
                               if (res.ok) { sent++; }
                               else if ((await res.json().catch(() => ({}))).error?.includes('già inviata')) { skipped++; }
-                              else { errors++; }
-                            } catch { errors++; }
+                              else {
+                                errors++;
+                                const errData = await res.json().catch(() => ({}));
+                                const detail = errData.detail || errData.error || 'Dati non validi per SdI';
+                                incompleteItems.push({ id: doc.id, label: docLabel, reasons: [detail] });
+                              }
+                            } catch { errors++; incompleteItems.push({ id: doc.id, label: docLabel, reasons: ['Errore di rete'] }); }
                           }
                           setSdiSending(false);
-                          setSdiResults({ sent, skipped, errors: 0, incomplete: errors });
+                          setSdiResults({ sent, skipped, errors: 0, incomplete: errors, incompleteItems });
                         }}
                         className="w-full py-4 rounded-2xl font-bold text-white bg-blue-500 shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
                       >
@@ -1707,11 +1718,18 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                         </div>
                       )}
                       {sdiResults && (
-                        <div className={`w-full p-3 rounded-2xl text-[11px] font-medium text-center ${sdiResults.errors > 0 || sdiResults.incomplete > 0 ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
-                          {`✓ ${sdiResults.sent} inviate`}
-                          {sdiResults.skipped > 0 && ` · ↩ ${sdiResults.skipped} già inviate`}
-                          {sdiResults.incomplete > 0 && ` · ⚠ ${sdiResults.incomplete} ${sdiResults.incomplete === 1 ? 'dato incompleto' : 'dati incompleti'}`}
-                          {sdiResults.errors > 0 && ` · ✗ ${sdiResults.errors} errori`}
+                        <div className={`w-full p-3 rounded-2xl text-[11px] space-y-1.5 ${sdiResults.incomplete > 0 ? (darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-700') : (darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-700')}`}>
+                          <p className="font-bold text-center">
+                            {`✓ ${sdiResults.sent} inviate`}
+                            {sdiResults.skipped > 0 && ` · ↩ ${sdiResults.skipped} già inviate`}
+                            {sdiResults.incomplete > 0 && ` · ⚠ ${sdiResults.incomplete} ${sdiResults.incomplete === 1 ? 'dato incompleto' : 'dati incompleti'}`}
+                          </p>
+                          {sdiResults.incompleteItems.map(item => (
+                            <div key={item.id} className={`pt-1 border-t ${darkMode ? 'border-amber-500/20' : 'border-amber-200'}`}>
+                              <p className="font-semibold">{item.label}</p>
+                              <p className="opacity-80">{item.reasons.join(' · ')}</p>
+                            </div>
+                          ))}
                         </div>
                       )}
                     </>
