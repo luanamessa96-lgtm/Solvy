@@ -236,15 +236,6 @@ function AppInner() {
   }, []);
 
   useEffect(() => {
-    if (!('serviceWorker' in navigator)) return;
-    const onMessage = (e: MessageEvent) => {
-      if (e.data?.type === 'SW_UPDATED') showToast('✓ App aggiornata alla versione più recente', 'success');
-    };
-    navigator.serviceWorker.addEventListener('message', onMessage);
-    return () => navigator.serviceWorker.removeEventListener('message', onMessage);
-  }, []);
-
-  useEffect(() => {
     if (!isAuthenticated) return;
     setIsLoading(true);
     setDocuments([]);
