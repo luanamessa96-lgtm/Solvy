@@ -1,4 +1,4 @@
-const VERSION = 'v11';
+const VERSION = 'v12';
 const CACHE = `freelance-${VERSION}`;
 
 self.addEventListener('install', () => { self.skipWaiting(); });
@@ -10,8 +10,17 @@ self.addEventListener('message', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
+      .then(keys => {
+        const old = keys.filter(k => k !== CACHE);
+        return Promise.all(old.map(k => caches.delete(k))).then(() => old.length > 0);
+      })
+      .then(wasUpdate => self.clients.claim().then(() => {
+        if (wasUpdate) {
+          self.clients.matchAll({ type: 'window' }).then(clients =>
+            clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' }))
+          );
+        }
+      }))
   );
 });
 
