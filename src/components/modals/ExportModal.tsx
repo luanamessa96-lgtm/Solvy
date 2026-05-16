@@ -1684,7 +1684,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                         <div className={`w-full p-3 rounded-2xl text-[11px] font-medium text-center ${sdiResults.errors > 0 || sdiResults.incomplete > 0 ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
                           {`✓ ${sdiResults.sent} inviate`}
                           {sdiResults.skipped > 0 && ` · ↩ ${sdiResults.skipped} già inviate`}
-                          {sdiResults.incomplete > 0 && ` · ⚠ ${sdiResults.incomplete} dati incompleti`}
+                          {sdiResults.incomplete > 0 && ` · ⚠ ${sdiResults.incomplete} ${sdiResults.incomplete === 1 ? 'dato incompleto' : 'dati incompleti'}`}
                           {sdiResults.errors > 0 && ` · ✗ ${sdiResults.errors} errori`}
                         </div>
                       )}
