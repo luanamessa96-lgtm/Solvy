@@ -162,6 +162,22 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
     [filteredDocs]
   );
 
+  const invoiceMissingFields = useMemo(() => {
+    const toSend = filteredDocs.filter(d =>
+      (d.type === 'invoice' || d.type === 'credit_note') &&
+      d.sdiStatus !== 'sent' && d.sdiStatus !== 'delivered'
+    );
+    const seen = new Set<string>();
+    const result: { label: string; where: 'profilo' | 'fattura' }[] = [];
+    for (const doc of toSend) {
+      for (const e of validateForSdi(doc, profile)) {
+        const key = `${e.where}:${e.field}`;
+        if (!seen.has(key)) { seen.add(key); result.push(e); }
+      }
+    }
+    return result;
+  }, [filteredDocs, profile]);
+
   const totals = useMemo(() => filteredDocs.reduce((acc, d) => {
     if (d.type === 'invoice') acc.income += d.amount;
     else if (d.type === 'credit_note' || d.type === 'factura_rectificativa') acc.income -= d.amount;
@@ -1675,10 +1691,20 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                           ? 'Invio in corso…'
                           : (() => { const n = filteredDocs.filter(d => (d.type === 'invoice' || d.type === 'credit_note') && d.sdiStatus !== 'sent' && d.sdiStatus !== 'delivered').length; return `Invia ${n} ${n === 1 ? 'fattura' : 'fatture'} a SdI`; })()}
                       </button>
-                      {missingProfileFields.length > 0 && (
-                        <p className="text-[11px] text-amber-500 text-center">
-                          ⚠ Completa il profilo per abilitare l'invio: {missingProfileFields.map(f => f.label).join(', ')}
-                        </p>
+                      {invoiceMissingFields.length > 0 && (
+                        <div className={`p-3 rounded-2xl space-y-1.5 ${darkMode ? 'bg-amber-500/10' : 'bg-amber-50'}`}>
+                          <p className={`text-[11px] font-bold ${darkMode ? 'text-amber-400' : 'text-amber-700'}`}>⚠ Prima di inviare, completa:</p>
+                          {invoiceMissingFields.filter(e => e.where === 'profilo').length > 0 && (
+                            <p className={`text-[11px] ${darkMode ? 'text-amber-400/80' : 'text-amber-600'}`}>
+                              Nel profilo: {invoiceMissingFields.filter(e => e.where === 'profilo').map(e => e.label).join(', ')}
+                            </p>
+                          )}
+                          {invoiceMissingFields.filter(e => e.where === 'fattura').length > 0 && (
+                            <p className={`text-[11px] ${darkMode ? 'text-amber-400/80' : 'text-amber-600'}`}>
+                              Nelle fatture: {invoiceMissingFields.filter(e => e.where === 'fattura').map(e => e.label).join(', ')}
+                            </p>
+                          )}
+                        </div>
                       )}
                       {sdiResults && (
                         <div className={`w-full p-3 rounded-2xl text-[11px] font-medium text-center ${sdiResults.errors > 0 || sdiResults.incomplete > 0 ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
