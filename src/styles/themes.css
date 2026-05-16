@@ -53,6 +53,8 @@
   --color-icon-bg-purple: rgba(200, 85, 247, 0.15);
   --color-icon-bg-teal: rgba(45, 212, 191, 0.15);
   --color-border: rgba(200, 85, 247, 0.12);
+  --export-card-bg: rgba(167, 139, 250, 0.08);
+  --export-card-border: rgba(167, 139, 250, 0.20);
 }
 
 :root[data-theme="pro-dark"] {
