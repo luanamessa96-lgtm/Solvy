@@ -57,8 +57,19 @@ export function validateForSdi(doc: Document, profile: Profile): SdiValidationEr
   // Dati profilo obbligatori
   if (!profile.piva && !profile.codiceFiscale)
     errors.push({ field: 'piva', label: 'P.IVA o Codice Fiscale', where: 'profilo' });
+  if (!profile.name)
+    errors.push({ field: 'name', label: 'Nome o Ragione Sociale', where: 'profilo' });
   if (!profile.address)
     errors.push({ field: 'address', label: 'Indirizzo', where: 'profilo' });
+  else if (!/\d{5}/.test(profile.address))
+    errors.push({ field: 'address', label: 'Indirizzo profilo: aggiungi il CAP (es. Via Roma 1, 20100 Milano)', where: 'profilo' });
+
+  // Formato P.IVA profilo (11 cifre, senza prefisso IT)
+  if (profile.piva) {
+    const clean = profile.piva.replace(/\s/g, '').replace(/^IT/i, '');
+    if (!/^\d{11}$/.test(clean))
+      errors.push({ field: 'piva', label: 'P.IVA non valida (deve essere 11 cifre, senza prefisso IT)', where: 'profilo' });
+  }
 
   // Dati fattura obbligatori
   if (!doc.invoiceNumber)
@@ -70,8 +81,15 @@ export function validateForSdi(doc: Document, profile: Profile): SdiValidationEr
   if (doc.clientPiva !== 'Privato') {
     if (!doc.clientPiva && !doc.clientCf)
       errors.push({ field: 'clientPiva', label: 'P.IVA o CF del cliente', where: 'fattura' });
+    if (doc.clientPiva && doc.clientPiva !== 'Privato') {
+      const clean = doc.clientPiva.replace(/\s/g, '').replace(/^IT/i, '');
+      if (!/^\d{11}$/.test(clean))
+        errors.push({ field: 'clientPiva', label: 'P.IVA cliente non valida (deve essere 11 cifre)', where: 'fattura' });
+    }
     if (!doc.clientAddress)
       errors.push({ field: 'clientAddress', label: 'Indirizzo del cliente', where: 'fattura' });
+    else if (!/\d{5}/.test(doc.clientAddress))
+      errors.push({ field: 'clientAddress', label: 'Indirizzo cliente: aggiungi il CAP (es. Via Roma 1, 20100 Milano)', where: 'fattura' });
   }
 
   return errors;
