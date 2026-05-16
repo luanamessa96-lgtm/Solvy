@@ -1700,7 +1700,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                                     reasons = [raw.title];
                                   }
                                 } catch { /* ignore parse error */ }
-                                if (!reasons.length) reasons = ['Verifica: P.IVA/CF cliente, indirizzo con CAP, numero fattura'];
+                                if (!reasons.length) reasons = ['Rifiutata da SdI — apri la fattura e controlla P.IVA/CF e indirizzo cliente'];
                                 incompleteItems.push({ id: doc.id, label: docLabel, reasons });
                               }
                             } catch { errors++; incompleteItems.push({ id: doc.id, label: docLabel, reasons: ['Errore di rete'] }); }
