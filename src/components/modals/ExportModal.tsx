@@ -1687,8 +1687,21 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                               else {
                                 errors++;
                                 const errData = await res.json().catch(() => ({}));
-                                const detail = errData.detail || errData.error || 'Dati non validi per SdI';
-                                incompleteItems.push({ id: doc.id, label: docLabel, reasons: [detail] });
+                                let reasons: string[] = [];
+                                try {
+                                  const raw = typeof errData.detail === 'string' ? JSON.parse(errData.detail) : errData.detail;
+                                  if (raw?.violations?.length) {
+                                    reasons = raw.violations.map((v: { propertyPath?: string; message?: string }) =>
+                                      [v.propertyPath, v.message].filter(Boolean).join(': ')
+                                    );
+                                  } else if (raw?.detail) {
+                                    reasons = [raw.detail];
+                                  } else if (raw?.title) {
+                                    reasons = [raw.title];
+                                  }
+                                } catch { /* ignore parse error */ }
+                                if (!reasons.length) reasons = [errData.error || 'Errore A-Cube — verifica i dati della fattura'];
+                                incompleteItems.push({ id: doc.id, label: docLabel, reasons });
                               }
                             } catch { errors++; incompleteItems.push({ id: doc.id, label: docLabel, reasons: ['Errore di rete'] }); }
                           }
