@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
       // Crea contatto — se già esiste (409) aggiorna paese/userGroup per garantire che l'audience filter passi
       const contactRes = await loopsRequest('/contacts/create', 'POST', {
         email,
-        firstName: name ?? '',
+        ...(name ? { firstName: name } : {}),
         userGroup: paeseVal,
         paese: paeseVal,
         isPro: false,
