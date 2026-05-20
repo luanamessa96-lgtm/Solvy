@@ -1,5 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
+try { process.loadEnvFile('.env.test'); } catch { /* file opzionale in CI */ }
+
 export default defineConfig({
   testDir: './e2e',
   timeout: 60000,

@@ -1,9 +1,9 @@
 import { Page } from '@playwright/test';
 
-export const PRO_EMAIL = 'luanamessa96@gmail.com';
-export const PRO_PASSWORD = '190Per160!';
-export const FREE_EMAIL = 'messamale96@gmail.com';
-export const FREE_PASSWORD = 'TestFree2026!';
+export const PRO_EMAIL = process.env.TEST_PRO_EMAIL ?? '';
+export const PRO_PASSWORD = process.env.TEST_PRO_PASSWORD ?? '';
+export const FREE_EMAIL = process.env.TEST_FREE_EMAIL ?? '';
+export const FREE_PASSWORD = process.env.TEST_FREE_PASSWORD ?? '';
 export const BASE_URL = 'https://solvyapp.com';
 
 export async function login(page: Page, email: string, password: string) {
