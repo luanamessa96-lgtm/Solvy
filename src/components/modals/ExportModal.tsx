@@ -42,6 +42,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const [exporting, setExporting] = useState(false);
   const [sdiSending, setSdiSending] = useState(false);
   const [sdiResults, setSdiResults] = useState<{ sent: number; skipped: number; errors: number; incomplete: number; incompleteItems: { id: string; label: string; reasons: string[] }[] } | null>(null);
+  const [localSentIds, setLocalSentIds] = useState<Set<string>>(new Set());
   const [selectedMonths, setSelectedMonths] = useState<Set<number>>(new Set());
   const [includeFatturaPA, setIncludeFatturaPA] = useState(true);
   const [includeResumen, setIncludeResumen] = useState(true);
@@ -67,6 +68,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       setReadyBlob(null);
       setIncludeFatturaPA(true);
       setSdiResults(null);
+      setLocalSentIds(new Set());
       setIncludeResumen(true);
       setIncludeDocumenti(true);
       setIncludeRegistro(false);
@@ -165,7 +167,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
   const invoiceMissingFields = useMemo(() => {
     const toSend = filteredDocs.filter(d =>
       (d.type === 'invoice' || d.type === 'credit_note') &&
-      d.sdiStatus !== 'sent' && d.sdiStatus !== 'delivered'
+      d.sdiStatus !== 'sent' && d.sdiStatus !== 'delivered' &&
+      !localSentIds.has(d.id)
     );
     const seen = new Set<string>();
     const result: { label: string; where: 'profilo' | 'fattura' }[] = [];
@@ -176,7 +179,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
       }
     }
     return result;
-  }, [filteredDocs, profile]);
+  }, [filteredDocs, profile, localSentIds]);
 
   const totals = useMemo(() => filteredDocs.reduce((acc, d) => {
     if (d.type === 'invoice') acc.income += d.amount;
@@ -1657,7 +1660,8 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                         onClick={async () => {
                           const invoicesToSend = filteredDocs.filter(d =>
                             (d.type === 'invoice' || d.type === 'credit_note') &&
-                            d.sdiStatus !== 'sent' && d.sdiStatus !== 'delivered'
+                            d.sdiStatus !== 'sent' && d.sdiStatus !== 'delivered' &&
+                            !localSentIds.has(d.id)
                           );
                           if (invoicesToSend.length === 0) {
                             setSdiResults({ sent: 0, skipped: filteredDocs.filter(d => d.type === 'invoice' || d.type === 'credit_note').length, errors: 0, incomplete: 0, incompleteItems: [] });
@@ -1666,6 +1670,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                           setSdiSending(true);
                           setSdiResults(null);
                           let sent = 0, skipped = 0, errors = 0;
+                          const newlySentIds: string[] = [];
                           const incompleteItems: { id: string; label: string; reasons: string[] }[] = [];
                           const { data: { session } } = await getClient().auth.getSession();
                           for (const doc of invoicesToSend) {
@@ -1682,10 +1687,10 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
                                 body: JSON.stringify({ document_id: doc.id }),
                               });
-                              if (res.ok) { sent++; }
+                              if (res.ok) { sent++; newlySentIds.push(doc.id); }
                               else {
                                 const errData = await res.json().catch(() => ({}));
-                                if (errData.error?.includes('già inviata')) { skipped++; }
+                                if (errData.error?.includes('già inviata')) { skipped++; newlySentIds.push(doc.id); }
                                 else {
                                   errors++;
                                   let reasons: string[] = [];
@@ -1708,6 +1713,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                             } catch { errors++; incompleteItems.push({ id: doc.id, label: docLabel, reasons: ['Errore di rete'] }); }
                           }
                           setSdiSending(false);
+                          if (newlySentIds.length > 0) setLocalSentIds(prev => new Set([...prev, ...newlySentIds]));
                           setSdiResults({ sent, skipped, errors: 0, incomplete: errors, incompleteItems });
                         }}
                         className="w-full py-4 rounded-2xl font-bold text-white bg-blue-500 shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
@@ -1715,7 +1721,7 @@ export default function ExportModal({ isOpen, onClose, documents, selectedYear, 
                         {sdiSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                         {sdiSending
                           ? 'Invio in corso…'
-                          : (() => { const n = filteredDocs.filter(d => (d.type === 'invoice' || d.type === 'credit_note') && d.sdiStatus !== 'sent' && d.sdiStatus !== 'delivered').length; return `Invia ${n} ${n === 1 ? 'fattura' : 'fatture'} a SdI`; })()}
+                          : (() => { const n = filteredDocs.filter(d => (d.type === 'invoice' || d.type === 'credit_note') && d.sdiStatus !== 'sent' && d.sdiStatus !== 'delivered' && !localSentIds.has(d.id)).length; return `Invia ${n} ${n === 1 ? 'fattura' : 'fatture'} a SdI`; })()}
                       </button>
                       {invoiceMissingFields.length > 0 && (
                         <div className={`p-3 rounded-2xl space-y-1.5 ${darkMode ? 'bg-amber-500/10' : 'bg-amber-50'}`}>
