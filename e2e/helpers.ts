@@ -4,7 +4,7 @@ export const PRO_EMAIL = process.env.TEST_PRO_EMAIL ?? '';
 export const PRO_PASSWORD = process.env.TEST_PRO_PASSWORD ?? '';
 export const FREE_EMAIL = process.env.TEST_FREE_EMAIL ?? '';
 export const FREE_PASSWORD = process.env.TEST_FREE_PASSWORD ?? '';
-export const BASE_URL = 'https://solvyapp.com';
+export const BASE_URL = 'https://solvyapp.com/app';
 
 export async function login(page: Page, email: string, password: string) {
   await page.goto(BASE_URL);
@@ -102,9 +102,16 @@ export async function switchToItalyProfile(page: Page): Promise<boolean> {
   const switched = await page.evaluate(() => {
     const btns = Array.from(document.querySelectorAll('button'));
     const italyBtn = btns.find(b => {
-      const text = b.textContent || '';
-      return (text.includes('Freelance') || text.includes('Consulente') || text.includes('Designer') || text.includes('Ordinario') || text.includes('Forfettario')) &&
-             !text.includes('Autónomo') && !text.includes('España');
+      const cls = b.className || '';
+      const tokens = cls.split(/\s+/);
+      const text = b.textContent?.trim() || '';
+      // active profile has standalone 'border-primary'; inactive has 'hover:border-primary/20'
+      const isActiveProfile = tokens.includes('border-primary');
+      return cls.includes('rounded-2xl') &&
+             !cls.includes('border-dashed') &&
+             !isActiveProfile &&
+             text.length > 3 &&
+             !text.includes('Aggiungi');
     });
     if (italyBtn) { (italyBtn as HTMLElement).click(); return true; }
     return false;

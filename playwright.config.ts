@@ -8,7 +8,7 @@ export default defineConfig({
   workers: 1,
   retries: 0,
   use: {
-    baseURL: 'https://solvyapp.com',
+    baseURL: 'https://solvyapp.com/app',
     headless: true,
     viewport: { width: 390, height: 844 }, // iPhone 14 Pro
     locale: 'it-IT',
