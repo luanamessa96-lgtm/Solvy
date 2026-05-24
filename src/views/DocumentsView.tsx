@@ -112,6 +112,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const [docToDelete, setDocToDelete] = useState<Document | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [docToEdit, setDocToEdit] = useState<Document | null>(null);
+  const [editModalVV, setEditModalVV] = useState<{ top: number; height: number } | null>(null);
   const [pdfPreview, setPdfPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
   const [sdiSending, setSdiSending] = useState(false);
   const [openMonths, setOpenMonths] = useState<Set<string>>(() => {
@@ -134,6 +135,16 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
     }
     prevLengthRef.current = documents.length;
   }, [documents]);
+
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!docToEdit || !vv) { setEditModalVV(null); return; }
+    const update = () => setEditModalVV({ top: vv.offsetTop, height: vv.height });
+    update();
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => { vv.removeEventListener('resize', update); vv.removeEventListener('scroll', update); };
+  }, [docToEdit]);
 
   const availableYears = useMemo(() => {
     const currentYear = new Date().getFullYear();
@@ -750,10 +761,13 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
 
       <AnimatePresence>
         {docToEdit && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
+          <div
+            className="fixed left-0 right-0 z-50 flex items-end justify-center sm:items-center p-4"
+            style={{ top: editModalVV?.top ?? 0, height: editModalVV?.height ?? '100dvh' }}
+          >
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDocToEdit(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className="relative w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl" style={{ backgroundColor: 'var(--color-card)' }}>
-              <div className="overflow-y-auto max-h-[90vh] p-8 space-y-5 [padding-bottom:max(2rem,calc(env(safe-area-inset-bottom)+1rem))]">
+              <div className="overflow-y-auto max-h-[90%] p-8 space-y-5 [padding-bottom:max(2rem,calc(env(safe-area-inset-bottom)+1rem))]">
                 <div className="flex justify-between items-start">
                   <div>
                     <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Modifica</h2>
