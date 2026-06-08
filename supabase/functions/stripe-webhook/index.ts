@@ -171,23 +171,32 @@ Deno.serve(async (req) => {
       }
 
       case 'invoice.payment_failed': {
-        // Pagamento fallito → revoca Pro (senza email cancellazione)
+        // Pagamento fallito — non revocare subito: Stripe riprova automaticamente.
+        // Revochiamo solo se l'abbonamento è già in uno stato terminale (past_due
+        // con attempt_count alto), per non penalizzare problemi bancari temporanei.
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
+        const attemptCount = invoice.attempt_count ?? 1;
 
-        const { data: profiles } = await supabaseAdmin
-          .from('profiles')
-          .select('user_id')
-          .eq('stripe_customer_id', customerId)
-          .limit(1);
+        console.log(`invoice.payment_failed — customer: ${customerId}, attempt: ${attemptCount}`);
 
-        if (profiles?.[0]?.user_id) {
-          await supabaseAdmin
+        // Aspetta il 3° tentativo fallito prima di revocare Pro.
+        // Stripe di default riprova dopo 3/5/7 giorni, quindi l'utente ha ~2 settimane.
+        if (attemptCount >= 3) {
+          const { data: profiles } = await supabaseAdmin
             .from('profiles')
-            .update({ is_pro: false, subscription_started_at: null })
-            .eq('user_id', profiles[0].user_id);
+            .select('user_id')
+            .eq('stripe_customer_id', customerId)
+            .limit(1);
 
-          console.log(`Pro revocato per pagamento fallito, customer: ${customerId}`);
+          if (profiles?.[0]?.user_id) {
+            await supabaseAdmin
+              .from('profiles')
+              .update({ is_pro: false, subscription_started_at: null })
+              .eq('user_id', profiles[0].user_id);
+
+            console.log(`Pro revocato dopo ${attemptCount} tentativi falliti, customer: ${customerId}`);
+          }
         }
         break;
       }
