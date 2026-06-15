@@ -299,6 +299,7 @@
   },
   "auth": {
     "login_title": "Bienvenido de nuevo",
+    "session_expired_toast": "La sesión ha caducado. Vuelve a iniciar sesión — tus datos están a salvo.",
     "login_subtitle": "Accede a tu cuenta",
     "register_title": "Crear cuenta",
     "register_subtitle": "Empieza a gestionar tus finanzas",

@@ -305,6 +305,7 @@
   },
   "auth": {
     "login_title": "Bentornato",
+    "session_expired_toast": "La sessione è scaduta. Accedi di nuovo — i tuoi dati sono al sicuro.",
     "login_subtitle": "Accedi al tuo account",
     "register_title": "Crea account",
     "register_subtitle": "Inizia a gestire le tue finanze",
