@@ -20,6 +20,8 @@ import { getEsDeductibilityRate } from './lib/es/deductibility';
 const AuthView = lazy(() => import('./views/AuthView'));
 import InstallGateScreen from './components/InstallGateScreen';
 import { isConfirmedRoute, needsInstall, detectBrowserContext } from './lib/installGate';
+import { ensureFreshSession } from './lib/sessionGuard';
+import { resolveBootstrapState } from './lib/profileBootstrap';
 
 // Evaluated once at module load — before React, before any auth state change
 const _browser = detectBrowserContext(navigator.userAgent);
@@ -241,10 +243,22 @@ function AppInner() {
     setDocuments([]);
     setProfiles([]);
     setDeadlines([]);
-    getClient().auth.getUser().then(async ({ data: { user } }) => {
+    const sb = getClient();
+    (async () => {
+      const sessionOk = await ensureFreshSession(sb);
+      if (!sessionOk) {
+        // Token scaduto e refresh fallito (es. PWA iOS rimasta a lungo in background)
+        await sb.auth.signOut().catch(() => {});
+        showToast(t('auth.session_expired_toast'), 'error');
+        setIsAuthenticated(false);
+        setIsLoading(false);
+        return;
+      }
+
+      const { data: { user } } = await sb.auth.getUser();
       if (!user) {
         // Sessione in localStorage ma utente eliminato dal DB — forza logout
-        await getClient().auth.signOut().catch(() => {});
+        await sb.auth.signOut().catch(() => {});
         setIsAuthenticated(false);
         setIsLoading(false);
         return;
@@ -252,13 +266,38 @@ function AppInner() {
       setUserId(user.id);
       const data = await getProfiles(user.id, user.email ?? undefined).catch(() => null);
 
-      // Profilo primario (id === user.id): creato dal trigger DB → completo solo se jobType valorizzato
-      // Profili secondari (UUID diverso): creati da handleNewProfileComplete → basta il nome (obbligatorio)
-      const completeProfiles = data
-        ? data.filter(p => p.id === user.id ? !!(p.jobType) : !!(p.name))
-        : null;
+      if (data === null) {
+        // Errore di rete: mostra dashboard vuota
+        setShowOnboarding(false);
+        setIsLoading(false);
+        return;
+      }
 
-      if (completeProfiles && completeProfiles.length > 0) {
+      const onboardingComplete = !!localStorage.getItem('onboardingComplete') || /onboardingComplete=true/.test(document.cookie);
+      const hasLocalProfileTrace = onboardingComplete
+        || !!localStorage.getItem('activeProfileId')
+        || /activeProfileId=/.test(document.cookie);
+
+      const bootstrap = resolveBootstrapState({
+        profiles: data,
+        userId: user.id,
+        userName: user.user_metadata?.name || user.email?.split('@')[0] || 'Utente',
+        userEmail: user.email || '',
+        onboardingComplete,
+        hasLocalProfileTrace,
+      });
+
+      if (bootstrap.kind === 'session-expired') {
+        // 0 profili da RLS ma il dispositivo aveva già completato l'onboarding → token non valido, non "utente nuovo"
+        await sb.auth.signOut().catch(() => {});
+        showToast(t('auth.session_expired_toast'), 'error');
+        setIsAuthenticated(false);
+        setIsLoading(false);
+        return;
+      }
+
+      if (bootstrap.kind === 'dashboard') {
+        const completeProfiles = bootstrap.profiles;
         // Utente esistente con onboarding completato → dashboard
         localStorage.setItem('onboardingComplete', 'true');
         document.cookie = 'onboardingComplete=true; path=/; max-age=31536000; SameSite=Lax';
@@ -316,45 +355,33 @@ function AppInner() {
           .finally(() => {
             setIsLoading(false); // ← Dashboard visibile appena arrivano i documenti (o in caso di errore)
           });
-      } else if (data !== null) {
-        const alreadyCompleted = !!localStorage.getItem('onboardingComplete') || /onboardingComplete=true/.test(document.cookie);
-        if (alreadyCompleted && data.length > 0) {
-          // Utente che ha già completato l'onboarding ma il profilo non supera il filtro jobType.
-          // Non mandare mai un utente già onboardato all'inizio — usa il profilo com'è.
-          const existingProfile = data[0];
-          setProfiles([existingProfile]);
-          setActiveProfile(existingProfile);
-          setLanguageByCountry(existingProfile.country);
-          setDocuments([]);
-          setDeadlines([]);
-          setShowOnboarding(false);
-          setIsLoading(false);
-        } else {
-          // Nuovo utente: trigger ha creato profilo con country=NULL (o trigger fallito).
-          const triggerProfileId = data.length > 0 ? data[0].id : user.id;
-          const shell: Profile = {
-            id: triggerProfileId,
-            name: user.user_metadata?.name || user.email?.split('@')[0] || 'Utente',
-            email: user.email || '',
-            jobType: '',
-            country: 'Italy' as Profile['country'],
-            currency: 'EUR' as Profile['currency'],
-            regime: 'forfettario',
-          };
-          setProfiles([shell]);
-          setActiveProfile(shell);
-          setDocuments([]);
-          setDeadlines([]);
-          localStorage.removeItem('onboardingComplete');
-          setShowOnboarding(true);
-          setIsLoading(false);
-        }
-      } else {
-        // Errore di rete: mostra dashboard vuota
+        return;
+      }
+
+      if (bootstrap.kind === 'existing-incomplete') {
+        // Utente che ha già completato l'onboarding ma il profilo non supera il filtro jobType.
+        // Non mandare mai un utente già onboardato all'inizio — usa il profilo com'è.
+        const existingProfile = bootstrap.profile;
+        setProfiles([existingProfile]);
+        setActiveProfile(existingProfile);
+        setLanguageByCountry(existingProfile.country);
+        setDocuments([]);
+        setDeadlines([]);
         setShowOnboarding(false);
         setIsLoading(false);
+        return;
       }
-    });
+
+      // bootstrap.kind === 'onboarding' — nuovo utente: trigger ha creato profilo con country=NULL (o trigger fallito)
+      const shell = bootstrap.shell;
+      setProfiles([shell]);
+      setActiveProfile(shell);
+      setDocuments([]);
+      setDeadlines([]);
+      localStorage.removeItem('onboardingComplete');
+      setShowOnboarding(true);
+      setIsLoading(false);
+    })();
   }, [isAuthenticated]);
 
   // Real-time sync: ascolta cambiamenti da Supabase
