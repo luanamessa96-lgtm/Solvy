@@ -91,33 +91,58 @@ export async function clickMenuItemByText(page: Page, text: string) {
   await page.waitForTimeout(800);
 }
 
+const SPAIN_KEYWORDS = ['España', 'Autónomo', 'Canarias', 'Spagna'];
+
 /** Try to switch to an Italy profile in ProfileView.
  *  Navigates to Menù, opens ProfileView, clicks the first IT profile found.
- *  Returns true if switched, false if no Italy profile found. */
+ *  Returns true if already on Italy or switched, false if no Italy profile found. */
 export async function switchToItalyProfile(page: Page): Promise<boolean> {
   await navigateTab(page, 'menu');
   await page.waitForTimeout(500);
   await clickMenuProfileCard(page);
   await page.waitForTimeout(800);
-  const switched = await page.evaluate(() => {
+
+  // If the active profile is already Italy (no Spain keywords), just go back.
+  const activeIsItaly = await page.evaluate((keywords) => {
+    const btns = Array.from(document.querySelectorAll('button'));
+    const activeBtn = btns.find(b => {
+      const cls = b.className || '';
+      return cls.includes('rounded-2xl') &&
+             !cls.includes('border-dashed') &&
+             cls.split(/\s+/).includes('border-primary') &&
+             (b.textContent?.trim() || '').length > 3;
+    });
+    if (!activeBtn) return false;
+    const text = activeBtn.textContent || '';
+    return !keywords.some((kw: string) => text.includes(kw));
+  }, SPAIN_KEYWORDS);
+
+  if (activeIsItaly) {
+    await page.getByRole('button', { name: 'Torna indietro' }).click().catch(() => {});
+    await page.waitForTimeout(500);
+    return true;
+  }
+
+  // Active profile is Spain — find an inactive Italy profile (no Spain keywords).
+  const switched = await page.evaluate((keywords) => {
     const btns = Array.from(document.querySelectorAll('button'));
     const italyBtn = btns.find(b => {
       const cls = b.className || '';
-      const tokens = cls.split(/\s+/);
       const text = b.textContent?.trim() || '';
-      // active profile has standalone 'border-primary'; inactive has 'hover:border-primary/20'
-      const isActiveProfile = tokens.includes('border-primary');
+      const isActive = cls.split(/\s+/).includes('border-primary');
       return cls.includes('rounded-2xl') &&
              !cls.includes('border-dashed') &&
-             !isActiveProfile &&
+             !isActive &&
              text.length > 3 &&
-             !text.includes('Aggiungi');
+             !text.includes('Aggiungi') &&
+             !keywords.some((kw: string) => text.includes(kw));
     });
     if (italyBtn) { (italyBtn as HTMLElement).click(); return true; }
     return false;
-  });
+  }, SPAIN_KEYWORDS);
+
   if (switched) {
-    await page.waitForTimeout(1500); // handleSwitchProfile navigates to home
+    await page.waitForTimeout(1500);
   } else {
     await page.getByRole('button', { name: 'Torna indietro' }).click().catch(() => {});
     await page.waitForTimeout(500);
