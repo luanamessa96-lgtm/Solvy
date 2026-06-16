@@ -38,7 +38,7 @@ Solvy è una PWA mobile-first che calcola in tempo reale quanto devi al fisco, e
 
 ## Perché Solvy
 
-Il freelancer medio non vuole imparare a fare il commercialista. Vuole sapere una cosa sola: **quanto soldi deve mettere da parte questo mese**. Solvy risponde a questa domanda in tempo reale, ogni volta che emette una fattura.
+Il freelancer medio non vuole imparare a fare il commercialista. Vuole sapere una cosa sola: **quanti soldi deve mettere da parte questo mese**. Solvy risponde a questa domanda in tempo reale, ogni volta che emette una fattura.
 
 - **Niente sorprese.** Ogni fattura aggiorna istantaneamente quanto dovrai al fisco.
 - **Niente Excel.** Calcoli, scadenze e archivio fatture in un'unica app.
