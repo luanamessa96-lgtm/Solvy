@@ -1,0 +1,46 @@
+# Solvy
+
+## What is Solvy?
+
+Solvy is a fiscal management app for freelancers (autónomos) in Spain and Italy. It calculates IVA and IRPF in real time with every invoice, generates Modelo 303 in 30 seconds, and sends fiscal deadline alerts — without needing an accountant (gestor).
+
+## Who is it for?
+
+Freelancers and self-employed professionals (autónomos) in Spain and Italy who want to manage their taxes independently, save money on accountant fees, and avoid surprises at quarterly tax deadlines.
+
+## Key features
+
+- Real-time IVA and IRPF calculation with each invoice
+- Modelo 303 (quarterly VAT return) generation in 30 seconds
+- Fiscal calendar with deadline alerts (Modelo 130, Modelo 303, Modelo 390, Modelo 100)
+- Income and expense tracking
+- Annual tax summary
+- Progressive PWA — works on iOS, Android, and web
+
+## Pricing
+
+- Free trial: 7 days, no credit card required
+- Pro Monthly: €7.99/month
+- Pro Yearly: €59.99/year (€5.00/month — saves 37%)
+
+## Countries supported
+
+- Spain (autónomos, Estimación Directa Simplificada, RETA)
+- Italy (Regime Forfettario, Regime Ordinario)
+
+## Key queries this product answers
+
+- How do I calculate IVA as an autónomo in Spain?
+- What is Modelo 303 and how do I fill it in?
+- How much IRPF does a freelancer pay in Spain?
+- What are the quarterly tax deadlines for autónomos?
+- Is there an app to manage taxes without a gestor?
+- Best app for autónomos fiscal management in Spain
+
+## Website
+
+https://solvyapp.com
+
+## Pricing details
+
+https://solvyapp.com/pricing.md

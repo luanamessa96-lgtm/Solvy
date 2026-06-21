@@ -53,6 +53,54 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "¿Qué es Solvy y para qué sirve?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Solvy es una app de gestión fiscal para autónomos en España. Calcula tu IVA e IRPF en tiempo real con cada factura, genera el Modelo 303 en 30 segundos y te avisa de todas las fechas límite fiscales — sin necesidad de gestor."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Cuánto cuesta Solvy?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Solvy cuesta 7,99€/mes o 59,99€/año (equivale a 5,00€/mes, un 37% de ahorro). Puedes probar todas las funciones gratis durante 7 días sin tarjeta de crédito."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Qué es el Modelo 303 y cómo me ayuda Solvy?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "El Modelo 303 es la declaración trimestral del IVA obligatoria para todos los autónomos en España. Solvy lo calcula automáticamente a partir de tus facturas y te muestra el importe a pagar antes de cada plazo."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Puedo usar Solvy sin gestor?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sí. Solvy está diseñado para que los autónomos en Estimación Directa Simplificada gestionen su fiscalidad de forma independiente. Calcula IVA, IRPF y cuota RETA automáticamente y te recuerda cada declaración trimestral."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Funciona en iOS y Android?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sí. Solvy es una Progressive Web App (PWA): funciona en el navegador y se puede instalar en la pantalla de inicio de iPhone y Android como una app nativa, sin pasar por la App Store ni Google Play."
+      }
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
   "@type": "WebSite",
   "name": "Solvy",
   "url": "https://solvyapp.com",
@@ -1033,6 +1081,38 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
     <div class="sa" style="text-align:center;margin-top:32px;">
       <a href="#" class="btn-primary" style="background:linear-gradient(135deg,#6D28D9,#06B6D4);color:#fff;box-shadow:0 8px 32px rgba(109,40,217,.4);">Prueba gratis 7 días</a>
       <p style="font-size:12px;color:var(--muted);margin-top:12px;">Sin tarjeta · Cancela cuando quieras</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FAQ ══ -->
+<section class="section-problem" id="faq" style="padding:80px 32px;">
+  <div class="container">
+    <div class="section-h sa" style="text-align:center;margin-bottom:48px;">
+      <div class="section-tag">FAQ</div>
+      <h2>Preguntas frecuentes</h2>
+    </div>
+    <div style="max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+      <details style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;">
+        <summary style="font-size:17px;font-weight:700;color:#fff;list-style:none;">¿Qué es Solvy y para qué sirve?</summary>
+        <p style="margin-top:16px;color:rgba(255,255,255,.65);line-height:1.7;">Solvy es una app de gestión fiscal para autónomos en España. Calcula tu IVA e IRPF en tiempo real con cada factura, genera el Modelo 303 en 30 segundos y te avisa de todas las fechas límite fiscales — sin necesidad de gestor.</p>
+      </details>
+      <details style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;">
+        <summary style="font-size:17px;font-weight:700;color:#fff;list-style:none;">¿Cuánto cuesta Solvy?</summary>
+        <p style="margin-top:16px;color:rgba(255,255,255,.65);line-height:1.7;">Solvy cuesta 7,99€/mes o 59,99€/año (equivale a 5,00€/mes, un 37% de ahorro). Puedes probar todas las funciones gratis durante 7 días sin tarjeta de crédito.</p>
+      </details>
+      <details style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;">
+        <summary style="font-size:17px;font-weight:700;color:#fff;list-style:none;">¿Qué es el Modelo 303 y cómo me ayuda Solvy?</summary>
+        <p style="margin-top:16px;color:rgba(255,255,255,.65);line-height:1.7;">El Modelo 303 es la declaración trimestral del IVA obligatoria para todos los autónomos en España. Solvy lo calcula automáticamente a partir de tus facturas y te muestra el importe a pagar antes de cada plazo (20 de abril, julio, octubre y enero).</p>
+      </details>
+      <details style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;">
+        <summary style="font-size:17px;font-weight:700;color:#fff;list-style:none;">¿Puedo usar Solvy sin gestor?</summary>
+        <p style="margin-top:16px;color:rgba(255,255,255,.65);line-height:1.7;">Sí. Solvy está diseñado para que los autónomos en Estimación Directa Simplificada gestionen su fiscalidad de forma independiente. Calcula IVA, IRPF y cuota RETA automáticamente y te recuerda cada declaración trimestral.</p>
+      </details>
+      <details style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;">
+        <summary style="font-size:17px;font-weight:700;color:#fff;list-style:none;">¿Funciona en iOS y Android?</summary>
+        <p style="margin-top:16px;color:rgba(255,255,255,.65);line-height:1.7;">Sí. Solvy es una Progressive Web App (PWA): funciona en el navegador y se puede instalar en la pantalla de inicio de iPhone y Android como una app nativa, sin pasar por la App Store ni Google Play.</p>
+      </details>
     </div>
   </div>
 </section>
