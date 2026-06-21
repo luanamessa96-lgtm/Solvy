@@ -4,7 +4,59 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Solvy — Tu gestoría fiscal en el bolsillo</title>
+<meta name="description" content="Solvy calcula tu IVA e IRPF en tiempo real con cada factura. Modelo 303 en 30 segundos, calendario fiscal con alertas. Prueba gratis 7 días. Sin gestor." />
+<meta name="robots" content="index, follow" />
 <link rel="canonical" href="https://solvyapp.com/" />
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Solvy — Tu gestoría fiscal en el bolsillo" />
+<meta property="og:description" content="Gestión fiscal para autónomos en España. IVA, IRPF, Modelo 303. Sin gestor. 7,99€/mes." />
+<meta property="og:url" content="https://solvyapp.com" />
+<meta property="og:image" content="https://solvyapp.com/solvy-icon-512.png" />
+<meta property="og:locale" content="es_ES" />
+<meta property="og:site_name" content="Solvy" />
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Solvy — Tu gestoría fiscal en el bolsillo" />
+<meta name="twitter:description" content="IVA, IRPF, Modelo 303. Gestión fiscal para autónomos en España. Prueba gratis 7 días." />
+<meta name="twitter:image" content="https://solvyapp.com/solvy-icon-512.png" />
+<!-- PWA / Icons -->
+<link rel="manifest" href="/manifest.json" />
+<link rel="icon" type="image/svg+xml" href="/icon.svg" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="/solvy-icon-192.png" />
+<meta name="theme-color" content="#6D28D9" />
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Solvy",
+  "url": "https://solvyapp.com",
+  "description": "Gestión fiscal para autónomos en España. Calcula IVA, IRPF y Modelo 303 en tiempo real.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Web, iOS, Android",
+  "offers": {
+    "@type": "Offer",
+    "price": "7.99",
+    "priceCurrency": "EUR"
+  },
+  "potentialAction": {
+    "@type": "RegisterAction",
+    "name": "Prueba gratis 7 días",
+    "target": "https://solvyapp.com"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Solvy",
+  "url": "https://solvyapp.com",
+  "description": "Tu gestoría fiscal en el bolsillo"
+}
+</script>
 <!-- PWA detection: se aperta da home screen → vai all'app direttamente -->
 <script>
 if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true) {
@@ -1109,6 +1161,20 @@ initShader('shader-hero',     0);
 
 
 initShader('shader-footer',   30);
+</script>
+<!-- Google Analytics 4 — caricato dopo window.load, zero impatto su LCP -->
+<script>
+window.addEventListener('load', function() {
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  window.gtag = gtag;
+  gtag('js', new Date());
+  gtag('config', 'G-2F4JDKGKNX');
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://www.googletagmanager.com/gtag/js?id=G-2F4JDKGKNX';
+  document.head.appendChild(s);
+}, { once: true });
 </script>
 </body>
 </html>
