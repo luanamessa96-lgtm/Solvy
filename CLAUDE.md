@@ -1,5 +1,40 @@
 # Solvy — Istruzioni per Claude
 
+## Commands
+
+```bash
+npm run dev          # Dev server on :3000
+npm run build        # Production build
+npm run lint         # TypeScript type-check (tsc --noEmit)
+npm test             # Vitest unit tests (fiscal logic — ~110 tests)
+npx playwright test  # E2E against solvyapp.com, iPhone 14 Pro viewport, ~10-15 min
+```
+
+Run a single Vitest test file: `npm test -- src/__tests__/fiscal.test.ts`
+
+## Architecture
+
+Solvy is a mobile-first PWA (React 18 + TypeScript + Vite). There is no React Router: `App.tsx` conditionally renders one of the 14 `views/` components based on app state.
+
+**Country module system** (`src/lib/countries/`): All fiscal calculations go through `getCountryModule(country)`, which returns the `it` or `es` module. Each module implements `CountryModule` (`types.ts`). Adding a new country = one new file in `countries/`, zero changes elsewhere.
+
+**Data flow**: The user's profile (country, regime, ATECO code) is loaded from Supabase on login and passed as props. All fiscal calculations are pure functions with no side effects or API calls.
+
+**Backend**: Supabase Edge Functions (`supabase/functions/`) handle Stripe webhooks, checkout, customer portal, and email (Resend / Loops). Never call Stripe or send emails from the frontend.
+
+**i18n**: All visible text goes through `src/lib/i18n.ts` + `src/locales/it.json` + `src/locales/es.json` (~280 keys). Add new strings to both locale files before adding UI.
+
+**Testing**: Unit tests in `src/__tests__/` cover all fiscal logic (Vitest). E2E tests in `e2e/` run against production (`solvyapp.com`) on iPhone 14 Pro.
+
+## Git workflow
+
+- Branch: always work on `develop`; push to both `develop` and `main` after every commit
+- DB: never modify production directly — use `supabase/migrations/`
+- Hooks safety: variables used inside `useMemo` / `useEffect` must be declared **before** the hook (Safari TDZ crash)
+- Modals: do not touch scroll/layout of existing modals without explicit user confirmation
+
+---
+
 ## Regole fiscali — Verità di riferimento
 
 Questa sezione è la **fonte di verità assoluta** per ogni calcolo, test e verifica fiscale in Solvy. Qualsiasi codice che calcola imposte, contributi, scadenze o importi stimati deve rispettare queste regole.
