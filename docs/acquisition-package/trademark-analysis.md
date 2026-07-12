@@ -6,15 +6,26 @@
 
 Confermato in `docs/ip-ownership-licensing.md`: la fondatrice ha proprietà d'uso del nome "Solvy" (dominio, asset di brand, materiali grafici), ma **nessuna registrazione formale del marchio** risulta effettuata. In Unione Europea (e quindi in Italia e Spagna, i due mercati di Solvy) il sistema è **first-to-file**, non first-to-use come negli Stati Uniti: chi registra per primo un marchio ha diritti superiori a chi lo usa senza registrarlo, anche se l'uso è precedente. Questo è un dato rilevante per l'analisi che segue, non solo un dettaglio tecnico — va comunque confermato da un consulente in proprietà industriale prima di qualunque decisione operativa, perché qui è riportato come inquadramento generale, non come parere legale.
 
-## Scoperta rilevante durante questa analisi
+## Scoperta rilevante — verificata direttamente su EUIPO eSearch (12/07/2026)
 
-Una ricerca preliminare ha rilevato l'esistenza di **"Solvy Ltd"**, società con sede a Malta, titolare di un marchio EUIPO depositato nel 2018 per **"SOLFY"** (non "SOLVY" — un carattere di differenza), classificato in categorie che includono servizi finanziari e software — lo stesso ambito di mercato di Solvy.
+Ricerca eseguita direttamente sul database ufficiale EUIPO (non un motore di ricerca generico). Risultato concreto, non un'ipotesi:
 
-Due cose vanno dette con precisione, senza esagerare né minimizzare:
-- Non è una conferma che "Solvy" (la nostra grafia esatta) sia già registrato o bloccato — la ricerca via motore di ricerca generico non è una ricerca di anteriorità professionale, e non ha restituito un riscontro esatto sulla grafia "SOLVY"
-- È comunque un segnale concreto da non ignorare: esiste una società con un nome quasi identico, attiva in un settore adiacente, con un marchio EUIPO già registrato su una parola foneticamente vicina. Questo non è stato verificabile con certezza da questa sede (gli strumenti di ricerca ufficiali EUIPO/TMview richiedono un'interfaccia interattiva che non è possibile interrogare programmaticamente da qui)
+**Il marchio denominativo "SOLVY" — grafia esatta identica — è già stato depositato in passato, esattamente nelle classi rilevanti per Solvy, e ha incontrato un'opposizione reale prima di essere ritirato.**
 
-**Cosa fare per chiudere questo punto con certezza**: una ricerca di anteriorità professionale (o quantomeno una verifica manuale su [EUIPO eSearch](https://euipo.europa.eu/eSearch/) e [TMview](https://www.tmdn.org/tmview/)) sulla grafia esatta "Solvy" nelle classi 9 (software), 35 (servizi gestionali) e 36 (servizi finanziari) — costo trascurabile o nullo se fatta con gli strumenti pubblici EUIPO, poche ore di lavoro.
+| Dato | Dettaglio verificato |
+|---|---|
+| Titolare | Solvy Ltd (Malta, San Gwann) |
+| Marchi depositati | Due domande parallele, stesso giorno: `017877218` (denominativo "SOLVY") e `017877216` (figurativo "SOLVY") |
+| Data di deposito | 20/03/2018 |
+| Classi | **35** (marketing), **36** (servizi di pagamento/carte di credito), **42** (creazione e sviluppo software) — sovrapposizione diretta con l'ambito fintech/software di Solvy |
+| Opposizione ricevuta | Sì — depositata il 27/06/2018 da **Banco de Sabadell, S.A.** (rappresentata da Herrero & Asociados), motivi: *"Likelihood of confusion"* e *"Unfair advantage / detriment to distinctiveness or repute"* |
+| Esito | Entrambe le domande **ritirate il 31/03/2020**, circa due anni dopo l'apertura del procedimento di opposizione |
+
+Non risulta dal fascicolo pubblico il testo della decisione finale (il procedimento risulta chiuso per ritiro, non per decisione di merito pubblicata), quindi non posso affermare con certezza assoluta che l'opposizione abbia "vinto" in senso stretto — ma la sequenza (opposizione di una banca importante → due anni di procedimento → ritiro di entrambe le domande) è un pattern che tipicamente indica un ritiro indotto dalla debolezza della posizione, non una scelta commerciale indipendente. Buona probabilità, non confermata al 100%, che il marchio opposto da Banco de Sabadell sia **"Solvia"**, il nome pubblicamente noto della sua controllata di gestione immobiliare/crediti (Solvia Servicios Inmobiliarios) — foneticamente molto vicino a "Solvy"; questo collegamento specifico non è stato verificato nel dettaglio della decisione, va confermato da un consulente in proprietà industriale.
+
+**Cosa significa per Solvy**: non è la prova che "Solvy" sia oggi legalmente bloccato (le domande di Solvy Ltd sono ritirate, non c'è più una domanda attiva che occupi la grafia esatta) — ma è la prova concreta che un tentativo di registrare esattamente questo nome, in classi quasi identiche a quelle rilevanti per Solvy, ha già generato un'opposizione seria da parte di un istituto finanziario spagnolo, in uno dei due mercati esatti di Solvy. Non è uno scenario ipotetico: è già successo una volta.
+
+**Nota aggiuntiva**: la stessa ricerca ha rilevato una domanda EUTM **attualmente pendente** per **"Solvyr"** (deposito 28/04/2026, titolare Solvyr OÜ, Estonia — servizi cloud/AI in classe 42), periodo di opposizione aperto fino al 04/08/2026, zero opposizioni ricevute finora. Non è lo stesso nome e non riguarda direttamente Solvy, ma conferma che lo spazio dei nomi simili a "Solv-" nel software è attivamente conteso, non vuoto.
 
 ## Costo di una registrazione formale
 
@@ -41,10 +52,12 @@ Qui la valutazione dipende da un fatto già dichiarato altrove in questo pacchet
 
 ## Conclusione motivata
 
-**Non registrare preventivamente ora.** Il costo (~€850-1500+ per un EUTM con supporto professionale) e soprattutto il tempo (4-12+ mesi, disallineato dal closing) non sono giustificati da un beneficio che oggi è condizionale, non certo — dipende da una scelta che solo un acquirente concreto potrà fare. Registrare ora significa spendere tempo e denaro su un'ipotesi, non su un valore dimostrato.
+**Non registrare preventivamente ora — e con maggiore convinzione rispetto a un'analisi puramente teorica.** Il costo (~€850-1500+ per un EUTM con supporto professionale) e il tempo (4-12+ mesi, disallineato dal closing) restano i motivi di fondo, ma ora c'è un elemento in più: un tentativo quasi identico (stesso nome esatto, classi quasi identiche) **ha già affrontato un'opposizione seria da parte di una banca spagnola ed è stato ritirato**. Avviare oggi una nuova domanda EUTM per "Solvy" senza prima capire perché quel precedente non è andato a buon fine sarebbe spendere tempo e denaro contro un rischio concreto, non ipotetico.
 
-**Fare subito, a costo quasi nullo**: la verifica di anteriorità manuale su EUIPO eSearch/TMview sulla grafia esatta "Solvy", per chiudere con certezza (non supposizione) se il nome è effettivamente disponibile. Indipendentemente dalla decisione di registrare, questo è un dato che un acquirente serio chiederà in due diligence, ed è meglio arrivarci con una risposta verificata che con un'assunzione.
+**Non fare da sola il prossimo passo.** La ricerca di anteriorità di base è stata completata (questa sezione) ed è già più di quanto normalmente disponibile in una due diligence — ma il precedente Banco de Sabadell cambia la natura della domanda: da "il nome è libero?" a "perché un tentativo identico non ce l'ha fatta, e vale ancora oggi?". Questa è una domanda che richiede un consulente in proprietà industriale, non una ricerca fai-da-te — soprattutto perché il marchio potenzialmente in conflitto (verosimilmente "Solvia", non confermato) andrebbe verificato per stato attuale, titolarità corrente, e ambito di protezione reale.
 
-**Trattare la registrazione come condizione negoziale, non come prerequisito di vendita**: se durante la trattativa un acquirente specifico dichiara di voler mantenere il nome "Solvy", la registrazione formale diventa un'azione sensata — da eseguire a quel punto (eventualmente a carico o a beneficio diretto dell'acquirente stesso, che è chi ne trae valore nel lungo termine), non prima.
+**Trattare la registrazione come condizione negoziale, non come prerequisito di vendita.** Se durante la trattativa un acquirente specifico dichiara di voler mantenere il nome "Solvy", a quel punto — e solo a quel punto — ha senso commissionare una ricerca di anteriorità professionale completa e valutare la fattibilità reale della registrazione, con piena consapevolezza del precedente. Fino ad allora, la spesa non è giustificata da un beneficio che resta condizionale.
 
-Questa conclusione sostituisce, con un'analisi motivata, la voce generica "Verifica formale dello stato del marchio" nella Gap Analysis.
+**Cosa dichiarare a un acquirente, se emerge in due diligence**: questo stesso precedente, con la stessa onestà con cui questo pacchetto dichiara VeriFactu e A-Cube sandbox — un acquirente che lo scopre da solo lo interpreta peggio di uno a cui viene detto subito, con contesto.
+
+Questa conclusione sostituisce, con un'analisi motivata e verificata, la voce generica "Verifica formale dello stato del marchio" nella Gap Analysis.
