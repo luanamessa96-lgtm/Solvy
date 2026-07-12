@@ -1,0 +1,63 @@
+name: Database Backup
+
+# Soluzione ponte a costo zero per il piano Supabase Free (nessun backup
+# automatico incluso). Dump giornaliero cifrato, conservato come artifact
+# GitHub per 90 giorni. Dettagli e limiti: docs/operations-manual.md
+# (sezione "Backup & Restore") e docs/acquisition-package/enterprise-gap-analysis.md.
+#
+# I dump vengono cifrati PRIMA di lasciare il runner e MAI committati nel
+# repository: essendo Solvy un repository pubblico, gli artifact di GitHub
+# Actions sono scaricabili senza autenticazione da chiunque, quindi la
+# cifratura è l'unica cosa che protegge i dati reali degli utenti.
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # ogni giorno alle 03:00 UTC
+  workflow_dispatch: # permette di avviarlo manualmente dal pannello GitHub
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Dump roles, schema and data
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          supabase db dump --db-url "$DB_URL" -f roles.sql --role-only
+          supabase db dump --db-url "$DB_URL" -f schema.sql
+          supabase db dump --db-url "$DB_URL" -f data.sql --data-only --use-copy
+
+      - name: Verify dumps are non-empty
+        run: |
+          set -euo pipefail
+          for f in roles.sql schema.sql data.sql; do
+            if [ ! -s "$f" ]; then
+              echo "Backup fallito: $f è mancante o vuoto"
+              exit 1
+            fi
+          done
+
+      - name: Encrypt backup
+        env:
+          PASSPHRASE: ${{ secrets.BACKUP_ENCRYPTION_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          tar -czf backup.tar.gz roles.sql schema.sql data.sql
+          openssl enc -aes-256-cbc -pbkdf2 -salt \
+            -in backup.tar.gz \
+            -out "backup-$(date +%Y%m%d).tar.gz.enc" \
+            -pass env:PASSPHRASE
+          rm -f roles.sql schema.sql data.sql backup.tar.gz
+
+      - name: Upload encrypted backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_id }}
+          path: backup-*.tar.gz.enc
+          retention-days: 90

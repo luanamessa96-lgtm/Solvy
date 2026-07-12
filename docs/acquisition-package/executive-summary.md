@@ -16,9 +16,9 @@ Una base utenti commerciale. Solvy è stato testato da un piccolo gruppo chiuso 
 
 VeriFactu (Spagna) non è implementato — non ancora obbligatorio per legge. L'integrazione A-Cube per la fatturazione elettronica italiana è tecnicamente completa ma opera in modalità sandbox — l'attivazione in produzione è un passaggio commerciale, non uno sviluppo mancante. Entrambi sono documentati in dettaglio in `docs/known-limitations.md`, dichiarati qui perché un acquirente deve trovarli in questo documento, non scoprirli da solo.
 
-## L'unico elemento bloccante rimasto
+## Nessun elemento bloccante residuo
 
-Il backup del database non è ancora formalmente verificato. È l'unico punto di questa analisi classificato come bloccante nell'`enterprise-gap-analysis.md` — tutto il resto è già chiuso o rappresenta un miglioramento opzionale, non un ostacolo.
+Il backup del database, unico punto precedentemente classificato come bloccante, è oggi risolto tecnicamente (dump giornaliero automatico cifrato) e in attesa solo dell'attivazione dei secret da parte della proprietaria — dettaglio in `enterprise-gap-analysis.md`. Tutto il resto è già chiuso o rappresenta un miglioramento opzionale, non un ostacolo.
 
 ## Come navigare il resto del pacchetto
 

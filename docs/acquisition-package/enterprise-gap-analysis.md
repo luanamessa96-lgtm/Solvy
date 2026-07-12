@@ -4,11 +4,13 @@
 
 ## 🔴 Bloccante
 
-**Backup del database — verificato assente, non solo "da confermare"**
-Verifica diretta sulla dashboard Supabase (12/07/2026): il progetto opera su piano **Free**, e il pannello di controllo dichiara esplicitamente **"Last Backup: No backups"**. Nessun backup automatico è mai stato eseguito su questo progetto. Un segnale precedente raccolto via CLI (`supabase backups list`, campo `WALG: true`) aveva suggerito una situazione più favorevole — smentito dalla dashboard, che è la fonte autoritativa: quel campo riflette un meccanismo infrastrutturale interno di Supabase, non un backup utilizzabile sul piano Free. È l'unico elemento di questa analisi che, se scoperto dall'acquirente durante il closing invece che risolto prima, blocca o fa rinegoziare la trattativa nell'immediato — nessuna acquisizione seria si chiude senza la certezza che i dati siano recuperabili.
-**Remediation consigliata**: upgrade a piano Pro (backup automatici giornalieri inclusi) prima del closing, oppure — come soluzione ponte a costo zero — un dump manuale pianificato del database (`supabase db dump` o `pg_dump` diretto) conservato fuori da Supabase fino all'upgrade.
+*Nessun elemento bloccante residuo. Il backup del database, unico punto classificato 🔴 in questa analisi, è stato risolto tecnicamente — vedi sezione 🟡 per l'ultimo passaggio di attivazione.*
 
 ## 🟡 Importante
+
+**Backup del database — implementato, in attesa di attivazione e primo run verificato**
+Verifica diretta sulla dashboard Supabase (12/07/2026) aveva confermato l'assenza totale di backup sul piano **Free** ("Last Backup: No backups"). Risolto il 12/07/2026 con `.github/workflows/db-backup.yml`: dump giornaliero automatico (ruoli, schema, dati) via Supabase CLI, cifrato AES-256 prima di lasciare il runner, conservato come artifact GitHub per 90 giorni — soluzione ponte a costo zero, scelta esplicitamente al posto dell'upgrade a piano Pro. Procedura di ripristino documentata in `docs/operations-manual.md`.
+Resta 🟡 e non 🟢 per un motivo preciso, coerente con la disciplina di verifica di tutto questo pacchetto: il meccanismo richiede due GitHub Secret (`SUPABASE_DB_URL`, `BACKUP_ENCRYPTION_PASSPHRASE`) che solo la proprietaria del progetto può configurare, e non è ancora stato osservato un run reale andato a buon fine. Passa a 🟢 non appena i secret sono impostati e un run manuale (`workflow_dispatch`) produce un artifact cifrato non vuoto.
 
 **Documento "AI Development Methodology"**
 Le 8 skill di dominio e la metodologia di sviluppo AI-assisted sono, per valore, tra i primi due asset del pacchetto — ma oggi nessun documento lo dichiara esplicitamente a chi non apre `.claude/skills/`. È importante perché lascia scoperto l'asset con il rapporto valore/visibilità peggiore di tutto il pacchetto, non perché manchi qualcosa di funzionale.

@@ -37,7 +37,15 @@ Non esiste oggi un dashboard di monitoraggio centralizzato oltre a questi due ca
 
 Cosa serve per un ripristino completo, in caso di perdita o migrazione dell'infrastruttura:
 
-- **Database** — lo schema è sempre ricostruibile da `supabase/schema_production.sql`. Per i **dati reali** (non solo lo schema) serve un dump separato dei dati, da effettuare tramite il dashboard Supabase (Database → Backups, se previsti dal piano attivo) o con un export manuale — verificare il piano Supabase corrente per capire la frequenza dei backup automatici inclusi
+- **Database** — lo schema è sempre ricostruibile da `supabase/schema_production.sql`. I **dati reali** sono coperti da un backup automatico giornaliero: `.github/workflows/db-backup.yml` esegue ogni notte un dump completo (ruoli, schema, dati) tramite Supabase CLI, lo cifra con AES-256 e lo conserva come artifact GitHub per 90 giorni. È una soluzione ponte a costo zero per il piano Free (che non include backup automatici) — se il progetto viene aggiornato a Supabase Pro, i backup automatici del piano sostituiscono questo meccanismo, che può restare comunque attivo come ridondanza aggiuntiva
+
+**Ripristino da backup**:
+1. Scaricare l'artifact più recente da GitHub Actions → workflow "Database Backup"
+2. Decifrare: `openssl enc -d -aes-256-cbc -pbkdf2 -salt -in backup-YYYYMMDD.tar.gz.enc -out backup.tar.gz -pass pass:"<passphrase>"` (la passphrase è salvata nel password manager, non nel repository)
+3. Estrarre: `tar -xzf backup.tar.gz`
+4. Ripristinare in ordine su un database di destinazione: `psql "$DB_URL" -f roles.sql`, poi `-f schema.sql`, poi `-f data.sql`
+
+**Limiti dichiarati**: nessun point-in-time recovery, nessun test di ripristino automatizzato — la procedura è documentata ma va verificata manualmente al bisogno. Granularità giornaliera, non infra-giornaliera.
 - **Storage** — il bucket `uploads` (PDF e immagini) non è coperto da `schema_production.sql`: richiede un export separato dei file tramite dashboard o API Supabase Storage
 - **Variabili d'ambiente e secret** — l'elenco completo di cosa preservare è in `environment-variables-guide.md`; vanno conservati in modo sicuro (gestore di password/secret) prima di qualsiasi passaggio di proprietà degli account
 - **Repository Git** — GitHub costituisce di per sé una copia distribuita della cronologia; in caso di trasferimento della proprietà del repository, vale comunque la pena mantenerne un clone locale indipendente fino a trasferimento confermato (vedi `credential-transfer-plan.md`)
