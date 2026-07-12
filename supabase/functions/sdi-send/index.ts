@@ -1,14 +1,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.99.2';
+import { getCorsHeaders } from '../_shared/cors.ts';
 
 const ACUBE_EMAIL    = Deno.env.get('ACUBE_EMAIL') ?? '';
 const ACUBE_PASSWORD = Deno.env.get('ACUBE_PASSWORD') ?? '';
 const ACUBE_SANDBOX  = Deno.env.get('ACUBE_SANDBOX') !== 'false';
 const ACUBE_BASE     = ACUBE_SANDBOX ? 'https://api-sandbox.acubeapi.com' : 'https://api.acubeapi.com';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -195,6 +191,7 @@ function buildPayload(doc: any, profile: any) {
 // ─── Handler ─────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   const supabase = createClient(

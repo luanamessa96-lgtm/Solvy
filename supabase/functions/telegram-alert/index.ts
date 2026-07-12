@@ -1,10 +1,7 @@
+import { getCorsHeaders } from '../_shared/cors.ts';
+
 const TELEGRAM_TOKEN = Deno.env.get('TELEGRAM_BOT_TOKEN')!;
 const TELEGRAM_CHAT_ID = Deno.env.get('TELEGRAM_CHAT_ID')!;
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
 
 type AlertType = 'new_user' | 'new_pro';
 
@@ -42,6 +39,7 @@ async function sendTelegram(text: string): Promise<{ ok: boolean; description?: 
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
