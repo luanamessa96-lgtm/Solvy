@@ -71,7 +71,7 @@ const ImportDocumentModal = ({ isOpen, onClose, onSave, darkMode }: ImportDocume
     }
     setAmountError(false);
     const docId = Math.random().toString(36).substr(2, 9);
-    if (preview) { try { localStorage.setItem(`receipt_${docId}`, preview); } catch {} }
+    if (preview) { try { localStorage.setItem(`receipt_${docId}`, preview); } catch { /* quota storage superata, ignora */ } }
     onSave({
       id: docId,
       type: docType,

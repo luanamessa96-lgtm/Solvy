@@ -26,10 +26,10 @@ export const themeStorage = {
       if (match) {
         const val = decodeURIComponent(match[1]);
         // Sincronizza localStorage come cache locale
-        try { localStorage.setItem(key, val); } catch {}
+        try { localStorage.setItem(key, val); } catch { /* storage non disponibile */ }
         return val;
       }
-    } catch {}
+    } catch { /* cookie non disponibile */ }
     // Fallback localStorage (e migra al cookie se trovato)
     try {
       const val = localStorage.getItem(key);
@@ -41,16 +41,16 @@ export const themeStorage = {
   },
 
   setItem(key: string, value: string): void {
-    try { localStorage.setItem(key, value); } catch {}
+    try { localStorage.setItem(key, value); } catch { /* storage non disponibile */ }
     try {
       document.cookie = `${ck(key)}=${encodeURIComponent(value)}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
-    } catch {}
+    } catch { /* cookie non disponibile */ }
   },
 
   removeItem(key: string): void {
-    try { localStorage.removeItem(key); } catch {}
+    try { localStorage.removeItem(key); } catch { /* storage non disponibile */ }
     try {
       document.cookie = `${ck(key)}=; path=/; max-age=0`;
-    } catch {}
+    } catch { /* cookie non disponibile */ }
   },
 };

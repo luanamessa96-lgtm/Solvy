@@ -30,7 +30,7 @@ interface ResumenTrimestralModalProps {
 }
 
 export default function ResumenTrimestralModal({
-  isOpen, onClose, documents, profile, accountant, darkMode, onNavigateToProfile,
+  isOpen, onClose, documents, profile, darkMode, onNavigateToProfile,
 }: ResumenTrimestralModalProps) {
   const { showToast } = useToast();
   const isPro = useProStatus(profile);

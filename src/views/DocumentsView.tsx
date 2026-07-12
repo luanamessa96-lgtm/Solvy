@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Mail, Camera, ChevronRight, ChevronDown, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus, Download, Copy, AlertTriangle, FileCode, Lock, BarChart3, FileMinus, Send, Loader2 } from 'lucide-react';
+import { Search, Mail, Camera, ChevronRight, ChevronDown, FileText, FileEdit, CheckCircle2, Trash2, CreditCard, Plus, Download, Copy, AlertTriangle, Lock, BarChart3, FileMinus, Send, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { Document, Accountant, Profile } from '../types';
@@ -14,7 +14,7 @@ import ExportModal from '../components/modals/ExportModal';
 import ResumenTrimestralModal from '../components/modals/ResumenTrimestralModal';
 import { buildInvoicePDFBlob } from '../lib/generateInvoicePDF';
 import PdfPreviewModal from '../components/modals/PdfPreviewModal';
-import { downloadFatturaPA, getMissingProfileFields, validateForSdi } from '../services/fatturaPA';
+import { validateForSdi } from '../services/fatturaPA';
 import { getClient } from '../lib/supabase';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;

@@ -75,7 +75,7 @@ function migrateTheme(t: string | null | undefined): string {
 {
   const savedTheme = themeStorage.getItem('theme');
   let _legacyDark = false;
-  try { _legacyDark = JSON.parse(localStorage.getItem('darkMode') || 'false'); } catch {}
+  try { _legacyDark = JSON.parse(localStorage.getItem('darkMode') || 'false'); } catch { /* localStorage non disponibile */ }
   const base = savedTheme || (_legacyDark ? 'dark' : null);
   const initialTheme = migrateTheme(base);
   const initialRootTheme = initialTheme === 'light' ? 'free-light' : initialTheme === 'dark' ? 'free-dark' : initialTheme;
@@ -102,7 +102,7 @@ function AppInner() {
   const [theme, setTheme] = useState<string>(() => {
     const saved = themeStorage.getItem('theme');
     let legacyDark = false;
-    try { legacyDark = JSON.parse(localStorage.getItem('darkMode') || 'false'); } catch {}
+    try { legacyDark = JSON.parse(localStorage.getItem('darkMode') || 'false'); } catch { /* localStorage non disponibile */ }
     const base = saved || (legacyDark ? 'dark' : null);
     return migrateTheme(base);
   });

@@ -3,11 +3,6 @@ import type { CountryModule, TaxInput, TaxResult, ContributionsResult, FiscalDea
 // Italian fiscal logic — wraps and mirrors the existing calculations in DashboardView
 // NEVER modify these rates without matching the Italian tax authority rules
 
-function validateCodiceFiscale(cf: string): boolean {
-  // Italian codice fiscale is 16 alphanumeric chars
-  return /^[A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST]{1}[0-9LMNPQRSTUV]{2}[A-Z]{1}[0-9LMNPQRSTUV]{3}[A-Z]{1}$/i.test(cf.trim());
-}
-
 function validateIBAN_IT(iban: string): boolean {
   const cleaned = iban.replace(/\s/g, '').toUpperCase();
   return cleaned.startsWith('IT') && cleaned.length === 27;

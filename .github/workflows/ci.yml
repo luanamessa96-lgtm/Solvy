@@ -23,6 +23,9 @@ jobs:
       - name: Type-check
         run: npm run lint
 
+      - name: Lint
+        run: npm run lint:eslint
+
       - name: Unit tests
         run: npm test -- --run
 

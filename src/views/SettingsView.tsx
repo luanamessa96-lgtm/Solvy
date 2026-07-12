@@ -2,7 +2,7 @@ import { useState } from 'react';
 import JSZip from 'jszip';
 import { todayLocalISO } from '../utils/date';
 import { motion } from 'motion/react';
-import { Sun, Moon, Languages, Trash2, RotateCcw, CheckCircle2, AlertCircle, Sparkles, Lock, Download, ChevronRight, X, CreditCard, Calendar, XCircle } from 'lucide-react';
+import { Sun, Moon, Languages, Trash2, Sparkles, Lock, Download, ChevronRight } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
 import { useTranslation } from 'react-i18next';
 import { getClient } from '../lib/supabase';
@@ -25,7 +25,7 @@ interface SettingsViewProps {
   deadlines?: Deadline[];
 }
 
-const SettingsView = ({ theme, setTheme, profile, onUpdateProfile, profilesCount = 1, documents = [], deadlines = [] }: SettingsViewProps) => {
+const SettingsView = ({ theme, setTheme, profile, profilesCount = 1, documents = [], deadlines = [] }: SettingsViewProps) => {
   const { t } = useTranslation();
   const isPro = useProStatus(profile);
   const darkMode = theme === 'free-dark' || theme === 'pro-dark';

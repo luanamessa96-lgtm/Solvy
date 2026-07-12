@@ -64,7 +64,6 @@ interface TasseOrdinario {
 type Tasse = TasseForfettario | TasseOrdinario;
 
 const INPS_GESTIONE_SEPARATA = 0.2607;
-const INPS_ORDINARIO = 0.24;
 const INPS_ARTIGIANI = 0.24;
 const INPS_COMMERCIANTI = 0.2448;
 const INPS_MINIMALE = 4000; // minimale annuo artigiani/commercianti
@@ -441,7 +440,6 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
           const spTaxesRaw = calculateSpanishTaxes(income, false, false, profile.annoInizioAttivita, displayYear, esDeductibleExpenses, mesesDeAlta);
           const retaOverride = savedRetaMensileES != null && savedRetaMensileES > 0 ? savedRetaMensileES * mesesDeAlta : null;
           const spTaxes = retaOverride != null ? { ...spTaxesRaw, reta: retaOverride, monthlyRETA: savedRetaMensileES! } : spTaxesRaw;
-          const isTarifaPlana = spTaxes.tarifaPlanaStatus !== 'normal';
           const annoInicio = profile.annoInizioAttivita != null ? Number(profile.annoInizioAttivita) : null;
           const yearsActiveES = annoInicio != null ? displayYear - annoInicio : null;
           const retencionRate = yearsActiveES != null && yearsActiveES < 3 ? 7 : 15;

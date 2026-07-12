@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, FileText, Image as ImageIcon, Pencil } from 'lucide-react';
+import { X, FileText, Image as ImageIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Document } from '../types';
 import { uploadFile } from '../lib/db';
@@ -113,7 +113,7 @@ function TextPreview({ imageData, fileName }: { imageData: string; fileName?: st
   );
 }
 
-function FileThumbnail({ doc, darkMode }: { doc: Document; darkMode?: boolean }) {
+function FileThumbnail({ doc }: { doc: Document; darkMode?: boolean }) {
   if (doc.imageData && !doc.fileName) {
     return (
       <img

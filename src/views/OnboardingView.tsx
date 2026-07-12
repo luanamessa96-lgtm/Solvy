@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { IT_PROVINCE, getRegionFromProvince } from '../lib/it/province';
 import { useKeyboardPadding, scrollFieldIntoView } from '../hooks/useKeyboardPadding';
 import { Profile } from '../types';
-import { profileStorage, getClient } from '../lib/supabase';
+import { profileStorage } from '../lib/supabase';
 import AtecoSelector from '../components/AtecoSelector';
 
 interface OnboardingViewProps {

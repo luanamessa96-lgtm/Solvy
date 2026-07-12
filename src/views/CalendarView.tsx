@@ -64,10 +64,6 @@ function localizeInpsTitle(title: string, inpsType: CalendarInpsType, territory?
   return territory === 'canarias' ? t.replace('IVA', 'IGIC').replace('303', '420').replace('390', '425') : t;
 }
 
-function isFiscalEstimate(deadline: Deadline): boolean {
-  return deadline.type === 'tax' && !!deadline.amount && FISCAL_ESTIMATE_TITLES.has(deadline.title);
-}
-
 const DEADLINE_TOOLTIPS: Record<string, string> = {
   'Saldo imposta sostitutiva + 1° acconto': "Pagamento del saldo dell'anno precedente più il primo acconto dell'anno corrente (40%). Scade il 30 giugno.",
   'Saldo IRPEF + 1° acconto': "Pagamento del saldo IRPEF dell'anno precedente più il primo acconto dell'anno corrente (40%). Scade il 30 giugno.",
