@@ -14,9 +14,9 @@ Il valore qui non è il codice che processa un pagamento — è che quel codice 
 
 Questo è l'unico asset del pacchetto che genera valore **dopo** l'acquisizione, non solo durante. Un buyer che vuole espandere a un terzo mercato fiscale non deve valutare se l'architettura regge l'espansione — l'architettura è già stata progettata per quello specifico scopo, e lo dimostra il fatto che due paesi (Italia e Spagna, con la variante Canarie) già coesistono senza codice condiviso fragile. Elimina la domanda più costosa di una due diligence tecnica: "se investiamo per crescere, dovremo riscrivere tutto?"
 
-## 8 skill di dominio Claude Code
+## 6 skill di dominio Claude Code
 
-Questo è l'asset con il rapporto valore/percezione più squilibrato del pacchetto. Un CTO che valuta Solvy con un team AI-assisted non sta comprando solo codice che implementa le regole fiscali italiane e spagnole — sta comprando la conoscenza normativa stessa, già verificata contro fonti ufficiali (Agenzia delle Entrate, INPS, AEAT), in un formato che il proprio team può interrogare e mantenere aggiornato dal primo giorno. Elimina mesi di lavoro che normalmente nessuno considera nel prezzo di un'acquisizione software, perché normalmente non esiste: la conoscenza di dominio di solito se ne va con il team che l'ha maturata. Qui resta, ed è eseguibile.
+Questo è l'asset con il rapporto valore/percezione più squilibrato del pacchetto. Un CTO che valuta Solvy con un team AI-assisted non sta comprando solo codice che implementa le regole fiscali italiane e spagnole — sta comprando la conoscenza normativa stessa, già verificata contro fonti ufficiali (Agenzia delle Entrate, INPS, AEAT), in un formato che il proprio team può interrogare e mantenere aggiornato dal primo giorno. Elimina mesi di lavoro che normalmente nessuno considera nel prezzo di un'acquisizione software, perché normalmente non esiste: la conoscenza di dominio di solito se ne va con il team che l'ha maturata. Qui resta, ed è eseguibile. Dettaglio completo in `ai-development-methodology.md`.
 
 ## Data Room di 14 documenti verificati
 

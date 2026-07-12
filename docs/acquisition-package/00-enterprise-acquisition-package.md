@@ -43,7 +43,8 @@ Il punto di ingresso. Chi ha 10 minuti legge solo questa cartella.
 ## 05 — AI
 
 - `CLAUDE.md` — regole fiscali come fonte di verità
-- `.claude/skills/fiscale-avanzata/`, `fiscale-es/`, `fiscale-it/`, `i18n/`, `sicurezza/`, `ui-solvy/`, `site-architecture/`, `web-asset-generator/` — le 8 skill di dominio
+- `.claude/skills/fiscale-avanzata/`, `fiscale-es/`, `fiscale-it/`, `i18n/`, `sicurezza/`, `ui-solvy/` — le 6 skill di dominio specifiche di Solvy
+- `docs/acquisition-package/ai-development-methodology.md` — cosa sono, quale know-how trasferiscono, perché aumentano il valore dell'acquisizione
 - `docs/acquisition-package/buyer-value-analysis.md` — sezione dedicata al valore di questo asset, oggi il meno visibile del pacchetto
 
 ## 06 — Design
@@ -56,7 +57,7 @@ Il punto di ingresso. Chi ha 10 minuti legge solo questa cartella.
 
 - `public/landing.html` — landing page
 - `public/llms.txt`, `public/sitemap.xml`, `public/robots.txt`, `public/pricing.md` — SEO tecnico
-- Accesso Google Analytics 4 (`G-2F4JDKGKNX`) e Google Search Console — **esterni al repository**, da trasferire separatamente
+- Accesso Google Analytics 4 (`G-2F4JDKGKNX`) e Google Search Console — **esterni al repository**, piano di trasferimento e verifiche manuali richieste in `docs/acquisition-package/analytics-search-console-transfer.md`
 - `src/views/GuidaFiscaleView.tsx`, `GuiaFiscalESView.tsx` — contenuto editoriale in-app
 
 ## 08 — Business

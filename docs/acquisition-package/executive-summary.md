@@ -6,7 +6,7 @@ Questo documento introduce il pacchetto completo. Non sostituisce nessuno dei do
 
 ## Cosa stai per ricevere
 
-Un repository tecnico completo (codice, database, 12 funzioni serverless, test, pipeline CI/CD), una Data Room di 14 documenti verificati nel codice prima di essere scritti, un piano di trasferimento per gli 8 servizi esterni collegati, e un asset raramente presente in un'acquisizione software: 8 skill Claude Code che codificano la conoscenza fiscale italiana e spagnola verificata da fonti ufficiali — non solo il codice che la implementa.
+Un repository tecnico completo (codice, database, 12 funzioni serverless, test, pipeline CI/CD), una Data Room di 14 documenti verificati nel codice prima di essere scritti, un piano di trasferimento per gli 8 servizi esterni collegati, e un asset raramente presente in un'acquisizione software: 6 skill Claude Code che codificano la conoscenza fiscale italiana e spagnola verificata da fonti ufficiali — non solo il codice che la implementa (dettaglio in `ai-development-methodology.md`).
 
 ## Cosa NON stai comprando
 

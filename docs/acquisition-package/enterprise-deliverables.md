@@ -12,7 +12,7 @@
 - Manuali operativi (Deployment, Installation, Operations)
 - Piano di trasferimento credenziali e disclosure dei limiti noti
 - Dichiarazione di proprietà intellettuale e audit licenze open source
-- 8 skill Claude Code di dominio fiscale e le regole fiscali codificate in `CLAUDE.md`
+- 6 skill Claude Code di dominio fiscale e le regole fiscali codificate in `CLAUDE.md`
 - Design system in-app, componenti UI riutilizzabili
 - Logo, icone, screenshot professionali
 - Landing page e asset SEO tecnici (sitemap, robots.txt, llms.txt, pricing.md)

@@ -12,14 +12,16 @@ Non dichiarato chiuso alla sola implementazione: lo stesso giorno è stato esegu
 
 ## 🟡 Importante
 
-**Documento "AI Development Methodology"**
-Le 8 skill di dominio e la metodologia di sviluppo AI-assisted sono, per valore, tra i primi due asset del pacchetto — ma oggi nessun documento lo dichiara esplicitamente a chi non apre `.claude/skills/`. È importante perché lascia scoperto l'asset con il rapporto valore/visibilità peggiore di tutto il pacchetto, non perché manchi qualcosa di funzionale.
+*Nessun elemento aperto. I tre punti di questa sezione sono stati chiusi il 12/07/2026 — dettaglio sotto per trasparenza, coerente con il resto di questo documento.*
 
-**Verifica formale dello stato del marchio "Solvy"**
-Confermata la proprietà d'uso di nome e brand, non confermata l'esistenza di una registrazione formale. Importante se l'acquirente intende continuare a operare sotto lo stesso nome — irrilevante se prevede un rebranding.
+**Documento "AI Development Methodology" — chiuso**
+Creato `docs/acquisition-package/ai-development-methodology.md`: descrive le 6 skill di dominio (non 8 — cifra corretta durante questo lavoro, verificato che le due skill in eccesso erano generiche/mai personalizzate per Solvy, nessun commit le ha mai toccate) in termini di valore per un CTO acquirente, know-how trasferito, impatto sui tempi di onboarding e ragioni dell'aumento di valore. Il conteggio corretto (6, non 8) è stato propagato a tutti i documenti del pacchetto che lo citavano.
 
-**Export dello storico Google Analytics 4 e Search Console**
-L'integrazione è confermata attiva, ma i dati storici vivono fuori dal repository, nella dashboard Google. È l'unico dato di business intelligence del pacchetto, e va reso esplicito prima che si perda nel passaggio di proprietà degli account.
+**Verifica formale dello stato del marchio "Solvy" — chiuso come decisione documentata, non come registrazione**
+Creato `docs/acquisition-package/trademark-analysis.md`: analisi costo/tempi/beneficio conclude che la registrazione preventiva non è giustificata per una cessione di asset tecnologico senza validazione commerciale — va trattata come condizione negoziale se un acquirente specifico dichiara di voler mantenere il nome, non come prerequisito. La ricerca ha però rilevato un segnale concreto da non ignorare: esiste "Solvy Ltd" (Malta), titolare di un marchio EUIPO su "SOLFY" in ambito finanziario/software — non una conferma di conflitto sulla grafia esatta "Solvy", ma un motivo reale per una verifica di anteriorità manuale su EUIPO eSearch/TMview, non eseguibile da questa sede. **Azione manuale residua per la fondatrice**: quella verifica, a costo quasi nullo — dettaglio in `trademark-analysis.md`.
+
+**Export dello storico Google Analytics 4 e Search Console — chiuso**
+Creato `docs/acquisition-package/analytics-search-console-transfer.md`: cosa contengono i due account (GA4 `G-2F4JDKGKNX`, Search Console verificata via `public/googlee414c4209c9dc88d.html`), come si trasferiscono nativamente senza perdita di storico, quando farlo nella sequenza di closing. **Azioni manuali residue per la fondatrice**, non verificabili dal repository: confermare quale account Google possiede le due property, verificare 2FA attivo, controllare eventuali altri utenti o collegamenti (Google Ads, Tag Manager) — elenco completo nel documento.
 
 ## ⚪ Miglioramento
 

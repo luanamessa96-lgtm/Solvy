@@ -32,4 +32,4 @@ Segue la checklist di trasferimento già condivisa e riceve quanto elencato in `
 
 ## 8. Post-acquisizione (settimane-mesi)
 
-`docs/operations-manual.md`, `docs/deployment-guide.md`, `docs/installation-guide.md` e le 8 skill di dominio in `.claude/skills/` diventano gli strumenti quotidiani del nuovo team. È qui che si misura se il pacchetto ha davvero ridotto il tempo di presa in carico — la promessa centrale di tutto questo lavoro.
+`docs/operations-manual.md`, `docs/deployment-guide.md`, `docs/installation-guide.md` e le 6 skill di dominio in `.claude/skills/` diventano gli strumenti quotidiani del nuovo team. È qui che si misura se il pacchetto ha davvero ridotto il tempo di presa in carico — la promessa centrale di tutto questo lavoro.
