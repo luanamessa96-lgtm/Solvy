@@ -55,6 +55,20 @@ export default defineConfig(({mode}) => {
         '@': path.resolve(__dirname, '.'),
       },
     },
+    test: {
+      // Esclude i file Playwright (e2e/) dalla raccolta di Vitest, oltre agli
+      // esclusi di default — altrimenti "npm test" li conta come falliti per
+      // errore di collection (test scritti per un runner diverso), non per
+      // asserzioni reali.
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/cypress/**',
+        '**/.{idea,git,cache,output,temp}/**',
+        '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
+        'e2e/**',
+      ],
+    },
     build: {
       target: 'esnext',
       cssCodeSplit: true,
