@@ -92,6 +92,7 @@
         "npm:@types/react-dom@^19.2.3",
         "npm:@types/react@^19.2.14",
         "npm:@vitejs/plugin-react@^5.0.4",
+        "npm:@vitest/coverage-v8@^4.1.10",
         "npm:autoprefixer@^10.4.21",
         "npm:i18next@^25.10.10",
         "npm:jspdf-autotable@^5.0.7",
