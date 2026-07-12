@@ -1,4 +1,4 @@
-const ALLOWED_ORIGINS = [
+export const ALLOWED_ORIGINS = [
   'https://solvyapp.com',
   'http://localhost:3000',
 ];

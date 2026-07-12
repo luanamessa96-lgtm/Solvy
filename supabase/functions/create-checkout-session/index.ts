@@ -1,10 +1,17 @@
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.99.2';
-import { getCorsHeaders } from '../_shared/cors.ts';
+import { getCorsHeaders, ALLOWED_ORIGINS } from '../_shared/cors.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
   apiVersion: '2024-06-20',
 });
+
+// Evita che un client possa dirottare il redirect post-checkout verso un
+// dominio arbitrario: accetta solo URL che iniziano con un'origine nota.
+function safeRedirectUrl(url: string | undefined, fallback: string): string {
+  if (url && ALLOWED_ORIGINS.some(origin => url.startsWith(origin))) return url;
+  return fallback;
+}
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -90,8 +97,8 @@ Deno.serve(async (req) => {
       payment_method_types: ['card'],
       line_items: [{ price: price_id, quantity: 1 }],
       mode: 'subscription',
-      success_url: success_url ?? `${req.headers.get('origin')}/`,
-      cancel_url: cancel_url ?? `${req.headers.get('origin')}/`,
+      success_url: safeRedirectUrl(success_url, `${ALLOWED_ORIGINS[0]}/`),
+      cancel_url: safeRedirectUrl(cancel_url, `${ALLOWED_ORIGINS[0]}/`),
       metadata: { user_id: user.id },
       subscription_data: {
         metadata: { user_id: user.id },

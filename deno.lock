@@ -94,6 +94,8 @@
         "npm:@vitejs/plugin-react@^5.0.4",
         "npm:@vitest/coverage-v8@^4.1.10",
         "npm:autoprefixer@^10.4.21",
+        "npm:eslint-plugin-react-hooks@^7.1.1",
+        "npm:eslint@^9.39.5",
         "npm:i18next@^25.10.10",
         "npm:jspdf-autotable@^5.0.7",
         "npm:jspdf@^4.2.1",
@@ -108,6 +110,7 @@
         "npm:sharp@~0.34.5",
         "npm:tailwindcss@^4.1.14",
         "npm:tsx@^4.21.0",
+        "npm:typescript-eslint@^8.63.0",
         "npm:typescript@~5.8.2",
         "npm:vite@^6.2.0",
         "npm:vitest@^4.1.2"

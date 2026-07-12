@@ -1,10 +1,21 @@
 import { getClient } from './supabase';
 import { Document, Deadline, Profile, Accountant } from '../types';
 
+const ALLOWED_UPLOAD_MIME_TYPES = new Set([
+  'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'application/pdf',
+]);
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB — sufficiente per foto scontrini/PDF scansionati
+
 export async function uploadFile(dataUrl: string, fileName: string): Promise<string> {
   const [meta, base64] = dataUrl.split(',');
   const mimeType = meta.match(/:(.*?);/)?.[1] || 'application/octet-stream';
+  if (!ALLOWED_UPLOAD_MIME_TYPES.has(mimeType)) {
+    throw new Error(`Tipo di file non supportato: ${mimeType}`);
+  }
   const byteArray = new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0)));
+  if (byteArray.byteLength > MAX_UPLOAD_BYTES) {
+    throw new Error(`File troppo grande: massimo ${MAX_UPLOAD_BYTES / (1024 * 1024)}MB`);
+  }
   const blob = new Blob([byteArray], { type: mimeType });
   const path = `${Date.now()}_${fileName.replace(/\s+/g, '_')}`;
   const { data, error } = await getClient().storage.from('uploads').upload(path, blob, { contentType: mimeType });
