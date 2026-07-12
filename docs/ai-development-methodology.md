@@ -27,7 +27,7 @@ Non è documentazione statica. Sono istruzioni operative che un assistente AI (C
 
 ## Impatto sui tempi di onboarding
 
-Per la sola logica di calcolo fiscale IT/ES, la ricerca normativa necessaria a produrre un contenuto equivalente a `fiscale-avanzata` richiede stimabilmente 3-4 mesi di lavoro combinato commercialista/gestor + sviluppatore, prima ancora di scrivere codice (stima di dettaglio in `replacement-cost-analysis.md`). Le 6 skill non eliminano la necessità che il nuovo team capisca il dominio — ma comprimono drasticamente il tempo tra "abbiamo acquisito il codice" e "il nostro team può modificarlo con sicurezza", perché la fase di ricerca-e-verifica è già stata fatta ed è consultabile in secondi invece che ricostruita da zero.
+Per la sola logica di calcolo fiscale IT/ES, la ricerca normativa necessaria a produrre un contenuto equivalente a `fiscale-avanzata` richiede stimabilmente 3-4 mesi di lavoro combinato commercialista/gestor + sviluppatore, prima ancora di scrivere codice (stima di dettaglio in `buyer-value-analysis.md`). Le 6 skill non eliminano la necessità che il nuovo team capisca il dominio — ma comprimono drasticamente il tempo tra "abbiamo acquisito il codice" e "il nostro team può modificarlo con sicurezza", perché la fase di ricerca-e-verifica è già stata fatta ed è consultabile in secondi invece che ricostruita da zero.
 
 ## Perché aumenta il valore dell'acquisizione
 

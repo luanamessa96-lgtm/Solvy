@@ -37,7 +37,7 @@ Non esiste oggi un dashboard di monitoraggio centralizzato oltre a questi due ca
 
 Cosa serve per un ripristino completo, in caso di perdita o migrazione dell'infrastruttura:
 
-- **Database** — lo schema è sempre ricostruibile da `supabase/schema_production.sql`. I **dati reali** sono coperti da un backup automatico giornaliero: `.github/workflows/db-backup.yml` esegue ogni notte un dump completo (ruoli, schema, dati) tramite Supabase CLI, lo cifra con AES-256 e lo conserva come artifact GitHub per 90 giorni. È una soluzione ponte a costo zero per il piano Free (che non include backup automatici) — se il progetto viene aggiornato a Supabase Pro, i backup automatici del piano sostituiscono questo meccanismo, che può restare comunque attivo come ridondanza aggiuntiva
+- **Database** — lo schema è sempre ricostruibile da `supabase/schema_production.sql`. I **dati reali** sono coperti da un backup automatico giornaliero: `.github/workflows/db-backup.yml` esegue ogni notte un dump completo (ruoli, schema, dati) tramite Supabase CLI, lo cifra con AES-256 e lo conserva come artifact GitHub per 90 giorni. È una soluzione ponte a costo zero per il piano Free (che non include backup automatici) — se il progetto viene aggiornato a Supabase Pro, i backup automatici del piano sostituiscono questo meccanismo, che può restare comunque attivo come ridondanza aggiuntiva. **Il ripristino è stato testato**: un run reale del workflow seguito da un restore end-to-end su un database isolato ha confermato ruoli, schema e dati ripristinati correttamente, incluse tutte le policy RLS — non è solo una procedura documentata ma mai provata.
 
 **Ripristino da backup**:
 1. Scaricare l'artifact più recente da GitHub Actions → workflow "Database Backup"
@@ -45,7 +45,8 @@ Cosa serve per un ripristino completo, in caso di perdita o migrazione dell'infr
 3. Estrarre: `tar -xzf backup.tar.gz`
 4. Ripristinare in ordine su un database di destinazione: `psql "$DB_URL" -f roles.sql`, poi `-f schema.sql`, poi `-f data.sql`
 
-**Limiti dichiarati**: nessun point-in-time recovery, nessun test di ripristino automatizzato — la procedura è documentata ma va verificata manualmente al bisogno. Granularità giornaliera, non infra-giornaliera.
+**Limiti dichiarati**: nessun point-in-time recovery, nessuna esecuzione automatica del test di ripristino (il test è stato eseguito manualmente una volta, non gira in CI a ogni backup). Granularità giornaliera, non infra-giornaliera.
+
 - **Storage** — il bucket `uploads` (PDF e immagini) non è coperto da `schema_production.sql`: richiede un export separato dei file tramite dashboard o API Supabase Storage
 - **Variabili d'ambiente e secret** — l'elenco completo di cosa preservare è in `environment-variables-guide.md`; vanno conservati in modo sicuro (gestore di password/secret) prima di qualsiasi passaggio di proprietà degli account
 - **Repository Git** — GitHub costituisce di per sé una copia distribuita della cronologia; in caso di trasferimento della proprietà del repository, vale comunque la pena mantenerne un clone locale indipendente fino a trasferimento confermato (vedi `credential-transfer-plan.md`)

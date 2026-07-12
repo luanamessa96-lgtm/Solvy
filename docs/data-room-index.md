@@ -1,6 +1,6 @@
 # Solvy — Data Room Index
 
-Questo documento collega i 12 documenti della Data Room in un percorso coerente. Non introduce contenuto nuovo — è il punto da cui partire e a cui tornare tra un documento e l'altro. Per un primo contatto rapido con il progetto, parti comunque da `executive-overview.md`.
+Questo documento collega i 19 documenti della Data Room in un percorso coerente. Non introduce contenuto nuovo — è il punto da cui partire e a cui tornare tra un documento e l'altro. Per un primo contatto rapido con il progetto, parti comunque da `executive-overview.md`.
 
 ## Indice per categoria
 
@@ -21,10 +21,18 @@ Questo documento collega i 12 documenti della Data Room in un percorso coerente.
 - [`environment-variables-guide.md`](./environment-variables-guide.md) — ogni variabile e secret richiesto, verificato nel codice
 - [`deployment-guide.md`](./deployment-guide.md) — sequenza per portare Solvy online da zero
 - [`installation-guide.md`](./installation-guide.md) — far girare Solvy in locale per valutarlo
-- [`operations-manual.md`](./operations-manual.md) — gestione quotidiana, troubleshooting, backup & restore
+- [`operations-manual.md`](./operations-manual.md) — gestione quotidiana, troubleshooting, backup & restore (testato con un restore reale, non solo documentato)
 
-**Transazione**
+**Valore e know-how**
+- [`ai-development-methodology.md`](./ai-development-methodology.md) — le 6 skill di dominio fiscale codificate, cosa trasferiscono, perché aumentano il valore dell'acquisizione
+- [`buyer-value-analysis.md`](./buyer-value-analysis.md) — per ogni asset chiave: perché un CTO pagherebbe per averlo, quale rischio riduce
+
+**Transazione e proprietà**
 - [`credential-transfer-plan.md`](./credential-transfer-plan.md) — gli 8 servizi terzi da trasferire, metodo e priorità
+- [`ip-ownership-licensing.md`](./ip-ownership-licensing.md) — proprietà del codice, licenze open source, disclosure marchio
+- [`trademark-analysis.md`](./trademark-analysis.md) — stato del marchio "Solvy", analisi costo/beneficio della registrazione, precedente EUIPO verificato
+- [`analytics-search-console-transfer.md`](./analytics-search-console-transfer.md) — piano di trasferimento Google Analytics 4 e Search Console
+- [`gap-analysis.md`](./gap-analysis.md) — cosa resta aperto oggi, verificato, non un riepilogo del lavoro svolto
 
 ## Percorsi di lettura per profilo
 
@@ -32,7 +40,9 @@ Questo documento collega i 12 documenti della Data Room in un percorso coerente.
 
 **Devi decidere se investire tempo in una due diligence tecnica** → aggiungi `architecture-overview.md` e `security-overview.md`
 
-**Stai per chiudere l'operazione** → aggiungi `credential-transfer-plan.md` e `operations-manual.md`
+**Stai valutando il valore reale dell'operazione** → aggiungi `buyer-value-analysis.md` e `ai-development-methodology.md`
+
+**Stai per chiudere l'operazione** → aggiungi `credential-transfer-plan.md`, `ip-ownership-licensing.md` e `gap-analysis.md`
 
 ## Documenti di riferimento (Single Source of Truth)
 
@@ -49,9 +59,11 @@ Quando due documenti si richiamano a vicenda su uno stesso argomento, questa tab
 | Architettura di sistema | `docs/architecture-overview.md` |
 | Trasferimento di servizi e credenziali | `docs/credential-transfer-plan.md` |
 | Limiti noti di prodotto | `docs/known-limitations.md` |
+| Proprietà IP e stato del marchio | `docs/ip-ownership-licensing.md`, `docs/trademark-analysis.md` |
 | Procedura di deploy | `docs/deployment-guide.md` |
-| Gestione operativa quotidiana | `docs/operations-manual.md` |
+| Gestione operativa quotidiana e backup/restore | `docs/operations-manual.md` |
+| Stato residuo del pacchetto | `docs/gap-analysis.md` |
 
 ## Stato della Data Room
 
-Completata il 2026-07-12. Riflette lo stato del prodotto a questa data — in caso di sviluppi successivi alla stesura, i documenti tecnici (schema, funzioni, variabili d'ambiente) restano la fonte più affidabile perché verificati direttamente nel codice, non ricostruiti a memoria.
+Ultima revisione strutturale: 2026-07-12 — pacchetto unificato in un solo indice (in precedenza un secondo layer di documenti, "Acquisition Package", duplicava parte di questo indice; è stato eliminato o assorbito qui dopo una revisione critica basata su casi reali di asset sale software). Riflette lo stato del prodotto a questa data — in caso di sviluppi successivi alla stesura, i documenti tecnici (schema, funzioni, variabili d'ambiente) restano la fonte più affidabile perché verificati direttamente nel codice, non ricostruiti a memoria.

@@ -51,6 +51,8 @@ Questa è una cessione di asset tecnologico, non un'acquisizione societaria. L'o
 
 Codice sorgente completo, architettura e design system, schema del database con relative policy di sicurezza, le 12 funzioni serverless, la suite di test (161 test unitari sulla logica fiscale + 9 suite end-to-end), tutta la documentazione di questa Data Room, e — se le parti concordano il trasferimento — l'infrastruttura live (progetto Supabase, dominio, account Vercel).
 
+Un asset raramente presente in un'acquisizione software di questa scala: 6 skill Claude Code che codificano la conoscenza fiscale italiana e spagnola verificata da fonti ufficiali, non solo il codice che la implementa — dettaglio in `ai-development-methodology.md`.
+
 **Cosa non è incluso**: una base utenti commerciale. Il prodotto è stato usato da un piccolo gruppo chiuso durante lo sviluppo per validare flussi e individuare bug — un test reale, non una validazione di mercato. Il valore dell'asset è nel codice, nell'architettura e nel tempo di sviluppo risparmiato, non in un portafoglio clienti esistente.
 
 ## Limiti noti

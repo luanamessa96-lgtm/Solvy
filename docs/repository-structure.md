@@ -61,7 +61,7 @@
 
 ## Documentazione (`docs/`)
 
-Questa stessa Data Room: Executive Overview, Architecture Overview, Feature Guide, Security Overview, Repository Structure (questo documento), più `credential-transfer-plan.md` e `known-limitations.md`, già pronti da fasi precedenti di questa preparazione.
+Questa stessa Data Room, indicizzata per intero in `data-room-index.md` — non elencata di nuovo qui per evitare due indici che finiscono per disallinearsi.
 
 ## File di configurazione root
 
@@ -72,7 +72,7 @@ Questa stessa Data Room: Executive Overview, Architecture Overview, Feature Guid
 | `tsconfig.json` | Configurazione TypeScript |
 | `vercel.json` | Routing multi-pagina e header di sicurezza HTTP |
 | `playwright.config.ts` | Configurazione test end-to-end |
-| `.env.example` | Variabili d'ambiente richieste lato client (dettaglio completo in `environment-variables-guide.md`, quando disponibile) |
+| `.env.example` | Variabili d'ambiente richieste lato client (dettaglio completo in `environment-variables-guide.md`) |
 | `CLAUDE.md` | Regole di dominio e convenzioni di sviluppo (regole fiscali, workflow git) |
 
 ## Cerco X → guardo qui

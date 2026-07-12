@@ -18,7 +18,7 @@ Questo è l'unico asset del pacchetto che genera valore **dopo** l'acquisizione,
 
 Questo è l'asset con il rapporto valore/percezione più squilibrato del pacchetto. Un CTO che valuta Solvy con un team AI-assisted non sta comprando solo codice che implementa le regole fiscali italiane e spagnole — sta comprando la conoscenza normativa stessa, già verificata contro fonti ufficiali (Agenzia delle Entrate, INPS, AEAT), in un formato che il proprio team può interrogare e mantenere aggiornato dal primo giorno. Elimina mesi di lavoro che normalmente nessuno considera nel prezzo di un'acquisizione software, perché normalmente non esiste: la conoscenza di dominio di solito se ne va con il team che l'ha maturata. Qui resta, ed è eseguibile. Dettaglio completo in `ai-development-methodology.md`.
 
-## Data Room di 14 documenti verificati
+## Data Room verificata, non dichiarata
 
 Il valore non è "avere documentazione" — è **non dover verificare se la documentazione è vera**. Ogni claim tecnico in questi documenti è stato controllato nel codice prima di essere scritto (schema autentico via dump diretto, non ricostruito a mano; Free/Pro verificato nel codice, non dichiarato; numeri di test verificati eseguendo la suite). Un CTO che ha vissuto una due diligence dove la documentazione mentiva riconosce la differenza in pochi minuti di lettura. Elimina settimane di verifica incrociata tra quello che i documenti dicono e quello che il codice fa davvero.
 
@@ -33,3 +33,7 @@ Senza questo documento, il closing operativo di qualunque acquisizione software 
 ## Disclosure onesta dei limiti noti
 
 Controintuitivo ma reale: un documento che elenca cosa *non* funziona ancora (VeriFactu Spagna, A-Cube in sandbox) aumenta la fiducia più di quanto la riduca. Un CTO esperto sa che ogni software ha limiti — quello che valuta è se il venditore li conosce e li dichiara, o se li scopre lui in produzione dopo il closing. Elimina il rischio di rinegoziazione a valle: se il gap è dichiarato prima, non può essere usato come leva dopo.
+
+## Quanto costerebbe ricostruirlo (lettura onesta)
+
+Una stima di costo-di-sostituzione fatta dal venditore va letta per quello che è: un punto di partenza per la conversazione, non un dato neutro — è naturale che chi vende tenda a stimarlo per eccesso. Con questo limite dichiarato, la lettura qualitativa più difendibile è questa: il codice in sé (frontend, le 12 Edge Function, il pattern modulo-paese) è ricostruibile da un team competente in tempi ragionevoli — settimane, non mesi, per chi ha già esperienza React/TypeScript/Supabase. **Il costo reale è nella conoscenza normativa verificata**: la logica di calcolo fiscale IT/ES richiede realisticamente mesi di ricerca incrociata con un commercialista/gestor prima ancora di scrivere codice, ed è l'unico tipo di asset di questo pacchetto che il tempo non rende meno prezioso — le regole cambiano ogni anno, ma il metodo per mantenerle corrette (fonti ufficiali, skill aggiornabili) resta valido. È lo stesso motivo per cui le 6 skill di dominio sono l'asset più difficile da replicare rapidamente, non il volume di codice.

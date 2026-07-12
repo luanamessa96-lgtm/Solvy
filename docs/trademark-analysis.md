@@ -44,7 +44,7 @@ Questo tempo **quasi certamente non si allinea con i tempi realistici di un clos
 
 ## Beneficio reale in un asset sale
 
-Qui la valutazione dipende da un fatto già dichiarato altrove in questo pacchetto: Solvy **non ha una base utenti commerciale né validazione di mercato** (`executive-summary.md`). Questo cambia radicalmente il calcolo rispetto a un'azienda con clienti paganti e riconoscimento di marca:
+Qui la valutazione dipende da un fatto già dichiarato altrove in questo pacchetto: Solvy **non ha una base utenti commerciale né validazione di mercato** (`executive-overview.md`). Questo cambia radicalmente il calcolo rispetto a un'azienda con clienti paganti e riconoscimento di marca:
 
 - Un acquirente non sta pagando per il riconoscimento del nome "Solvy" presso il pubblico — quel riconoscimento, ad oggi, è minimo (beta chiusa)
 - L'acquirente più probabile per questo tipo di asset **valuta il nome come negoziabile**, non come parte del valore centrale: può tenerlo, può rebrandare, la decisione dipende dalla sua strategia di prodotto, non da quanto vale il marchio "Solvy" in sé

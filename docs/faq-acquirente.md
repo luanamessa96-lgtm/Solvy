@@ -50,3 +50,6 @@ Sì per l'impianto generale (posizionato come strumento di calcolo/gestione, non
 
 **Cosa faccio se qualcosa si rompe?**
 `operations-manual.md` copre il monitoraggio esistente, un problema operativo ricorrente già documentato (redeploy di `stripe-webhook`), una tabella di troubleshooting rapido e cosa serve per un backup/restore completo.
+
+**La fondatrice resta disponibile dopo il closing?**
+Non automaticamente incluso nell'operazione — è un punto da negoziare esplicitamente come parte dell'accordo, non una garanzia implicita.

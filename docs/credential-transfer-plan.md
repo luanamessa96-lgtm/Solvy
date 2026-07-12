@@ -15,7 +15,7 @@ Elenco completo dei servizi esterni da cui Solvy dipende operativamente. Nessuna
 
 ## Google Analytics 4 e Search Console
 
-Non incluse nella tabella sopra perché non sono credenziali infrastrutturali (nessuna API key nel codice) ma accessi ad account Google della fondatrice — categoria diversa, con proprie verifiche manuali richieste prima del closing. Piano di trasferimento dedicato in `docs/acquisition-package/analytics-search-console-transfer.md`.
+Non incluse nella tabella sopra perché non sono credenziali infrastrutturali (nessuna API key nel codice) ma accessi ad account Google della fondatrice — categoria diversa, con proprie verifiche manuali richieste prima del closing. Piano di trasferimento dedicato in `docs/analytics-search-console-transfer.md`.
 
 ## Cosa NON richiede trasferimento
 I 4 dati sensibili in `.env.example` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_KEY`, `VITE_STRIPE_PUBLISHABLE_KEY`, prezzi Stripe) sono chiavi pubblicabili lato client per design — si rigenerano automaticamente non appena Supabase/Stripe vengono trasferiti, non richiedono un passaggio separato.
