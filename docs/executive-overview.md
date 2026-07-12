@@ -1,5 +1,7 @@
 # Solvy — Executive Overview
 
+Solvy è un asset software pronto per essere acquisito, dedicato alla gestione fiscale di freelance e liberi professionisti in Italia e Spagna.
+
 *Questo documento è pensato per essere letto da solo, in 10 minuti, senza bisogno di aprire altro. Se ti servono i dettagli tecnici, il documento di riferimento è `architecture-overview.md`; per i limiti noti, `known-limitations.md`; per l'elenco completo dei documenti disponibili, `data-room-index.md`.*
 
 ## Cos'è Solvy
@@ -45,6 +47,8 @@ Oltre allo stack sopra, il prodotto si appoggia a: **A-Cube** (intermediario fat
 
 ## Cosa è incluso nella vendita
 
+Questa è una cessione di asset tecnologico, non un'acquisizione societaria. L'operazione riguarda il software, il codice sorgente, la documentazione e l'infrastruttura concordata, non una società con clienti, dipendenti o quote da trasferire.
+
 Codice sorgente completo, architettura e design system, schema del database con relative policy di sicurezza, le 12 funzioni serverless, la suite di test (161 test unitari sulla logica fiscale + 9 suite end-to-end), tutta la documentazione di questa Data Room, e — se le parti concordano il trasferimento — l'infrastruttura live (progetto Supabase, dominio, account Vercel).
 
 **Cosa non è incluso**: una base utenti commerciale. Il prodotto è stato usato da un piccolo gruppo chiuso durante lo sviluppo per validare flussi e individuare bug — un test reale, non una validazione di mercato. Il valore dell'asset è nel codice, nell'architettura e nel tempo di sviluppo risparmiato, non in un portafoglio clienti esistente.
@@ -52,3 +56,7 @@ Codice sorgente completo, architettura e design system, schema del database con 
 ## Limiti noti
 
 Due gap di prodotto sono dichiarati esplicitamente, con contesto completo, in `known-limitations.md`: l'assenza di conformità VeriFactu per la Spagna (non ancora obbligatoria) e lo stato sandbox (non production) dell'integrazione A-Cube per la fatturazione elettronica italiana.
+
+---
+
+L'obiettivo della Data Room è permettere a un potenziale acquirente di comprendere rapidamente il prodotto, valutarne l'architettura e stimare il costo di presa in carico senza dover analizzare direttamente il codice sorgente.
