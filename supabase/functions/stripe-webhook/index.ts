@@ -33,6 +33,22 @@ Deno.serve(async (req) => {
 
   const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
+  // Idempotenza: Stripe può consegnare lo stesso evento più volte (retry di
+  // rete, timeout). Se l'insert fallisce per violazione di chiave primaria
+  // (23505), l'evento è già stato processato — si esce senza rielaborarlo.
+  const { error: dedupeError } = await supabaseAdmin
+    .from('stripe_processed_events')
+    .insert({ event_id: event.id });
+
+  if (dedupeError) {
+    if (dedupeError.code === '23505') {
+      console.log(`Evento ${event.id} già processato, skip (duplicato)`);
+      return new Response('ok (duplicate, skipped)', { status: 200 });
+    }
+    console.error('Dedup insert failed per motivo diverso da duplicato:', dedupeError.message);
+    return new Response('Dedup check failed', { status: 500 });
+  }
+
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
