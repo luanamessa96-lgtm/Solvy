@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.99.2';
 
 const TELEGRAM_TOKEN   = Deno.env.get('TELEGRAM_BOT_TOKEN') ?? '';
 const TELEGRAM_CHAT_ID = Deno.env.get('TELEGRAM_CHAT_ID') ?? '';
@@ -71,7 +71,11 @@ Deno.serve(async (req) => {
     // Notifica Telegram per consegna e scarto
     if (newStatus === 'delivered' || newStatus === 'rejected') {
       const icon    = newStatus === 'delivered' ? '✅' : '❌';
-      const profile = doc.profiles as { name: string; email: string };
+      // Il client generico non conosce la cardinalità reale della relazione
+      // (molti documenti → un profilo): Supabase restituisce un oggetto
+      // singolo a runtime, ma il tipo generato è un array. Cast esplicito
+      // via `unknown`, zero cambiamento di comportamento.
+      const profile = doc.profiles as unknown as { name: string; email: string };
       await sendTelegram(
         `${icon} *Fattura SdI — ${newStatus === 'delivered' ? 'Consegnata' : 'Scartata'}*\n` +
         `👤 ${profile.name} (${profile.email})\n` +

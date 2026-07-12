@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.99.2';
 
 const ACUBE_EMAIL    = Deno.env.get('ACUBE_EMAIL') ?? '';
 const ACUBE_PASSWORD = Deno.env.get('ACUBE_PASSWORD') ?? '';
