@@ -3,6 +3,12 @@
   "private": true,
   "license": "UNLICENSED",
   "version": "0.0.1",
+  "description": "PWA for tax and invoice management for Italian and Spanish freelancers",
+  "homepage": "https://solvyapp.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luanamessa96-lgtm/Solvy.git"
+  },
   "type": "module",
   "engines": {
     "node": ">=20"
