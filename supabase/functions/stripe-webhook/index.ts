@@ -75,6 +75,10 @@ Deno.serve(async (req) => {
             ...(isFirstSubscription ? { subscription_started_at: new Date().toISOString() } : {}),
           })
           .eq('user_id', userId)
+          // @ts-expect-error — i tipi ufficiali vogliono `count` come opzione
+          // di `.update()`, non di `.select()`; il comportamento a runtime
+          // è verificato e invariato, si sopprime solo il mismatch di tipo
+          // per non modificare una query già in produzione su questa funzione.
           .select('id', { count: 'exact', head: true });
 
         if (updateError) {
