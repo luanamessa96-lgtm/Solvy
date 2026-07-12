@@ -68,13 +68,19 @@ export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
       const ur = gl.getUniformLocation(prog, 'r');
       const ut = gl.getUniformLocation(prog, 't');
 
+      // `canvas` è narrowed a non-null qui sopra, ma TypeScript in strict
+      // mode non propaga il narrowing di un parametro dentro closure
+      // annidate (resize/frame) — si cattura in una costante locale, che
+      // resta narrowed per sempre. Nessun cambio di comportamento.
+      const canvasEl = canvas;
+
       function resize() {
-        const p = canvas.parentElement!;
-        canvas.width  = p.offsetWidth  * devicePixelRatio;
-        canvas.height = p.offsetHeight * devicePixelRatio;
-        canvas.style.width  = p.offsetWidth  + 'px';
-        canvas.style.height = p.offsetHeight + 'px';
-        gl!.viewport(0, 0, canvas.width, canvas.height);
+        const p = canvasEl.parentElement!;
+        canvasEl.width  = p.offsetWidth  * devicePixelRatio;
+        canvasEl.height = p.offsetHeight * devicePixelRatio;
+        canvasEl.style.width  = p.offsetWidth  + 'px';
+        canvasEl.style.height = p.offsetHeight + 'px';
+        gl!.viewport(0, 0, canvasEl.width, canvasEl.height);
       }
       resize();
       window.addEventListener('resize', resize);
@@ -85,7 +91,7 @@ export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
       function frame(ts: number) {
         if (!t0) t0 = ts;
         const t = (ts - t0) * 0.001 + off;
-        gl!.uniform2f(ur!, canvas.width, canvas.height);
+        gl!.uniform2f(ur!, canvasEl.width, canvasEl.height);
         gl!.uniform1f(ut!, t);
         gl!.drawArrays(gl!.TRIANGLE_STRIP, 0, 4);
         rafId = requestAnimationFrame(frame);
