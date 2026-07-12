@@ -6,189 +6,75 @@
 
 **Gestione fiscale per freelancer. Senza ansia, senza Excel, senza sorprese.**
 
-Solvy è una PWA mobile-first che calcola in tempo reale quanto devi al fisco, emette fatture conformi e ti ricorda le scadenze — pensata per freelancer italiani (forfettario e ordinario) e autónomos spagnoli (estimación directa).
+Solvy è una PWA mobile-first che calcola in tempo reale quanto devi al fisco, gestisce fatture e spese e ti ricorda le scadenze — per freelancer italiani (forfettario e ordinario) e autónomos spagnoli (estimación directa, incluse le Canarie).
 
 [![Live](https://img.shields.io/badge/live-solvyapp.com-4CD9D0?style=flat-square)](https://solvyapp.com)
 [![License](https://img.shields.io/badge/license-proprietary-C060A0?style=flat-square)]()
-[![Tests](https://img.shields.io/badge/tests-110%20passing-success?style=flat-square)]()
-[![Lighthouse](https://img.shields.io/badge/lighthouse-70%2B-orange?style=flat-square)]()
-[![Security](https://img.shields.io/badge/security%20headers-A%2B-success?style=flat-square)]()
+[![Tests](https://img.shields.io/badge/tests-161%20passing-success?style=flat-square)]()
 [![PWA](https://img.shields.io/badge/PWA-ready-5A0FC8?style=flat-square)]()
 
-[Website](https://solvyapp.com) · [Report a bug](https://github.com/luanamessa96-lgtm/Applicazione-per-freelance-/issues) · [Request a feature](https://github.com/luanamessa96-lgtm/Applicazione-per-freelance-/issues)
+[Website](https://solvyapp.com) · [Report a bug](https://github.com/luanamessa96-lgtm/Solvy/issues) · [Request a feature](https://github.com/luanamessa96-lgtm/Solvy/issues)
 
 </div>
 
 ---
 
-## Screenshots
+## Data Room
 
-<div align="center">
-<table>
-<tr>
-<td align="center"><img src="./docs/assets/screenshot-dashboard.png" width="220" /><br/><sub>Dashboard</sub></td>
-<td align="center"><img src="./docs/assets/screenshot-invoice.png" width="220" /><br/><sub>Fattura</sub></td>
-<td align="center"><img src="./docs/assets/screenshot-taxes.png" width="220" /><br/><sub>Calcolo tasse</sub></td>
-<td align="center"><img src="./docs/assets/screenshot-calendar.png" width="220" /><br/><sub>Scadenze</sub></td>
-</tr>
-</table>
-</div>
+Solvy è un asset software pronto per essere acquisito. Se stai valutando il progetto — come acquirente, CTO o investitore — non serve leggere il codice per capirlo: comincia da qui.
 
----
+| Vuoi... | Vai a... |
+|---|---|
+| Capire cos'è Solvy in 10 minuti | [`docs/executive-overview.md`](./docs/executive-overview.md) |
+| Vedere l'indice completo della Data Room | [`docs/data-room-index.md`](./docs/data-room-index.md) |
+| Capire l'architettura | [`docs/architecture-overview.md`](./docs/architecture-overview.md) |
+| Vedere tutte le funzionalità | [`docs/feature-guide.md`](./docs/feature-guide.md) |
+| Valutare la sicurezza | [`docs/security-overview.md`](./docs/security-overview.md) |
 
-## Perché Solvy
+## Cos'è Solvy
 
-Il freelancer medio non vuole imparare a fare il commercialista. Vuole sapere una cosa sola: **quanti soldi deve mettere da parte questo mese**. Solvy risponde a questa domanda in tempo reale, ogni volta che emette una fattura.
-
-- **Niente sorprese.** Ogni fattura aggiorna istantaneamente quanto dovrai al fisco.
-- **Niente Excel.** Calcoli, scadenze e archivio fatture in un'unica app.
-- **Niente telefonate.** Le regole fiscali di Italia e Spagna sono codificate, non interpretate.
-
-Solvy non sostituisce il commercialista. Sostituisce l'ansia di non sapere.
-
----
-
-## Feature
-
-### Fiscalità Italia
-- Regime **forfettario** (tutti i coefficienti di redditività per codice ATECO)
-- Regime **ordinario** con deduzione INPS dalla base IRPEF (art. 10 TUIR)
-- Addizionali regionali e comunali aggiornate 2025/2026
-- Gestione **cause ostative** con warning in-app
-- Scadenze IVA trimestrali per ordinario, acconti e saldi
-
-### Fiscalità Spagna
-- **IRPF** con calcolo cumulativo Modelo 130 (formula AEAT)
-- **RETA** con calendario virtuale delle scadenze
-- **Modelo 303** (IVA trimestrale) e **Modelo 390** (riepilogo annuale)
-- Gestione **retenciones**, **factura rectificativa**, **Libro Registro**, **presupuesto**
-
-### Fatturazione
-- PDF professionale conforme IT + ES
-- Numerazione automatica per anno fiscale
-- Cliente anagrafica, preventivi (ES), note di credito (IT + ES)
-
-### Pro (€7,99/mese o €59,99/anno)
-- Fatture illimitate (free: 10/mese)
-- Card **"Metti da parte" / "Aparta para impuestos"**
-- Export CSV per commercialista
-- Temi personalizzati (light/dark)
-
----
+Un libero professionista in regime forfettario (IT) o come autónomo (ES) deve calcolare a mano — o pagando un commercialista/gestor per ogni verifica — quanto accantonare per imposte e contributi, quando scadono i pagamenti, e come tenere traccia di fatture e spese. Solvy automatizza questi calcoli e li rende visibili in tempo reale, senza sostituirsi alla consulenza professionale. Live in produzione su [solvyapp.com](https://solvyapp.com).
 
 ## Tech stack
 
 | Layer | Stack |
 |---|---|
-| **Frontend** | React 18, TypeScript, Vite, TailwindCSS |
-| **Backend** | Supabase (Postgres + Auth + Realtime + Edge Functions) |
-| **Payments** | Stripe (live), Customer Portal, webhook firmati |
-| **Email** | Resend (transazionale), Loops.so (marketing automation) |
-| **Hosting** | Vercel (Edge Network, custom domain) |
-| **Security** | Cloudflare WAF, security headers A+, RLS su tutte le tabelle |
-| **Observability** | Sentry (error tracking), Uptime Robot, GA4, Telegram alerts bot |
-| **Testing** | Vitest (110 test su logica fiscale) |
-| **i18n** | ~280 chiavi, italiano + spagnolo |
+| **Frontend** | React 19, TypeScript, Vite, TailwindCSS |
+| **Backend** | Supabase (Postgres + RLS, Auth, Realtime, Storage, Edge Functions) |
+| **Pagamenti** | Stripe |
+| **Fatturazione elettronica (IT)** | A-Cube (Sistema di Interscambio) |
+| **Email** | Loops |
+| **Hosting** | Vercel |
+| **Monitoraggio** | Sentry |
+| **Testing** | Vitest (161 test) + Playwright (9 suite e2e) |
+| **i18n** | Italiano e spagnolo, ~280 chiavi |
 
----
+Dettaglio completo in [`docs/architecture-overview.md`](./docs/architecture-overview.md).
 
-## Architettura
+## Funzionalità
 
-Solvy è progettata attorno a un principio chiave: **un utente = un profilo fiscale paese = immutabile**. Il paese si sceglie all'onboarding e non cambia mai (cambiare residenza fiscale richiede un account nuovo — come nella vita reale).
+Calcoli fiscali automatici IT/ES, gestione multi-profilo, fatture e spese con export PDF, fatturazione elettronica SdI, calendario scadenze, piani Free e Pro. Elenco completo e verificato, incluso il confine esatto tra Free e Pro, in [`docs/feature-guide.md`](./docs/feature-guide.md).
 
-```
-src/
-├── countries/          # Moduli fiscali per paese
-│   ├── types.ts        # Interfaccia CountryModule
-│   ├── it.ts           # Italia (forfettario + ordinario)
-│   ├── es.ts           # Spagna (estimación directa)
-│   └── index.ts        # Registry
-├── components/         # UI components (Tailwind)
-├── hooks/              # React hooks (Supabase, Stripe)
-├── lib/                # Utils (PDF, calcoli, i18n)
-└── pages/              # Routes
-```
-
-Aggiungere un nuovo paese significa aggiungere un nuovo modulo in `countries/` che implementa l'interfaccia `CountryModule`. Zero cambiamenti nel resto del codice.
-
----
-
-## Quality
-
-- **110 test automatici** (Vitest) che coprono tutta la logica fiscale IT + ES
-- **Lighthouse 70+** su mobile, LCP ridotto da 4.42s a 1.39s
-- **Security headers A+** (securityheaders.com)
-- **RLS** abilitato su tutte le tabelle Supabase
-- **Rate limiting** su login (5 tentativi → lockout 15 min)
-- **GDPR compliant**: Privacy Policy, ToS e Cookie Policy conformi alla legge spagnola (LSSI)
-- **CSP** stretta, nessun `unsafe-inline` non necessario
-
----
-
-## Setup locale
-
-> **Nota:** Solvy è software proprietario. Il codice è pubblico per trasparenza e credibilità, ma non è open source. Per eseguirlo servono credenziali Supabase/Stripe/Resend tue.
+## Installazione
 
 ```bash
-# Clone
-git clone https://github.com/luanamessa96-lgtm/Applicazione-per-freelance-.git
-cd Applicazione-per-freelance-
-
-# Install
+git clone https://github.com/luanamessa96-lgtm/Solvy.git
+cd Solvy
 npm install
-
-# Env (copia e compila con le tue credenziali)
-cp .env.example .env.local
-
-# Dev
+cp .env.example .env
 npm run dev
-
-# Test
-npm test
-
-# Build
-npm run build
 ```
 
-### Variabili d'ambiente richieste
+Guida completa, incluse le variabili d'ambiente necessarie, in [`docs/installation-guide.md`](./docs/installation-guide.md).
 
-```
-VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
-VITE_STRIPE_PUBLISHABLE_KEY=
-VITE_RESEND_API_KEY=
-VITE_SENTRY_DSN=
-VITE_GA_MEASUREMENT_ID=
-```
+## Deploy
 
----
+Sequenza completa per portare Solvy online da zero (database, Edge Function, Stripe, hosting) in [`docs/deployment-guide.md`](./docs/deployment-guide.md).
 
-## Roadmap
+## Sicurezza
 
-- [x] Italia — forfettario + ordinario
-- [x] Spagna — estimación directa
-- [x] Fatturazione PDF IT + ES
-- [x] Stripe live + Customer Portal
-- [x] PWA installabile
-- [ ] Francia — micro-entrepreneur *(Q3 2026)*
-- [ ] Portogallo — regime simplificado *(Q4 2026)*
-- [ ] Import automatico fatture da email *(2026)*
-- [ ] API per commercialisti *(2026)*
+Row Level Security verificata e restrittiva su tutte le tabelle, nessun secret nel codice sorgente, header di sicurezza HTTP attivi. Postura completa, inclusi i punti ancora da migliorare, in [`docs/security-overview.md`](./docs/security-overview.md).
 
----
-
-## Disclaimer
-
-Tutti i calcoli fiscali forniti da Solvy sono **stime** basate sulla normativa vigente e non costituiscono consulenza fiscale professionale. Per dichiarazioni ufficiali e casi complessi rivolgiti sempre al tuo commercialista o *asesor fiscal*.
-
----
-
-## License
+## Licenza
 
 Software proprietario © 2026 Luana Messa. Tutti i diritti riservati. Il codice è pubblicato per trasparenza; non è concessa licenza d'uso, modifica o redistribuzione.
-
----
-
-<div align="center">
-<sub>Costruito a Madrid con caffè e determinazione.</sub>
-</div>
