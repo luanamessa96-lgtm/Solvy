@@ -10,6 +10,8 @@ L'intero codice applicativo di Solvy (frontend React, funzioni serverless, migra
 
 **Confermato dalla fondatrice**: il dominio `solvyapp.com` è di sua proprietà diretta, così come gli asset di brand principali (nome, logo, design e materiali grafici) — nessuna licenza o cessione di terzi da verificare in trasferimento.
 
+**Eccezione dichiarata — marchio "Solvy" non registrato**: la proprietà d'uso del nome è confermata, ma non esiste una registrazione formale del marchio. Una ricerca diretta su EUIPO eSearch (12/07/2026) ha rilevato che il marchio denominativo "SOLVY" — grafia esatta — è stato depositato nel 2018 da una società terza non collegata ("Solvy Ltd", Malta) in classi sovrapposte all'attività di Solvy, ha ricevuto un'opposizione formale da Banco de Sabadell, S.A. per rischio di confusione, ed è stato ritirato nel 2020. Nessun conflitto attivo oggi, ma nessuna garanzia di registrabilità futura senza una verifica legale dedicata. Analisi completa, numeri di pratica EUIPO e raccomandazione in `docs/acquisition-package/trademark-analysis.md`.
+
 ## Audit delle licenze delle dipendenze
 
 Eseguito con strumento automatico (`license-checker`) sull'intero albero delle dipendenze — non solo le 27 dirette, ma tutte le librerie transitive effettivamente incluse nel progetto (oltre 230 pacchetti totali).
@@ -44,4 +46,4 @@ Il componente `DiceBearAvatar` (`src/components/ui/DiceBearAvatar.tsx`), nonosta
 
 ## Riepilogo
 
-**Solvy non presenta ostacoli noti a una cessione commerciale**, né dal lato licenze open source (nessuna dipendenza a copyleft forte, un solo caso di copyleft debole confinato a uno strumento di build non distribuito) né dal lato proprietà (codice, dominio e brand interamente di proprietà della fondatrice, nessuna terza parte con diritti da cedere o verificare). Documento completo.
+**Solvy non presenta ostacoli noti alla cessione dell'asset**, né dal lato licenze open source (nessuna dipendenza a copyleft forte, un solo caso di copyleft debole confinato a uno strumento di build non distribuito) né dal lato proprietà (codice, dominio e brand interamente di proprietà della fondatrice, nessuna terza parte con diritti da cedere o verificare su ciò che esiste oggi). Un punto distinto, non un ostacolo alla vendita: il marchio "Solvy" non è registrato, e un precedente di terzi (dichiarato sopra) rende non scontata una futura registrazione senza verifica legale dedicata — rilevante per chi intende continuare a operare sotto questo nome, non per la cessione in sé.
