@@ -45,7 +45,7 @@ export default function InstallPWABanner() {
       window.addEventListener('beforeinstallprompt', handler as EventListener);
       return () => window.removeEventListener('beforeinstallprompt', handler as EventListener);
     }
-  }, []);
+  }, [ios]);
 
   const dismiss = () => {
     setVisible(false);

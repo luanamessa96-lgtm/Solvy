@@ -67,7 +67,7 @@ const FiscalView = ({ profile, onUpdateProfile, darkMode, documents = [] }: Fisc
       nextQuote: nextBracket.monthlyQuote,
       nextThreshold: currentBracket.maxIncome, // soglia da superare per entrare nel prossimo tramo
     };
-  }, [profile, profile.redditoN1, documents]);
+  }, [profile, documents]);
 
   const handleExportBackup = async () => {
     if (!profile || paidInvoices.length === 0) return;

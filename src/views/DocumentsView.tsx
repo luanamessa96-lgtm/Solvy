@@ -183,7 +183,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
     }
     if (q) docs = docs.filter(d => (d.title ?? '').toLowerCase().includes(q) || (d.client ?? '').toLowerCase().includes(q) || (d.category ?? '').toLowerCase().includes(q) || String(d.amount).includes(q));
     return docs;
-  }, [documents, yearDocuments, filter, statusFilter, searchQuery]);
+  }, [documents, yearDocuments, filter, statusFilter, searchQuery, profile.country]);
 
   const monthGroups = useMemo(() => {
     const locale = profile.country === 'Spain' ? 'es-ES' : 'it-IT';

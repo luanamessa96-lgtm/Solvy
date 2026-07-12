@@ -41,6 +41,16 @@ const FISCAL_ESTIMATE_TITLES = new Set([
   'Saldo INPS ristorazione',
 ]);
 
+// Tutti i titoli INPS fiscali noti — usato per nascondere scadenze stantie di categorie diverse
+const ALL_INPS_FISCAL_TITLES = new Set([
+  '1° acconto INPS gestione separata',
+  '2° acconto INPS gestione separata',
+  '1° rata INPS artigiani', '2° rata INPS artigiani', '3° rata INPS artigiani', 'Saldo INPS artigiani',
+  '1° rata INPS costruzioni', '2° rata INPS costruzioni', '3° rata INPS costruzioni', 'Saldo INPS costruzioni',
+  '1° rata INPS commercianti', '2° rata INPS commercianti', '3° rata INPS commercianti', 'Saldo INPS commercianti',
+  '1° rata INPS ristorazione', '2° rata INPS ristorazione', '3° rata INPS ristorazione', 'Saldo INPS ristorazione',
+]);
+
 const INPS_ARTIGIANI_MINIMALE = 4000;
 const INPS_ARTIGIANI_RATE = 0.24;
 const INPS_COMMERCIANTI_RATE = 0.2448;
@@ -256,7 +266,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
       [accontoKey]: Math.round(imposta * 0.60),
       '2° acconto INPS gestione separata': Math.round(inps * 0.60),
     };
-  }, [isSpain, isPrimoAnnoIT, redditoN1, income, expenses, profile, annoInizio, currentYear, selectedYear]);
+  }, [isSpain, isPrimoAnnoIT, redditoN1, income, expenses, profile, annoInizio, selectedYear]);
 
   // ES-29 — importi stimati per scadenze trimestrali Spain
   const esRetencionRate = isSpain && annoInizio != null
@@ -272,7 +282,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
         4: calcularTrimestre(documents ?? [], 4, selectedYear, esRetencionRate, profile?.annoInizioAttivita),
       };
     } catch { return null; }
-  }, [isSpain, documents, selectedYear, esRetencionRate]);
+  }, [isSpain, documents, selectedYear, esRetencionRate, profile?.annoInizioAttivita]);
 
   const scadenzeFiscaliRaw = isSpain
     ? getSpanishDeadlines(selectedYear).map(s => ({ title: s.title, date: s.date, type: 'tax' as Deadline['type'] }))
@@ -290,16 +300,6 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
       .replace(/^\w/, c => c.toUpperCase())
   );
 
-  // Tutti i titoli INPS fiscali noti — usato per nascondere scadenze stantie di categorie diverse
-  const ALL_INPS_FISCAL_TITLES = new Set([
-    '1° acconto INPS gestione separata',
-    '2° acconto INPS gestione separata',
-    '1° rata INPS artigiani', '2° rata INPS artigiani', '3° rata INPS artigiani', 'Saldo INPS artigiani',
-    '1° rata INPS costruzioni', '2° rata INPS costruzioni', '3° rata INPS costruzioni', 'Saldo INPS costruzioni',
-    '1° rata INPS commercianti', '2° rata INPS commercianti', '3° rata INPS commercianti', 'Saldo INPS commercianti',
-    '1° rata INPS ristorazione', '2° rata INPS ristorazione', '3° rata INPS ristorazione', 'Saldo INPS ristorazione',
-  ]);
-
   const yearDeadlines = useMemo(() => {
     // Build a map title→date from this year's fiscal templates
     // (handles ES deadlines like T4/390 whose date falls in year+1)
@@ -316,7 +316,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
       // User-created deadline: show by date year
       return getLocalYear(d.date) === selectedYear;
     });
-  }, [deadlines, selectedYear, isSpain]);
+  }, [deadlines, selectedYear, isSpain, profile?.regime, calInpsType]);
 
   const filteredDeadlines = useMemo(() => {
     let base = selectedMonth === null ? yearDeadlines : yearDeadlines.filter(d => getLocalMonth(d.date) === selectedMonth);
@@ -348,7 +348,7 @@ const CalendarView = ({ deadlines, onAddDeadline, onUpdateDeadline, onDeleteDead
     }
     if (searchQuery.trim()) return base.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
     return base;
-  }, [selectedMonth, yearDeadlines, searchQuery, isSpain, selectedYear, redditoN1, annoInizio, scadenzeFiscaliRaw, fiscalAmounts, savedRetaMensile]);
+  }, [selectedMonth, yearDeadlines, searchQuery, isSpain, selectedYear, redditoN1, annoInizio, scadenzeFiscaliRaw, fiscalAmounts, savedRetaMensile, income]);
 
   const nextReta = isSpain
     ? getNextRetaDeadline({ redditoN1: redditoN1 ?? undefined, annoInizioAttivita: annoInizio ?? undefined, currentIncome: income ?? undefined, savedRetaMensile: savedRetaMensile ?? undefined })

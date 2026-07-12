@@ -83,7 +83,7 @@ function migrateTheme(t: string | null | undefined): string {
 }
 
 function AppInner() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('home');
   const lastTabChangeRef = useRef<number>(0);
   const [docChoiceTrigger, setDocChoiceTrigger] = useState(0);
@@ -235,7 +235,7 @@ function AppInner() {
     window.addEventListener('online', onOnline);
     window.addEventListener('offline', onOffline);
     return () => { window.removeEventListener('online', onOnline); window.removeEventListener('offline', onOffline); };
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -514,7 +514,7 @@ function AppInner() {
       showToast(t('settings.checkout_cancelled'), 'error');
       window.history.replaceState({}, '', window.location.pathname);
     }
-  }, [isLoading, userId]);
+  }, [isLoading, userId, showToast, t]);
 
   useEffect(() => {
     localStorage.setItem('activeProfileId', activeProfile.id);
@@ -687,7 +687,7 @@ function AppInner() {
       case 'menu': return t('page_titles.menu');
       default: return t('page_titles.dashboard');
     }
-  }, [activeTab, isProfilePage, isSettingsPage, isSubscriptionPage, isAccountantPage, isFiscalPage, isMediaLibraryPage, isGuidaFiscalePage, isGuiaFiscalESPage, t, i18n.language]);
+  }, [activeTab, isProfilePage, isSettingsPage, isSubscriptionPage, isAccountantPage, isFiscalPage, isMediaLibraryPage, isGuidaFiscalePage, isGuiaFiscalESPage, t]);
 
   // Hide BottomNav on scroll down, show on scroll up
   useEffect(() => {
