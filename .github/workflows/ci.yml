@@ -34,6 +34,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # deno check risolve i type reference tramite node_modules/@types/node
+      # per via del package.json alla radice del progetto — senza le
+      # dipendenze npm installate, fallisce sempre (verificato).
+      - name: Install dependencies
+        run: npm ci
+
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
