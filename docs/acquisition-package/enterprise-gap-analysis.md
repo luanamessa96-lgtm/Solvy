@@ -4,8 +4,9 @@
 
 ## 🔴 Bloccante
 
-**Backup del database verificato**
-Nessun piano di backup automatico è stato confermato in questo percorso. È l'unico elemento di questa analisi che, se scoperto dall'acquirente durante il closing invece che dichiarato prima, rischia di bloccare o far rinegoziare la trattativa nell'immediato — nessuna acquisizione seria si chiude senza la certezza che i dati siano recuperabili.
+**Backup del database — verificato assente, non solo "da confermare"**
+Verifica diretta sulla dashboard Supabase (12/07/2026): il progetto opera su piano **Free**, e il pannello di controllo dichiara esplicitamente **"Last Backup: No backups"**. Nessun backup automatico è mai stato eseguito su questo progetto. Un segnale precedente raccolto via CLI (`supabase backups list`, campo `WALG: true`) aveva suggerito una situazione più favorevole — smentito dalla dashboard, che è la fonte autoritativa: quel campo riflette un meccanismo infrastrutturale interno di Supabase, non un backup utilizzabile sul piano Free. È l'unico elemento di questa analisi che, se scoperto dall'acquirente durante il closing invece che risolto prima, blocca o fa rinegoziare la trattativa nell'immediato — nessuna acquisizione seria si chiude senza la certezza che i dati siano recuperabili.
+**Remediation consigliata**: upgrade a piano Pro (backup automatici giornalieri inclusi) prima del closing, oppure — come soluzione ponte a costo zero — un dump manuale pianificato del database (`supabase db dump` o `pg_dump` diretto) conservato fuori da Supabase fino all'upgrade.
 
 ## 🟡 Importante
 
