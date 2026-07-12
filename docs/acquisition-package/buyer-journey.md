@@ -24,7 +24,7 @@ Qui entrano `docs/acquisition-package/buyer-value-analysis.md` e `replacement-co
 
 ## 6. Negoziazione (settimane)
 
-`docs/acquisition-package/enterprise-gap-analysis.md` diventa il documento di riferimento: cosa è importante da chiudere prima della firma (es. l'attivazione finale del backup automatico del database, già implementato), cosa è negoziabile, cosa è solo un miglioramento futuro. È la base per decidere se il prezzo include tutto o se alcuni elementi diventano condizioni sospensive.
+`docs/acquisition-package/enterprise-gap-analysis.md` diventa il documento di riferimento: cosa resta importante ma negoziabile, cosa è solo un miglioramento futuro — il backup del database, unico punto storicamente bloccante, è già risolto e verificato con un restore reale. È la base per decidere se il prezzo include tutto o se alcuni elementi diventano condizioni sospensive.
 
 ## 7. Closing (giorni)
 

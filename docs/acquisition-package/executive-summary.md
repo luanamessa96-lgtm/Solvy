@@ -18,7 +18,7 @@ VeriFactu (Spagna) non è implementato — non ancora obbligatorio per legge. L'
 
 ## Nessun elemento bloccante residuo
 
-Il backup del database, unico punto precedentemente classificato come bloccante, è oggi risolto tecnicamente (dump giornaliero automatico cifrato) e in attesa solo dell'attivazione dei secret da parte della proprietaria — dettaglio in `enterprise-gap-analysis.md`. Tutto il resto è già chiuso o rappresenta un miglioramento opzionale, non un ostacolo.
+Il backup del database, unico punto precedentemente classificato come bloccante, è oggi risolto e verificato con un restore reale completato con successo (dump giornaliero automatico cifrato, testato end-to-end su un ambiente isolato) — dettaglio in `enterprise-gap-analysis.md`. Tutto il resto è già chiuso o rappresenta un miglioramento opzionale, non un ostacolo.
 
 ## Come navigare il resto del pacchetto
 

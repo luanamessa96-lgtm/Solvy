@@ -4,13 +4,13 @@
 
 ## 🔴 Bloccante
 
-*Nessun elemento bloccante residuo. Il backup del database, unico punto classificato 🔴 in questa analisi, è stato risolto tecnicamente — vedi sezione 🟡 per l'ultimo passaggio di attivazione.*
+*Nessun elemento bloccante residuo.*
+
+**Backup del database — risolto e verificato con restore reale (12/07/2026)**
+Verifica diretta sulla dashboard Supabase (12/07/2026) aveva confermato l'assenza totale di backup sul piano **Free** ("Last Backup: No backups") — unico punto classificato 🔴 in questa analisi. Risolto con `.github/workflows/db-backup.yml`: dump giornaliero automatico (ruoli, schema, dati) via Supabase CLI, cifrato AES-256 prima di lasciare il runner, conservato come artifact GitHub per 90 giorni — soluzione ponte a costo zero, scelta esplicitamente al posto dell'upgrade a piano Pro.
+Non dichiarato chiuso alla sola implementazione: lo stesso giorno è stato eseguito un run reale del workflow (successo, artifact non vuoto) seguito da un **restore end-to-end completo su un database Postgres 17 locale isolato** (mai produzione) — decifratura dell'artifact, ripristino di ruoli/schema/dati, verifica dei conteggi riga sulle 4 tabelle applicative (profiles, documents, deadlines, accountant, dati reali coerenti con la beta chiusa) e conferma che tutte le 20 policy RLS e le relative `ENABLE ROW LEVEL SECURITY` sono presenti e corrette nel dump. Gli unici errori del test (schemi `auth`/`extensions`/`storage`, estensione `supabase_vault`) sono limiti noti di un Postgres locale "vergine" rispetto alla piattaforma Supabase — non applicabili quando il target di restore è un vero progetto Supabase. Procedura di ripristino documentata in `docs/operations-manual.md`.
 
 ## 🟡 Importante
-
-**Backup del database — implementato, in attesa di attivazione e primo run verificato**
-Verifica diretta sulla dashboard Supabase (12/07/2026) aveva confermato l'assenza totale di backup sul piano **Free** ("Last Backup: No backups"). Risolto il 12/07/2026 con `.github/workflows/db-backup.yml`: dump giornaliero automatico (ruoli, schema, dati) via Supabase CLI, cifrato AES-256 prima di lasciare il runner, conservato come artifact GitHub per 90 giorni — soluzione ponte a costo zero, scelta esplicitamente al posto dell'upgrade a piano Pro. Procedura di ripristino documentata in `docs/operations-manual.md`.
-Resta 🟡 e non 🟢 per un motivo preciso, coerente con la disciplina di verifica di tutto questo pacchetto: il meccanismo richiede due GitHub Secret (`SUPABASE_DB_URL`, `BACKUP_ENCRYPTION_PASSPHRASE`) che solo la proprietaria del progetto può configurare, e non è ancora stato osservato un run reale andato a buon fine. Passa a 🟢 non appena i secret sono impostati e un run manuale (`workflow_dispatch`) produce un artifact cifrato non vuoto.
 
 **Documento "AI Development Methodology"**
 Le 8 skill di dominio e la metodologia di sviluppo AI-assisted sono, per valore, tra i primi due asset del pacchetto — ma oggi nessun documento lo dichiara esplicitamente a chi non apre `.claude/skills/`. È importante perché lascia scoperto l'asset con il rapporto valore/visibilità peggiore di tutto il pacchetto, non perché manchi qualcosa di funzionale.
