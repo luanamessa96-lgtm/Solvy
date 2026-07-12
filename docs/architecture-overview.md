@@ -82,7 +82,7 @@ Ogni tabella è scoping-isolata per utente: l'accesso passa sempre da `profiles.
 ## 7. Integrazioni esterne
 
 - **Stripe** — il frontend crea una sessione di Checkout tramite `create-checkout-session` e reindirizza l'utente al checkout ospitato da Stripe. Gli eventi post-pagamento (attivazione, rinnovo, cancellazione) arrivano a `stripe-webhook`, che verifica la firma della richiesta prima di aggiornare `profiles`.
-- **A-Cube** — intermediario per la fatturazione elettronica italiana. `sdi-send` invia la fattura, A-Cube la inoltra al Sistema di Interscambio; `sdi-webhook` riceve lo stato di consegna/scarto e aggiorna `documents`.
+- **A-Cube** — intermediario per la fatturazione elettronica italiana. `sdi-send` invia la fattura, A-Cube la inoltra al Sistema di Interscambio; `sdi-webhook` riceve lo stato di consegna/scarto e aggiorna `documents`. (per adesso esiste solo la registrazione ma é operativamente congelato)
 - **Loops** — `loops-sync` sincronizza contatti ed eventi (signup, upgrade, cancellazione) per l'invio di email transazionali.
 - **Telegram** — canale di monitoraggio interno (non user-facing): `telegram-alert` notifica eventi rilevanti (nuovo utente, nuovo abbonamento Pro), `telegram-webhook` riceve comandi dal bot.
 

@@ -1,64 +1,68 @@
 # Solvy — Deployment Guide
 
-*Questo documento è una sequenza operativa per portare Solvy online da zero, su infrastruttura nuova. È leggibile da solo, ma è pensato per essere seguito passo-passo, non solo letto. Per l'elenco completo delle variabili richieste in ogni passaggio vedi `environment-variables-guide.md`; per il dettaglio di ogni Edge Function vedi `supabase/functions/README.md`; per chi possiede/come si eredita l'infrastruttura esistente vedi `credential-transfer-plan.md`.*
+Procedura di deployment su infrastruttura nuova (nuovo progetto Supabase, account Vercel e Stripe dedicati).
 
-## Nota di scope
+Se l'infrastruttura esistente viene trasferita nell'ambito dell'operazione, i passi seguenti risultano già completati; il documento vale allora come riferimento di verifica (vedi `credential-transfer-plan.md`).
 
-Questa guida presume che si stia impostando un'infrastruttura nuova (nuovo progetto Supabase, nuovo account Stripe, ecc.). Se invece l'infrastruttura esistente viene trasferita come parte dell'acquisizione, gran parte di questi passaggi sono già fatti — in quel caso questo documento serve solo per capire cosa esiste e verificarlo, non per ricrearlo.
+Elenco completo delle variabili citate: `environment-variables-guide.md`. Dettaglio delle Edge Function: `supabase/functions/README.md`.
 
 ## Prerequisiti
 
-Account necessari prima di iniziare: **Supabase**, **Vercel**, **Stripe** (obbligatori per una versione funzionante). **A-Cube**, **Loops**, **Telegram** sono opzionali e possono essere collegati in un secondo momento (sezione 10).
+- Account: **Supabase**, **Vercel**, **Stripe** (necessari per una versione funzionante).
+- Account opzionali, collegabili in seguito: **A-Cube**, **Loops**, **Telegram** (vedi "Integrazioni opzionali").
+- **Supabase CLI** autenticata e collegata al progetto, per il deploy delle Edge Function.
+- Accesso al repository GitHub del progetto.
 
-## Passo 1 — Database
+## 1 — Database
 
-1. Crea un nuovo progetto su Supabase.
-2. Apri l'SQL Editor del progetto ed esegui per intero `supabase/schema_production.sql` — è un dump autentico e aggiornato, ricrea schema, tabelle, RLS e permessi in un solo passaggio. Non è necessario rigiocare le migration storiche in `supabase/migrations/` (motivo spiegato in `supabase/migrations/README.md`).
+1. Creare un nuovo progetto Supabase.
+2. Nell'SQL Editor, eseguire per intero `supabase/schema_production.sql`: ricrea schema, tabelle, RLS e permessi in un unico passaggio.
+3. Non rigiocare le migration storiche in `supabase/migrations/` (vedi `supabase/migrations/README.md`).
 
-## Passo 2 — Storage
+## 2 — Storage
 
-Nel dashboard Supabase: **Storage → New bucket** → nome `uploads` → visibilità **Public**. Usato per PDF e immagini allegate a fatture/spese.
+1. **Storage → New bucket** → nome `uploads`, visibilità **Public**.
 
-## Passo 3 — Edge Functions
+Utilizzato per PDF e immagini allegate a fatture/spese.
 
-1. Configura i secret in **Edge Functions → Secrets** (o via CLI `supabase secrets set`) — l'elenco completo, variabile per variabile, è in `environment-variables-guide.md`.
-2. Fai il deploy delle 12 funzioni in `supabase/functions/`.
-3. **Attenzione**: il deploy di `stripe-webhook` richiede sempre il flag `--no-verify-jwt` (`supabase functions deploy stripe-webhook --no-verify-jwt`). Senza questo flag, Supabase reintroduce il controllo JWT di default e Stripe riceve 401 su ogni evento — un problema già verificatosi due volte in produzione (dettaglio in `supabase/functions/README.md`).
+## 3 — Edge Functions
 
-## Passo 4 — Stripe
+1. Configurare i secret in **Edge Functions → Secrets** (o `supabase secrets set`). Elenco completo in `environment-variables-guide.md`.
+2. Deployare le 12 funzioni in `supabase/functions/`.
+3. Deployare `stripe-webhook` con il flag `--no-verify-jwt`:
+   ```
+   supabase functions deploy stripe-webhook --no-verify-jwt
+   ```
+   Senza il flag, Supabase applica il controllo JWT di default e le richieste Stripe ricevono `401` prima dell'esecuzione della funzione. Il flag va ripetuto a ogni redeploy della funzione (vedi `supabase/functions/README.md` e `operations-manual.md`).
 
-1. Crea i due prodotti/prezzi dell'abbonamento Pro (mensile, annuale) nel dashboard Stripe — i Price ID vanno nelle variabili frontend (`VITE_STRIPE_PRICE_MONTHLY`/`YEARLY`).
-2. Crea un endpoint webhook puntato all'URL della funzione `stripe-webhook`, seleziona gli eventi di abbonamento rilevanti (creazione, rinnovo, cancellazione).
-3. Copia il signing secret generato in `STRIPE_WEBHOOK_SECRET` (Passo 3).
+Nota: `STRIPE_WEBHOOK_SECRET` è generato al passo 4.2 e va inserito tra i secret dopo la creazione dell'endpoint webhook.
 
-## Passo 5 — Frontend (Vercel)
+## 4 — Stripe
 
-1. Collega il repository GitHub a un nuovo progetto Vercel.
-2. Imposta le variabili `VITE_*` richieste (elenco in `environment-variables-guide.md`).
-3. Deploy. `vercel.json` gestisce già il routing multi-pagina (landing/app) e gli header di sicurezza — nessuna configurazione aggiuntiva necessaria.
+1. Creare i due prezzi dell'abbonamento Pro (mensile, annuale). I Price ID vanno nelle variabili frontend `VITE_STRIPE_PRICE_MONTHLY` / `VITE_STRIPE_PRICE_YEARLY`.
+2. Creare un endpoint webhook puntato all'URL della funzione `stripe-webhook`, selezionando gli eventi di abbonamento (creazione, rinnovo, cancellazione).
+3. Copiare il signing secret dell'endpoint in `STRIPE_WEBHOOK_SECRET` (passo 3.1).
 
-## Passo 6 — Dominio (opzionale)
+## 5 — Frontend (Vercel)
 
-Se si vuole un dominio personalizzato invece del dominio Vercel di default: **Project Settings → Domains** su Vercel, poi aggiornare i record DNS presso il registrar secondo le istruzioni mostrate.
+1. Collegare il repository GitHub a un nuovo progetto Vercel.
+2. Impostare le variabili `VITE_*` (elenco in `environment-variables-guide.md`).
+3. Avviare il deploy. Il routing multi-pagina (landing/app) e gli header di sicurezza sono definiti in `vercel.json`.
 
-## Passo 7 — Verifica finale
+## 6 — Dominio (opzionale)
 
-Checklist minima prima di considerare il deploy completo:
-- Registrazione e login funzionano
-- Creazione di un profilo fiscale (IT o ES) va a buon fine
-- Creazione di una fattura/spesa e i calcoli fiscali si aggiornano correttamente
-- Il checkout Stripe (in modalità test) reindirizza correttamente e aggiorna lo stato Pro dopo il pagamento
+1. **Project Settings → Domains** su Vercel.
+2. Aggiornare i record DNS presso il registrar secondo le istruzioni mostrate.
+
+## 7 — Verifica
+
+- Registrazione e login.
+- Creazione di un profilo fiscale (IT o ES).
+- Creazione di una fattura/spesa con aggiornamento dei calcoli fiscali.
+- Checkout Stripe in modalità test: redirect corretto e passaggio a stato Pro dopo il pagamento.
 
 ## Integrazioni opzionali
 
-- **A-Cube** (fatturazione elettronica IT): richiede account e credenziali proprie. Lo stato dell'account usato in produzione è sandbox, non production — dettaglio in `known-limitations.md`. Non blocca il resto del prodotto se non configurato.
-- **Loops** (email transazionali): richiede solo `LOOPS_API_KEY`.
-- **Telegram** (monitoraggio interno, non user-facing): opzionale, ignorabile senza impatto sul prodotto.
-
-## Tempo stimato di deploy
-
-Ordine di grandezza, non una promessa — dipende da familiarità con Supabase/Vercel e velocità di risposta dei fornitori terzi (es. verifica account Stripe):
-
-- **Infrastruttura minima** (Supabase + Vercel, senza pagamenti funzionanti): ~30–60 minuti
-- **Con Stripe configurato** (abbonamenti funzionanti): ~1–2 ore
-- **Con tutte le integrazioni** (A-Cube, Loops, Telegram): ~2–4 ore
+- **A-Cube** (fatturazione elettronica IT): richiede account e credenziali dedicati. Stato dell'account attuale: sandbox (vedi `known-limitations.md`). Non blocca il resto del prodotto se non configurato.
+- **Loops** (email transazionali): richiede `LOOPS_API_KEY`.
+- **Telegram** (monitoraggio interno, non user-facing): non incide sul funzionamento del prodotto.

@@ -65,7 +65,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Guida completa, incluse le variabili d'ambiente necessarie, in [`docs/installation-guide.md`](./docs/installation-guide.md).
+Guida completa, incluse le variabili d'ambiente necessarie, in [`docs/developer-installation-guide.md`](./docs/developer-installation-guide.md).
 
 ## Deploy
 

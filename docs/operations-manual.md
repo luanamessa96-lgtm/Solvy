@@ -1,52 +1,84 @@
-# Solvy — Operations Manual
+# Solvy — Operations Runbook
 
-*Questo documento copre la gestione quotidiana di Solvy dopo il deploy iniziale: cosa monitorare, cosa fare quando qualcosa si rompe, cosa serve per un backup completo. È leggibile da solo. Per il setup iniziale vedi `deployment-guide.md`; per la postura di sicurezza vedi `security-overview.md`; per i gap di prodotto noti vedi `known-limitations.md`.*
+Procedure operative per la gestione di Solvy in produzione.
 
-## Monitoraggio esistente
+## Monitoring
 
-- **Sentry** — tracciamento errori runtime in produzione (dettaglio in `security-overview.md`)
-- **Alert Telegram interni** — notifiche automatiche su eventi rilevanti (nuovo utente, nuovo abbonamento Pro), inviate a un bot collegato oggi all'account della fondatrice. Non è funzionalità di prodotto e non è indispensabile per il funzionamento di Solvy — va semplicemente ricollegato a un nuovo bot/destinatario dopo il trasferimento (vedi `credential-transfer-plan.md`)
+- **Sentry** — tracciamento degli errori runtime in produzione (vedi `security-overview.md`).
+- **Alert Telegram** — notifiche automatiche su eventi selezionati (nuovo utente, nuovo abbonamento Pro), inviate a un bot collegato all'account della fondatrice. Canale interno, non user-facing; da ricollegare a un nuovo bot/destinatario dopo il trasferimento (vedi `credential-transfer-plan.md`).
 
-Non esiste oggi un dashboard di monitoraggio centralizzato oltre a questi due canali.
+Non è presente un dashboard di monitoraggio centralizzato oltre a questi due canali.
 
-## Problema operativo noto: redeploy di `stripe-webhook`
+## Operational Procedures
 
-**Sintomo**: un utente completa il pagamento su Stripe ma il suo account non risulta aggiornato a Pro nell'app.
+### Deploy di `stripe-webhook`
 
-**Causa**: Supabase reimposta il controllo JWT di default su una Edge Function ogni volta che viene ridistribuita, a meno che il deploy non specifichi esplicitamente di disattivarlo. Quando questo accade su `stripe-webhook`, Supabase respinge con 401 tutte le richieste in arrivo da Stripe prima ancora che il codice della funzione venga eseguito — gli eventi di pagamento non vengono mai elaborati.
+Ogni deploy della funzione `stripe-webhook` deve specificare il flag `--no-verify-jwt`:
 
-**Soluzione**: ogni deploy di questa funzione deve usare `supabase functions deploy stripe-webhook --no-verify-jwt`. Se il problema si è già verificato, gli eventi falliti possono essere reinviati manualmente dal dashboard Stripe (Developers → Webhooks → Eventi → Resend) una volta corretto il deploy.
+```
+supabase functions deploy stripe-webhook --no-verify-jwt
+```
 
-**Perché è documentato qui in dettaglio**: si è già verificato due volte in produzione. È il singolo problema operativo più probabile che un nuovo team incontrerà.
+In assenza del flag, Supabase applica il controllo JWT di default e le richieste Stripe ricevono `401` prima dell'esecuzione della funzione; gli eventi di pagamento non vengono elaborati e l'account utente non passa a Pro.
 
-## Manutenzione periodica
+Recupero degli eventi non elaborati: Stripe Dashboard → Developers → Webhooks → Events → Resend, dopo aver corretto il deploy.
 
-- **Dipendenze**: eseguire `npm audit` periodicamente (non solo una tantum) e valutare i fix disponibili — l'ultima verifica formale ha risolto 4 vulnerabilità su 5 (dettaglio in `security-overview.md`)
-- **Migration**: ogni nuova migration deve seguire il formato timestamp standard di Supabase e passare da `supabase db push`, mai da esecuzione manuale nell'SQL Editor — motivo spiegato in `supabase/migrations/README.md`
+## Routine Maintenance
 
-## Troubleshooting rapido
+- **Dipendenze** — eseguire `npm audit` periodicamente e valutare i fix disponibili (stato corrente in `security-overview.md`).
+- **Migration** — ogni nuova migration segue il formato timestamp di Supabase e viene applicata con `supabase db push`, non tramite SQL Editor (vedi `supabase/migrations/README.md`).
 
-| Sintomo | Causa probabile | Dove guardare |
+## Troubleshooting
+
+| Sintomo | Causa | Riferimento |
 |---|---|---|
-| Pagamento completato ma account non aggiornato a Pro | `verify_jwt` reintrodotto su `stripe-webhook` dopo un redeploy | Vedi sezione dedicata sopra |
-| Email transazionali (benvenuto, upgrade) non arrivano | `LOOPS_API_KEY` mancante/scaduta, o problema lato Loops | `supabase/functions/README.md` (funzione `loops-sync`), dashboard Loops |
-| Fattura elettronica IT bloccata su "in attesa" o esito inatteso | L'account A-Cube in uso è ancora in modalità sandbox — nessuna fattura raggiunge realmente il Sistema di Interscambio | `known-limitations.md` |
-| Nessun alert Telegram ricevuto | Bot/chat ID non ricollegati dopo il trasferimento | `credential-transfer-plan.md` |
+| Pagamento completato, account non aggiornato a Pro | `verify_jwt` reintrodotto su `stripe-webhook` dopo un redeploy | "Deploy di `stripe-webhook`" |
+| Email transazionali (benvenuto, upgrade) non recapitate | `LOOPS_API_KEY` mancante o scaduta, o problema lato Loops | `supabase/functions/README.md` (`loops-sync`), dashboard Loops |
+| Fattura elettronica IT bloccata su "in attesa" o esito inatteso | Account A-Cube in modalità sandbox | `known-limitations.md` |
+| Alert Telegram non ricevuti | Bot/chat ID non ricollegati dopo il trasferimento | `credential-transfer-plan.md` |
 
 ## Backup & Restore
 
-Cosa serve per un ripristino completo, in caso di perdita o migrazione dell'infrastruttura:
+### Contenuto del backup
 
-- **Database** — lo schema è sempre ricostruibile da `supabase/schema_production.sql`. I **dati reali** sono coperti da un backup automatico giornaliero: `.github/workflows/db-backup.yml` esegue ogni notte un dump completo (ruoli, schema, dati) tramite Supabase CLI, lo cifra con AES-256 e lo conserva come artifact GitHub per 90 giorni. È una soluzione ponte a costo zero per il piano Free (che non include backup automatici) — se il progetto viene aggiornato a Supabase Pro, i backup automatici del piano sostituiscono questo meccanismo, che può restare comunque attivo come ridondanza aggiuntiva. **Il ripristino è stato testato**: un run reale del workflow seguito da un restore end-to-end su un database isolato ha confermato ruoli, schema e dati ripristinati correttamente, incluse tutte le policy RLS — non è solo una procedura documentata ma mai provata.
+- **Schema del database** — ricostruibile da `supabase/schema_production.sql`.
+- **Dati** — backup completo giornaliero (ruoli, schema, dati) eseguito da `.github/workflows/db-backup.yml`: dump via Supabase CLI, cifratura AES-256, conservazione come artifact GitHub per 90 giorni.
+- **Non incluso nel backup del database** — bucket Storage `uploads` (PDF e immagini allegati a fatture/spese), da esportare separatamente tramite dashboard o Storage API di Supabase.
 
-**Ripristino da backup**:
-1. Scaricare l'artifact più recente da GitHub Actions → workflow "Database Backup"
-2. Decifrare: `openssl enc -d -aes-256-cbc -pbkdf2 -salt -in backup-YYYYMMDD.tar.gz.enc -out backup.tar.gz -pass pass:"<passphrase>"` (la passphrase è salvata nel password manager, non nel repository)
-3. Estrarre: `tar -xzf backup.tar.gz`
-4. Ripristinare in ordine su un database di destinazione: `psql "$DB_URL" -f roles.sql`, poi `-f schema.sql`, poi `-f data.sql`
+### Stato di verifica
 
-**Limiti dichiarati**: nessun point-in-time recovery, nessuna esecuzione automatica del test di ripristino (il test è stato eseguito manualmente una volta, non gira in CI a ogni backup). Granularità giornaliera, non infra-giornaliera.
+Ripristino eseguito su un database isolato con esito conforme per ruoli, schema, dati e policy RLS.
 
-- **Storage** — il bucket `uploads` (PDF e immagini) non è coperto da `schema_production.sql`: richiede un export separato dei file tramite dashboard o API Supabase Storage
-- **Variabili d'ambiente e secret** — l'elenco completo di cosa preservare è in `environment-variables-guide.md`; vanno conservati in modo sicuro (gestore di password/secret) prima di qualsiasi passaggio di proprietà degli account
-- **Repository Git** — GitHub costituisce di per sé una copia distribuita della cronologia; in caso di trasferimento della proprietà del repository, vale comunque la pena mantenerne un clone locale indipendente fino a trasferimento confermato (vedi `credential-transfer-plan.md`)
+### Procedura di ripristino
+
+1. Scaricare l'artifact più recente da GitHub Actions → workflow "Database Backup".
+2. Decifrare:
+   ```
+   openssl enc -d -aes-256-cbc -pbkdf2 -salt -in backup-YYYYMMDD.tar.gz.enc -out backup.tar.gz -pass pass:"<passphrase>"
+   ```
+   La passphrase è conservata nel password manager, non nel repository.
+3. Estrarre:
+   ```
+   tar -xzf backup.tar.gz
+   ```
+4. Ripristinare in ordine sul database di destinazione:
+   ```
+   psql "$DB_URL" -f roles.sql
+   psql "$DB_URL" -f schema.sql
+   psql "$DB_URL" -f data.sql
+   ```
+
+### Limitazioni
+
+- Nessun point-in-time recovery.
+- Granularità giornaliera.
+- Test di ripristino non automatizzato in CI.
+
+### Piano Supabase Pro
+
+In caso di upgrade a Supabase Pro, i backup automatici del piano sostituiscono il workflow; quest'ultimo può essere mantenuto come ridondanza.
+
+## Operational Notes
+
+- **Secret e variabili d'ambiente** — elenco completo in `environment-variables-guide.md`; da conservare in un gestore di secret prima di qualsiasi passaggio di proprietà degli account.
+- **Repository** — in caso di trasferimento della proprietà del repository, mantenere un clone locale indipendente fino a conferma del trasferimento (vedi `credential-transfer-plan.md`).

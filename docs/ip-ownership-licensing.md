@@ -1,49 +1,58 @@
-# Solvy — IP Ownership & Licensing Statement
+# Solvy — IP Ownership & Licensing
 
-*Questo documento risponde alla domanda che un legale di un acquirente pone prima di qualsiasi altra verifica tecnica: chi possiede davvero questo codice, e posso rivenderlo senza obblighi legali nascosti? È leggibile da solo. Per il piano di trasferimento degli account operativi vedi `credential-transfer-plan.md`.*
+Titolarità del software, stato del marchio e licenze delle dipendenze open source. Le voci relative alla titolarità sono rese come dichiarazioni della parte venditrice, da confermare con la documentazione di supporto in sede di due diligence. L'analisi estesa del marchio è in `trademark-analysis.md`.
 
 ## Proprietà del codice sorgente
 
-L'intero codice applicativo di Solvy (frontend React, funzioni serverless, migration del database) è stato scritto dalla fondatrice, Luana Messa. **Confermato dalla fondatrice**: nessun contractor, agenzia o collaboratore esterno ha contribuito al codice — non esiste quindi alcuna proprietà intellettuale di terzi da cedere o verificare. È il singolo controllo più citato nelle due diligence software, ed è risolto nel modo più semplice possibile: un solo autore, nessuna terza parte coinvolta.
+Secondo dichiarazione della fondatrice, Luana Messa, l'intero codice applicativo (frontend React, funzioni serverless, migration del database) è stato sviluppato dalla stessa, senza il contributo di contractor, agenzie o collaboratori esterni. Non risulta pertanto proprietà intellettuale di terzi incorporata nel codice originale.
 
 ## Proprietà del dominio e degli asset di brand
 
-**Confermato dalla fondatrice**: il dominio `solvyapp.com` è di sua proprietà diretta, così come gli asset di brand principali (nome, logo, design e materiali grafici) — nessuna licenza o cessione di terzi da verificare in trasferimento.
+Secondo dichiarazione della fondatrice, il dominio `solvyapp.com` e gli asset di brand (nome, logo, design, materiali grafici) sono di sua titolarità diretta, senza licenze o cessioni di terzi.
 
-**Eccezione dichiarata — marchio "Solvy" non registrato**: la proprietà d'uso del nome è confermata, ma non esiste una registrazione formale del marchio. Una ricerca diretta su EUIPO eSearch (12/07/2026) ha rilevato che il marchio denominativo "SOLVY" — grafia esatta — è stato depositato nel 2018 da una società terza non collegata ("Solvy Ltd", Malta) in classi sovrapposte all'attività di Solvy, ha ricevuto un'opposizione formale da Banco de Sabadell, S.A. per rischio di confusione, ed è stato ritirato nel 2020. Nessun conflitto attivo oggi, ma nessuna garanzia di registrabilità futura senza una verifica legale dedicata. Analisi completa, numeri di pratica EUIPO e raccomandazione in `docs/trademark-analysis.md`.
+## Stato del marchio
 
-## Audit delle licenze delle dipendenze
+Il segno "Solvy" non risulta registrato come marchio. Ricerca sul database EUIPO eSearch (12/07/2026):
 
-Eseguito con strumento automatico (`license-checker`) sull'intero albero delle dipendenze — non solo le 27 dirette, ma tutte le librerie transitive effettivamente incluse nel progetto (oltre 230 pacchetti totali).
+- Il marchio denominativo "SOLVY" è stato depositato nel 2018 da un soggetto terzo non collegato ("Solvy Ltd", Malta), in classi sovrapposte all'ambito di attività di Solvy.
+- La domanda ha ricevuto un'opposizione da Banco de Sabadell, S.A. ed è stata ritirata nel 2020.
+- Non risultano conflitti attivi alla data della ricerca. La registrabilità futura del segno non è determinabile senza una verifica legale dedicata.
 
-**Risultato principale: nessuna dipendenza con licenza copyleft forte (GPL, AGPL) senza alternativa permissiva.** Non ci sono obblighi di rilascio del codice sorgente derivanti dalle librerie utilizzate.
+Dettaglio dei numeri di pratica, dei motivi di opposizione e dell'analisi in `trademark-analysis.md`.
 
-| Licenza | Pacchetti | Rischio per una cessione commerciale |
+## Audit delle licenze open source
+
+Audit eseguito con `license-checker` sull'intero albero delle dipendenze (27 dirette e relative transitive, oltre 230 pacchetti complessivi).
+
+Nessuna dipendenza applicabile impone una licenza copyleft forte (GPL, AGPL): i casi a doppia licenza consentono l'opzione permissiva (vedi "Casi specifici"). Non risultano obblighi di disclosure del codice sorgente derivanti dalle dipendenze.
+
+| Licenza | Pacchetti | Natura |
 |---|---|---|
-| MIT | 190 | Nessuno — permissiva, uso commerciale libero |
-| ISC | 21 | Nessuno — equivalente a MIT |
-| Apache-2.0 | 9 | Nessuno — permissiva, richiede solo mantenimento delle note di copyright |
-| BSD-3-Clause, 0BSD | 4 | Nessuno — permissive |
-| MPL-2.0 | 2 | Basso — copyleft solo sui file modificati direttamente della libreria stessa, non applicabile qui (nessun file di queste librerie è stato modificato) |
+| MIT | 190 | Permissiva |
+| ISC | 21 | Permissiva |
+| Apache-2.0 | 9 | Permissiva, con obbligo di mantenimento delle note di copyright |
+| BSD-3-Clause, 0BSD | 4 | Permissiva |
+| MPL-2.0 | 2 | Copyleft a livello di singolo file |
 
-**Casi specifici verificati singolarmente:**
+I file delle librerie MPL-2.0 non risultano modificati.
 
-- **`jszip`** (dipendenza diretta, usata per l'export documenti) — licenza doppia `MIT OR GPL-3.0`: si applica il termine MIT, a scelta del licenziatario. Nessun obbligo GPL.
-- **`dompurify`** (transitiva, via `jspdf`) — licenza doppia `MPL-2.0 OR Apache-2.0`: si applica Apache-2.0. Nessun rischio.
-- **`@img/sharp-libvips-darwin-arm64`** (transitiva, via `sharp`) — **LGPL-3.0-or-later**. È l'unica libreria copyleft (debole) trovata. Rischio nullo nella pratica: `sharp` è una devDependency, usata solo in fase di build/sviluppo, non è inclusa nel bundle distribuito agli utenti finali.
-- **`@fontsource-variable/inter`** (diretta, il font dell'interfaccia) — licenza **OFL-1.1** (SIL Open Font License), lo standard per i font, esplicitamente concepita per l'inclusione in software commerciale.
-- **`caniuse-lite`** (transitiva, dati di compatibilità browser) — **CC-BY-4.0**, richiede solo attribuzione, non è codice eseguito nell'app.
+### Casi specifici
 
-Nessuna delle librerie sopra impedisce o complica una cessione commerciale del prodotto.
+- **`jszip`** (diretta, export documenti) — doppia licenza `MIT OR GPL-3.0`. Si applica il termine MIT, a scelta del licenziatario.
+- **`dompurify`** (transitiva, via `jspdf`) — doppia licenza `MPL-2.0 OR Apache-2.0`. Si applica Apache-2.0.
+- **`@img/sharp-libvips-darwin-arm64`** (transitiva, via `sharp`) — `LGPL-3.0-or-later`. `sharp` è una devDependency utilizzata in fase di build/sviluppo e non è inclusa nel bundle distribuito.
+- **`@fontsource-variable/inter`** (diretta, font dell'interfaccia) — `OFL-1.1` (SIL Open Font License).
+- **`caniuse-lite`** (transitiva, dati di compatibilità browser) — `CC-BY-4.0`. Richiede attribuzione; non è codice eseguito nell'applicazione.
 
-## Componenti verificati per dipendenza da servizi di terzi
+## Componenti e servizi di terze parti
 
-Il componente `DiceBearAvatar` (`src/components/ui/DiceBearAvatar.tsx`), nonostante il nome, **non utilizza né l'API né la libreria del servizio DiceBear**: genera avatar localmente da iniziali del nome, senza chiamate esterne né dipendenze di terze parti. Codice interamente originale, nessuna implicazione di licenza.
+Il componente `DiceBearAvatar` (`src/components/ui/DiceBearAvatar.tsx`) non utilizza l'API né la libreria del servizio DiceBear: genera avatar localmente a partire dalle iniziali del nome, senza chiamate esterne né dipendenze di terzi.
 
-## Correzione applicata durante questa verifica
+## Metadati di licenza del progetto
 
-`package.json` dichiarava `"name": "react-example"` — un residuo di boilerplate mai aggiornato — e non aveva un campo `"license"` esplicito nonostante il README dichiari licenza proprietaria. Corretto in questa fase: nome del progetto (`solvy`) e licenza (`UNLICENSED`, coerente con quanto già dichiarato in `README.md`) ora coincidono con la realtà del prodotto.
+`package.json` dichiara `name: "solvy"` e `license: "UNLICENSED"`, coerentemente con la licenza proprietaria indicata in `README.md`.
 
-## Riepilogo
+## Punti da verificare
 
-**Solvy non presenta ostacoli noti alla cessione dell'asset**, né dal lato licenze open source (nessuna dipendenza a copyleft forte, un solo caso di copyleft debole confinato a uno strumento di build non distribuito) né dal lato proprietà (codice, dominio e brand interamente di proprietà della fondatrice, nessuna terza parte con diritti da cedere o verificare su ciò che esiste oggi). Un punto distinto, non un ostacolo alla vendita: il marchio "Solvy" non è registrato, e un precedente di terzi (dichiarato sopra) rende non scontata una futura registrazione senza verifica legale dedicata — rilevante per chi intende continuare a operare sotto questo nome, non per la cessione in sé.
+- Le titolarità di codice, dominio e asset di brand sono rese come dichiarazioni della parte venditrice; da confermare con la documentazione di supporto (registrazioni di dominio, cronologia del repository, dichiarazioni contrattuali).
+- La registrabilità del marchio "Solvy" non è determinabile senza una verifica legale dedicata, in ragione del precedente EUIPO citato (vedi `trademark-analysis.md`).

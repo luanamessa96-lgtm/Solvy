@@ -1,64 +1,71 @@
 # Solvy — Executive Overview
 
-Solvy è un asset software pronto per essere acquisito, dedicato alla gestione fiscale di freelance e liberi professionisti in Italia e Spagna.
+## Descrizione
 
-*Questo documento è pensato per essere letto da solo, in 10 minuti, senza bisogno di aprire altro. Se ti servono i dettagli tecnici, il documento di riferimento è `architecture-overview.md`; per i limiti noti, `known-limitations.md`; per l'elenco completo dei documenti disponibili, `data-room-index.md`.*
+Solvy è un'applicazione web progressiva (PWA) per la gestione fiscale di freelance e liberi professionisti in Italia e Spagna. Copre il calcolo di imposte e contributi, le scadenze fiscali, e la gestione di fatture e spese, in un'interfaccia mobile-first. Il prodotto è in produzione su [solvyapp.com](https://solvyapp.com).
 
-## Cos'è Solvy
+## Classificazione funzionale
 
-Solvy è un'applicazione web (PWA) che aiuta liberi professionisti e freelance in Italia e Spagna a gestire i propri obblighi fiscali: calcolo di imposte e contributi, scadenze, fatture e spese, in un'unica interfaccia mobile-first. È live in produzione su [solvyapp.com](https://solvyapp.com).
+Solvy è uno strumento di gestione e calcolo fiscale, non un software di fatturazione certificato né un sostituto della consulenza professionale. I calcoli sono presentati come stime soggette a verifica professionale. Questa classificazione determina il perimetro normativo del prodotto (vedi `known-limitations.md`, VeriFactu ES).
 
-## Quale problema risolve
+## Utenti e mercati
 
-Un libero professionista in regime forfettario (IT) o come autónomo (ES) deve calcolare a mano — o pagando un commercialista/gestor per ogni verifica — quanto accantonare per imposte e contributi, quando scadono i pagamenti, e come tenere traccia di fatture e spese. Solvy automatizza questi calcoli e li rende visibili in tempo reale, riducendo il tempo e l'incertezza di questa gestione, senza sostituirsi alla consulenza professionale.
-
-## Per chi è stato costruito
-
-Freelance e liberi professionisti in due mercati:
-- **Italia**: regime forfettario e regime ordinario
-- **Spagna**: Estimación Directa Simplificada, incluso il regime speciale delle Canarie (IGIC anziché IVA)
-
-## Posizionamento
-
-Solvy si posiziona come **strumento di gestione e calcolo fiscale**, non come software di fatturazione certificato né come sostituto di un commercialista. Ogni calcolo è etichettato come stima soggetta a verifica professionale — una scelta di posizionamento deliberata che evita obblighi normativi non necessari (vedi `known-limitations.md` per il dettaglio su VeriFactu ES).
+- **Italia**: regime forfettario e regime ordinario.
+- **Spagna**: Estimación Directa Simplificada, incluso il regime speciale delle Canarie (IGIC anziché IVA).
 
 ## Funzionalità principali
 
-- Calcolo automatico di imposte e contributi (imposta sostitutiva, INPS, IRPEF a scaglioni per l'Italia; IRPF/Modelo 130, RETA, IVA/Modelo 303 e 390 per la Spagna, incluso IGIC per le Canarie)
-- Gestione multi-profilo (un utente può avere più profili fiscali)
-- Fatture e spese, con esportazione PDF
-- Fatturazione elettronica diretta al Sistema di Interscambio (Italia) tramite integrazione A-Cube
-- Calendario scadenze fiscali specifico per paese e regime
-- Gestione contatto commercialista/gestor
-- Piano Free e piano Pro (abbonamento mensile/annuale via Stripe)
-- App installabile (PWA), interfaccia in italiano e spagnolo
+- Calcolo di imposte e contributi: imposta sostitutiva, INPS, IRPEF a scaglioni (Italia); IRPF/Modelo 130, RETA, IVA/Modelo 303 e 390, IGIC per le Canarie (Spagna).
+- Gestione multi-profilo (più profili fiscali per utente).
+- Fatture e spese, con esportazione PDF.
+- Fatturazione elettronica al Sistema di Interscambio (Italia) tramite integrazione A-Cube.
+- Calendario delle scadenze fiscali per paese e regime.
+- Gestione del contatto commercialista/gestor.
+- Piano Free e piano Pro (abbonamento mensile/annuale via Stripe).
+- Applicazione installabile (PWA), interfaccia in italiano e spagnolo.
+
+Dettaglio completo delle funzionalità e del confine Free/Pro in `feature-guide.md`.
 
 ## Architettura ad alto livello
 
-Frontend React a pagina singola (nessun router: un unico stato applicativo che mostra una delle viste in base al contesto utente). Ogni logica di calcolo fiscale è isolata in moduli per paese (`it`, `es`) dietro un'interfaccia comune — aggiungere un nuovo paese non richiede toccare il resto dell'applicazione. Il backend è interamente su Supabase: database Postgres con Row Level Security su ogni tabella, autenticazione, storage file, e 12 funzioni serverless che gestiscono pagamenti, fatturazione elettronica e notifiche. Il dettaglio completo è in `architecture-overview.md`.
+Frontend React a pagina singola, senza router: un unico stato applicativo seleziona la vista in base al contesto utente. La logica di calcolo fiscale è isolata in moduli per paese (`it`, `es`) che implementano un'interfaccia comune; l'aggiunta di un paese è confinata a un nuovo modulo. Il backend è su Supabase: database Postgres con Row Level Security su ogni tabella, autenticazione, storage file e 12 funzioni serverless (pagamenti, fatturazione elettronica, notifiche). Dettaglio in `architecture-overview.md`.
 
-## Tecnologie utilizzate
+## Stack tecnologico
 
-React 19, TypeScript, Vite, TailwindCSS 4 — frontend. Supabase (Postgres 17, Auth, Realtime, Storage, Edge Functions su Deno) — backend. Stripe — pagamenti. Vercel — hosting e deploy.
+- **Frontend**: React 19, TypeScript, Vite, TailwindCSS 4.
+- **Backend**: Supabase (Postgres 17, Auth, Realtime, Storage, Edge Functions su Deno).
+- **Pagamenti**: Stripe.
+- **Hosting e deploy**: Vercel.
 
 ## Servizi esterni
 
-Oltre allo stack sopra, il prodotto si appoggia a: **A-Cube** (intermediario fatturazione elettronica IT), **Loops** (email transazionali), **Telegram** (notifiche interne di monitoraggio, non user-facing). Elenco completo, uso e modalità di trasferimento in `credential-transfer-plan.md`.
+- **A-Cube** — intermediario per la fatturazione elettronica italiana.
+- **Loops** — email transazionali.
+- **Telegram** — notifiche interne di monitoraggio (non user-facing).
 
-## Cosa è incluso nella vendita
+Uso, titolarità e modalità di trasferimento in `credential-transfer-plan.md`.
 
-Questa è una cessione di asset tecnologico, non un'acquisizione societaria. L'operazione riguarda il software, il codice sorgente, la documentazione e l'infrastruttura concordata, non una società con clienti, dipendenti o quote da trasferire.
+## Oggetto della vendita
 
-Codice sorgente completo, architettura e design system, schema del database con relative policy di sicurezza, le 12 funzioni serverless, la suite di test (161 test unitari sulla logica fiscale + 9 suite end-to-end), tutta la documentazione di questa Data Room, e — se le parti concordano il trasferimento — l'infrastruttura live (progetto Supabase, dominio, account Vercel).
+L'operazione è una cessione di asset tecnologico, non un'acquisizione societaria: riguarda il software e gli asset associati, non una società con clienti, dipendenti o quote.
 
-Un asset raramente presente in un'acquisizione software di questa scala: 6 skill Claude Code che codificano la conoscenza fiscale italiana e spagnola verificata da fonti ufficiali, non solo il codice che la implementa — dettaglio in `ai-development-methodology.md`.
+Incluso:
 
-**Cosa non è incluso**: una base utenti commerciale. Il prodotto è stato usato da un piccolo gruppo chiuso durante lo sviluppo per validare flussi e individuare bug — un test reale, non una validazione di mercato. Il valore dell'asset è nel codice, nell'architettura e nel tempo di sviluppo risparmiato, non in un portafoglio clienti esistente.
+- Codice sorgente completo, architettura e design system.
+- Schema del database e relative policy di sicurezza.
+- Le 12 funzioni serverless.
+- Suite di test: 161 test unitari sulla logica fiscale e 9 suite end-to-end.
+- Documentazione della Data Room.
+- 6 skill Claude Code (`.claude/skills/`) che codificano regole fiscali IT/ES con riferimento a fonti ufficiali.
+- Infrastruttura live (progetto Supabase, dominio, account Vercel), se le parti ne concordano il trasferimento.
+
+## Elementi non inclusi
+
+Non è inclusa una base utenti commerciale. Durante lo sviluppo il prodotto è stato utilizzato da un gruppo chiuso a fini di test; non esiste validazione di mercato né portafoglio clienti.
 
 ## Limiti noti
 
-Due gap di prodotto sono dichiarati esplicitamente, con contesto completo, in `known-limitations.md`: l'assenza di conformità VeriFactu per la Spagna (non ancora obbligatoria) e lo stato sandbox (non production) dell'integrazione A-Cube per la fatturazione elettronica italiana.
+Due limitazioni di prodotto sono documentate in `known-limitations.md`:
 
----
-
-L'obiettivo della Data Room è permettere a un potenziale acquirente di comprendere rapidamente il prodotto, valutarne l'architettura e stimare il costo di presa in carico senza dover analizzare direttamente il codice sorgente.
+- Assenza di conformità VeriFactu per la Spagna (non ancora obbligatoria).
+- Integrazione A-Cube per la fatturazione elettronica italiana in stato sandbox (non production).

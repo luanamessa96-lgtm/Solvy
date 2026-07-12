@@ -1,69 +1,94 @@
 # Solvy — Feature Guide
 
-*Questo documento elenca cosa fa Solvy oggi, funzione per funzione, per chi deve capire lo scope esatto del prodotto senza aprire il codice. È leggibile da solo. Per il contesto generale vedi `executive-overview.md`; per come le funzioni sono costruite vedi `architecture-overview.md`; per i gap noti vedi `known-limitations.md`.*
+Descrizione del perimetro funzionale del prodotto, organizzata per aree. Le funzionalità soggette al piano Pro sono indicate come tali; la matrice completa di entitlement è nella sezione "Piani di abbonamento".
 
-## Nota di scope
+I valori normativi correnti (aliquote, scaglioni, soglie, importi contributivi) non sono elencati in questo documento: risiedono nei moduli per paese (`src/lib/countries/it.ts`, `src/lib/countries/es.ts`) e sono soggetti a variazione legislativa.
 
-Questo documento descrive le **capacità** del prodotto — cosa calcola, cosa gestisce, cosa automatizza — non le aliquote o i valori normativi correnti (percentuali INPS, scaglioni IRPEF, soglie di regime, ecc.). Le regole fiscali cambiano ogni anno per legge; il codice le implementa e le aggiorna, ma elencarle qui le renderebbe datate rapidamente. Chi ha bisogno dei valori esatti attualmente implementati li trova nel codice sorgente (moduli `src/lib/countries/it.ts` e `es.ts`).
+## Gestione account e profili
 
-## Onboarding & gestione profili
+Ogni utente gestisce uno o più **profili fiscali**. Ciascun profilo è associato a un singolo paese e regime tra quelli supportati (vedi "Supporto multi-paese"). Il paese è immutabile dopo la creazione del profilo: un mercato diverso richiede un nuovo profilo.
 
-Un utente crea uno o più **profili fiscali**, ciascuno associato a un singolo paese e regime (Italia forfettario, Italia ordinario, Spagna Estimación Directa — incluso il regime Canarie/IGIC). Un profilo raccoglie i dati identificativi necessari (P.IVA/NIF, codice ATECO, data di inizio attività, indirizzo) usati poi da tutti i calcoli e i documenti generati. Il cambio di paese su un profilo esistente non è previsto per design: il paese è immutabile dopo la creazione, un nuovo mercato richiede un nuovo profilo.
+Un profilo raccoglie i dati identificativi utilizzati dai calcoli e dai documenti generati: P.IVA/NIF, codice ATECO, data di inizio attività, indirizzo. Il piano Free consente un solo profilo; il piano Pro un numero illimitato.
 
-## Free vs Pro
+## Gestione e calcolo fiscale
 
-Il prodotto ha un piano gratuito e un abbonamento Pro (mensile o annuale, via Stripe). La seguente tabella è verificata direttamente nel codice sorgente e rappresenta il comportamento reale del prodotto alla data di questo documento:
+A partire da fatturato e spese registrati, il prodotto calcola imposte e contributi per il regime del profilo attivo, con proiezione del netto disponibile:
+
+- **Italia — Forfettario**: imposta sostitutiva, contributi INPS gestione separata.
+- **Italia — Ordinario**: IRPEF a scaglioni, contributi INPS gestione separata, liquidazione IVA trimestrale.
+- **Spagna — Estimación Directa Simplificada** (incluse le Canarie): IRPF trimestrale, quota RETA, IVA o IGIC secondo il territorio.
+
+I risultati sono presentati come stime soggette a verifica professionale.
+
+Per i profili italiani è disponibile la funzione **"Metti da parte"** (Pro): rateizzazione mensile suggerita dell'importo da accantonare.
+
+## Fatture e spese
+
+Registrazione e gestione di fatture e spese per profilo, con importo, controparte (cliente/fornitore), categoria e stato (pagata, in attesa, scaduta, bozza). Numerazione progressiva automatica, con possibilità di annullamento di un numero. Filtro e ricerca su entrate e uscite.
+
+Specificità per paese:
+
+- **Italia**: ritenuta d'acconto e marca da bollo, dove applicabili.
+- **Spagna**: retención IRPF e operazioni intracomunitarie.
+
+Funzionalità Pro dell'area:
+
+- Gestione clienti ricorrenti.
+- Preventivi/proforma convertibili in fattura.
+- Riconoscimento OCR degli scontrini per l'inserimento delle spese.
+
+## Fatturazione elettronica (Italia)
+
+Per i profili italiani, invio delle fatture al Sistema di Interscambio tramite l'integrazione A-Cube, con stato di consegna/scarto visibile in applicazione. L'account A-Cube attualmente configurato è in modalità sandbox (vedi `known-limitations.md`).
+
+## Calendario fiscale
+
+Calendario delle scadenze fiscali (versamenti, dichiarazioni periodiche e annuali) specifico per paese e regime, con vista mensile e promemoria. Le voci e le date si adattano al profilo attivo.
+
+## Reportistica ed esportazioni
+
+- Esportazione PDF delle fatture (Pro).
+- Esportazione per commercialista/gestor: riepilogo trimestrale, libri IVA, riepiloghi annuali (Pro).
+- Report avanzati in dashboard, sezione "Tasse" (Pro).
+
+## Gestione commercialista/gestor
+
+Ogni profilo può includere un contatto commercialista (IT) o gestor (ES), con dati di contratto e istruzioni di invio. L'esportazione dei dati destinati al professionista è parte delle funzionalità Pro (vedi "Reportistica ed esportazioni").
+
+## Notifiche
+
+- Email transazionali all'utente: benvenuto, upgrade a Pro, cancellazione dell'abbonamento.
+- Promemoria di pagamento automatici (Pro).
+
+Le notifiche Telegram sono un canale di monitoraggio interno, non visibile all'utente finale (vedi `architecture-overview.md`).
+
+## Piani di abbonamento
+
+Piano Free e piano Pro (abbonamento mensile o annuale via Stripe). Calcoli fiscali di base, calendario delle scadenze e gestione spese sono disponibili nel piano Free senza limitazioni.
 
 | Funzionalità | Free | Pro |
 |---|---|---|
 | Profili fiscali | 1 | Illimitati |
 | Fatture | Fino a 8 | Illimitate |
-| Clienti ricorrenti | ❌ | ✅ |
-| Preventivi convertibili in fattura (proforma) | ❌ | ✅ |
-| Export PDF fattura | ❌ | ✅ |
-| Export completo per il commercialista/gestor (riepilogo trimestrale, libri IVA, riepiloghi annuali) | ❌ | ✅ |
-| Report avanzati in dashboard (sezione "Tasse") | ❌ | ✅ |
-| Calcolo "Metti da parte" (rateizzazione mensile suggerita dell'importo da accantonare, solo profili IT) | ❌ | ✅ |
-| Promemoria pagamento automatici | ❌ | ✅ |
-| OCR scontrini | ❌ | ✅ |
-| Temi Pro (Pro Light / Pro Dark) | ❌ | ✅ |
+| Clienti ricorrenti | — | ✓ |
+| Preventivi convertibili in fattura (proforma) | — | ✓ |
+| Export PDF fattura | — | ✓ |
+| Export per commercialista/gestor (riepilogo trimestrale, libri IVA, riepiloghi annuali) | — | ✓ |
+| Report avanzati in dashboard (sezione "Tasse") | — | ✓ |
+| Calcolo "Metti da parte" (solo profili IT) | — | ✓ |
+| Promemoria di pagamento automatici | — | ✓ |
+| OCR scontrini | — | ✓ |
+| Temi Pro (Pro Light / Pro Dark) | — | ✓ |
 
-Calcoli fiscali di base, calendario scadenze e gestione spese restano disponibili nel piano Free senza limitazioni.
+## Progressive Web App e multi-dispositivo
 
-## Fatture & spese
+Applicazione installabile su mobile e desktop come Progressive Web App, con banner di installazione e notifica di aggiornamento disponibile. Profili, documenti e scadenze si sincronizzano tra i dispositivi collegati allo stesso account.
 
-Creazione e gestione di fatture e spese per ciascun profilo: importo, cliente/fornitore, categoria, stato (pagata, in attesa, scaduta, bozza). Le fatture italiane supportano ritenuta d'acconto e marca da bollo dove applicabile; le fatture spagnole supportano retención IRPF e operazioni intracomunitarie. Filtro e ricerca su entrate/uscite, numerazione automatica progressiva con possibilità di annullo numero.
+## Supporto multi-paese e localizzazione
 
-## Calcoli fiscali
+Mercati e regimi supportati:
 
-Per ciascun regime supportato, Solvy calcola in automatico, a partire da fatturato e spese inserite:
+- **Italia**: regime forfettario, regime ordinario.
+- **Spagna**: Estimación Directa Simplificada, incluso il regime speciale delle Canarie (IGIC anziché IVA).
 
-- **Italia — Forfettario**: imposta sostitutiva, contributi INPS gestione separata, proiezione del netto disponibile
-- **Italia — Ordinario**: imposta IRPEF a scaglioni, contributi INPS gestione separata, liquidazione IVA trimestrale, proiezione del netto disponibile
-- **Spagna — Estimación Directa** (incluse le Canarie): IRPF trimestrale, quota RETA, IVA o IGIC a seconda del territorio
-
-Ogni calcolo è mostrato come stima soggetta a verifica professionale, mai come valore definitivo (scelta di posizionamento, vedi `executive-overview.md`).
-
-## Calendario scadenze
-
-Calendario delle scadenze fiscali specifico per paese e regime (versamenti, dichiarazioni periodiche e annuali), con vista mensile e promemoria. Le date e le voci mostrate si adattano automaticamente al profilo attivo.
-
-## Fatturazione elettronica (Italia)
-
-Per i profili italiani, invio diretto delle fatture al Sistema di Interscambio tramite l'integrazione A-Cube, con stato di consegna/scarto visibile in app. Questa funzione è tecnicamente completa e coperta da test end-to-end dedicati — lo stato dell'account A-Cube utilizzato (sandbox, non ancora production) è documentato in `known-limitations.md`.
-
-## Gestione commercialista/gestor
-
-Ogni profilo può avere un contatto commercialista (IT) o gestor (ES) associato, con dati di contratto e istruzioni di invio. L'export dei dati per il commercialista (riepilogo trimestrale, libri IVA) è una funzionalità Pro (vedi sopra).
-
-## Notifiche
-
-Email transazionali all'utente per benvenuto, upgrade a Pro e cancellazione abbonamento. Non rientrano qui gli alert Telegram, che sono un canale di monitoraggio interno non visibile all'utente (dettaglio in `architecture-overview.md`).
-
-## PWA & multi-dispositivo
-
-App installabile su mobile e desktop come Progressive Web App, con banner di installazione e notifica di aggiornamento disponibile. I profili, i documenti e le scadenze si sincronizzano in tempo reale tra dispositivi collegati allo stesso account. Interfaccia disponibile in italiano e spagnolo, tema chiaro/scuro (più le due varianti Pro).
-
----
-
-Le funzionalità descritte rappresentano lo stato attuale del prodotto al momento della redazione di questo documento. Eventuali evoluzioni future sono documentate separatamente e non fanno parte dell'oggetto di questa vendita.
+Interfaccia disponibile in italiano e spagnolo. Temi chiaro e scuro, con due varianti aggiuntive nel piano Pro (Pro Light, Pro Dark).

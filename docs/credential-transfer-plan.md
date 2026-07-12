@@ -15,12 +15,16 @@ Elenco completo dei servizi esterni da cui Solvy dipende operativamente. Nessuna
 
 ## Google Analytics 4 e Search Console
 
-Non incluse nella tabella sopra perché non sono credenziali infrastrutturali (nessuna API key nel codice) ma accessi ad account Google della fondatrice — categoria diversa, con proprie verifiche manuali richieste prima del closing. Piano di trasferimento dedicato in `docs/analytics-search-console-transfer.md`.
+Non incluse nella tabella sopra perché non sono credenziali infrastrutturali (nessuna API key nel codice) ma accessi ad account Google della fondatrice — categoria diversa, con proprie verifiche manuali richieste prima del closing.
+
+- **Google Analytics 4** — measurement ID `G-2F4JDKGKNX`, integrato sia in `index.html` (app) sia in `public/landing.html`. Trasferimento nativo: Admin → Property Access Management → aggiungere l'acquirente come Amministratore, poi rimuovere l'accesso della fondatrice — nessuna perdita di storico dati.
+- **Google Search Console** — proprietà verificata su `solvyapp.com` tramite file `public/googlee414c4209c9dc88d.html`. Trasferimento nativo: Impostazioni → Utenti e autorizzazioni → aggiungere l'acquirente come Proprietario, poi rimuovere l'accesso della fondatrice.
+- **Verifiche manuali non deducibili dal repository**: quale account Google possiede le due property, se ha l'autenticazione a due fattori attiva, se esistono collegamenti ad altri prodotti Google (Ads, Tag Manager) da dichiarare separatamente.
 
 ## Cosa NON richiede trasferimento
 I 4 dati sensibili in `.env.example` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_KEY`, `VITE_STRIPE_PUBLISHABLE_KEY`, prezzi Stripe) sono chiavi pubblicabili lato client per design — si rigenerano automaticamente non appena Supabase/Stripe vengono trasferiti, non richiedono un passaggio separato.
 
-## Priorità di trasferimento in una trattativa reale
+## Priorità di trasferimento 
 1. GitHub (repo) e Supabase (dati + auth utenti) — sono il cuore dell'asset
 2. Vercel + dominio — necessari per mantenere il servizio online senza interruzioni
 3. Stripe — critico se si vogliono mantenere gli abbonamenti attivi esistenti, altrimenti rimandabile a dopo il closing
