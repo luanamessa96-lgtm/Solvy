@@ -28,3 +28,19 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  verify-edge-functions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Type-check Edge Functions
+        run: |
+          for f in supabase/functions/*/index.ts; do
+            echo "Checking $f"
+            deno check "$f"
+          done
