@@ -54,9 +54,9 @@ Incluso:
 - Codice sorgente completo, architettura e design system.
 - Schema del database e relative policy di sicurezza.
 - Le 12 funzioni serverless.
-- Suite di test: 161 test unitari sulla logica fiscale e 9 suite end-to-end.
+- Suite di test: 161 test unitari sulla logica fiscale e 8 suite end-to-end.
 - Documentazione della Data Room.
-- 6 skill Claude Code (`.claude/skills/`) che codificano regole fiscali IT/ES con riferimento a fonti ufficiali.
+- 6 skill Claude Code (`.claude/skills/`): 3 dedicate alla logica fiscale IT/ES con riferimento a fonti ufficiali (`fiscale-it`, `fiscale-es`, `fiscale-avanzata`), più `sicurezza` (postura di sicurezza del prodotto), `i18n` (regole di traduzione IT/ES) e `ui-solvy` (design system). Il repository non contiene altre skill: strumenti non direttamente collegati al prodotto sono stati esclusi dal perimetro della cessione.
 - Infrastruttura live (progetto Supabase, dominio, account Vercel), se le parti ne concordano il trasferimento.
 
 ## Elementi non inclusi

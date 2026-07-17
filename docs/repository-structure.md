@@ -12,6 +12,7 @@ Organizzazione del repository. Per l'architettura del sistema vedi `architecture
 | `docs/` | Documentazione della Data Room |
 | `public/` | Asset statici e pagine legali (privacy, termini, cookie) |
 | `future/` | Note di roadmap non implementate |
+| `.claude/skills/` | Knowledge base fiscale e operativa in formato skill Claude Code (dettaglio sotto) |
 | `index.html`, file di build | Entry point e configurazione build |
 
 ## Frontend (`src/`)
@@ -41,7 +42,7 @@ Organizzazione del repository. Per l'architettura del sistema vedi `architecture
 
 | Elemento | Contenuto |
 |---|---|
-| `migrations/` | 17 file SQL. Convenzioni in `supabase/migrations/README.md` |
+| `migrations/` | 18 file SQL. Convenzioni in `supabase/migrations/README.md` |
 | `functions/` | 12 Edge Function. Dettaglio in `supabase/functions/README.md` |
 | `schema_production.sql` | Dump dello schema di produzione |
 | `email-templates/` | Template delle email transazionali |
@@ -50,8 +51,21 @@ Organizzazione del repository. Per l'architettura del sistema vedi `architecture
 
 | Percorso | Contenuto |
 |---|---|
-| `e2e/` | 9 suite Playwright più `helpers.ts` |
+| `e2e/` | 8 suite Playwright più `helpers.ts` |
 | `src/__tests__/` | 4 file di test unitari (Vitest) |
+
+## Knowledge base fiscale e operativa (`.claude/skills/`)
+
+6 skill, tutte specifiche di Solvy — nessuno strumento generico incluso nel perimetro della cessione.
+
+| Skill | Contenuto |
+|---|---|
+| `fiscale-it` | Regole logica fiscale italiana: regime forfettario e ordinario |
+| `fiscale-es` | Regole logica fiscale spagnola: IRPF, RETA, Modelos |
+| `fiscale-avanzata` | Regole fiscali IT/ES con riferimento a fonti ufficiali (Agenzia Entrate, INPS, AEAT, Seguridad Social) |
+| `sicurezza` | Regole di sicurezza del prodotto: RLS, CSP, variabili d'ambiente, edge function, autenticazione |
+| `i18n` | Regole di internazionalizzazione IT/ES per testo, label e messaggi UI |
+| `ui-solvy` | Design system: colori, temi, componenti, pattern di composizione |
 
 ## Documentazione
 

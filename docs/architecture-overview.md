@@ -98,6 +98,6 @@ L'app è una PWA installabile: banner di installazione, aggiornamento automatico
 
 Due livelli, entrambi attivi:
 - **Unit test (Vitest)** — 161 test, concentrati sulla logica fiscale pura (calcoli IT/ES, arrotondamenti, scaglioni) e su alcuni percorsi critici (bootstrap profilo, gestione sessione, gate di installazione)
-- **End-to-end (Playwright)** — 9 suite. Le suite end-to-end vengono eseguite contro l'ambiente di produzione per verificare il comportamento del sistema realmente distribuito: autenticazione, onboarding per ciascun regime (IT forfettario, IT ordinario, ES incluse Canarie), fatture/spese, funzionalità Pro vs Free, fatturazione elettronica SdI
+- **End-to-end (Playwright)** — 8 suite. Le suite end-to-end vengono eseguite contro l'ambiente di produzione per verificare il comportamento del sistema realmente distribuito: autenticazione, onboarding per ciascun regime (IT forfettario, IT ordinario, ES incluse Canarie), fatture/spese, funzionalità Pro vs Free, fatturazione elettronica SdI
 
 La combinazione copre sia la correttezza dei calcoli sia i flussi utente end-to-end, non solo l'uno o l'altro.
