@@ -45,8 +45,7 @@
     "alert_approaching": "Stai avvicinandoti alla soglia forfettario. Valuta con il commercialista il passaggio all'ordinario.",
     "expenses_by_category": "Spese per Categoria",
     "no_expenses_title": "Nessuna spesa registrata",
-    "no_expenses_subtitle": "Aggiungi le tue spese dai Documenti",
-    "effective_rate": "Tipo efectivo: "
+    "no_expenses_subtitle": "Aggiungi le tue spese dai Documenti"
   },
   "documents": {
     "invoice": "Fattura",
@@ -119,6 +118,8 @@
     "create_invoice": "Crea Fattura",
     "create_proforma": "Crea Proforma",
     "convert_to_invoice": "Converti in Fattura",
+    "invoice_number_error": "Non è stato possibile assegnare il numero fattura. Riprova.",
+    "saving": "Salvataggio…",
     "toast_invoice_added": "Fattura aggiunta",
     "toast_credit_note_added": "Nota di credito aggiunta",
     "toast_factura_rectificativa_added": "Nota di credito rettificativa aggiunta",

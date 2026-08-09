@@ -113,6 +113,8 @@
     "create_invoice": "Crear Factura",
     "create_proforma": "Crear Proforma",
     "convert_to_invoice": "Convertir en Factura",
+    "invoice_number_error": "No se ha podido asignar el número de factura. Inténtalo de nuevo.",
+    "saving": "Guardando…",
     "toast_invoice_added": "Factura añadida",
     "toast_credit_note_added": "Nota de crédito añadida",
     "toast_factura_rectificativa_added": "Factura rectificativa creada",

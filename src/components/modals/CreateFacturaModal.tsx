@@ -5,6 +5,7 @@ import { Plus, FileText, CheckCircle2 } from 'lucide-react';
 import { Document, Profile } from '../../types';
 import { todayLocalISO } from '../../utils/date';
 import { getSpainVatRates, getSpainDefaultVatRate } from '../../lib/countries/es';
+import { assignInvoiceNumber } from '../../lib/db';
 
 interface CreateFacturaModalProps {
   isOpen: boolean;
@@ -18,7 +19,7 @@ interface CreateFacturaModalProps {
   editDoc?: Document;
 }
 
-const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile, profile, documents, darkMode, editDoc }: CreateFacturaModalProps) => {
+const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, profile, documents, darkMode, editDoc }: CreateFacturaModalProps) => {
   useBodyScrollLock(isOpen);
   const currentYear = new Date().getFullYear();
   const isEditMode = !!editDoc;
@@ -26,6 +27,9 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
   const ivaOptions = getSpainVatRates(profile.territory);
   const taxLabel = isCanarias ? 'IGIC' : 'IVA';
 
+  // Solo anteprima: il numero definitivo viene assegnato in modo atomico dal
+  // server (assignInvoiceNumber) al momento del salvataggio, per evitare che
+  // due sessioni concorrenti generino lo stesso numero.
   const nextInvoiceNumber = useMemo(() => {
     const yearStr = String(currentYear);
     const existingCount = documents.filter(d => d.type === 'invoice' && new Date(d.date).getFullYear() === currentYear).length;
@@ -56,6 +60,8 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
   });
 
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   // Sync form when modal opens — pre-fill in edit mode, reset in create mode
   useEffect(() => {
@@ -115,13 +121,6 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
     return true;
   };
 
-  const incrementCounter = () => {
-    const yearStr = String(currentYear);
-    const existingCount = documents.filter(d => d.type === 'invoice' && new Date(d.date).getFullYear() === currentYear).length;
-    const current = profile.invoiceCounters?.[yearStr] ?? existingCount;
-    onUpdateProfile({ ...profile, invoiceCounters: { ...(profile.invoiceCounters ?? {}), [yearStr]: current + 1 } });
-  };
-
   const buildDocFields = () => ({
     date: form.date,
     client: form.client,
@@ -136,20 +135,29 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
     status: form.status,
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validate()) return;
     if (isEditMode && editDoc && onUpdate) {
       onUpdate({ ...editDoc, ...buildDocFields() });
-    } else {
-      incrementCounter();
+      onClose();
+      return;
+    }
+    setSubmitError('');
+    setIsSubmitting(true);
+    try {
+      const invoiceNumber = await assignInvoiceNumber(profile.id);
       onSave({
         id: Math.random().toString(36).substr(2, 9),
         type: 'invoice',
-        invoiceNumber: nextInvoiceNumber,
+        invoiceNumber,
         ...buildDocFields(),
       });
+      onClose();
+    } catch {
+      setSubmitError('No se ha podido asignar el número de factura. Inténtalo de nuevo.');
+    } finally {
+      setIsSubmitting(false);
     }
-    onClose();
   };
 
   // Spain-only modal
@@ -415,12 +423,17 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, onUpdateProfile
                 </p>
               </div>
 
+              {submitError && (
+                <p className="text-xs text-red-500 font-semibold text-center">{submitError}</p>
+              )}
+
               <button
                 onClick={handleSubmit}
-                className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                disabled={isSubmitting}
+                className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:active:scale-100"
               >
                 <FileText size={18} />
-                {isEditMode ? 'Guardar Cambios' : 'Crear Factura'}
+                {isSubmitting ? 'Guardando…' : isEditMode ? 'Guardar Cambios' : 'Crear Factura'}
               </button>
 
             </div>

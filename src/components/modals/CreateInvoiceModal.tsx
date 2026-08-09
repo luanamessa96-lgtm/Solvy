@@ -4,8 +4,9 @@ import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { Plus, FileText, CheckCircle2, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Document, Profile } from '../../types';
-import { todayLocalISO, getLocalYear } from '../../utils/date';
+import { todayLocalISO } from '../../utils/date';
 import InfoTooltip from '../ui/InfoTooltip';
+import { assignInvoiceNumber } from '../../lib/db';
 
 interface CreateInvoiceModalProps {
   isOpen: boolean;
@@ -29,7 +30,7 @@ const FORFETTARIO_NOTE =
 
 const IVA_OPTIONS = [4, 5, 10, 22];
 
-const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile, documents, darkMode, isProforma = false }: CreateInvoiceModalProps) => {
+const CreateInvoiceModal = ({ isOpen, onClose, onSave, profile, documents, darkMode, isProforma = false }: CreateInvoiceModalProps) => {
   const { t } = useTranslation();
   const regime = profile.regime ?? 'forfettario';
 
@@ -75,6 +76,8 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const set = <K extends keyof typeof form>(key: K, value: typeof form[K]) => setForm(f => ({ ...f, [key]: value }));
   const touch = (key: string) => setTouched(t => ({ ...t, [key]: true }));
@@ -141,11 +144,11 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
   const hasErrors = Object.values(errors).some(Boolean);
   const isItaly = profile.country === 'Italy';
 
-  const buildDoc = (overrideType?: 'invoice'): Document => ({
+  const buildDoc = (overrideType: 'invoice' | undefined, invoiceNumber: string): Document => ({
     id: Math.random().toString(36).substr(2, 9),
     type: overrideType ?? (isProforma ? 'proforma' : 'invoice'),
     status: (overrideType === 'invoice' || !isProforma) ? form.status : 'pending',
-    invoiceNumber: form.invoiceNumber || nextInvoiceNumber,
+    invoiceNumber,
     date: form.date,
     client: form.client,
     clientAddress: form.clientAddress,
@@ -162,16 +165,6 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
     docRegime: (regime === 'ordinario' ? 'ordinario' : 'forfettario') as 'forfettario' | 'ordinario',
   });
 
-  const incrementCounter = () => {
-    const year = new Date().getFullYear();
-    const yearStr = String(year);
-    // Use Math.max to prevent duplicates on rapid creation: if the stored counter is behind
-    // the actual document count (race condition), the document count wins as the floor.
-    const existingCount = documents.filter(d => d.type === 'invoice' && getLocalYear(d.date) === year).length;
-    const current = Math.max(profile.invoiceCounters?.[yearStr] ?? 0, existingCount);
-    onUpdateProfile({ ...profile, invoiceCounters: { ...(profile.invoiceCounters ?? {}), [yearStr]: current + 1 } });
-  };
-
   const validate = () => {
     setTouched({ client: true, title: true, amount: true, clientSdi: true });
     if (!form.client.trim() || !form.title.trim() || amount <= 0) return false;
@@ -179,21 +172,52 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
     return true;
   };
 
-  const handleSubmit = () => {
+  // Se l'utente ha digitato un numero a mano lo rispettiamo senza consumare
+  // un numero dalla sequenza atomica del server (che altrimenti verrebbe
+  // assegnato e scartato). Solo per le fatture definitive: le proforma non
+  // sono fiscalmente vincolanti e restano numerate localmente.
+  const resolveInvoiceNumber = async () => {
+    if (form.invoiceNumber.trim()) return form.invoiceNumber.trim();
+    return assignInvoiceNumber(profile.id);
+  };
+
+  const handleSubmit = async () => {
     if (!validate()) return;
-    if (!isProforma) incrementCounter();
-    onSave(buildDoc());
-    reset();
-    onClose();
+    if (isProforma) {
+      onSave(buildDoc(undefined, form.invoiceNumber || nextInvoiceNumber));
+      reset();
+      onClose();
+      return;
+    }
+    setSubmitError('');
+    setIsSubmitting(true);
+    try {
+      const invoiceNumber = await resolveInvoiceNumber();
+      onSave(buildDoc(undefined, invoiceNumber));
+      reset();
+      onClose();
+    } catch {
+      setSubmitError(t('documents.invoice_number_error'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Converti in fattura definitiva: salva direttamente come fattura (non come proforma)
-  const handleConvertToInvoice = () => {
+  const handleConvertToInvoice = async () => {
     if (!validate()) return;
-    incrementCounter();
-    onSave(buildDoc('invoice'));
-    reset();
-    onClose();
+    setSubmitError('');
+    setIsSubmitting(true);
+    try {
+      const invoiceNumber = await resolveInvoiceNumber();
+      onSave(buildDoc('invoice', invoiceNumber));
+      reset();
+      onClose();
+    } catch {
+      setSubmitError(t('documents.invoice_number_error'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   useBodyScrollLock(isOpen);
@@ -508,18 +532,22 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSave, onUpdateProfile, profile,
 
               {/* Azioni */}
               <div className="space-y-3 pb-2">
-                <button onClick={handleSubmit} disabled={hasErrors && Object.keys(touched).length > 0}
+                {submitError && (
+                  <p className="text-xs text-red-500 font-semibold text-center">{submitError}</p>
+                )}
+
+                <button onClick={handleSubmit} disabled={isSubmitting || (hasErrors && Object.keys(touched).length > 0)}
                   className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-40 flex items-center justify-center gap-2">
                   <FileText size={18} />
-                  {isProforma ? t('documents.create_proforma') : t('documents.create_invoice')}
+                  {isSubmitting ? t('documents.saving') : isProforma ? t('documents.create_proforma') : t('documents.create_invoice')}
                 </button>
 
                 {/* Converti in fattura definitiva con un click — solo proforma */}
                 {isProforma && (
-                  <button onClick={handleConvertToInvoice} disabled={hasErrors && Object.keys(touched).length > 0}
+                  <button onClick={handleConvertToInvoice} disabled={isSubmitting || (hasErrors && Object.keys(touched).length > 0)}
                     className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-40 ${darkMode ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}>
                     <CheckCircle2 size={18} />
-                    {t('documents.convert_to_invoice')}
+                    {isSubmitting ? t('documents.saving') : t('documents.convert_to_invoice')}
                   </button>
                 )}
 

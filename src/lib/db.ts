@@ -57,6 +57,12 @@ export async function getDocuments(profileId: string): Promise<Document[]> {
   }));
 }
 
+export async function assignInvoiceNumber(profileId: string): Promise<string> {
+  const { data, error } = await getClient().rpc('assign_invoice_number', { p_profile_id: profileId });
+  if (error) throw error;
+  return data as string;
+}
+
 export async function addDocument(doc: Document, profileId: string): Promise<void> {
   const { error } = await getClient()
     .from('documents')
