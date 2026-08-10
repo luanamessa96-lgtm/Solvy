@@ -7,7 +7,7 @@
 - Countries: Spain, Italy
 
 ## Pro Monthly
-- Price: €7.99/month
+- Price: €14.99/month
 - Billing: monthly, cancel anytime
 - Features:
   - Unlimited invoices
@@ -19,8 +19,8 @@
   - PWA — iOS, Android, web
 
 ## Pro Yearly
-- Price: €59.99/year (equivalent to €5.00/month)
-- Saving: 37% vs monthly plan
+- Price: €149.90/year (equivalent to €12.49/month)
+- Saving: 17% vs monthly plan
 - Billing: annual, one payment
 - Features: same as Pro Monthly
 

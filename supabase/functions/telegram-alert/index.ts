@@ -19,7 +19,7 @@ function buildMessage(payload: AlertPayload): string {
     return `🆕 *Nuovo utente Solvy*\n👤 ${payload.name || 'Senza nome'}\n📧 ${payload.email}\n${flag} ${payload.country || 'Italia'}`;
   }
   if (payload.type === 'new_pro') {
-    const planLabel = payload.plan === 'yearly' ? 'Annuale €59,99' : 'Mensile €7,99';
+    const planLabel = payload.plan === 'yearly' ? 'Annuale €149,90' : 'Mensile €14,99';
     return `💳 *Nuovo Pro Solvy*\n👤 ${payload.name || 'Senza nome'}\n📧 ${payload.email}\n${flag} ${payload.country || 'Italia'}\n📦 ${planLabel}`;
   }
   return `📢 Alert Solvy: ${JSON.stringify(payload)}`;

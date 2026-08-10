@@ -31,9 +31,9 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
   const [error, setError] = useState<string | null>(null);
   const [promoCode, setPromoCode] = useState('');
 
-  const priceMonthly = '€7,99';
-  const priceYearly = '€59,99';
-  const priceYearlyMonthly = '€5,00';
+  const priceMonthly = '€14,99';
+  const priceYearly = '€149,90';
+  const priceYearlyMonthly = '€12,49';
 
   const handleUpgrade = async () => {
     setLoading(true);

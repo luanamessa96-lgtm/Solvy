@@ -239,7 +239,7 @@ export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
             'Modelo 303 en 30 segundos',
             'IRPF en tiempo real',
             'Calendario fiscal con alertas',
-            '7,99€/mes · Todo incluido',
+            '14,99€/mes · Todo incluido',
           ].map(label => (
             <div className="trust-item" key={label}>
               <svg width="16" height="16" fill="none" stroke="#7C3AED" strokeWidth="2" viewBox="0 0 24 24">
@@ -373,7 +373,7 @@ export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
               <div className="p-label">Mensual</div>
               <div className="p-price">
                 <span className="p-currency">€</span>
-                <span className="p-amount">7,99</span>
+                <span className="p-amount">14,99</span>
               </div>
               <div className="p-period">al mes</div>
               <div className="p-note">Flexibilidad total</div>
@@ -383,15 +383,15 @@ export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
               ))}
             </div>
             <div className="p-card best sa2">
-              <div className="p-best-badge">AHORRA 37%</div>
+              <div className="p-best-badge">AHORRA 17%</div>
               <div className="p-label">Anual</div>
-              <div className="p-old">€95,88</div>
+              <div className="p-old">€179,88</div>
               <div className="p-price">
                 <span className="p-currency">€</span>
-                <span className="p-amount">59,99</span>
+                <span className="p-amount">149,90</span>
               </div>
               <div className="p-period">al año</div>
-              <div className="p-note">≈ €5/mes · 2 meses gratis</div>
+              <div className="p-note">≈ €12,49/mes · 2 meses gratis</div>
               <hr className="p-divider" />
               {['Facturas ilimitadas','Calendario fiscal completo','Libro Registro automático','Temas personalizados'].map(f => (
                 <div className="p-feat" key={f}><span className="p-check">✓</span> {f}</div>
