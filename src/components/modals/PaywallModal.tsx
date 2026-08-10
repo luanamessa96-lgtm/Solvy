@@ -148,7 +148,7 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
                 >
                   {t('paywall.billing_yearly')}
                   <span className="absolute -top-2 -right-1 bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                    -37%
+                    -17%
                   </span>
                 </button>
               </div>
