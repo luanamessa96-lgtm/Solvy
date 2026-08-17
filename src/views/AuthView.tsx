@@ -5,15 +5,17 @@ import { useTranslation } from 'react-i18next';
 import { getClient } from '../lib/supabase';
 
 
-type Screen = 'login' | 'register' | 'forgot' | 'forgot-sent' | 'reset' | 'register-sent';
+type Screen = 'login' | 'register' | 'forgot' | 'forgot-sent' | 'reset' | 'register-sent' | 'recovery-confirm';
 
 interface AuthViewProps {
   darkMode?: boolean;
   onResetPassword?: () => void;
   initialScreen?: Screen;
+  recoveryTokenHash?: string;
+  onRecoveryDismiss?: () => void;
 }
 
-export default function AuthView({ darkMode, onResetPassword, initialScreen }: AuthViewProps) {
+export default function AuthView({ darkMode, onResetPassword, initialScreen, recoveryTokenHash, onRecoveryDismiss }: AuthViewProps) {
   const { t, i18n } = useTranslation();
   const isES = i18n.language?.startsWith('es');
   const [screen, setScreen] = useState<Screen>(initialScreen ?? 'login');
@@ -151,6 +153,18 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
     onResetPassword?.();
   };
 
+  // Richiede un click esplicito dell'utente prima di consumare il token monouso:
+  // gli scanner di sicurezza email fanno prefetch dei link e bruciano il token prima del click reale
+  const handleConfirmRecovery = async () => {
+    if (!recoveryTokenHash) return;
+    setLoading(true);
+    clearError();
+    const { error } = await getClient().auth.verifyOtp({ token_hash: recoveryTokenHash, type: 'recovery' });
+    setLoading(false);
+    if (error) { setError(t('auth.error_recovery_link_invalid')); return; }
+    // successo → l'evento PASSWORD_RECOVERY viene gestito da App.tsx
+  };
+
   // AuthView is always light — ignora il tema dell'app
   const inputClass = `w-full px-4 py-3.5 rounded-2xl text-sm font-medium outline-none transition-all border-2 bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-primary`;
 
@@ -196,6 +210,12 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
               <motion.div key="reset-tag" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}>
                 <p className={`text-xl font-bold text-slate-900`}>{t('auth.reset_title')}</p>
                 <p className="text-slate-400 text-sm mt-0.5">{t('auth.reset_subtitle')}</p>
+              </motion.div>
+            )}
+            {screen === 'recovery-confirm' && (
+              <motion.div key="recovery-confirm-tag" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}>
+                <p className={`text-xl font-bold text-slate-900`}>{t('auth.recovery_confirm_title')}</p>
+                <p className="text-slate-400 text-sm mt-0.5">{t('auth.recovery_confirm_subtitle')}</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -375,6 +395,21 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen }: A
 
               <button type="button" onClick={handleResetPassword} disabled={loading} className={btnPrimary}>
                 {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : t('auth.save_new_password')}
+              </button>
+            </motion.div>
+          )}
+
+          {/* RECOVERY CONFIRM — gate esplicito prima di consumare il token PKCE */}
+          {screen === 'recovery-confirm' && (
+            <motion.div key="recovery-confirm-form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+              {error && <p className="text-sm text-red-500 font-medium px-1">{error}</p>}
+
+              <button type="button" onClick={handleConfirmRecovery} disabled={loading} className={btnPrimary}>
+                {loading ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : t('auth.recovery_confirm_cta')}
+              </button>
+
+              <button type="button" onClick={() => { clearError(); onRecoveryDismiss?.(); setScreen('login'); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-slate-500">
+                <ArrowLeft size={14} /> {t('auth.back_to_login')}
               </button>
             </motion.div>
           )}

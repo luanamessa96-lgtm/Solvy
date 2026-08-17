@@ -313,6 +313,9 @@
     "register_sent_subtitle": "Hemos enviado un enlace de confirmación",
     "reset_title": "Nueva contraseña",
     "reset_subtitle": "Elige una contraseña segura",
+    "recovery_confirm_title": "Restablece tu contraseña",
+    "recovery_confirm_subtitle": "Confirma que eres tú para continuar",
+    "recovery_confirm_cta": "Continuar",
     "remember_me": "Recuérdame",
     "forgot_link": "¿Contraseña olvidada?",
     "login_btn": "Entrar",
@@ -339,7 +342,8 @@
     "error_password_length": "La contraseña debe tener al menos 8 caracteres.",
     "error_already_registered": "Este email ya está registrado. Inicia sesión.",
     "error_forgot_send": "Error al enviar. Comprueba el email.",
-    "error_reset_save": "Error al guardar. Inténtalo de nuevo."
+    "error_reset_save": "Error al guardar. Inténtalo de nuevo.",
+    "error_recovery_link_invalid": "Enlace caducado o no válido. Solicita un nuevo enlace desde la pantalla de acceso."
   },
   "install_gate": {
     "title": "¡Cuenta confirmada!",

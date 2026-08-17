@@ -133,6 +133,14 @@ function AppInner() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+  // Link di reset password (PKCE): token_hash letto dalla URL, consumato solo dopo click esplicito
+  // dell'utente in AuthView — evita che gli scanner di sicurezza email lo brucino col prefetch
+  const [recoveryTokenHash, setRecoveryTokenHash] = useState<string | null>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const hash = params.get('type') === 'recovery' ? params.get('token_hash') : null;
+    if (hash) window.history.replaceState({}, '', window.location.pathname);
+    return hash;
+  });
   const [isOffline, setIsOffline] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
@@ -176,6 +184,7 @@ function AppInner() {
         if (event === 'PASSWORD_RECOVERY') {
           setIsPasswordRecovery(true);
           setIsAuthenticated(true);
+          setRecoveryTokenHash(null);
         } else if (event === 'SIGNED_IN') {
           setIsPasswordRecovery(false);
           setIsAuthenticated(true);
@@ -856,6 +865,21 @@ function AppInner() {
   // Livello 1 — email confirmation link: mostra gate immediatamente, prima dello spinner auth
   if (IS_CONFIRMED_ROUTE && NEEDS_INSTALL) {
     return <InstallGateScreen />;
+  }
+
+  // Livello 1bis — link di reset password (PKCE): richiede click esplicito prima di consumare
+  // il token, indipendentemente dallo stato della sessione
+  if (recoveryTokenHash) {
+    return (
+      <Suspense fallback={null}>
+        <AuthView
+          darkMode={darkMode}
+          initialScreen="recovery-confirm"
+          recoveryTokenHash={recoveryTokenHash}
+          onRecoveryDismiss={() => setRecoveryTokenHash(null)}
+        />
+      </Suspense>
+    );
   }
 
   // Schermata di caricamento auth iniziale

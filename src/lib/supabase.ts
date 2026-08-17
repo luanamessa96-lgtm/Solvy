@@ -72,6 +72,7 @@ export const supabaseReady: Promise<SupabaseClient> = import('@supabase/supabase
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+        flowType: 'pkce',
       },
       realtime: {
         params: { apikey: realtimeKey },
