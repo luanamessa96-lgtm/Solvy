@@ -900,14 +900,16 @@ function AppInner() {
     );
   }
 
+  // Recupero password → schermata nuova password (sempre pro-light, gestito dall'useEffect tema)
+  // Deve passare PRIMA del gate installazione: l'utente deve poter scegliere la nuova password
+  // anche da mobile browser, senza dover installare la PWA a metà del flusso di recovery.
+  if (isPasswordRecovery) {
+    return <Suspense fallback={null}><AuthView darkMode={darkMode} initialScreen="reset" onResetPassword={() => setIsPasswordRecovery(false)} /></Suspense>;
+  }
+
   // Livello 2 — blocca uso dell'app autenticata in mobile browser (non standalone)
   if (NEEDS_INSTALL) {
     return <InstallGateScreen />;
-  }
-
-  // Recupero password → schermata nuova password (sempre pro-light, gestito dall'useEffect tema)
-  if (isPasswordRecovery) {
-    return <Suspense fallback={null}><AuthView darkMode={darkMode} initialScreen="reset" onResetPassword={() => setIsPasswordRecovery(false)} /></Suspense>;
   }
 
   const proGradient = theme === 'pro-light'
