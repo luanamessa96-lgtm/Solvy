@@ -343,6 +343,7 @@
     "error_already_registered": "Este email ya está registrado. Inicia sesión.",
     "error_forgot_send": "Error al enviar. Comprueba el email.",
     "error_reset_save": "Error al guardar. Inténtalo de nuevo.",
+    "error_reset_same_password": "La nueva contraseña debe ser diferente de la actual.",
     "error_recovery_link_invalid": "Enlace caducado o no válido. Solicita un nuevo enlace desde la pantalla de acceso."
   },
   "install_gate": {

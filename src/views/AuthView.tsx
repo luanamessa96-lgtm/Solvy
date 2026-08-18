@@ -149,7 +149,10 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen, rec
     clearError();
     const { error } = await getClient().auth.updateUser({ password: newPassword });
     setLoading(false);
-    if (error) { setError(t('auth.error_reset_save')); return; }
+    if (error) {
+      setError(error.code === 'same_password' ? t('auth.error_reset_same_password') : t('auth.error_reset_save'));
+      return;
+    }
     onResetPassword?.();
   };
 

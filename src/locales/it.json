@@ -348,6 +348,7 @@
     "error_already_registered": "Questa email è già registrata. Accedi.",
     "error_forgot_send": "Errore nell'invio. Controlla l'email.",
     "error_reset_save": "Errore nel salvataggio. Riprova.",
+    "error_reset_same_password": "La nuova password deve essere diversa da quella attuale.",
     "error_recovery_link_invalid": "Link scaduto o non valido. Richiedi un nuovo link dalla schermata di accesso."
   },
   "install_gate": {
