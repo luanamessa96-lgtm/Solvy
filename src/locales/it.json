@@ -352,13 +352,11 @@
   },
   "install_gate": {
     "title": "Account confermato!",
-    "title_recovery": "Password aggiornata!",
     "already_installed": "Hai già Solvy installata?",
     "already_installed_safari": "Chiudi Safari e aprila dalla schermata Home.",
     "already_installed_chrome": "Chiudi il browser e aprila dalla schermata Home.",
     "subtitle": "Per usare Solvy devi installarla sul tuo iPhone.",
     "account_ready": "Il tuo account è già pronto — non devi registrarti di nuovo.",
-    "account_ready_recovery": "La tua nuova password è già attiva — accedi direttamente.",
     "safari_step1": "Tocca l'icona condividi in basso nel browser",
     "safari_step2": "\"Aggiungi a schermata Home\"",
     "safari_step3": "Apri Solvy dalla schermata Home e accedi",

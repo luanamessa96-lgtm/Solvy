@@ -48,14 +48,10 @@ function GateShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-interface InstallGateScreenProps {
-  context?: 'signup' | 'recovery';
-}
-
-export default function InstallGateScreen({ context = 'signup' }: InstallGateScreenProps) {
+export default function InstallGateScreen() {
   const { t } = useTranslation();
-  const title = t(context === 'recovery' ? 'install_gate.title_recovery' : 'install_gate.title');
-  const readyNote = t(context === 'recovery' ? 'install_gate.account_ready_recovery' : 'install_gate.account_ready');
+  const title = t('install_gate.title');
+  const readyNote = t('install_gate.account_ready');
 
   // Vero in-app browser senza Share sheet (Facebook, Instagram, WhatsApp, WeChat)
   if (!browser.canInstall) {

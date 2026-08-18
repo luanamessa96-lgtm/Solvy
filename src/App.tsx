@@ -940,9 +940,12 @@ function AppInner() {
     );
   }
 
-  // Livello 2 — blocca uso dell'app autenticata in mobile browser (non standalone)
-  if (NEEDS_INSTALL) {
-    return <InstallGateScreen context={recoveryJustCompleted ? 'recovery' : 'signup'} />;
+  // Livello 2 — blocca uso dell'app autenticata in mobile browser (non standalone).
+  // Salta subito dopo un reset password riuscito: iOS apre sempre i link della mail in Safari
+  // "normale", mai dentro la PWA anche se è già installata sulla home — fermare l'utente qui,
+  // proprio dopo aver appena dimostrato chi è, sarebbe solo un altro ostacolo senza motivo.
+  if (NEEDS_INSTALL && !recoveryJustCompleted) {
+    return <InstallGateScreen />;
   }
 
   const proGradient = theme === 'pro-light'
