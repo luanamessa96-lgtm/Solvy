@@ -48,21 +48,27 @@ function GateShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function InstallGateScreen() {
+interface InstallGateScreenProps {
+  context?: 'signup' | 'recovery';
+}
+
+export default function InstallGateScreen({ context = 'signup' }: InstallGateScreenProps) {
   const { t } = useTranslation();
+  const title = t(context === 'recovery' ? 'install_gate.title_recovery' : 'install_gate.title');
+  const readyNote = t(context === 'recovery' ? 'install_gate.account_ready_recovery' : 'install_gate.account_ready');
 
   // Vero in-app browser senza Share sheet (Facebook, Instagram, WhatsApp, WeChat)
   if (!browser.canInstall) {
     return (
       <GateShell>
-        <h2 className="text-2xl font-bold mb-2" style={{ color: '#1a1a2e' }}>{t('install_gate.title')}</h2>
+        <h2 className="text-2xl font-bold mb-2" style={{ color: '#1a1a2e' }}>{title}</h2>
         <p className="text-sm leading-relaxed mb-6" style={{ color: '#6B6B8A' }}>{t('install_gate.inapp_subtitle')}</p>
         <StepList steps={[
           t('install_gate.inapp_step1'),
           t('install_gate.inapp_step2'),
           t('install_gate.inapp_step3'),
         ]} />
-        <p className="mt-6 text-xs" style={{ color: '#9B9BAA' }}>{t('install_gate.account_ready')}</p>
+        <p className="mt-6 text-xs" style={{ color: '#9B9BAA' }}>{readyNote}</p>
       </GateShell>
     );
   }
@@ -70,7 +76,7 @@ export default function InstallGateScreen() {
   if (browser.isAndroid) {
     return (
       <GateShell>
-        <h2 className="text-2xl font-bold mb-2" style={{ color: '#1a1a2e' }}>{t('install_gate.title')}</h2>
+        <h2 className="text-2xl font-bold mb-2" style={{ color: '#1a1a2e' }}>{title}</h2>
         <p className="text-sm leading-relaxed mb-5" style={{ color: '#6B6B8A' }}>
           {t('install_gate.already_installed')} <strong>{t('install_gate.already_installed_chrome')}</strong>
         </p>
@@ -79,7 +85,7 @@ export default function InstallGateScreen() {
           t('install_gate.android_step2'),
           t('install_gate.android_step3'),
         ]} />
-        <p className="mt-6 text-xs" style={{ color: '#9B9BAA' }}>{t('install_gate.account_ready')}</p>
+        <p className="mt-6 text-xs" style={{ color: '#9B9BAA' }}>{readyNote}</p>
       </GateShell>
     );
   }
@@ -87,7 +93,7 @@ export default function InstallGateScreen() {
   if (browser.isChromeiOS) {
     return (
       <GateShell>
-        <h2 className="text-2xl font-bold mb-2" style={{ color: '#1a1a2e' }}>{t('install_gate.title')}</h2>
+        <h2 className="text-2xl font-bold mb-2" style={{ color: '#1a1a2e' }}>{title}</h2>
         <div className="w-full bg-violet-50 border border-violet-200 rounded-xl px-4 py-3 mb-6">
           <p className="text-sm font-medium" style={{ color: SOLVY_PURPLE }}>{t('install_gate.already_installed')}</p>
           <p className="text-xs mt-0.5 text-violet-600">{t('install_gate.already_installed_chrome')}</p>
@@ -99,7 +105,7 @@ export default function InstallGateScreen() {
           <strong>{t('install_gate.chrome_step3')}</strong>,
           t('install_gate.chrome_step4'),
         ]} />
-        <p className="mt-6 text-xs" style={{ color: '#9B9BAA' }}>{t('install_gate.account_ready')}</p>
+        <p className="mt-6 text-xs" style={{ color: '#9B9BAA' }}>{readyNote}</p>
       </GateShell>
     );
   }
@@ -107,7 +113,7 @@ export default function InstallGateScreen() {
   // iOS Safari
   return (
     <GateShell>
-      <h2 className="text-2xl font-bold mb-2" style={{ color: '#1a1a2e' }}>{t('install_gate.title')}</h2>
+      <h2 className="text-2xl font-bold mb-2" style={{ color: '#1a1a2e' }}>{title}</h2>
       <div className="w-full bg-violet-50 border border-violet-200 rounded-xl px-4 py-3 mb-6">
         <p className="text-sm font-medium" style={{ color: SOLVY_PURPLE }}>{t('install_gate.already_installed')}</p>
         <p className="text-xs mt-0.5 text-violet-600">{t('install_gate.already_installed_safari')}</p>
@@ -118,7 +124,7 @@ export default function InstallGateScreen() {
         <strong>{t('install_gate.safari_step2')}</strong>,
         t('install_gate.safari_step3'),
       ]} />
-      <p className="mt-6 text-xs" style={{ color: '#9B9BAA' }}>{t('install_gate.account_ready')}</p>
+      <p className="mt-6 text-xs" style={{ color: '#9B9BAA' }}>{readyNote}</p>
     </GateShell>
   );
 }

@@ -133,6 +133,9 @@ function AppInner() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+  // Distingue, per InstallGateScreen, se l'utente arriva lì dopo aver appena cambiato
+  // la password (copy diversa da quella di "account appena registrato")
+  const [recoveryJustCompleted, setRecoveryJustCompleted] = useState(false);
   // Link di reset password (PKCE): token_hash letto dalla URL, consumato solo dopo click esplicito
   // dell'utente in AuthView — evita che gli scanner di sicurezza email lo brucino col prefetch
   const [recoveryTokenHash, setRecoveryTokenHash] = useState<string | null>(() => {
@@ -925,12 +928,21 @@ function AppInner() {
   // (recovery-confirm) e "initialScreen" viene ignorato perché è solo il valore iniziale di uno
   // useState interno — la UI resta bloccata sulla schermata precedente anche a stato aggiornato.
   if (isPasswordRecovery) {
-    return <Suspense fallback={null}><AuthView key="reset" darkMode={darkMode} initialScreen="reset" onResetPassword={() => setIsPasswordRecovery(false)} /></Suspense>;
+    return (
+      <Suspense fallback={null}>
+        <AuthView
+          key="reset"
+          darkMode={darkMode}
+          initialScreen="reset"
+          onResetPassword={() => { setIsPasswordRecovery(false); setRecoveryJustCompleted(true); }}
+        />
+      </Suspense>
+    );
   }
 
   // Livello 2 — blocca uso dell'app autenticata in mobile browser (non standalone)
   if (NEEDS_INSTALL) {
-    return <InstallGateScreen />;
+    return <InstallGateScreen context={recoveryJustCompleted ? 'recovery' : 'signup'} />;
   }
 
   const proGradient = theme === 'pro-light'
