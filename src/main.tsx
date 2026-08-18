@@ -30,6 +30,9 @@ if (import.meta.env.VITE_SENTRY_DSN) {
         tracesSampleRate: 0.1,
         replaysSessionSampleRate: 0.05,
         replaysOnErrorSampleRate: 1.0,
+        // Fallimento caricamento sw.js — quasi sempre rete instabile dell'utente/ad-blocker,
+        // già gestito senza conseguenze in serviceWorker.register().catch() qui sotto
+        ignoreErrors: [/Script .*sw\.js load failed/],
       });
       // Session Replay — 4s dopo load, pesante e non critica per il boot
       setTimeout(() => {
