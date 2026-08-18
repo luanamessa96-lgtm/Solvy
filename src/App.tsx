@@ -169,15 +169,32 @@ function AppInner() {
     document.documentElement.setAttribute('data-theme', rootTheme);
   }, [theme, isAuthenticated, showOnboarding, isLoading]);
 
+  // Rimuove lo splash a schermo intero — se resta appeso copre anche schermate che non
+  // dipendono dalla sessione (es. recovery-confirm), dando l'impressione di un caricamento infinito
+  const hideSplash = () => {
+    const splash = document.getElementById('splash');
+    if (splash) { splash.classList.add('hide'); setTimeout(() => splash.remove(), 280); }
+  };
+
+  // Il link di reset password non richiede di conoscere lo stato della sessione:
+  // togli subito lo splash invece di aspettare getSession(), che può restare appeso
+  // se Supabase ha problemi lato piattaforma (visto in produzione il 2026-08-18)
+  useEffect(() => {
+    if (recoveryTokenHash) hideSplash();
+  }, [recoveryTokenHash]);
+
   // Auth: controlla sessione e ascolta eventi
   useEffect(() => {
     let subscription: { unsubscribe: () => void } | null = null;
     supabaseReady.then(sb => {
       sb.auth.getSession().then(({ data: { session } }) => {
         setIsAuthenticated(!!session);
-        // Rimuovi splash screen quando la sessione è nota
-        const splash = document.getElementById('splash');
-        if (splash) { splash.classList.add('hide'); setTimeout(() => splash.remove(), 280); }
+        hideSplash();
+      }).catch(() => {
+        // Senza sessione nota, considera l'utente non autenticato invece di restare
+        // bloccati sullo splash all'infinito se la chiamata fallisce o va in timeout
+        setIsAuthenticated(false);
+        hideSplash();
       });
 
       const { data } = sb.auth.onAuthStateChange((event, session) => {
