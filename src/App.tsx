@@ -873,6 +873,7 @@ function AppInner() {
     return (
       <Suspense fallback={null}>
         <AuthView
+          key="recovery-confirm"
           darkMode={darkMode}
           initialScreen="recovery-confirm"
           recoveryTokenHash={recoveryTokenHash}
@@ -895,7 +896,7 @@ function AppInner() {
   if (!isAuthenticated) {
     return (
       <Suspense fallback={null}>
-        <AuthView darkMode={darkMode} />
+        <AuthView key="login" darkMode={darkMode} />
       </Suspense>
     );
   }
@@ -903,8 +904,11 @@ function AppInner() {
   // Recupero password → schermata nuova password (sempre pro-light, gestito dall'useEffect tema)
   // Deve passare PRIMA del gate installazione: l'utente deve poter scegliere la nuova password
   // anche da mobile browser, senza dover installare la PWA a metà del flusso di recovery.
+  // key esplicita: senza, React riusa l'istanza di AuthView tra questo branch e quello sopra
+  // (recovery-confirm) e "initialScreen" viene ignorato perché è solo il valore iniziale di uno
+  // useState interno — la UI resta bloccata sulla schermata precedente anche a stato aggiornato.
   if (isPasswordRecovery) {
-    return <Suspense fallback={null}><AuthView darkMode={darkMode} initialScreen="reset" onResetPassword={() => setIsPasswordRecovery(false)} /></Suspense>;
+    return <Suspense fallback={null}><AuthView key="reset" darkMode={darkMode} initialScreen="reset" onResetPassword={() => setIsPasswordRecovery(false)} /></Suspense>;
   }
 
   // Livello 2 — blocca uso dell'app autenticata in mobile browser (non standalone)
