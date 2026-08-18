@@ -153,6 +153,9 @@ export default function AuthView({ darkMode, onResetPassword, initialScreen, rec
       setError(error.code === 'same_password' ? t('auth.error_reset_same_password') : t('auth.error_reset_save'));
       return;
     }
+    // Disconnette invece di lasciare l'utente loggato nel browser: su mobile l'app spinge
+    // sempre verso l'installazione della PWA, non ha senso fare un'eccezione solo qui
+    await getClient().auth.signOut();
     onResetPassword?.();
   };
 

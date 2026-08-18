@@ -133,9 +133,6 @@ function AppInner() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
-  // Distingue, per InstallGateScreen, se l'utente arriva lì dopo aver appena cambiato
-  // la password (copy diversa da quella di "account appena registrato")
-  const [recoveryJustCompleted, setRecoveryJustCompleted] = useState(false);
   // Link di reset password (PKCE): token_hash letto dalla URL, consumato solo dopo click esplicito
   // dell'utente in AuthView — evita che gli scanner di sicurezza email lo brucino col prefetch
   const [recoveryTokenHash, setRecoveryTokenHash] = useState<string | null>(() => {
@@ -934,17 +931,14 @@ function AppInner() {
           key="reset"
           darkMode={darkMode}
           initialScreen="reset"
-          onResetPassword={() => { setIsPasswordRecovery(false); setRecoveryJustCompleted(true); }}
+          onResetPassword={() => setIsPasswordRecovery(false)}
         />
       </Suspense>
     );
   }
 
-  // Livello 2 — blocca uso dell'app autenticata in mobile browser (non standalone).
-  // Salta subito dopo un reset password riuscito: iOS apre sempre i link della mail in Safari
-  // "normale", mai dentro la PWA anche se è già installata sulla home — fermare l'utente qui,
-  // proprio dopo aver appena dimostrato chi è, sarebbe solo un altro ostacolo senza motivo.
-  if (NEEDS_INSTALL && !recoveryJustCompleted) {
+  // Livello 2 — blocca uso dell'app autenticata in mobile browser (non standalone)
+  if (NEEDS_INSTALL) {
     return <InstallGateScreen />;
   }
 
