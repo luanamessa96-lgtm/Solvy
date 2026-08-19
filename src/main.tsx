@@ -30,9 +30,12 @@ if (import.meta.env.VITE_SENTRY_DSN) {
         tracesSampleRate: 0.1,
         replaysSessionSampleRate: 0.05,
         replaysOnErrorSampleRate: 1.0,
-        // Fallimento caricamento sw.js — quasi sempre rete instabile dell'utente/ad-blocker,
-        // già gestito senza conseguenze in serviceWorker.register().catch() qui sotto
-        ignoreErrors: [/Script .*sw\.js load failed/],
+        // Fallimenti di fetch/registrazione/aggiornamento di sw.js — quasi sempre rete
+        // instabile dell'utente o ad-blocker, mai un errore applicativo nostro. Il browser
+        // genera testi diversi per lo stesso problema di fondo (registrazione iniziale,
+        // controllo periodico ogni 60s, cambio tab) — matcha sw.js ovunque compaia
+        // nel messaggio invece di elencare ogni variante testuale una per una.
+        ignoreErrors: [/sw\.js/],
       });
       // Session Replay — 4s dopo load, pesante e non critica per il boot
       setTimeout(() => {
