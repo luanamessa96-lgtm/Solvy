@@ -57,8 +57,12 @@ function buildPayload(doc: any, profile: any, originalDoc: any | null) {
       // non bloccare l'invio di fatture valide. Riconsiderare se in futuro
       // serve un controllo più stretto lato Solvy.
       validar_destinatario: false,
+      // Verifacti rifiuta F2/R5 se includono nombre/nif/id_otro ("Para
+      // facturas de tipo F2 y R5 no se pueden indicar los campos nombre,
+      // nif o id_otro" — trovato testando in sandbox), quindi nombre va
+      // incluso solo quando c'è anche il nif (cioè solo in F1).
+      ...(doc.client ? { nombre: doc.client.slice(0, 120) } : {}),
     } : {}),
-    ...(doc.client ? { nombre: doc.client.slice(0, 120) } : {}),
     lineas: [{
       base_imponible: fmt(base),
       tipo_impositivo: String(ivaRate),
