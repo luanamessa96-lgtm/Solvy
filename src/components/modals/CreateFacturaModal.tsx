@@ -260,6 +260,11 @@ const CreateFacturaModal = ({ isOpen, onClose, onSave, onUpdate, profile, docume
                     className={ic(errors.clientNif)}
                   />
                   {errMsg(errors.clientNif)}
+                  {form.clientType === 'particular' && !form.clientNif.trim() && (base + ivaAmount) > 3000 && (
+                    <p className="text-[10px] text-amber-500 font-semibold ml-1 mt-0.5">
+                      ⚠️ Facturas superiores a 3.000€ requieren el NIF del cliente (factura simplificada no permitida por encima de este importe)
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-1.5">

@@ -40,10 +40,13 @@ function buildPayload(doc: any, profile: any, originalDoc: any | null) {
     numero: invoiceNum,
     fecha_expedicion: fmtDateDMY(new Date()),
     fecha_operacion: fmtDateDMY(new Date(doc.date)),
-    tipo_factura: isRectificativa ? 'R4' : 'F1', // R4 = "resto": Solvy non cattura
-      // ancora il motivo legale specifico (art. 80.1/80.2/80.3/80.4) per le
-      // rectificativas, quindi usiamo il codice generico. Da rivedere se si
-      // costruisce una UI dedicata per scegliere il motivo.
+    tipo_factura: isRectificativa ? 'R4' : (clientNif ? 'F1' : 'F2'), // R4 = "resto": Solvy
+      // non cattura ancora il motivo legale specifico (art. 80.1/80.2/80.3/80.4)
+      // per le rectificativas, quindi usiamo il codice generico. Da rivedere se
+      // si costruisce una UI dedicata per scegliere il motivo.
+      // F2 (simplificada) quando manca il NIF cliente: F1 senza nif/id_otro
+      // viene rifiutato da Verifacti con 400 — F2 è pensata apposta per questo
+      // caso invece di forzare un id_otro posticcio.
     descripcion: (doc.title || 'Factura').slice(0, 500),
     ...(clientNif ? {
       nif: clientNif,
@@ -141,6 +144,14 @@ Deno.serve(async (req) => {
     }
 
     const payload = buildPayload(doc, profile, originalDoc);
+
+    // Factura simplificada (F2, senza NIF) ammessa solo fino a 3.000€ (RD
+    // 1619/2012 art. 4) — oltre quella soglia Verifacti rifiuta comunque
+    // l'invio: blocchiamo prima con un messaggio chiaro invece del 400 generico.
+    if (!payload.nif && parseFloat(payload.importe_total) > 3000) {
+      return new Response(JSON.stringify({ error: 'NIF cliente mancante: obbligatorio per fatture superiori a 3.000€' }), { status: 422, headers: corsHeaders });
+    }
+
     const sendRes = await fetch(`${VERIFACTI_BASE}/verifactu/create`, {
       method: 'POST',
       headers: {
