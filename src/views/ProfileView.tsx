@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Globe, CreditCard, Briefcase, FileEdit, CheckCircle2, MapPin, Receipt, User, Lock, Info, ChevronDown } from 'lucide-react';
 import { IT_PROVINCE, getRegionFromProvince } from '../lib/it/province';
@@ -8,7 +8,8 @@ import PaywallModal from '../components/modals/PaywallModal';
 import { CountryBadge } from '../components/CountryBadge';
 import DiceBearAvatar from '../components/ui/DiceBearAvatar';
 import { setLanguageByCountry } from '../lib/i18n';
-import { profileStorage } from '../lib/supabase';
+import { profileStorage, getClient } from '../lib/supabase';
+import { useToast } from '../components/ui/Toast';
 import { useTranslation } from 'react-i18next';
 
 // Fields that exist in the Supabase profiles table schema
@@ -90,10 +91,17 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
   const [isIT19Expanded, setIsIT19Expanded] = useState(false);
   const [isES13Expanded, setIsES13Expanded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isVerifactuActivating, setIsVerifactuActivating] = useState(false);
+  const [verifactuNifStatus, setVerifactuNifStatus] = useState(activeProfile.verifactuNifStatus);
+  const { showToast } = useToast();
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [taxIdType, setTaxIdType] = useState<'nif' | 'nie'>(() =>
     activeProfile.nie ? 'nie' : 'nif'
   );
+
+  useEffect(() => {
+    setVerifactuNifStatus(activeProfile.verifactuNifStatus);
+  }, [activeProfile.id, activeProfile.verifactuNifStatus]);
   const [editData, setEditData] = useState({
     name: activeProfile.name,
     email: activeProfile.email,
@@ -213,6 +221,29 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
     67: 'Artigiani / Servizi',
     62: 'Intermediari commercio',
     40: 'Ristorazione',
+  };
+
+  const handleActivateVerifactu = async () => {
+    setIsVerifactuActivating(true);
+    try {
+      const { data: { session } } = await getClient().auth.getSession();
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verifactu-register-nif`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ profile_id: activeProfile.id }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.error || 'Error al activar Verifactu', 'error');
+      } else {
+        setVerifactuNifStatus('active');
+        showToast('Verifactu activado (modo prueba)', 'success');
+      }
+    } catch {
+      showToast('Error de red — inténtalo de nuevo', 'error');
+    } finally {
+      setIsVerifactuActivating(false);
+    }
   };
 
   return (
@@ -589,6 +620,31 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                   </p>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Verifactu — activación NIF (solo ES) */}
+          {activeProfile.country === 'Spain' && (
+            <div className={`rounded-2xl border p-4 space-y-2 ${darkMode ? 'border-slate-800' : 'border-slate-100'}`} style={isProLight ? { backgroundColor: '#ffffff', border: '1.5px solid rgba(200,85,247,0.35)' } : { backgroundColor: 'var(--color-card-bg)' }}>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Verifactu</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">
+                    {verifactuNifStatus === 'active' ? 'Activado (modo prueba) — puedes enviar facturas a Verifactu' : 'Registra tu NIF en modo prueba para poder enviar facturas a Verifactu'}
+                  </p>
+                </div>
+                {verifactuNifStatus === 'active' ? (
+                  <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
+                ) : (
+                  <button
+                    onClick={handleActivateVerifactu}
+                    disabled={isVerifactuActivating}
+                    className={`shrink-0 px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${darkMode ? 'bg-primary text-white' : 'bg-primary text-white'} disabled:opacity-50`}
+                  >
+                    {isVerifactuActivating ? 'Activando…' : 'Activar'}
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </motion.div>
