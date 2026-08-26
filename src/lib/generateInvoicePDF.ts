@@ -320,6 +320,30 @@ export async function buildInvoicePage(
     y += lines.length * 3.5 + 4;
   }
 
+  // ─── Verifactu QR + huella ─────────────────────────────────────────────────
+  if (isSpain && doc.verifactuStatus && doc.verifactuQr) {
+    const qrSize = 22;
+    const qrX = R - qrSize;
+    const qrY = y;
+    const qrData = doc.verifactuQr.replace(/^data:image\/\w+;base64,/, '');
+    try {
+      pdf.addImage(qrData, 'PNG', qrX, qrY, qrSize, qrSize);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(6.5);
+      pdf.setTextColor(...primary);
+      pdf.text('Factura verificable en la sede electrónica de la AEAT', M, qrY + 4, { maxWidth: qrX - M - 4 });
+      if (doc.verifactuHuella) {
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(6);
+        pdf.setTextColor(...grey);
+        pdf.text(`Huella: ${doc.verifactuHuella}`, M, qrY + 9, { maxWidth: qrX - M - 4 });
+      }
+      y = qrY + qrSize + 4;
+    } catch (e) {
+      console.error('[generateInvoicePDF] QR Verifactu non renderizzabile:', e);
+    }
+  }
+
   // ─── Footer ───────────────────────────────────────────────────────────────
   pdf.setDrawColor(...lightGrey);
   pdf.setLineWidth(0.4);
