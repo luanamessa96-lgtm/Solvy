@@ -12,3 +12,5 @@ supabase/.temp/
 test-results/
 e2e/screenshots/
 docs/superpowers/
+AUDIT-FISCALE.md
+.worktrees/
