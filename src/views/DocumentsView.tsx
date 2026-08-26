@@ -115,6 +115,7 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
   const [editModalVV, setEditModalVV] = useState<{ top: number; height: number } | null>(null);
   const [pdfPreview, setPdfPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
   const [sdiSending, setSdiSending] = useState(false);
+  const [verifactuSending, setVerifactuSending] = useState(false);
   const [openMonths, setOpenMonths] = useState<Set<string>>(() => {
     const now = new Date();
     const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -705,6 +706,65 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                           : sdiStatus === 'rejected' ? 'Scartata da SdI — riprova'
                           : sdiStatus === 'failed' ? 'Errore invio — riprova'
                           : selectedDoc.type === 'credit_note' ? 'Invia Nota Credito a SdI' : 'Invia a SdI'}
+                      </span>
+                      {!isPro && <Lock size={11} className="ml-auto text-slate-400" />}
+                    </button>
+                  );
+                })()}
+                {(selectedDoc.type === 'invoice' || selectedDoc.type === 'factura_rectificativa') && profile.country === 'Spain' && (() => {
+                  const verifactuStatus = selectedDoc.verifactuStatus;
+                  const canSend = !verifactuStatus || verifactuStatus === 'Rechazada' || verifactuStatus === 'error';
+                  const isCorrecta = verifactuStatus === 'Correcta';
+                  const isPendiente = verifactuStatus === 'Pendiente';
+                  return (
+                    <button
+                      disabled={!isPro || isPendiente || isCorrecta || verifactuSending}
+                      onClick={async () => {
+                        if (!isPro) { setIsPaywallOpen(true); return; }
+                        if (!canSend) return;
+                        setVerifactuSending(true);
+                        try {
+                          const { data: { session } } = await getClient().auth.getSession();
+                          const res = await fetch(`${SUPABASE_URL}/functions/v1/verifactu-send`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+                            body: JSON.stringify({ document_id: selectedDoc.id }),
+                          });
+                          if (!res.ok) {
+                            const err = await res.json().catch(() => ({}));
+                            showToast(err.error || 'Error al enviar a Verifactu', 'error');
+                          } else {
+                            const result = await res.json();
+                            onUpdateDocument({ ...selectedDoc, verifactuStatus: result.estado });
+                            showToast('Factura enviada a Verifactu', 'success');
+                            setSelectedDoc(null);
+                          }
+                        } catch {
+                          showToast('Error de red — inténtalo de nuevo', 'error');
+                        } finally {
+                          setVerifactuSending(false);
+                        }
+                      }}
+                      className={`w-full p-4 rounded-2xl border flex items-center gap-4 transition-all active:scale-[0.98]
+                        ${isCorrecta ? (darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100')
+                          : (verifactuStatus === 'Rechazada' || verifactuStatus === 'error') ? (darkMode ? 'bg-red-500/10 border-red-500/20' : 'bg-red-50 border-red-100')
+                          : isPendiente ? (darkMode ? 'bg-slate-800 border-slate-700 opacity-60' : 'bg-slate-100 border-slate-200 opacity-60')
+                          : (darkMode ? 'bg-primary/10 border-primary/20' : 'bg-primary/5 border-primary/10')}
+                        ${!isPro ? 'opacity-50' : ''}`}
+                    >
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center
+                        ${isCorrecta ? 'bg-emerald-500 text-white'
+                          : (verifactuStatus === 'Rechazada' || verifactuStatus === 'error') ? 'bg-red-500 text-white'
+                          : 'bg-primary text-white'}`}>
+                        {verifactuSending ? <Loader2 size={18} className="animate-spin" /> : isCorrecta ? <CheckCircle2 size={18} /> : (verifactuStatus === 'Rechazada' || verifactuStatus === 'error') ? <AlertTriangle size={18} /> : <Send size={18} />}
+                      </div>
+                      <span className={`font-bold ${isCorrecta ? 'text-emerald-600' : (verifactuStatus === 'Rechazada' || verifactuStatus === 'error') ? 'text-red-500' : darkMode ? 'text-white' : 'text-slate-900'}`}>
+                        {verifactuSending ? 'Enviando…'
+                          : isCorrecta ? 'Registrada en Verifactu ✓'
+                          : isPendiente ? 'Enviada · pendiente de confirmación'
+                          : verifactuStatus === 'Rechazada' ? 'Rechazada — reintentar'
+                          : verifactuStatus === 'error' ? 'Error de envío — reintentar'
+                          : 'Enviar a Verifactu'}
                       </span>
                       {!isPro && <Lock size={11} className="ml-auto text-slate-400" />}
                     </button>
