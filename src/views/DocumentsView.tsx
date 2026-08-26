@@ -17,11 +17,30 @@ import PdfPreviewModal from '../components/modals/PdfPreviewModal';
 import { validateForSdi } from '../services/fatturaPA';
 import { getClient } from '../lib/supabase';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 import { useToast } from '../components/ui/Toast';
 import { parseLocalDate, getLocalYear, todayLocalISO } from '../utils/date';
 import PaywallModal from '../components/modals/PaywallModal';
 import { useProStatus } from '../hooks/useProStatus';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+
+// El edge function verifactu-send devuelve mensajes de error en italiano
+// (código compartido con el resto del backend) — la UI es solo en español,
+// así que traducimos los mensajes conocidos y usamos un genérico para el resto.
+function translateVerifactuError(raw: string | undefined): string {
+  const known: Record<string, string> = {
+    'document_id mancante': 'Falta el identificador del documento.',
+    'Fattura già inviata a Verifactu': 'Esta factura ya fue enviada a Verifactu.',
+    'Documento non trovato': 'Documento no encontrado.',
+    'Profilo non trovato': 'Perfil no encontrado.',
+    'NIF non ancora registrato su Verifacti — eseguire prima verifactu-register-nif': 'Activa Verifactu en tu perfil antes de enviar la factura.',
+    'API key Verifacti non trovata per questo profilo': 'No se encontró la clave de acceso a Verifactu para este perfil.',
+    'NIF cliente mancante: obbligatorio per fatture superiori a 3.000€': 'Falta el NIF del cliente: obligatorio para facturas superiores a 3.000€.',
+  };
+  if (raw && known[raw]) return known[raw];
+  if (raw?.startsWith('Errore Verifacti:')) return 'Error al comunicar con Verifactu — inténtalo de nuevo.';
+  return 'Error al procesar la solicitud — inténtalo de nuevo.';
+}
 
 interface DocumentsViewProps {
   documents: Document[];
@@ -722,6 +741,10 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                       onClick={async () => {
                         if (!isPro) { setIsPaywallOpen(true); return; }
                         if (!canSend) return;
+                        if (profile.verifactuNifStatus !== 'active') {
+                          showToast('Activa Verifactu en tu perfil antes de enviar la factura', 'error', onNavigateToProfile ? { label: 'Ir al perfil', onClick: () => { setSelectedDoc(null); onNavigateToProfile(); } } : undefined);
+                          return;
+                        }
                         setVerifactuSending(true);
                         try {
                           const { data: { session } } = await getClient().auth.getSession();
@@ -732,10 +755,10 @@ const DocumentsView = ({ documents, onAddDocument, onDeleteDocument, onUpdateDoc
                           });
                           if (!res.ok) {
                             const err = await res.json().catch(() => ({}));
-                            showToast(err.error || 'Error al enviar a Verifactu', 'error');
+                            showToast(translateVerifactuError(err.error), 'error');
                           } else {
                             const result = await res.json();
-                            onUpdateDocument({ ...selectedDoc, verifactuStatus: result.estado });
+                            onUpdateDocument({ ...selectedDoc, verifactuStatus: result.estado, verifactuQr: result.qr, verifactuQrUrl: result.qr_url, verifactuHuella: result.huella });
                             showToast('Factura enviada a Verifactu', 'success');
                             setSelectedDoc(null);
                           }

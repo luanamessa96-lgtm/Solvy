@@ -31,6 +31,23 @@ interface ProfileViewProps {
   key?: string;
 }
 
+// El edge function verifactu-register-nif devuelve mensajes de error en
+// italiano (código compartido con el resto del backend) — la UI es solo en
+// español, así que traducimos los mensajes conocidos y usamos un genérico
+// para el resto.
+function translateVerifactuError(raw: string | undefined): string {
+  const known: Record<string, string> = {
+    'profile_id mancante': 'Falta el identificador del perfil.',
+    'Profilo non trovato': 'Perfil no encontrado.',
+    'Profilo incompleto: NIF/NIE obbligatorio': 'Perfil incompleto: el NIF/NIE es obligatorio.',
+    'NIF già registrato su Verifacti': 'Este NIF ya está registrado en Verifactu.',
+    'Verifacti non ha restituito una API key': 'Verifactu no devolvió una clave de acceso válida.',
+  };
+  if (raw && known[raw]) return known[raw];
+  if (raw?.startsWith('Registrazione NIF fallita:')) return 'Error al registrar el NIF en Verifactu — inténtalo de nuevo.';
+  return 'Error al procesar la solicitud — inténtalo de nuevo.';
+}
+
 // ─── Validatori ───────────────────────────────────────────────────────────────
 const NIF_LETTERS = 'TRWAGMYFPDXBNJZSQVHLCKE';
 
@@ -234,7 +251,7 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        showToast(err.error || 'Error al activar Verifactu', 'error');
+        showToast(translateVerifactuError(err.error), 'error');
       } else {
         setVerifactuNifStatus('active');
         showToast('Verifactu activado (modo prueba)', 'success');
@@ -637,11 +654,17 @@ const ProfileView = ({ activeProfile, profiles, onSwitchProfile, onUpdateProfile
                   <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
                 ) : (
                   <button
-                    onClick={handleActivateVerifactu}
+                    onClick={() => { if (!activeProfile.isPro) { setIsPaywallOpen(true); return; } handleActivateVerifactu(); }}
                     disabled={isVerifactuActivating}
-                    className={`shrink-0 px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${darkMode ? 'bg-primary text-white' : 'bg-primary text-white'} disabled:opacity-50`}
+                    className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 bg-primary text-white disabled:opacity-50"
                   >
                     {isVerifactuActivating ? 'Activando…' : 'Activar'}
+                    {!activeProfile.isPro && (
+                      <span className="flex items-center gap-1 bg-white/20 px-1.5 py-0.5 rounded-full">
+                        <Lock size={10} />
+                        <span className="text-[9px] font-bold uppercase tracking-wide">Pro</span>
+                      </span>
+                    )}
                   </button>
                 )}
               </div>

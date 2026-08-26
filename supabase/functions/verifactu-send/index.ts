@@ -183,7 +183,14 @@ Deno.serve(async (req) => {
       verifactu_sent_at: new Date().toISOString(),
     }).eq('id', document_id);
 
-    return new Response(JSON.stringify({ ok: true, uuid: result.uuid, estado: result.estado }), { status: 200, headers: corsHeaders });
+    return new Response(JSON.stringify({
+      ok: true,
+      uuid: result.uuid,
+      estado: result.estado,
+      qr: result.qr,
+      qr_url: result.url,
+      huella: result.huella,
+    }), { status: 200, headers: corsHeaders });
 
   } catch (err) {
     console.error('verifactu-send error:', err);

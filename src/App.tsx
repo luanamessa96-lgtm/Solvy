@@ -425,6 +425,11 @@ function AppInner() {
       ritenuta: d.ritenuta as boolean | undefined, marcaBollo: d.marca_bollo as boolean | undefined,
       ivaRate: d.iva_rate as number | undefined, rivalsaInps: d.rivalsa_inps as boolean | undefined,
       docRegime: d.doc_regime as 'forfettario' | 'ordinario' | undefined,
+      sdiStatus: d.sdi_status as Document['sdiStatus'] | undefined,
+      verifactuStatus: d.verifactu_status as string | undefined,
+      verifactuQr: d.verifactu_qr as string | undefined,
+      verifactuQrUrl: d.verifactu_qr_url as string | undefined,
+      verifactuHuella: d.verifactu_huella as string | undefined,
     });
 
     const sb = getClient();
