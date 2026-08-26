@@ -54,6 +54,10 @@ export async function getDocuments(profileId: string): Promise<Document[]> {
     validezDate: d.validez_date,
     nifProveedor: d.nif_proveedor,
     sdiStatus: d.sdi_status ?? undefined,
+    verifactuStatus: d.verifactu_status ?? undefined,
+    verifactuQr: d.verifactu_qr ?? undefined,
+    verifactuQrUrl: d.verifactu_qr_url ?? undefined,
+    verifactuHuella: d.verifactu_huella ?? undefined,
   }));
 }
 
@@ -173,6 +177,7 @@ export async function getProfiles(userId: string, userEmail?: string): Promise<P
     invoiceCounters: p.invoice_counters ?? undefined,
     deletedInvoiceNumbers: p.deleted_invoice_numbers ?? undefined,
     hasOstativaCause: p.has_ostativa_cause ?? undefined,
+    verifactuNifStatus: p.verifactu_nif_status ?? undefined,
   }));
 }
 
