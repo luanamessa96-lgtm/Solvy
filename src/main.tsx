@@ -6,8 +6,14 @@ import App from './App.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import './index.css';
 
-// Reload silently when a deploy invalidates old JS chunks (stale tab after deploy)
-window.addEventListener('vite:preloadError', () => { window.location.reload(); });
+// Reload silently when a deploy invalidates old JS chunks (stale tab after deploy).
+// Debounced to avoid an infinite reload loop if the chunk is still unavailable after reload.
+window.addEventListener('vite:preloadError', () => {
+  const lastReload = Number(sessionStorage.getItem('vite-reload-at') || 0);
+  if (Date.now() - lastReload < 10000) return;
+  sessionStorage.setItem('vite-reload-at', String(Date.now()));
+  window.location.reload();
+});
 
 // Render React immediately — Sentry loaded after page is interactive
 createRoot(document.getElementById('root')!).render(
