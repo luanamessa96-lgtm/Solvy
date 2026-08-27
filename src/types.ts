@@ -33,6 +33,7 @@ export interface Profile {
   invoiceCounters?: Record<string, number>;
   deletedInvoiceNumbers?: string[];
   hasOstativaCause?: boolean;
+  verifactuNifStatus?: string;
 }
 
 export interface Document {
@@ -61,6 +62,10 @@ export interface Document {
   validezDate?: string;
   intracomunitaria?: boolean;
   nifProveedor?: string;
+  verifactuStatus?: string;
+  verifactuQr?: string;
+  verifactuQrUrl?: string;
+  verifactuHuella?: string;
 }
 
 export interface Deadline {
