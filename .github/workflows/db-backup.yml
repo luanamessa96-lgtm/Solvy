@@ -20,9 +20,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Supabase CLI
-        uses: supabase/setup-cli@v1
+        uses: Wandalen/wretry.action@v3
         with:
-          version: latest
+          action: supabase/setup-cli@v1
+          with: |
+            version: latest
+          attempt_limit: 3
+          attempt_delay: 15000
 
       - name: Dump roles, schema and data
         env:
