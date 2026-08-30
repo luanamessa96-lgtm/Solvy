@@ -203,10 +203,10 @@ export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
               Solvy calcula tu IVA e IRPF en tiempo real, con cada factura que emites. Sin sorpresas en julio. Sin gestor.
             </p>
             <div className="hero-cta sa3">
-              <button onClick={onSignup} className="btn-primary">Prueba gratis 7 días</button>
+              <button onClick={onSignup} className="btn-primary">Empieza gratis</button>
               <a href="#app" className="btn-ghost">Ver cómo funciona →</a>
             </div>
-            <p className="hero-note sa3">Sin tarjeta · Cancela cuando quieras</p>
+            <p className="hero-note sa3">Sin tarjeta · Gratis para siempre</p>
           </div>
 
           <div className="hero-visual sar">
@@ -366,7 +366,7 @@ export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
           <div className="sa" style={{textAlign:'center'}}>
             <div className="eyebrow">Pricing</div>
             <h2 className="section-h">Elige tu plan.</h2>
-            <p style={{fontSize:'17px',color:'var(--muted)',marginTop:'-36px',marginBottom:0}}>Empieza gratis 7 días. Sin tarjeta.</p>
+            <p style={{fontSize:'17px',color:'var(--muted)',marginTop:'-36px',marginBottom:0}}>Empieza gratis, sin tarjeta.</p>
           </div>
           <div className="pricing-grid">
             <div className="p-card sa">
@@ -400,9 +400,9 @@ export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
           </div>
           <div className="sa" style={{textAlign:'center',marginTop:'32px'}}>
             <button onClick={onSignup} className="btn-primary" style={{background:'linear-gradient(135deg,#6D28D9,#06B6D4)',color:'#fff',boxShadow:'0 8px 32px rgba(109,40,217,.4)'}}>
-              Prueba gratis 7 días
+              Empieza gratis
             </button>
-            <p style={{fontSize:'12px',color:'var(--muted)',marginTop:'12px'}}>Sin tarjeta · Cancela cuando quieras</p>
+            <p style={{fontSize:'12px',color:'var(--muted)',marginTop:'12px'}}>Sin tarjeta · Gratis para siempre</p>
           </div>
         </div>
       </section>
