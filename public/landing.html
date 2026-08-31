@@ -1257,6 +1257,114 @@ body{background:#F3EFFD;color:var(--ink);}
 .vmodal-ph-h{color:var(--ink);}
 .vmodal-ph-p{color:var(--ink-soft);}
 
+
+/* ═══════════════════════════════════════════
+   EFFETTO MARE + SCALA TIPOGRAFICA + TELEFONI
+   Un'unica lastra d'acqua su tutta la pagina:
+   profonda in alto, limpida scendendo.
+   ═══════════════════════════════════════════ */
+
+/* la lastra: un solo gradiente su tutto il documento */
+body{
+  background:linear-gradient(180deg,
+    #C6B5F2 0%,
+    #CBC0F4 10%,
+    #D0CCF3 24%,
+    #D2DCF1 40%,
+    #D5E8EF 56%,
+    #DAF0EE 70%,
+    #E6F7F4 85%,
+    #F5FCFB 100%);
+  background-attachment:scroll;
+}
+/* le sezioni non hanno più fondo proprio: si vede l'acqua sotto */
+.hero,.trust-bar,.section-problem,.section-features,
+.section-verifactu,.section-founder,.section-pricing,.section-app{
+  background:transparent;
+}
+.trust-bar{border-top:1px solid rgba(255,255,255,.5);border-bottom:1px solid rgba(255,255,255,.4);}
+.section-verifactu,.section-pricing{border-top:1px solid rgba(255,255,255,.45);}
+
+/* caustiche: due chiazze di luce sull'hero, come riflesso in superficie */
+.hero::after{
+  content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(900px 520px at 18% 0%,rgba(255,255,255,.5),transparent 62%),
+    radial-gradient(760px 620px at 88% 12%,rgba(255,255,255,.32),transparent 58%);
+}
+.hero-lines path{stroke:rgba(255,255,255,.5);}
+
+/* ── SCALA TIPOGRAFICA ──
+   hero 60 · sezione 42 · card 20 · testo 16 · piccolo 13 · occhiello 11 */
+.hero-h1{font-size:clamp(34px,4.6vw,60px);}
+.hero-sub{font-size:clamp(16px,1.5vw,18px);}
+.section-h{font-size:clamp(30px,3.4vw,42px);margin-bottom:44px;}
+.prob-head,.fc-title{font-size:20px;}
+.vf-h{font-size:clamp(26px,2.8vw,34px);}
+.fnd-q{font-size:clamp(18px,1.9vw,22px);}
+.prob-body,.fc-desc,.vf-p,.p-feat,.faq-a,.app-sub,.fnd-name{font-size:16px;}
+.feature-list li{font-size:16px;}
+.vf-what{font-size:16px;}
+.faq-q{font-size:18px;}
+.p-note,.p-old,.p-plus,.hero-note,.foot-copy{font-size:13px;}
+.trust-item,.foot-nav a,.foot-badge,.fnd-ig{font-size:14px;}
+
+/* ── TELEFONI RENDERIZZATI ── */
+.phone-wrap{transform:none;}
+.phone-wrap:hover{transform:none;}
+.phone-render{
+  display:block;width:clamp(200px,23vw,278px);height:auto;
+  filter:drop-shadow(0 34px 60px rgba(76,56,134,.34));
+}
+/* app showcase */
+.app-screen{background:none;padding:0;box-shadow:none;border-radius:0;}
+.app-screen img{width:100%;display:block;border-radius:0;
+  filter:drop-shadow(0 30px 56px rgba(50,30,110,.3));}
+.app-screen-1{width:230px;}
+.app-screen-2{width:230px;}
+.app-obj{position:absolute;pointer-events:none;z-index:4;
+  filter:drop-shadow(0 14px 30px rgba(90,60,160,.28));}
+.ao-1{width:92px;top:-4%;right:-8%;animation:float 10s ease-in-out infinite;}
+.ao-2{width:76px;bottom:4%;left:-10%;animation:float 12s ease-in-out infinite .8s;}
+.app-screens{position:relative;}
+/* card funzionalità */
+.fc-visual{min-height:300px;padding:26px 26px 0;align-items:flex-end;}
+.fc-visual img{
+  width:auto;height:290px;border-radius:0;
+  box-shadow:none;
+  filter:drop-shadow(0 22px 40px rgba(76,56,134,.3));
+}
+.fc-visual::before{
+  background:linear-gradient(160deg,rgba(207,194,245,.4) 0%,rgba(166,228,221,.28) 100%);
+}
+
+/* ── APP SHOWCASE ora è chiara come il resto ── */
+.section-app .holo-bg{display:none;}
+.section-app .section-h,.section-app .app-sub{color:var(--ink);}
+.section-app .app-sub{color:var(--ink-soft);}
+.section-app .eyebrow{color:var(--violet);}
+.section-app .feature-list li{color:#33304A;}
+.section-app .feature-list li .check{
+  background:linear-gradient(135deg,var(--violet),var(--magenta));color:#fff;
+}
+.section-app .btn-primary{
+  background:linear-gradient(135deg,var(--violet),var(--magenta));color:#fff;
+  box-shadow:0 10px 30px rgba(124,58,237,.32);
+}
+
+/* la CTA finale resta satura: chiusura */
+.section-footer{background:linear-gradient(135deg,#7C3AED 0%,#8B5CF6 42%,#22D3EE 100%);}
+
+/* logo bolla */
+.nav-logo img{width:42px;height:42px;border-radius:0;}
+.foot-brand img{width:34px;height:34px;border-radius:0;}
+
+@media(max-width:900px){
+  .app-screen-1,.app-screen-2{width:180px;}
+  .ao-1,.ao-2{display:none;}
+  .fc-visual img{height:240px;}
+}
+
 </style>
 </head>
 <body>
@@ -1281,7 +1389,7 @@ body{background:#F3EFFD;color:var(--ink);}
 
   <nav class="nav">
     <div class="nav-logo">
-      <img src="/landing/solvy-icon.png" alt="Solvy">
+      <img src="/landing/3d/logo-bubble.png" alt="Solvy">
       <span>SOLVY</span>
     </div>
     <span class="nav-pill">Para autónomos · España</span>
@@ -1320,14 +1428,8 @@ body{background:#F3EFFD;color:var(--ink);}
         <div class="fc-badge">✓ Sin sorpresas</div>
         <!-- Oggetti 3D in vetro: metti i PNG con alpha in public/landing/3d/.
              Se un file manca, lo slot si rimuove da solo. -->
-        <img class="glass-obj go-1" src="/landing/3d/solvy-s.png" alt="" aria-hidden="true">
-        <img class="glass-obj go-2" src="/landing/3d/calendar.png" alt="" aria-hidden="true">
-        <img class="glass-obj go-3" src="/landing/3d/modelos.png" alt="" aria-hidden="true">
-        <div class="phone">
-          <div class="phone-inner">
-            <img src="/landing/IMG_9010.jpg" alt="Solvy Dashboard">
-          </div>
-        </div>
+        <img class="glass-obj go-1" src="/landing/3d/calendar.png" alt="" aria-hidden="true">
+        <img class="phone-render" src="/landing/3d/phone-1.png" alt="Panel de Solvy en el móvil">
       </div>
     </div>
   </div>
@@ -1399,11 +1501,13 @@ body{background:#F3EFFD;color:var(--ink);}
   <div class="app-inner">
     <div class="app-screens sal">
       <div class="app-screen app-screen-1">
-        <img src="/landing/IMG_9010.jpg" alt="Solvy Panel" style="width:190px;">
+        <img src="/landing/3d/phone-1.png" alt="Panel de Solvy">
       </div>
       <div class="app-screen app-screen-2">
-        <img src="/landing/IMG_9011.jpg" alt="Solvy Gráfico" style="width:190px;">
+        <img src="/landing/3d/phone-4.png" alt="Gráfico de Solvy">
       </div>
+      <img class="app-obj ao-1" src="/landing/3d/modelos.png" alt="" aria-hidden="true">
+      <img class="app-obj ao-2" src="/landing/3d/bell.png" alt="" aria-hidden="true">
     </div>
     <div class="app-text sar">
       <div class="eyebrow">Así funciona Solvy</div>
@@ -1432,7 +1536,7 @@ body{background:#F3EFFD;color:var(--ink);}
       <!-- Card 1 -->
       <div class="fc sal">
         <div class="fc-visual">
-          <img src="/landing/IMG_9010.jpg" alt="Dashboard">
+          <img src="/landing/3d/phone-1.png" alt="Dashboard">
         </div>
         <div class="fc-body">
           <div class="fc-title">IRPF e IVA en tiempo real</div>
@@ -1443,7 +1547,7 @@ body{background:#F3EFFD;color:var(--ink);}
       <!-- Card 2 -->
       <div class="fc sa">
         <div class="fc-visual">
-          <img src="/landing/IMG_9012.jpg" alt="Impuestos Solvy">
+          <img src="/landing/3d/phone-2.png" alt="Impuestos Solvy">
         </div>
         <div class="fc-body">
           <div class="fc-title">Estimación fiscal siempre lista</div>
@@ -1454,7 +1558,7 @@ body{background:#F3EFFD;color:var(--ink);}
       <!-- Card 3 -->
       <div class="fc sar">
         <div class="fc-visual">
-          <img src="/landing/IMG_9015.jpg" alt="Documentos">
+          <img src="/landing/3d/phone-3.png" alt="Documentos">
         </div>
         <div class="fc-body">
           <div class="fc-title">Libro Registro automático</div>
@@ -1556,7 +1660,7 @@ body{background:#F3EFFD;color:var(--ink);}
 <section class="section-verifactu" id="verifactu">
   <div class="vf-card sa">
     <div>
-      <img class="vf-icon" src="/landing/3d/modelos.png" alt="" aria-hidden="true">
+      <img class="vf-icon" src="/landing/3d/shield.png" alt="" aria-hidden="true">
       <div class="vf-status"><span class="dot"></span>Integración en camino</div>
       <h2 class="vf-h">¿Y VeriFactu?</h2>
       <p class="vf-p">
@@ -1739,7 +1843,7 @@ body{background:#F3EFFD;color:var(--ink);}
   <div class="foot-legal-inner">
     <div class="foot-top">
       <div class="foot-brand">
-        <img src="/landing/solvy-icon.png" alt="">
+        <img src="/landing/3d/logo-bubble.png" alt="">
         <span>SOLVY</span>
       </div>
       <nav class="foot-nav">
