@@ -1395,9 +1395,13 @@ body{
   will-change:transform;
 }
 .app-screen-1 img{animation:phoneTurn 13s ease-in-out infinite;transform-origin:55% 50%;}
-.app-screen-2 img{animation:phoneTurnAlt 15s ease-in-out infinite 1.4s;transform-origin:45% 50%;}
+.app-screen-2 img{animation:phoneTurnMirror 15s ease-in-out infinite 1.4s;transform-origin:45% 50%;}
 .fc-visual img{animation:phoneTurn 14s ease-in-out infinite;transform-origin:50% 55%;}
-.fc:nth-child(2) .fc-visual img{animation:phoneTurnAlt 16s ease-in-out infinite .9s;}
+@keyframes phoneTurnMirror{
+  0%,100%{transform:perspective(1600px) rotateY(0deg) rotateX(0deg) translateY(0);}
+  50%    {transform:perspective(1600px) rotateY(9deg) rotateX(1.5deg) translateY(-12px);}
+}
+.fc:nth-child(2) .fc-visual img{animation:phoneTurnMirror 16s ease-in-out infinite .9s;transform-origin:48% 55%;}
 .fc:nth-child(3) .fc-visual img{animation:phoneTurn 12s ease-in-out infinite 1.8s;}
 /* il mouse prende il comando sull'hero, poi l'animazione riprende */
 .phone-render.steered{animation:none;transition:transform .18s ease-out;}
@@ -1545,7 +1549,7 @@ body{
         <img src="/landing/3d/phone-1.png" alt="Panel de Solvy">
       </div>
       <div class="app-screen app-screen-2">
-        <img src="/landing/3d/phone-4.png" alt="Gráfico de Solvy">
+        <img src="/landing/3d/phone-4r.png" alt="Gráfico de Solvy">
       </div>
       <img class="app-obj ao-1" src="/landing/3d/modelos.png" alt="" aria-hidden="true">
       <img class="app-obj ao-2" src="/landing/3d/bell.png" alt="" aria-hidden="true">
@@ -1588,7 +1592,7 @@ body{
       <!-- Card 2 -->
       <div class="fc sa">
         <div class="fc-visual">
-          <img src="/landing/3d/phone-2.png" alt="Impuestos Solvy">
+          <img src="/landing/3d/phone-2r.png" alt="Impuestos Solvy">
         </div>
         <div class="fc-body">
           <div class="fc-title">Estimación fiscal siempre lista</div>
