@@ -1317,7 +1317,7 @@ body{
   filter:drop-shadow(0 34px 60px rgba(76,56,134,.34));
 }
 /* app showcase */
-.app-screen{background:none;padding:0;box-shadow:none;border-radius:0;}
+.app-screen{background:none;padding:0;box-shadow:none;border-radius:0;overflow:visible;}
 .app-screen img{width:100%;display:block;border-radius:0;
   filter:drop-shadow(0 30px 56px rgba(50,30,110,.3));}
 .app-screen-1{width:230px;}
@@ -1354,6 +1354,35 @@ body{
 
 /* la CTA finale resta satura: chiusura */
 .section-footer{background:linear-gradient(135deg,#7C3AED 0%,#8B5CF6 42%,#22D3EE 100%);}
+
+/* ── TELEFONI CHE RUOTANO ──
+   Il render ha già la prospettiva incisa: bastano pochi gradi
+   di rotateY perché legga come il telefono che gira davvero. */
+@keyframes phoneTurn{
+  0%,100%{transform:perspective(1600px) rotateY(0deg) rotateX(0deg) translateY(0);}
+  50%    {transform:perspective(1600px) rotateY(-9deg) rotateX(1.5deg) translateY(-12px);}
+}
+@keyframes phoneTurnAlt{
+  0%,100%{transform:perspective(1600px) rotateY(-4deg) translateY(-6px);}
+  50%    {transform:perspective(1600px) rotateY(6deg) translateY(4px);}
+}
+.phone-render{
+  animation:phoneTurn 11s ease-in-out infinite;
+  transform-origin:52% 50%;
+  will-change:transform;
+}
+.app-screen-1 img{animation:phoneTurn 13s ease-in-out infinite;transform-origin:55% 50%;}
+.app-screen-2 img{animation:phoneTurnAlt 15s ease-in-out infinite 1.4s;transform-origin:45% 50%;}
+.fc-visual img{animation:phoneTurn 14s ease-in-out infinite;transform-origin:50% 55%;}
+.fc:nth-child(2) .fc-visual img{animation:phoneTurnAlt 16s ease-in-out infinite .9s;}
+.fc:nth-child(3) .fc-visual img{animation:phoneTurn 12s ease-in-out infinite 1.8s;}
+/* il mouse prende il comando sull'hero, poi l'animazione riprende */
+.phone-render.steered{animation:none;transition:transform .18s ease-out;}
+.phone-render.releasing{animation:none;transition:transform .8s cubic-bezier(.25,1,.5,1);}
+
+@media(prefers-reduced-motion:reduce){
+  .phone-render,.app-screen img,.fc-visual img{animation:none;}
+}
 
 /* logo bolla */
 .nav-logo img{width:42px;height:42px;border-radius:0;}
@@ -2046,6 +2075,37 @@ initShader('shader-footer',   30);
   video.addEventListener('error', function(){
     video.style.display = 'none';
     ph.classList.add('on');
+  });
+})();
+
+// ── Il telefono dell'hero segue il mouse, poi torna all'animazione ──
+(function(){
+  var hero  = document.querySelector('.hero');
+  var phone = document.querySelector('.phone-render');
+  if (!hero || !phone) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (window.matchMedia('(hover: none)').matches) return;
+
+  var releaseTimer = null;
+
+  hero.addEventListener('mousemove', function(e){
+    var r  = hero.getBoundingClientRect();
+    var dx = (e.clientX - r.left - r.width  / 2) / r.width;
+    var dy = (e.clientY - r.top  - r.height / 2) / r.height;
+    clearTimeout(releaseTimer);
+    phone.classList.remove('releasing');
+    phone.classList.add('steered');
+    phone.style.transform =
+      'perspective(1600px) rotateY(' + (dx * 26) + 'deg) rotateX(' + (-dy * 10) + 'deg) translateY(' + (dy * 12) + 'px)';
+  });
+
+  hero.addEventListener('mouseleave', function(){
+    phone.classList.remove('steered');
+    phone.classList.add('releasing');
+    phone.style.transform = '';
+    releaseTimer = setTimeout(function(){
+      phone.classList.remove('releasing');
+    }, 800);
   });
 })();
 
