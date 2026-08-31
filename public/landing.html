@@ -1406,8 +1406,8 @@ body{
 }
 /* app showcase */
 .app-screen{background:none;padding:0;box-shadow:none;border-radius:0;overflow:visible;}
-.app-screen img{width:100%;display:block;border-radius:0;
-  filter:drop-shadow(0 30px 56px rgba(50,30,110,.3));}
+.app-screen .phone-turn{width:100%;filter:drop-shadow(0 30px 56px rgba(50,30,110,.3));}
+.app-screen img{width:100%;display:block;border-radius:0;}
 .app-screen-1{width:230px;}
 .app-screen-2{width:230px;}
 .app-obj{position:absolute;pointer-events:none;z-index:4;
@@ -1417,11 +1417,11 @@ body{
 .app-screens{position:relative;}
 /* card funzionalità */
 .fc-visual{min-height:300px;padding:26px 26px 0;align-items:flex-end;}
-.fc-visual img{
-  width:auto;height:290px;border-radius:0;
-  box-shadow:none;
+.fc-visual .phone-turn{
+  height:290px;width:auto;
   filter:drop-shadow(0 22px 40px rgba(76,56,134,.3));
 }
+.fc-visual img{width:auto;height:290px;border-radius:0;box-shadow:none;}
 .fc-visual::before{
   background:linear-gradient(160deg,rgba(207,194,245,.4) 0%,rgba(166,228,221,.28) 100%);
 }
@@ -1459,21 +1459,49 @@ body{
   transform-origin:52% 50%;
   will-change:transform;
 }
-.app-screen-1 img{animation:phoneTurn 13s ease-in-out infinite;transform-origin:55% 50%;}
-.app-screen-2 img{animation:phoneTurnMirror 15s ease-in-out infinite 1.4s;transform-origin:45% 50%;}
-.fc-visual img{animation:phoneTurn 14s ease-in-out infinite;transform-origin:50% 55%;}
+.app-screen-1 .phone-turn{animation:phoneTurn 13s ease-in-out infinite;transform-origin:55% 50%;}
+.app-screen-2 .phone-turn{animation:phoneTurnMirror 15s ease-in-out infinite 1.4s;transform-origin:45% 50%;}
+.fc-visual .phone-turn{animation:phoneTurn 14s ease-in-out infinite;transform-origin:50% 55%;}
 @keyframes phoneTurnMirror{
   0%,100%{transform:perspective(1600px) rotateY(0deg) rotateX(0deg) translateY(0);}
   50%    {transform:perspective(1600px) rotateY(9deg) rotateX(1.5deg) translateY(-12px);}
 }
-.fc:nth-child(2) .fc-visual img{animation:phoneTurnMirror 16s ease-in-out infinite .9s;transform-origin:48% 55%;}
-.fc:nth-child(3) .fc-visual img{animation:phoneTurn 12s ease-in-out infinite 1.8s;}
+.fc:nth-child(2) .fc-visual .phone-turn{animation:phoneTurnMirror 16s ease-in-out infinite .9s;transform-origin:48% 55%;}
+.fc:nth-child(3) .fc-visual .phone-turn{animation:phoneTurn 12s ease-in-out infinite 1.8s;}
 /* il mouse prende il comando sull'hero, poi l'animazione riprende */
 .phone-render.steered{animation:none;transition:transform .18s ease-out;}
 .phone-render.releasing{animation:none;transition:transform .8s cubic-bezier(.25,1,.5,1);}
 
 @media(prefers-reduced-motion:reduce){
   .phone-render,.app-screen img,.fc-visual img{animation:none;}
+}
+
+/* ── IL TELEFONO GIRA AL PASSAGGIO ──
+   Due pose reali (fianco sinistro / fianco destro) che si scambiano.
+   Ognuna ruota entrando o uscendo, così la dissolvenza sparisce
+   dentro un movimento invece di sembrare un cambio di immagine. */
+.phone-turn{position:relative;display:block;perspective:1600px;cursor:pointer;outline:none;}
+.phone-turn .pt-a{position:relative;}
+.phone-turn .pt-b{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;}
+.phone-turn img{
+  display:block;width:100%;height:auto;
+  backface-visibility:hidden;
+  transition:opacity .5s ease,transform .8s cubic-bezier(.22,1,.36,1);
+}
+.phone-turn .pt-b{opacity:0;transform:rotateY(18deg);}
+.phone-turn:hover,.phone-turn:focus-visible,.phone-turn.turned{animation-play-state:paused;}
+.phone-turn:hover .pt-a,
+.phone-turn:focus-visible .pt-a,
+.phone-turn.turned .pt-a{opacity:0;transform:rotateY(-18deg);}
+.phone-turn:hover .pt-b,
+.phone-turn:focus-visible .pt-b,
+.phone-turn.turned .pt-b{opacity:1;transform:rotateY(0deg);}
+.phone-turn:focus-visible{outline:2px solid var(--violet);outline-offset:10px;border-radius:18px;}
+
+@media(prefers-reduced-motion:reduce){
+  .phone-turn img{transition:opacity .2s ease;}
+  .phone-turn:hover .pt-a,.phone-turn.turned .pt-a{transform:none;}
+  .phone-turn:hover .pt-b,.phone-turn.turned .pt-b{transform:none;}
 }
 
 /* logo bolla */
@@ -1539,7 +1567,10 @@ body{
         <!-- Oggetti 3D in vetro: metti i PNG con alpha in public/landing/3d/.
              Se un file manca, lo slot si rimuove da solo. -->
         <img class="glass-obj go-1" src="/landing/3d/calendar.png" alt="" aria-hidden="true">
-        <img class="phone-render" src="/landing/3d/phone-1.png" alt="Panel de Solvy en el móvil">
+        <div class="phone-render phone-turn" tabindex="0" role="img" aria-label="Panel de Solvy en el móvil">
+          <img class="pt-a" src="/landing/3d/phone-1.png" alt="">
+          <img class="pt-b" src="/landing/3d/phone-1b.png" alt="" aria-hidden="true">
+        </div>
       </div>
     </div>
   </div>
@@ -1611,10 +1642,10 @@ body{
   <div class="app-inner">
     <div class="app-screens sal">
       <div class="app-screen app-screen-1">
-        <img src="/landing/3d/phone-1.png" alt="Panel de Solvy">
+        <div class="phone-turn" tabindex="0" role="img" aria-label="Panel de Solvy"><img class="pt-a" src="/landing/3d/phone-1.png" alt=""><img class="pt-b" src="/landing/3d/phone-1b.png" alt="" aria-hidden="true"></div>
       </div>
       <div class="app-screen app-screen-2">
-        <img src="/landing/3d/phone-4r.png" alt="Gráfico de Solvy">
+        <div class="phone-turn" tabindex="0" role="img" aria-label="Gráfico de Solvy"><img class="pt-a" src="/landing/3d/phone-4b.png" alt=""><img class="pt-b" src="/landing/3d/phone-4.png" alt="" aria-hidden="true"></div>
       </div>
       <img class="app-obj ao-1" src="/landing/3d/modelos.png" alt="" aria-hidden="true">
       <img class="app-obj ao-2" src="/landing/3d/bell.png" alt="" aria-hidden="true">
@@ -1646,7 +1677,7 @@ body{
       <!-- Card 1 -->
       <div class="fc sal">
         <div class="fc-visual">
-          <img src="/landing/3d/phone-1.png" alt="Dashboard">
+          <div class="phone-turn" tabindex="0" role="img" aria-label="Dashboard de Solvy"><img class="pt-a" src="/landing/3d/phone-1.png" alt=""><img class="pt-b" src="/landing/3d/phone-1b.png" alt="" aria-hidden="true"></div>
         </div>
         <div class="fc-body">
           <div class="fc-title">IRPF e IVA en tiempo real</div>
@@ -1657,7 +1688,7 @@ body{
       <!-- Card 2 -->
       <div class="fc sa">
         <div class="fc-visual">
-          <img src="/landing/3d/phone-2r.png" alt="Impuestos Solvy">
+          <div class="phone-turn" tabindex="0" role="img" aria-label="Impuestos en Solvy"><img class="pt-a" src="/landing/3d/phone-2b.png" alt=""><img class="pt-b" src="/landing/3d/phone-2.png" alt="" aria-hidden="true"></div>
         </div>
         <div class="fc-body">
           <div class="fc-title">Estimación fiscal siempre lista</div>
@@ -1668,7 +1699,7 @@ body{
       <!-- Card 3 -->
       <div class="fc sar">
         <div class="fc-visual">
-          <img src="/landing/3d/phone-3.png" alt="Documentos">
+          <div class="phone-turn" tabindex="0" role="img" aria-label="Documentos en Solvy"><img class="pt-a" src="/landing/3d/phone-3.png" alt=""><img class="pt-b" src="/landing/3d/phone-3b.png" alt="" aria-hidden="true"></div>
         </div>
         <div class="fc-body">
           <div class="fc-title">Libro Registro automático</div>
@@ -2508,34 +2539,10 @@ initShader('shader-footer',   30);
   });
 })();
 
-// ── Il telefono dell'hero segue il mouse, poi torna all'animazione ──
+// ── Tocco: sui dispositivi senza hover il telefono gira al tap ──
 (function(){
-  var hero  = document.querySelector('.hero');
-  var phone = document.querySelector('.phone-render');
-  if (!hero || !phone) return;
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if (window.matchMedia('(hover: none)').matches) return;
-
-  var releaseTimer = null;
-
-  hero.addEventListener('mousemove', function(e){
-    var r  = hero.getBoundingClientRect();
-    var dx = (e.clientX - r.left - r.width  / 2) / r.width;
-    var dy = (e.clientY - r.top  - r.height / 2) / r.height;
-    clearTimeout(releaseTimer);
-    phone.classList.remove('releasing');
-    phone.classList.add('steered');
-    phone.style.transform =
-      'perspective(1600px) rotateY(' + (dx * 26) + 'deg) rotateX(' + (-dy * 10) + 'deg) translateY(' + (dy * 12) + 'px)';
-  });
-
-  hero.addEventListener('mouseleave', function(){
-    phone.classList.remove('steered');
-    phone.classList.add('releasing');
-    phone.style.transform = '';
-    releaseTimer = setTimeout(function(){
-      phone.classList.remove('releasing');
-    }, 800);
+  document.querySelectorAll('.phone-turn').forEach(function(el){
+    el.addEventListener('click', function(){ el.classList.toggle('turned'); });
   });
 })();
 
