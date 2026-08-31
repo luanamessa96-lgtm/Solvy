@@ -1,6 +1,20 @@
 import { useEffect, useRef } from 'react';
 import './LandingView.css';
 
+const FREE_FEATURES = [
+  'Registro de ingresos y gastos',
+  'Dashboard en tiempo real',
+  'Estimación de impuestos',
+];
+
+const PRO_FEATURES = [
+  'Facturas ilimitadas',
+  'Modelo 303 y Modelo 130',
+  'Avisos antes de cada plazo',
+  'OCR de tickets',
+  'Libro registro y backup PDF',
+];
+
 interface LandingViewProps {
   onSignup: () => void;
   onLogin: () => void;
@@ -200,7 +214,7 @@ export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
               <span className="g">Hacienda.</span>
             </h1>
             <p className="hero-sub sa3">
-              Solvy calcula tu IVA e IRPF en tiempo real, con cada factura que emites. Sin sorpresas en julio. Sin gestor.
+              Solvy calcula tu IVA e IRPF en tiempo real, con cada factura que emites. Sin sorpresas en julio. Sin sustos.
             </p>
             <div className="hero-cta sa3">
               <button onClick={onSignup} className="btn-primary">Empieza gratis</button>
@@ -239,7 +253,7 @@ export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
             'Modelo 303 en 30 segundos',
             'IRPF en tiempo real',
             'Calendario fiscal con alertas',
-            '14,99€/mes · Todo incluido',
+            'Plan gratis para siempre',
           ].map(label => (
             <div className="trust-item" key={label}>
               <svg width="16" height="16" fill="none" stroke="#7C3AED" strokeWidth="2" viewBox="0 0 24 24">
@@ -279,10 +293,10 @@ export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
             <div className="prob-row sar">
               <div className="prob-num">03</div>
               <div className="prob-content">
-                <div className="prob-head">Tu gestor cobra demasiado</div>
-                <div className="prob-body">80–100€/mes por gestiones que una app puede hacer en segundos. Y encima, no siempre avisa a tiempo.</div>
+                <div className="prob-head">Te enteras tarde de lo que debes</div>
+                <div className="prob-body">La información fiscal llega cuando ya es el día 20. Sin visibilidad diaria, no puedes planificar ni apartar lo justo.</div>
               </div>
-              <span className="prob-tag">Cara dependencia</span>
+              <span className="prob-tag">Sin visibilidad</span>
             </div>
           </div>
         </div>
@@ -369,22 +383,36 @@ export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
             <p style={{fontSize:'17px',color:'var(--muted)',marginTop:'-36px',marginBottom:0}}>Empieza gratis, sin tarjeta.</p>
           </div>
           <div className="pricing-grid">
-            <div className="p-card sa">
-              <div className="p-label">Mensual</div>
+            <div className="p-card free sa">
+              <div className="p-label">Gratis</div>
+              <div className="p-price">
+                <span className="p-currency">€</span>
+                <span className="p-amount">0</span>
+              </div>
+              <div className="p-period">para siempre</div>
+              <div className="p-note">Sin tarjeta · No caduca</div>
+              <hr className="p-divider" />
+              {FREE_FEATURES.map(f => (
+                <div className="p-feat" key={f}><span className="p-check">✓</span> {f}</div>
+              ))}
+            </div>
+            <div className="p-card sa2">
+              <div className="p-label">Pro · Mensual</div>
               <div className="p-price">
                 <span className="p-currency">€</span>
                 <span className="p-amount">14,99</span>
               </div>
               <div className="p-period">al mes</div>
-              <div className="p-note">Flexibilidad total</div>
+              <div className="p-note">Cancela cuando quieras</div>
               <hr className="p-divider" />
-              {['Facturas ilimitadas','Calendario fiscal completo','Libro Registro automático','Temas personalizados'].map(f => (
+              <div className="p-plus">Todo lo del plan Gratis, y además:</div>
+              {PRO_FEATURES.map(f => (
                 <div className="p-feat" key={f}><span className="p-check">✓</span> {f}</div>
               ))}
             </div>
-            <div className="p-card best sa2">
+            <div className="p-card best sa3">
               <div className="p-best-badge">AHORRA 17%</div>
-              <div className="p-label">Anual</div>
+              <div className="p-label">Pro · Anual</div>
               <div className="p-old">€179,88</div>
               <div className="p-price">
                 <span className="p-currency">€</span>
@@ -393,7 +421,8 @@ export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
               <div className="p-period">al año</div>
               <div className="p-note">≈ €12,49/mes · 2 meses gratis</div>
               <hr className="p-divider" />
-              {['Facturas ilimitadas','Calendario fiscal completo','Libro Registro automático','Temas personalizados'].map(f => (
+              <div className="p-plus">Todo lo del plan Gratis, y además:</div>
+              {PRO_FEATURES.map(f => (
                 <div className="p-feat" key={f}><span className="p-check">✓</span> {f}</div>
               ))}
             </div>

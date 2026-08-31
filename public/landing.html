@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Solvy — Tu gestoría fiscal en el bolsillo</title>
-<meta name="description" content="Solvy calcula tu IVA e IRPF en tiempo real con cada factura. Modelo 303 en 30 segundos, calendario fiscal con alertas. Empieza gratis, sin tarjeta. Sin gestor." />
+<meta name="description" content="Solvy calcula tu IVA e IRPF en tiempo real con cada factura. Modelo 303 en 30 segundos y avisos antes de cada plazo. Gratis para siempre, sin tarjeta." />
 <meta name="robots" content="index, follow" />
 <link rel="canonical" href="https://solvyapp.com/" />
 <!-- Open Graph -->
 <meta property="og:type" content="website" />
 <meta property="og:title" content="Solvy — Tu gestoría fiscal en el bolsillo" />
-<meta property="og:description" content="Gestión fiscal para autónomos en España. IVA, IRPF, Modelo 303. Sin gestor. 14,99€/mes." />
+<meta property="og:description" content="Gestión fiscal para autónomos en España. IVA, IRPF, Modelo 303 y avisos de plazos. Plan gratis para siempre; Pro desde 12,49€/mes." />
 <meta property="og:url" content="https://solvyapp.com" />
 <meta property="og:image" content="https://solvyapp.com/og-image.png" />
 <meta property="og:image:width" content="1200" />
@@ -40,8 +40,9 @@
   "operatingSystem": "Web, iOS, Android",
   "offers": {
     "@type": "Offer",
-    "price": "14.99",
-    "priceCurrency": "EUR"
+    "price": "0",
+    "priceCurrency": "EUR",
+    "description": "Plan gratis para siempre, sin tarjeta. Plan Pro desde 12,49€/mes."
   },
   "potentialAction": {
     "@type": "RegisterAction",
@@ -84,7 +85,7 @@
       "name": "¿Solvy sustituye a mi gestor?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No. Solvy no presenta tus declaraciones ante Hacienda — eso sigue haciéndolo tu gestor o tú mismo desde la Sede Electrónica. Lo que hace Solvy es calcular tu IVA, IRPF y cuota RETA en tiempo real, para que llegues a cada trimestre sabiendo exactamente cuánto vas a pagar, sin sorpresas ni esperar a que tu gestor te lo confirme."
+        "text": "No. Solvy no presenta tus declaraciones ante Hacienda ni te da asesoramiento fiscal — eso es trabajo de tu gestor. Lo que hace Solvy es ordenar tus datos y darte visibilidad diaria: sabes en todo momento cuánto IVA e IRPF llevas acumulado. Si trabajas con gestor, le llegas con todo en orden y sin carreras de última hora."
       }
     },
     {
@@ -673,7 +674,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
   border-top:1px solid var(--border);
   position:relative;overflow:hidden;
 }
-.pricing-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:720px;margin:64px auto 0;}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1040px;margin:64px auto 0;align-items:start;}
+.p-card.free{background:rgba(255,255,255,.02);}
+.p-card.free .p-amount{background:linear-gradient(135deg,#a78bfa,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.p-plus{font-size:12px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.04em;margin-bottom:12px;}
+@media(max-width:1000px) and (min-width:901px){
+  .pricing-grid{grid-template-columns:1fr 1fr;max-width:720px;}
+}
 .p-card{
   background:var(--card);border:1px solid var(--border);
   border-radius:24px;padding:40px 32px;position:relative;
@@ -751,7 +758,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
   .hero-visual{justify-content:center;}
   .app-inner{grid-template-columns:1fr;gap:48px;}
   .app-screens{justify-content:center;}
-  .prob-grid,.features-3,.pricing-grid{grid-template-columns:1fr;}
+  .prob-grid,.features-3,.pricing-grid{grid-template-columns:1fr;max-width:420px;}
   .trust-inner{gap:24px;}
   .footer-bottom{justify-content:center;text-align:center;}
 }
@@ -786,7 +793,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
         <span class="g">Hacienda.</span>
       </h1>
       <p class="hero-sub sa3">
-        Solvy calcula tu IVA e IRPF en tiempo real, con cada factura que emites. Sin sorpresas en julio. Sin gestor.
+        Solvy calcula tu IVA e IRPF en tiempo real, con cada factura que emites. Sin sorpresas en julio. Sin sustos.
       </p>
       <div class="hero-cta sa3">
         <a href="/app" class="btn-primary">Empieza gratis</a>
@@ -835,7 +842,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
     </div>
     <div class="trust-item">
       <svg width="16" height="16" fill="none" stroke="#7C3AED" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-      14,99€/mes · Todo incluido
+      Plan gratis para siempre
     </div>
   </div>
 </div>
@@ -868,10 +875,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
       <div class="prob-row sar">
         <div class="prob-num">03</div>
         <div class="prob-content">
-          <div class="prob-head">Tu gestor cobra demasiado</div>
-          <div class="prob-body">80–100€/mes por gestiones que una app puede hacer en segundos. Y encima, no siempre avisa a tiempo.</div>
+          <div class="prob-head">Te enteras tarde de lo que debes</div>
+          <div class="prob-body">La información fiscal llega cuando ya es el día 20. Sin visibilidad diaria, no puedes planificar ni apartar lo justo.</div>
         </div>
-        <span class="prob-tag">Cara dependencia</span>
+        <span class="prob-tag">Sin visibilidad</span>
       </div>
     </div>
   </div>
@@ -1047,23 +1054,38 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
       <p style="font-size:17px;color:var(--muted);margin-top:-36px;margin-bottom:0;">Empieza gratis, sin tarjeta.</p>
     </div>
     <div class="pricing-grid">
-      <div class="p-card sa">
-        <div class="p-label">Mensual</div>
+      <div class="p-card free sa">
+        <div class="p-label">Gratis</div>
+        <div class="p-price">
+          <span class="p-currency">€</span>
+          <span class="p-amount">0</span>
+        </div>
+        <div class="p-period">para siempre</div>
+        <div class="p-note">Sin tarjeta · No caduca</div>
+        <hr class="p-divider">
+        <div class="p-feat"><span class="p-check">✓</span> Registro de ingresos y gastos</div>
+        <div class="p-feat"><span class="p-check">✓</span> Dashboard en tiempo real</div>
+        <div class="p-feat"><span class="p-check">✓</span> Estimación de impuestos</div>
+      </div>
+      <div class="p-card sa2">
+        <div class="p-label">Pro · Mensual</div>
         <div class="p-price">
           <span class="p-currency">€</span>
           <span class="p-amount">14,99</span>
         </div>
         <div class="p-period">al mes</div>
-        <div class="p-note">Flexibilidad total</div>
+        <div class="p-note">Cancela cuando quieras</div>
         <hr class="p-divider">
+        <div class="p-plus">Todo lo del plan Gratis, y además:</div>
         <div class="p-feat"><span class="p-check">✓</span> Facturas ilimitadas</div>
-        <div class="p-feat"><span class="p-check">✓</span> Calendario fiscal completo</div>
-        <div class="p-feat"><span class="p-check">✓</span> Libro Registro automático</div>
-        <div class="p-feat"><span class="p-check">✓</span> Temas personalizados</div>
+        <div class="p-feat"><span class="p-check">✓</span> Modelo 303 y Modelo 130</div>
+        <div class="p-feat"><span class="p-check">✓</span> Avisos antes de cada plazo</div>
+        <div class="p-feat"><span class="p-check">✓</span> OCR de tickets</div>
+        <div class="p-feat"><span class="p-check">✓</span> Libro registro y backup PDF</div>
       </div>
-      <div class="p-card best sa2">
+      <div class="p-card best sa3">
         <div class="p-best-badge">AHORRA 17%</div>
-        <div class="p-label">Anual</div>
+        <div class="p-label">Pro · Anual</div>
         <div class="p-old">€179,88</div>
         <div class="p-price">
           <span class="p-currency">€</span>
@@ -1072,14 +1094,16 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
         <div class="p-period">al año</div>
         <div class="p-note">≈ €12,49/mes · 2 meses gratis</div>
         <hr class="p-divider">
+        <div class="p-plus">Todo lo del plan Gratis, y además:</div>
         <div class="p-feat"><span class="p-check">✓</span> Facturas ilimitadas</div>
-        <div class="p-feat"><span class="p-check">✓</span> Calendario fiscal completo</div>
-        <div class="p-feat"><span class="p-check">✓</span> Libro Registro automático</div>
-        <div class="p-feat"><span class="p-check">✓</span> Temas personalizados</div>
+        <div class="p-feat"><span class="p-check">✓</span> Modelo 303 y Modelo 130</div>
+        <div class="p-feat"><span class="p-check">✓</span> Avisos antes de cada plazo</div>
+        <div class="p-feat"><span class="p-check">✓</span> OCR de tickets</div>
+        <div class="p-feat"><span class="p-check">✓</span> Libro registro y backup PDF</div>
       </div>
     </div>
     <div class="sa" style="text-align:center;margin-top:32px;">
-      <a href="#" class="btn-primary" style="background:linear-gradient(135deg,#6D28D9,#06B6D4);color:#fff;box-shadow:0 8px 32px rgba(109,40,217,.4);">Empieza gratis</a>
+      <a href="/app" class="btn-primary" style="background:linear-gradient(135deg,#6D28D9,#06B6D4);color:#fff;box-shadow:0 8px 32px rgba(109,40,217,.4);">Empieza gratis</a>
       <p style="font-size:12px;color:var(--muted);margin-top:12px;">Sin tarjeta · Gratis para siempre</p>
     </div>
   </div>
@@ -1107,7 +1131,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
       </details>
       <details style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;">
         <summary style="font-size:17px;font-weight:700;color:#fff;list-style:none;">¿Solvy sustituye a mi gestor?</summary>
-        <p style="margin-top:16px;color:rgba(255,255,255,.65);line-height:1.7;">No. Solvy no presenta tus declaraciones ante Hacienda — eso sigue haciéndolo tu gestor o tú mismo desde la Sede Electrónica. Lo que hace Solvy es calcular tu IVA, IRPF y cuota RETA en tiempo real, para que llegues a cada trimestre sabiendo exactamente cuánto vas a pagar, sin sorpresas ni esperar a que tu gestor te lo confirme.</p>
+        <p style="margin-top:16px;color:rgba(255,255,255,.65);line-height:1.7;">No. Solvy no presenta tus declaraciones ante Hacienda ni te da asesoramiento fiscal — eso es trabajo de tu gestor. Lo que hace Solvy es ordenar tus datos y darte visibilidad diaria: sabes en todo momento cuánto IVA e IRPF llevas acumulado. Si trabajas con gestor, le llegas con todo en orden y sin carreras de última hora.</p>
       </details>
       <details style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;">
         <summary style="font-size:17px;font-weight:700;color:#fff;list-style:none;">¿Funciona en iOS y Android?</summary>

@@ -78,6 +78,10 @@
       "destination": "/cookies.html"
     },
     {
+      "source": "/asesorias",
+      "destination": "/asesorias.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/app.html"
     }

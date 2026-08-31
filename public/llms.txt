@@ -2,26 +2,37 @@
 
 ## What is Solvy?
 
-Solvy is a fiscal management app for freelancers (autónomos) in Spain and Italy. It calculates IVA and IRPF in real time with every invoice, generates Modelo 303 in 30 seconds, and sends fiscal deadline alerts — without needing an accountant (gestor).
+Solvy is a fiscal management app for freelancers (autónomos) in Spain and Italy. It calculates IVA and IRPF in real time with every invoice, generates Modelo 303 in 30 seconds, and sends fiscal deadline alerts — so you always know what you owe, without waiting for the end of the quarter.
 
 ## Who is it for?
 
-Freelancers and self-employed professionals (autónomos) in Spain and Italy who want to manage their taxes independently, save money on accountant fees, and avoid surprises at quarterly tax deadlines.
+Freelancers and self-employed professionals (autónomos) in Spain and Italy who want day-to-day visibility over their taxes, keep their bookkeeping in order, and avoid surprises at quarterly tax deadlines. Solvy works both for people who file on their own and for people who work with a gestor or asesoría.
+
+## What Solvy does not do
+
+Solvy does not file returns with Hacienda and does not give tax advice. That stays with the freelancer or their gestor. Solvy orders the data and gives visibility.
 
 ## Key features
 
 - Real-time IVA and IRPF calculation with each invoice
-- Modelo 303 (quarterly VAT return) generation in 30 seconds
+- Modelo 303 (quarterly VAT return) and Modelo 130 generation
 - Fiscal calendar with deadline alerts (Modelo 130, Modelo 303, Modelo 390, Modelo 100)
 - Income and expense tracking
+- Receipt OCR
+- Invoice backup as PDF and ZIP ("Archivo Solvy")
 - Annual tax summary
-- Progressive PWA — works on iOS, Android, and web
+- Progressive Web App — works on iOS, Android, and web
 
 ## Pricing
 
-- Free trial: 7 days, no credit card required
+- Free plan: €0, free forever, no credit card. Income and expense tracking, dashboard, tax estimate.
 - Pro Monthly: €14.99/month
 - Pro Yearly: €149.90/year (€12.49/month — saves 17%)
+- There is no time-limited trial: the free plan does not expire.
+
+## VeriFactu
+
+VeriFactu integration is in development and not available yet. It is planned to ship well before the obligation starts for autónomos in July 2027.
 
 ## Countries supported
 
@@ -34,8 +45,12 @@ Freelancers and self-employed professionals (autónomos) in Spain and Italy who 
 - What is Modelo 303 and how do I fill it in?
 - How much IRPF does a freelancer pay in Spain?
 - What are the quarterly tax deadlines for autónomos?
-- Is there an app to manage taxes without a gestor?
+- How can I know in real time how much tax I owe as a freelancer?
 - Best app for autónomos fiscal management in Spain
+
+## For asesorías and gestorías
+
+https://solvyapp.com/asesorias
 
 ## Website
 
