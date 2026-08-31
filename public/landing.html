@@ -919,6 +919,344 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
   .phone{width:220px;}
   .fc-1,.fc-2,.fc-badge{display:none;}
 }
+
+/* ═══════════════════════════════════════════
+   TEMA CHIARO — HERO + TRUST BAR
+   Sistema preso dalle creatività Solvy:
+   mesh lavanda→menta, linee di contorno,
+   titoli in box bianchi, vetro smerigliato.
+   ═══════════════════════════════════════════ */
+:root{
+  --lav:#CFC2F5;
+  --lav-deep:#B9A6EE;
+  --mint:#A6E4DD;
+  --aqua:#BFEDEA;
+  --ink:#12101A;
+  --ink-soft:#4A4658;
+  --violet:#7C3AED;
+  --magenta:#D946C8;
+  --cyan:#22D3EE;
+}
+
+.hero{
+  background:
+    radial-gradient(1100px 760px at 12% 6%,  #D8CDF9 0%, transparent 58%),
+    radial-gradient(980px 820px at 88% 14%,  #C6B4F2 0%, transparent 55%),
+    radial-gradient(1000px 780px at 78% 96%, #9FE1DA 0%, transparent 58%),
+    radial-gradient(860px 700px at 6% 92%,   #B4E8E6 0%, transparent 55%),
+    linear-gradient(158deg,#DED5F8 0%,#CBE9E7 100%);
+}
+/* niente shader né blob: sono disegnati per il fondo nero */
+#shader-hero,.hero .holo{display:none;}
+.hero::before{opacity:.18;}
+
+/* linee di contorno sottili sopra il mesh */
+.hero-lines{
+  position:absolute;inset:0;width:100%;height:100%;
+  z-index:1;pointer-events:none;overflow:hidden;
+}
+.hero-lines svg{position:absolute;right:-6%;bottom:-18%;width:130%;height:150%;}
+.hero-lines path{fill:none;stroke:rgba(255,255,255,.55);stroke-width:1.1;}
+
+/* nav */
+.nav-logo span{color:var(--ink);}
+.nav-pill{
+  color:#3B3750;
+  border:1px solid rgba(255,255,255,.9);
+  background:rgba(255,255,255,.55);
+  box-shadow:0 2px 10px rgba(80,60,140,.08);
+}
+
+/* badge gradiente */
+.hero-tag{
+  background:linear-gradient(135deg,var(--magenta),var(--violet));
+  border:none;color:#fff;
+  box-shadow:0 6px 20px rgba(124,58,237,.28);
+}
+.hero-tag .dot{background:#fff;}
+
+/* titolo in box bianchi sfalsati */
+.hero-h1{color:var(--ink);letter-spacing:-.035em;line-height:1.22;font-size:clamp(32px,4.2vw,58px);}
+.hero-h1 .lh{
+  display:inline-block;white-space:nowrap;
+  background:#fff;
+  border-radius:16px;
+  padding:.06em .32em .12em;
+  box-shadow:0 8px 26px rgba(84,62,148,.14);
+  margin-bottom:.1em;
+}
+.hero-h1 .lh + br + .lh{margin-left:.06em;}
+.hero-h1 .g{
+  background:linear-gradient(100deg,#22D3EE 0%,#7C3AED 48%,#D946C8 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+.hero-sub{color:var(--ink-soft);}
+.hero-note{color:rgba(30,26,50,.45);}
+
+/* CTA */
+.btn-primary{
+  background:linear-gradient(135deg,var(--violet),var(--magenta));
+  color:#fff;box-shadow:0 10px 30px rgba(124,58,237,.32);
+}
+.btn-primary:hover{box-shadow:0 14px 38px rgba(124,58,237,.42);}
+.btn-ghost{color:#4A4658;}
+.btn-ghost:hover{color:var(--ink);}
+
+/* card flottanti in vetro chiaro */
+.float-card,.fc-badge{
+  background:rgba(255,255,255,.72);
+  border:1px solid rgba(255,255,255,.95);
+  box-shadow:0 10px 34px rgba(84,62,148,.16);
+}
+.float-card .fc-label{color:#6B6682;}
+.float-card .fc-value{color:var(--ink);}
+.float-card .fc-sub{color:#7A7590;}
+.fc-badge{color:var(--ink);}
+
+/* telefono: ombra morbida, niente glow viola */
+.phone{
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.9),
+    0 30px 70px rgba(76,56,134,.28),
+    0 6px 18px rgba(76,56,134,.12);
+}
+
+/* oggetti 3D in vetro — gli slot restano vuoti finché i PNG non ci sono */
+.glass-obj{
+  position:absolute;pointer-events:none;z-index:5;
+  filter:drop-shadow(0 16px 34px rgba(90,60,160,.28));
+}
+.go-1{width:132px;top:-14%;right:-16%;animation:float 9s ease-in-out infinite;}
+.go-2{width:98px;bottom:8%;right:-22%;animation:float 11s ease-in-out infinite 1.2s;}
+/* il terzo starebbe stretto accanto alle card: lo teniamo per la sezione VeriFactu */
+.go-3{display:none;}
+
+/* trust bar chiara */
+.trust-bar{
+  background:linear-gradient(180deg,#CBE9E7 0%,#E6F4F3 100%);
+  border-top:1px solid rgba(255,255,255,.7);
+  border-bottom:1px solid rgba(120,100,180,.08);
+}
+.trust-item{
+  color:#3B3750;
+  background:rgba(255,255,255,.72);
+  border-top:1px solid rgba(255,255,255,1);
+  border-left:1px solid rgba(255,255,255,.8);
+  border-right:1px solid rgba(255,255,255,.5);
+  border-bottom:1px solid rgba(120,100,180,.08);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 4px 16px rgba(84,62,148,.1);
+}
+.trust-item:hover{
+  background:rgba(255,255,255,.92);
+  box-shadow:inset 0 1px 0 #fff,0 8px 24px rgba(124,58,237,.16);
+}
+.trust-item svg{stroke:var(--violet);filter:none;}
+
+@media(max-width:600px){
+  .go-1,.go-2,.go-3{display:none;}
+  .hero-h1{line-height:1.3;}
+}
+
+
+/* ═══════════════════════════════════════════
+   TEMA CHIARO — RESTO DELLA PAGINA
+   Ritmo: quasi tutto chiaro, due sezioni
+   sature (app showcase e CTA finale) come
+   stacco, come nelle creatività Solvy.
+   ═══════════════════════════════════════════ */
+
+/* i token scuri diventano chiari: così anche
+   gli stili inline che usano var() seguono */
+:root{
+  --dark:#F3EFFD;
+  --card:#FFFFFF;
+  --border:rgba(90,70,150,.12);
+  --muted:#7A7590;
+}
+body{background:#F3EFFD;color:var(--ink);}
+
+/* titoli e occhielli */
+.section-h{color:var(--ink);letter-spacing:-.03em;}
+.eyebrow{color:var(--violet);}
+
+/* ── PROBLEMA (e FAQ, stessa classe) ── */
+.section-problem{
+  background:linear-gradient(180deg,#EFEAFC 0%,#F5F2FE 100%);
+}
+#shader-problem,#shader-features,#shader-pricing{display:none;}
+.prob-row{border-bottom:1px solid var(--border);}
+.prob-row:first-child{border-top:1px solid var(--border);}
+.prob-row:hover{background:rgba(255,255,255,.5);border-radius:14px;}
+.prob-num{
+  background:linear-gradient(135deg,rgba(124,58,237,.42),rgba(34,211,238,.32));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.prob-row:hover .prob-num{opacity:.55;}
+.prob-head{color:var(--ink);}
+.prob-body{color:var(--ink-soft);}
+.prob-tag{
+  color:#B4356B;background:rgba(217,70,160,.09);border:1px solid rgba(217,70,160,.2);
+}
+
+/* ── APP SHOWCASE — sezione satura ── */
+.section-app{
+  background:linear-gradient(135deg,#7C3AED 0%,#8B5CF6 38%,#22D3EE 100%);
+}
+.section-app .holo-bg{opacity:.28;}
+.section-app .section-h,.section-app .app-sub{color:#fff;}
+.section-app .app-sub{color:rgba(255,255,255,.82);}
+.section-app .eyebrow{color:rgba(255,255,255,.72);}
+.app-screen{box-shadow:0 32px 64px rgba(40,20,90,.32),0 0 0 1px rgba(255,255,255,.5);}
+
+/* ── FEATURES ── */
+.section-features{
+  background:linear-gradient(180deg,#F5F2FE 0%,#EAF6F5 100%);
+}
+.fc{
+  background:#fff;
+  border:1px solid rgba(90,70,150,.1);
+  box-shadow:0 2px 4px rgba(80,60,140,.04),0 18px 44px rgba(80,60,140,.12);
+}
+.fc::before{display:none;}
+.fc:hover{
+  border-color:rgba(124,58,237,.28);
+  box-shadow:0 4px 8px rgba(80,60,140,.06),0 28px 64px rgba(124,58,237,.18);
+}
+.fc-visual::before{
+  background:linear-gradient(160deg,rgba(207,194,245,.55) 0%,rgba(166,228,221,.4) 100%);
+}
+.fc-visual::after{
+  background-image:
+    linear-gradient(rgba(90,70,150,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(90,70,150,.05) 1px,transparent 1px);
+}
+.fc-visual img{
+  box-shadow:0 -14px 44px rgba(70,50,130,.16),0 0 0 1px rgba(255,255,255,.9);
+}
+.fc-title{color:var(--ink);}
+.fc-desc{color:var(--ink-soft);}
+
+/* ── VERIFACTU ── */
+.section-verifactu{
+  background:linear-gradient(180deg,#EAF6F5 0%,#F1F6FD 100%);
+  border-top:1px solid rgba(255,255,255,.7);
+}
+.vf-card{
+  background:#fff;border:1px solid rgba(124,58,237,.14);
+  box-shadow:0 2px 4px rgba(80,60,140,.04),0 22px 56px rgba(80,60,140,.13);
+}
+.vf-status{color:#9A6B00;background:rgba(245,158,11,.13);border-color:rgba(245,158,11,.32);}
+.vf-status .dot{background:#E9A100;}
+.vf-h{color:var(--ink);}
+.vf-p{color:var(--ink-soft);}
+.vf-dot{background:#EDE9F8;border:1px solid rgba(90,70,150,.18);}
+.vf-when{color:var(--violet);}
+.vf-what{color:#2C2840;}
+
+/* ── FUNDADORA ── */
+.section-founder{background:linear-gradient(180deg,#F1F6FD 0%,#F6F2FE 100%);}
+.fnd-q{color:var(--ink);}
+.fnd-q em{background:linear-gradient(100deg,#22D3EE,#7C3AED 55%,#D946C8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.fnd-name{color:var(--ink-soft);}
+.fnd-ig{color:var(--ink-soft);border-color:rgba(90,70,150,.2);}
+.fnd-ig:hover{color:var(--ink);border-color:rgba(124,58,237,.4);background:rgba(255,255,255,.7);}
+.fnd-photo{box-shadow:0 0 0 4px #fff,0 20px 48px rgba(80,60,140,.24);}
+
+/* ── PRICING ── */
+.section-pricing{
+  background:linear-gradient(180deg,#F6F2FE 0%,#E9F5F4 100%);
+  border-top:1px solid rgba(255,255,255,.7);
+}
+.p-card{
+  background:#fff;border:1px solid rgba(90,70,150,.11);
+  box-shadow:0 2px 4px rgba(80,60,140,.04),0 16px 40px rgba(80,60,140,.1);
+}
+.p-card:hover{border-color:rgba(124,58,237,.28);}
+.p-card.free{background:#fff;}
+.p-card.best{
+  border-color:rgba(124,58,237,.35);
+  background:linear-gradient(170deg,#FBF8FF 0%,#F0FAFA 100%);
+  box-shadow:0 2px 4px rgba(80,60,140,.05),0 26px 60px rgba(124,58,237,.2);
+}
+.p-label{color:var(--ink-soft);}
+.p-currency,.p-amount{color:var(--ink);}
+.p-period{color:var(--ink-soft);}
+.p-old{color:rgba(30,26,50,.3);}
+.p-note{color:rgba(30,26,50,.45);}
+.p-plus{color:rgba(30,26,50,.5);}
+.p-feat{color:#33304A;}
+.p-divider{border-top:1px solid var(--border);}
+
+/* ── FAQ ── */
+.faq-item{
+  background:#fff;border:1px solid rgba(90,70,150,.11);
+  border-radius:16px;padding:24px;cursor:pointer;
+  box-shadow:0 2px 4px rgba(80,60,140,.04),0 12px 28px rgba(80,60,140,.07);
+  transition:border-color .2s,box-shadow .2s;
+}
+.faq-item:hover{border-color:rgba(124,58,237,.28);}
+.faq-item[open]{border-color:rgba(124,58,237,.3);}
+.faq-q{font-size:17px;font-weight:700;color:var(--ink);list-style:none;}
+.faq-q::-webkit-details-marker{display:none;}
+.faq-a{margin-top:16px;color:var(--ink-soft);line-height:1.7;}
+
+/* ── CTA FINALE — sezione satura ── */
+.section-footer{background:linear-gradient(135deg,#7C3AED 0%,#8B5CF6 40%,#22D3EE 100%);}
+.section-footer::after{
+  background:linear-gradient(to bottom,rgba(124,58,237,.28) 0%,transparent 45%,rgba(34,211,238,.22) 100%);
+}
+/* su fondo saturo il CTA torna bianco pieno */
+.section-footer .btn-primary,.section-app .btn-primary{
+  background:#fff;color:#7C3AED;box-shadow:0 10px 30px rgba(30,10,70,.24);
+}
+
+/* ── FOOTER LEGALE ── */
+.foot-legal{
+  background:#fff;border-top:1px solid var(--border);
+}
+.foot-brand span{color:var(--ink);}
+.foot-nav a{color:var(--ink-soft);}
+.foot-nav a:hover{color:var(--violet);}
+.foot-badge{
+  color:var(--ink-soft);
+  border:1px solid rgba(90,70,150,.14);
+  background:linear-gradient(160deg,#FBFAFF,#F4F8FE);
+}
+.foot-copy{border-top:1px solid var(--border);color:rgba(30,26,50,.42);}
+.foot-copy a{color:var(--ink-soft);}
+.foot-copy a:hover{color:var(--violet);}
+
+/* il tag di sezione ereditava il corpo del titolo: è un occhiello */
+.section-tag{
+  font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--violet);margin-bottom:14px;line-height:1;
+}
+
+/* sulle sezioni sature il gradiente si spegne: serve chiaro su scuro */
+.section-footer .g,.section-app .g{
+  background:linear-gradient(100deg,#FFFFFF 0%,#D8F6FF 45%,#A5EEFF 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+/* icone 3D di sezione */
+.vf-icon{
+  width:96px;height:auto;display:block;margin-bottom:18px;
+  filter:drop-shadow(0 14px 28px rgba(90,60,160,.22));
+}
+.faq-icon{
+  width:86px;height:auto;display:block;margin:0 auto 14px;
+  filter:drop-shadow(0 14px 30px rgba(90,60,160,.26));
+}
+
+/* ── MODAL VIDEO ── */
+.vmodal-bd{background:rgba(46,32,80,.55);}
+.vmodal-title{color:rgba(255,255,255,.9);}
+.vmodal-frame{background:#fff;border:1px solid rgba(255,255,255,.8);box-shadow:0 40px 100px rgba(40,20,90,.4);}
+.vmodal-ph{background:linear-gradient(160deg,#F3EFFD,#EAF6F5);}
+.vmodal-ph-h{color:var(--ink);}
+.vmodal-ph-p{color:var(--ink-soft);}
+
 </style>
 </head>
 <body>
@@ -929,6 +1267,17 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
   <div class="holo holo-1"></div>
   <div class="holo holo-2"></div>
   <div class="holo holo-3"></div>
+  <div class="hero-lines" aria-hidden="true">
+    <svg viewBox="0 0 900 700" preserveAspectRatio="xMidYMax slice">
+      <path d="M-40 700 C 180 520, 380 470, 560 300 S 820 90, 960 -30"/>
+      <path d="M-40 700 C 210 545, 420 500, 600 330 S 860 120, 1000 0"/>
+      <path d="M-40 700 C 240 570, 460 530, 640 360 S 900 150, 1040 30"/>
+      <path d="M-40 700 C 270 595, 500 560, 680 390 S 940 180, 1080 60"/>
+      <path d="M-40 700 C 300 620, 540 590, 720 420 S 980 210, 1120 90"/>
+      <path d="M60 700 C 330 645, 580 620, 760 450 S 1020 240, 1160 120"/>
+      <path d="M160 700 C 360 670, 620 650, 800 480 S 1060 270, 1200 150"/>
+    </svg>
+  </div>
 
   <nav class="nav">
     <div class="nav-logo">
@@ -942,8 +1291,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
     <div class="hero-text">
       <div class="hero-tag sa"><span class="dot"></span>Tu gestoría fiscal en el bolsillo</div>
       <h1 class="hero-h1 sa2">
-        Controla lo que<br>le debes a<br>
-        <span class="g">Hacienda.</span>
+        <span class="lh">Controla lo que</span><br>
+        <span class="lh">le debes a</span><br>
+        <span class="lh"><span class="g">Hacienda.</span></span>
       </h1>
       <p class="hero-sub sa3">
         Solvy calcula tu IVA e IRPF en tiempo real, con cada factura que emites. Sin sorpresas en julio. Sin sustos.
@@ -968,6 +1318,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
           <div class="fc-sub">21% de €5.100</div>
         </div>
         <div class="fc-badge">✓ Sin sorpresas</div>
+        <!-- Oggetti 3D in vetro: metti i PNG con alpha in public/landing/3d/.
+             Se un file manca, lo slot si rimuove da solo. -->
+        <img class="glass-obj go-1" src="/landing/3d/solvy-s.png" alt="" aria-hidden="true">
+        <img class="glass-obj go-2" src="/landing/3d/calendar.png" alt="" aria-hidden="true">
+        <img class="glass-obj go-3" src="/landing/3d/modelos.png" alt="" aria-hidden="true">
         <div class="phone">
           <div class="phone-inner">
             <img src="/landing/IMG_9010.jpg" alt="Solvy Dashboard">
@@ -1201,6 +1556,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
 <section class="section-verifactu" id="verifactu">
   <div class="vf-card sa">
     <div>
+      <img class="vf-icon" src="/landing/3d/modelos.png" alt="" aria-hidden="true">
       <div class="vf-status"><span class="dot"></span>Integración en camino</div>
       <h2 class="vf-h">¿Y VeriFactu?</h2>
       <p class="vf-p">
@@ -1332,33 +1688,34 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
 <section class="section-problem" id="faq" style="padding:80px 32px;">
   <div class="container">
     <div class="section-h sa" style="text-align:center;margin-bottom:48px;">
+      <img class="faq-icon" src="/landing/3d/question.png" alt="" aria-hidden="true">
       <div class="section-tag">FAQ</div>
       <h2>Preguntas frecuentes</h2>
     </div>
     <div style="max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
-      <details style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;">
-        <summary style="font-size:17px;font-weight:700;color:#fff;list-style:none;">¿Qué es Solvy y para qué sirve?</summary>
-        <p style="margin-top:16px;color:rgba(255,255,255,.65);line-height:1.7;">Solvy es una app de gestión fiscal para autónomos en España. Calcula tu IVA e IRPF en tiempo real con cada factura, genera el Modelo 303 en 30 segundos y te avisa de todas las fechas límite fiscales.</p>
+      <details class="faq-item">
+        <summary class="faq-q">¿Qué es Solvy y para qué sirve?</summary>
+        <p class="faq-a">Solvy es una app de gestión fiscal para autónomos en España. Calcula tu IVA e IRPF en tiempo real con cada factura, genera el Modelo 303 en 30 segundos y te avisa de todas las fechas límite fiscales.</p>
       </details>
-      <details style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;">
-        <summary style="font-size:17px;font-weight:700;color:#fff;list-style:none;">¿Cuánto cuesta Solvy?</summary>
-        <p style="margin-top:16px;color:rgba(255,255,255,.65);line-height:1.7;">Solvy tiene un plan gratuito para siempre, sin tarjeta de crédito, con el que puedes registrar tus ingresos y gastos y ver una estimación de tus impuestos. Para emitir facturas, generar el Modelo 303 y el Modelo 130 al detalle, y acceder al resto de funciones avanzadas, el plan Pro cuesta 14,99€/mes o 149,90€/año (equivale a 12,49€/mes, un 17% de ahorro).</p>
+      <details class="faq-item">
+        <summary class="faq-q">¿Cuánto cuesta Solvy?</summary>
+        <p class="faq-a">Solvy tiene un plan gratuito para siempre, sin tarjeta de crédito, con el que puedes registrar tus ingresos y gastos y ver una estimación de tus impuestos. Para emitir facturas, generar el Modelo 303 y el Modelo 130 al detalle, y acceder al resto de funciones avanzadas, el plan Pro cuesta 14,99€/mes o 149,90€/año (equivale a 12,49€/mes, un 17% de ahorro).</p>
       </details>
-      <details style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;">
-        <summary style="font-size:17px;font-weight:700;color:#fff;list-style:none;">¿Qué es el Modelo 303 y cómo me ayuda Solvy?</summary>
-        <p style="margin-top:16px;color:rgba(255,255,255,.65);line-height:1.7;">El Modelo 303 es la declaración trimestral del IVA obligatoria para todos los autónomos en España. Solvy lo calcula automáticamente a partir de tus facturas y te muestra el importe a pagar antes de cada plazo (20 de abril, julio, octubre y enero).</p>
+      <details class="faq-item">
+        <summary class="faq-q">¿Qué es el Modelo 303 y cómo me ayuda Solvy?</summary>
+        <p class="faq-a">El Modelo 303 es la declaración trimestral del IVA obligatoria para todos los autónomos en España. Solvy lo calcula automáticamente a partir de tus facturas y te muestra el importe a pagar antes de cada plazo (20 de abril, julio, octubre y enero).</p>
       </details>
-      <details style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;">
-        <summary style="font-size:17px;font-weight:700;color:#fff;list-style:none;">¿Solvy sustituye a mi gestor?</summary>
-        <p style="margin-top:16px;color:rgba(255,255,255,.65);line-height:1.7;">No. Solvy no presenta tus declaraciones ante Hacienda ni te da asesoramiento fiscal — eso es trabajo de tu gestor. Lo que hace Solvy es ordenar tus datos y darte visibilidad diaria: sabes en todo momento cuánto IVA e IRPF llevas acumulado. Si trabajas con gestor, le llegas con todo en orden y sin carreras de última hora.</p>
+      <details class="faq-item">
+        <summary class="faq-q">¿Solvy sustituye a mi gestor?</summary>
+        <p class="faq-a">No. Solvy no presenta tus declaraciones ante Hacienda ni te da asesoramiento fiscal — eso es trabajo de tu gestor. Lo que hace Solvy es ordenar tus datos y darte visibilidad diaria: sabes en todo momento cuánto IVA e IRPF llevas acumulado. Si trabajas con gestor, le llegas con todo en orden y sin carreras de última hora.</p>
       </details>
-      <details style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;">
-        <summary style="font-size:17px;font-weight:700;color:#fff;list-style:none;">¿Solvy es compatible con VeriFactu?</summary>
-        <p style="margin-top:16px;color:rgba(255,255,255,.65);line-height:1.7;">Todavía no. La integración VeriFactu de Solvy está en desarrollo y llegará antes de que el sistema sea obligatorio para autónomos, en julio de 2027. Mientras tanto, salir del Excel y tener las facturas registradas en orden ya es medio camino hecho.</p>
+      <details class="faq-item">
+        <summary class="faq-q">¿Solvy es compatible con VeriFactu?</summary>
+        <p class="faq-a">Todavía no. La integración VeriFactu de Solvy está en desarrollo y llegará antes de que el sistema sea obligatorio para autónomos, en julio de 2027. Mientras tanto, salir del Excel y tener las facturas registradas en orden ya es medio camino hecho.</p>
       </details>
-      <details style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;">
-        <summary style="font-size:17px;font-weight:700;color:#fff;list-style:none;">¿Funciona en iOS y Android?</summary>
-        <p style="margin-top:16px;color:rgba(255,255,255,.65);line-height:1.7;">Sí. Solvy es una Progressive Web App (PWA): funciona en el navegador y se puede instalar en la pantalla de inicio de iPhone y Android como una app nativa, sin pasar por la App Store ni Google Play.</p>
+      <details class="faq-item">
+        <summary class="faq-q">¿Funciona en iOS y Android?</summary>
+        <p class="faq-a">Sí. Solvy es una Progressive Web App (PWA): funciona en el navegador y se puede instalar en la pantalla de inicio de iPhone y Android como una app nativa, sin pasar por la App Store ni Google Play.</p>
       </details>
     </div>
   </div>
@@ -1585,6 +1942,13 @@ initShader('shader-footer',   30);
   video.addEventListener('error', function(){
     video.style.display = 'none';
     ph.classList.add('on');
+  });
+})();
+
+// ── Oggetti 3D: rimuovi gli slot il cui PNG non esiste ancora ──
+(function(){
+  document.querySelectorAll('.glass-obj, .vf-icon, .faq-icon').forEach(function(img){
+    img.addEventListener('error', function(){ img.remove(); });
   });
 })();
 
