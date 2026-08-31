@@ -1,5 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import './LandingView.css';
+
+const VERIFACTU_STEPS = [
+  { when: 'Hoy', what: 'Sales del Excel y tus facturas quedan registradas en orden.' },
+  { when: 'Antes de la obligación', what: 'Llega la integración VeriFactu dentro de Solvy.' },
+  { when: 'Julio 2027', what: 'VeriFactu pasa a ser obligatorio para autónomos.' },
+];
 
 const FREE_FEATURES = [
   'Registro de ingresos y gastos',
@@ -21,6 +27,33 @@ interface LandingViewProps {
 }
 
 export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
+  const [isDemoOpen, setIsDemoOpen] = useState(false);
+  // Il file /landing/demo.mp4 arriva a parte: finché non c'è, il player mostra il placeholder.
+  const [demoUnavailable, setDemoUnavailable] = useState(false);
+  const [founderPhotoMissing, setFounderPhotoMissing] = useState(false);
+  const demoVideoRef = useRef<HTMLVideoElement>(null);
+
+  const closeDemo = useCallback(() => {
+    setIsDemoOpen(false);
+    demoVideoRef.current?.pause();
+  }, []);
+
+  useEffect(() => {
+    if (!isDemoOpen) {
+      document.body.style.overflow = '';
+      return;
+    }
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeDemo(); };
+    document.addEventListener('keydown', onKey);
+    const play = demoVideoRef.current?.play();
+    if (play) play.catch(() => {});
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [isDemoOpen, closeDemo]);
+
   const shaderHeroRef     = useRef<HTMLCanvasElement>(null);
   const shaderAppRef      = useRef<HTMLCanvasElement>(null);
   const shaderProblemRef  = useRef<HTMLCanvasElement>(null);
@@ -218,7 +251,7 @@ export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
             </p>
             <div className="hero-cta sa3">
               <button onClick={onSignup} className="btn-primary">Empieza gratis</button>
-              <a href="#app" className="btn-ghost">Ver cómo funciona →</a>
+              <button type="button" className="btn-ghost" onClick={() => setIsDemoOpen(true)}>Ver cómo funciona →</button>
             </div>
             <p className="hero-note sa3">Sin tarjeta · Gratis para siempre</p>
           </div>
@@ -373,6 +406,72 @@ export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
         </div>
       </section>
 
+      {/* ══ VERIFACTU ══ */}
+      <section className="section-verifactu" id="verifactu">
+        <div className="vf-card sa">
+          <div>
+            <div className="vf-status"><span className="dot"></span>Integración en camino</div>
+            <h2 className="vf-h">¿Y VeriFactu?</h2>
+            <p className="vf-p">
+              En julio de 2027 será obligatorio para autónomos. La integración de Solvy está en camino
+              y llegará mucho antes. Salir del Excel hoy ya es medio camino.
+            </p>
+          </div>
+          <div className="vf-steps">
+            {VERIFACTU_STEPS.map((step, i) => (
+              <div className="vf-step" key={step.when}>
+                <span className={i === 0 ? 'vf-dot now' : 'vf-dot'}></span>
+                <div>
+                  <div className="vf-when">{step.when}</div>
+                  <div className="vf-what">{step.what}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ FUNDADORA ══ */}
+      <section className="section-founder">
+        <div className="container">
+          <div className="fnd sa">
+            {/* Foto reale: public/landing/luana.jpg (quadrata, ~400x400).
+                Se manca, resta il monogramma. */}
+            <div className="fnd-photo">
+              {!founderPhotoMissing && (
+                <img
+                  src="/landing/luana.jpg"
+                  alt="Luana, fundadora de Solvy"
+                  width={180}
+                  height={180}
+                  loading="lazy"
+                  decoding="async"
+                  onError={() => setFounderPhotoMissing(true)}
+                />
+              )}
+              <span className="fnd-initial" aria-hidden="true">L</span>
+            </div>
+            <div>
+              <div className="eyebrow">Quién está detrás</div>
+              <p className="fnd-q">
+                No soy gestora. Cuando me hice autónoma en España, el miedo a Hacienda venía incluido.
+                Busqué una app que me dijera mi situación en tiempo real — <em>no existía</em>.
+                Así que la construí.
+              </p>
+              <div className="fnd-meta">
+                <span className="fnd-name">— Luana, fundadora</span>
+                <a className="fnd-ig" href="https://www.instagram.com/solvyapp/" target="_blank" rel="noopener noreferrer">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                  </svg>
+                  @solvyapp
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ══ PRICING ══ */}
       <section className="section-pricing" id="pricing">
         <canvas id="shader-pricing" ref={shaderPricingRef}></canvas>
@@ -451,6 +550,78 @@ export default function LandingView({ onSignup, onLogin }: LandingViewProps) {
           <span className="footer-url">solvyapp.com</span>
         </div>
       </section>
+
+      {/* ══ FOOTER LEGAL / TRUST ══ */}
+      <footer className="foot-legal">
+        <div className="foot-legal-inner">
+          <div className="foot-top">
+            <div className="foot-brand">
+              <img src="/landing/solvy-icon-1024.png" alt="" />
+              <span>SOLVY</span>
+            </div>
+            <nav className="foot-nav">
+              <a href="/privacy">Privacidad</a>
+              <a href="/terms">Términos</a>
+              <a href="/cookies">Cookies</a>
+              <a href="/asesorias">Para asesorías</a>
+              <a href="https://www.instagram.com/solvyapp/" target="_blank" rel="noopener noreferrer">Instagram</a>
+            </nav>
+          </div>
+          <div className="foot-badges">
+            <span className="foot-badge">
+              <svg width="14" height="14" fill="none" stroke="#a78bfa" strokeWidth="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="3"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              Pagos seguros con Stripe
+            </span>
+            <span className="foot-badge">
+              <svg width="14" height="14" fill="none" stroke="#38bdf8" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              RGPD
+            </span>
+            <span className="foot-badge">
+              <svg width="14" height="14" fill="none" stroke="#a78bfa" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Datos alojados en la UE
+            </span>
+          </div>
+          <div className="foot-copy">
+            <span>© 2026 Solvy · Luana Messa</span>
+            <span>Solvy no presenta declaraciones ni presta asesoramiento fiscal · <a href="mailto:support@solvyapp.com">support@solvyapp.com</a></span>
+          </div>
+        </div>
+      </footer>
+
+      {/* ══ VIDEO DEMO — modal ══ */}
+      <div
+        className={isDemoOpen ? 'vmodal on' : 'vmodal'}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Vídeo: cómo funciona Solvy"
+      >
+        <div className="vmodal-bd" onClick={closeDemo}></div>
+        <div className="vmodal-box">
+          <div className="vmodal-bar">
+            <span className="vmodal-title">Cómo funciona Solvy</span>
+            <button className="vmodal-close" type="button" aria-label="Cerrar vídeo" onClick={closeDemo}>✕</button>
+          </div>
+          <div className="vmodal-frame">
+            <video
+              ref={demoVideoRef}
+              src="/landing/demo.mp4"
+              controls
+              playsInline
+              preload="none"
+              style={demoUnavailable ? { display: 'none' } : undefined}
+              onError={() => setDemoUnavailable(true)}
+            />
+            <div className={demoUnavailable ? 'vmodal-ph on' : 'vmodal-ph'}>
+              <div className="vmodal-ph-icon">▶</div>
+              <div className="vmodal-ph-h">El vídeo llega en breve</div>
+              <p className="vmodal-ph-p">Estamos grabando el recorrido completo de Solvy. Mientras tanto, puedes empezar gratis y verlo por dentro.</p>
+              <button type="button" className="btn-primary" style={{marginTop:'6px'}} onClick={() => { closeDemo(); onSignup(); }}>
+                Empieza gratis
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
     </div>
   );
