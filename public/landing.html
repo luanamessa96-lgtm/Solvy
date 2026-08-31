@@ -957,12 +957,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
 .hero::before{opacity:.18;}
 
 /* linee di contorno sottili sopra il mesh */
-.hero-lines{
-  position:absolute;inset:0;width:100%;height:100%;
-  z-index:1;pointer-events:none;overflow:hidden;
-}
-.hero-lines svg{position:absolute;right:-6%;bottom:-18%;width:130%;height:150%;}
-.hero-lines path{fill:none;stroke:rgba(255,255,255,.55);stroke-width:1.1;}
 
 /* nav */
 .nav-logo span{color:var(--ink);}
@@ -1322,7 +1316,6 @@ body{
     radial-gradient(900px 520px at 18% 0%,rgba(255,255,255,.5),transparent 62%),
     radial-gradient(760px 620px at 88% 12%,rgba(255,255,255,.32),transparent 58%);
 }
-.hero-lines path{stroke:rgba(255,255,255,.5);}
 
 /* ── SCALA TIPOGRAFICA ──
    hero 60 · sezione 42 · card 20 · testo 16 · piccolo 13 · occhiello 11 */
@@ -1434,17 +1427,6 @@ body{
   <div class="holo holo-1"></div>
   <div class="holo holo-2"></div>
   <div class="holo holo-3"></div>
-  <div class="hero-lines" aria-hidden="true">
-    <svg viewBox="0 0 900 700" preserveAspectRatio="xMidYMax slice">
-      <path d="M-40 700 C 180 520, 380 470, 560 300 S 820 90, 960 -30"/>
-      <path d="M-40 700 C 210 545, 420 500, 600 330 S 860 120, 1000 0"/>
-      <path d="M-40 700 C 240 570, 460 530, 640 360 S 900 150, 1040 30"/>
-      <path d="M-40 700 C 270 595, 500 560, 680 390 S 940 180, 1080 60"/>
-      <path d="M-40 700 C 300 620, 540 590, 720 420 S 980 210, 1120 90"/>
-      <path d="M60 700 C 330 645, 580 620, 760 450 S 1020 240, 1160 120"/>
-      <path d="M160 700 C 360 670, 620 650, 800 480 S 1060 270, 1200 150"/>
-    </svg>
-  </div>
 
   <nav class="nav">
     <div class="nav-logo">
