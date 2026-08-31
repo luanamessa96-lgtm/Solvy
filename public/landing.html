@@ -1006,8 +1006,32 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
   color:#fff;box-shadow:0 10px 30px rgba(124,58,237,.32);
 }
 .btn-primary:hover{box-shadow:0 14px 38px rgba(124,58,237,.42);}
-.btn-ghost{color:#4A4658;}
-.btn-ghost:hover{color:var(--ink);}
+/* il secondario non si capiva che fosse cliccabile: pill in vetro */
+.btn-ghost{
+  color:#3B3750;
+  padding:13px 26px;
+  border-radius:50px;
+  background:rgba(255,255,255,.6);
+  border:1px solid rgba(255,255,255,.95);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    0 4px 18px rgba(84,62,148,.14);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  transition:background .2s,transform .2s,box-shadow .2s,color .2s;
+}
+.btn-ghost:hover{
+  color:var(--violet);
+  background:rgba(255,255,255,.92);
+  transform:translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 8px 26px rgba(124,58,237,.2);
+}
+.btn-ghost:focus-visible{
+  outline:2px solid var(--violet);
+  outline-offset:3px;
+}
 
 /* card flottanti in vetro chiaro */
 .float-card,.fc-badge{
