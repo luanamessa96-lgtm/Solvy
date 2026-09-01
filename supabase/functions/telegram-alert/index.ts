@@ -3,7 +3,7 @@ import { getCorsHeaders } from '../_shared/cors.ts';
 const TELEGRAM_TOKEN = Deno.env.get('TELEGRAM_BOT_TOKEN')!;
 const TELEGRAM_CHAT_ID = Deno.env.get('TELEGRAM_CHAT_ID')!;
 
-type AlertType = 'new_user' | 'new_pro' | 'refund';
+type AlertType = 'new_user' | 'new_pro' | 'refund' | 'payment_failed';
 
 interface AlertPayload {
   type: AlertType;
@@ -25,6 +25,9 @@ function buildMessage(payload: AlertPayload): string {
   }
   if (payload.type === 'refund') {
     return `💸 *Rimborso Solvy*\n👤 ${payload.name || 'Senza nome'}\n📧 ${payload.email}\n${flag} ${payload.country || 'Italia'}\n💶 €${payload.amount ?? '?'}`;
+  }
+  if (payload.type === 'payment_failed') {
+    return `⚠️ *Pro revocato — pagamento fallito*\n👤 ${payload.name || 'Senza nome'}\n📧 ${payload.email}\n${flag} ${payload.country || 'Italia'}\n(3 tentativi Stripe falliti)`;
   }
   return `📢 Alert Solvy: ${JSON.stringify(payload)}`;
 }

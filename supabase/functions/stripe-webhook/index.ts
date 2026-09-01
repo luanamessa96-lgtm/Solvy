@@ -205,17 +205,33 @@ Deno.serve(async (req) => {
         if (attemptCount >= 3) {
           const { data: profiles } = await supabaseAdmin
             .from('profiles')
-            .select('user_id')
+            .select('user_id, name, email, country')
             .eq('stripe_customer_id', customerId)
             .limit(1);
 
           if (profiles?.[0]?.user_id) {
             await supabaseAdmin
               .from('profiles')
-              .update({ is_pro: false, subscription_started_at: null })
+              .update({ is_pro: false, subscription_started_at: null, subscription_plan: null })
               .eq('user_id', profiles[0].user_id);
 
             console.log(`Pro revocato dopo ${attemptCount} tentativi falliti, customer: ${customerId}`);
+
+            // A differenza della cancellazione volontaria, questa revoca era silenziosa:
+            // niente email al cliente, niente isPro sync su Loops, nessuna visibilità interna.
+            if (profiles[0].email) {
+              await fetch(`${supabaseUrl}/functions/v1/loops-sync`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
+                body: JSON.stringify({ action: 'cancellation', email: profiles[0].email, name: profiles[0].name, paese: profiles[0].country }),
+              }).catch(e => console.error('loops-sync (payment_failed cancellation) failed:', e));
+
+              await fetch(`${supabaseUrl}/functions/v1/telegram-alert`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
+                body: JSON.stringify({ type: 'payment_failed', email: profiles[0].email, name: profiles[0].name, country: profiles[0].country }),
+              }).catch(e => console.error('telegram-alert (payment_failed) failed:', e));
+            }
           }
         }
         break;

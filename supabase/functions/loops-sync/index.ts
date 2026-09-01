@@ -9,7 +9,7 @@ const TRANSACTIONAL_IDS = {
   cancellation: { it: 'cmtibgppm0d970j01a5zy9f7m', es: 'cmtibh9fr08l10jww9jdgjmcf' },
 } as const;
 
-type Action = 'signup' | 'update_pro' | 'upgrade_pro' | 'cancellation' | 'update_fatture' | 'update_active' | 'refund';
+type Action = 'signup' | 'upgrade_pro' | 'cancellation' | 'update_fatture' | 'update_active' | 'refund';
 
 interface SyncPayload {
   action: Action;
@@ -102,19 +102,25 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ ok: true, contactRes, updateRes, eventRes }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
-    } else if (action === 'update_pro') {
+    } else if (action === 'upgrade_pro') {
+      // paese/userGroup inclusi anche qui (non solo su 'signup'): se il contatto è stato
+      // creato da un update precedente senza mai passare da 'signup' riuscito, resta per
+      // sempre senza questi campi — ogni azione che li conosce li ripara.
       await loopsRequest('/contacts/update', 'PUT', {
         email,
-        isPro: isPro ?? true,
+        isPro: true,
+        ...(paese ? { userGroup: paese === 'Spain' ? 'es' : 'it', paese: paese === 'Spain' ? 'es' : 'it' } : {}),
       });
-    } else if (action === 'upgrade_pro') {
-      await loopsRequest('/contacts/update', 'PUT', { email, isPro: true });
       await loopsRequest('/events/send', 'POST', {
         email,
         eventName: paese === 'Spain' ? 'upgrade_pro_es' : 'upgrade_pro_it',
       });
     } else if (action === 'cancellation') {
-      await loopsRequest('/contacts/update', 'PUT', { email, isPro: false });
+      await loopsRequest('/contacts/update', 'PUT', {
+        email,
+        isPro: false,
+        ...(paese ? { userGroup: paese === 'Spain' ? 'es' : 'it', paese: paese === 'Spain' ? 'es' : 'it' } : {}),
+      });
       await loopsRequest('/events/send', 'POST', {
         email,
         eventName: paese === 'Spain' ? 'cancellation_es' : 'cancellation_it',
