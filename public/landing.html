@@ -1433,6 +1433,9 @@ body{
 .section-app .app-sub{color:var(--ink-soft);}
 .section-app .eyebrow{color:var(--violet);}
 .section-app .feature-list li{color:#33304A;}
+/* c'erano due pallini per riga: lo pseudo-elemento e la spunta vera.
+   Sul fondo scuro non si notava, sul chiaro resta un cerchio fantasma. */
+.feature-list li::before{display:none;}
 .section-app .feature-list li .check{
   background:linear-gradient(135deg,var(--violet),var(--magenta));color:#fff;
 }
@@ -1477,6 +1480,31 @@ body{
   .phone-render,.app-screen img,.fc-visual img{animation:none;}
 }
 
+/* ── MOBILE: via il margine laterale doppio ──
+   Le sezioni hanno padding 0 32px e il .container dentro ne aggiungeva altri
+   32 per lato: su desktop lo assorbe il max-width, su un telefono da 375px
+   sparivano 64px e la colonna di testo scendeva a 167px. */
+@media(max-width:768px){
+  .container{padding:0;}
+  .section-problem,.section-features,.section-pricing,.section-app,
+  .section-verifactu,.section-founder{padding-left:24px;padding-right:24px;}
+  .section-problem,.section-features,.section-pricing,.section-app{
+    padding-top:76px;padding-bottom:76px;
+  }
+  /* il numero non entrava nella sua colonna e veniva tagliato:
+     su mobile va sopra al titolo, non di fianco */
+  .prob-row{grid-template-columns:1fr;gap:4px;padding:26px 0;}
+  .prob-num{font-size:34px;line-height:1;margin-bottom:2px;}
+  .prob-row::before{left:-24px;}
+  .section-h{margin-bottom:32px;}
+}
+
+/* i due telefoni affiancati misuravano 376px in uno spazio da 311: uscivano
+   dalla sezione, che li tagliava avendo overflow:hidden */
+@media(max-width:600px){
+  .app-screens{gap:10px;}
+}
+
 /* ── IL TELEFONO GIRA AL PASSAGGIO ──
    Due pose reali (fianco sinistro / fianco destro) che si scambiano.
    Ognuna ruota entrando o uscendo, così la dissolvenza sparisce
@@ -1510,7 +1538,7 @@ body{
 .foot-brand img{width:34px;height:34px;border-radius:0;}
 
 @media(max-width:900px){
-  .app-screen-1,.app-screen-2{width:180px;}
+  .app-screen-1,.app-screen-2{width:min(42vw,180px);}
   .ao-1,.ao-2{display:none;}
   .fc-visual img{height:240px;}
 }
