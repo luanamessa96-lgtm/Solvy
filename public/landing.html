@@ -1572,6 +1572,17 @@ body{
 /* Affiancati su uno schermo da telefono restavano larghi ~157px l'uno.
    Sovrapposti: quello davanti guadagna metà larghezza, e l'incastro dà
    anche un po' di profondità. */
+/* ═══ GERARCHIA SU MOBILE ═══
+   Nella sezione dashboard i telefoni stanno a sinistra, che su desktop e'
+   giusto. Ma impilando, l'immagine finiva PRIMA del titolo: si scorreva
+   dentro un mockup alto 664px senza sapere cosa si stesse guardando, e
+   "Tu dashboard fiscal" arrivava dopo. Il titolo deve introdurre. */
+@media(max-width:900px){
+  .app-inner{gap:28px;}
+  .app-text{order:1;}
+  .app-screens{order:2;}
+}
+
 /* il carosello serve solo su telefono */
 .phone-cycle{display:none;}
 @keyframes screenCycle{
@@ -1596,7 +1607,7 @@ body{
   .app-screens{gap:0;justify-content:center;}
   .phone-cycle{
     display:block;position:relative;
-    width:min(74vw,310px);margin:0 auto;
+    width:min(58vw,240px);margin:0 auto;
     filter:drop-shadow(0 26px 50px rgba(50,30,110,.32));
   }
   .phone-cycle img{
@@ -1609,8 +1620,10 @@ body{
   .phone-cycle img:nth-child(3){animation-delay:9s;}
   .phone-cycle img:nth-child(4){animation-delay:13.5s;}
 
-  .fc-visual{height:360px;}
-  .fc-visual .phone-turn{width:min(70%,240px);}
+  .fc-visual{height:255px;}
+  .fc-visual .phone-turn{width:min(60%,195px);}
+  .fc-body{padding:22px 24px 26px;}
+  .p-card{padding:28px 24px;}
 }
 
 
