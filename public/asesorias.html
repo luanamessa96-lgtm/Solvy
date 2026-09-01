@@ -480,6 +480,54 @@ body{
   .fnd-photo{width:140px;height:140px;}
   .vf-card{grid-template-columns:1fr;gap:30px;padding:34px 24px;}
 }
+
+/* ── PROGRAMA FUNDADOR: trattamento premium ──
+   Oro champagne, non giallo: il bordo e' un gradiente vero (doppio
+   background, padding-box + border-box) perche' un border-color piatto
+   sull'oro sembra sempre finto. Il riflesso passa ogni 9 secondi. */
+.founder-card{
+  position:relative;overflow:hidden;
+  background:
+    linear-gradient(165deg,#FFFEFA 0%,#FFF9EE 55%,#FDF3E2 100%) padding-box,
+    linear-gradient(135deg,#E3BE76 0%,#F7E7BE 22%,#C9A24E 50%,#F3DFA8 78%,#D8B265 100%) border-box;
+  border:1.5px solid transparent;
+  box-shadow:
+    0 2px 4px rgba(140,110,40,.07),
+    0 22px 60px rgba(176,138,58,.2),
+    inset 0 1px 0 rgba(255,255,255,.9);
+}
+/* riflesso che attraversa la card */
+.founder-card::after{
+  content:'';position:absolute;top:0;bottom:0;left:-60%;width:45%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.72),transparent);
+  transform:skewX(-18deg);pointer-events:none;
+  animation:goldSheen 9s ease-in-out infinite;
+}
+@keyframes goldSheen{
+  0%,72%{left:-60%;}
+  88%,100%{left:130%;}
+}
+
+.founder-badge{
+  background:linear-gradient(135deg,#F8EACA,#E7C87F);
+  border:1px solid rgba(180,140,58,.45);
+  color:#6B4E14;
+  box-shadow:0 4px 14px rgba(176,138,58,.22),inset 0 1px 0 rgba(255,255,255,.8);
+}
+.founder-h{color:#1C1608;}
+.founder-p{color:#5A4A2C;}
+
+/* le dieci caselle: oro, e le libere brillano */
+.slot{background:rgba(140,110,40,.16);}
+.slot.open{
+  background:linear-gradient(135deg,#C9A24E,#F2DDA2 55%,#D8B265);
+  box-shadow:0 2px 8px rgba(176,138,58,.4);
+}
+.slots-note{color:rgba(90,74,44,.6);}
+
+@media(prefers-reduced-motion:reduce){
+  .founder-card::after{animation:none;display:none;}
+}
 </style>
 </head>
 <body>
