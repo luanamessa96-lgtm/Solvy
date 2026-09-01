@@ -8,6 +8,16 @@ interface WelcomePayload {
   lang: 'it' | 'es';
 }
 
+interface RefundPayload {
+  type: 'refund';
+  email: string;
+  name: string;
+  lang: 'it' | 'es';
+  amount: string;
+}
+
+type Payload = WelcomePayload | RefundPayload;
+
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -33,7 +43,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const payload = await req.json() as WelcomePayload;
+    const payload = await req.json() as Payload;
     if (!payload.email || !payload.name || !payload.lang) {
       return new Response(JSON.stringify({ error: 'Missing required fields: email, name, lang' }), {
         status: 400,
@@ -43,6 +53,32 @@ Deno.serve(async (req) => {
 
     const country = payload.lang === 'es' ? 'Spain' : 'Italy';
 
+    if (payload.type === 'refund') {
+      if (!payload.amount) {
+        return new Response(JSON.stringify({ error: 'Missing required field: amount' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      await fetch(`${supabaseUrl}/functions/v1/telegram-alert`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
+        body: JSON.stringify({ type: 'refund', email: payload.email, name: payload.name, country, amount: payload.amount }),
+      }).catch(e => console.error('telegram-alert failed:', e));
+
+      await fetch(`${supabaseUrl}/functions/v1/loops-sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
+        body: JSON.stringify({ action: 'refund', email: payload.email, name: payload.name, paese: country, amount: payload.amount }),
+      }).catch(e => console.error('loops-sync failed:', e));
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // type === 'welcome'
     await fetch(`${supabaseUrl}/functions/v1/telegram-alert`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },

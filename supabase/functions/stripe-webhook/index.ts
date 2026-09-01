@@ -183,7 +183,7 @@ Deno.serve(async (req) => {
             await fetch(`${supabaseUrl}/functions/v1/loops-sync`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
-              body: JSON.stringify({ action: 'cancellation', email: profiles[0].email, paese: profiles[0].country }),
+              body: JSON.stringify({ action: 'cancellation', email: profiles[0].email, name: profiles[0].name, paese: profiles[0].country }),
             }).catch(e => console.error('loops-sync (cancellation) failed:', e));
           }
         }

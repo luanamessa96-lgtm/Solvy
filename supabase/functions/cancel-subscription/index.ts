@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
       sendEmail(supabaseUrl, serviceRoleKey, {
         type: 'refund',
         email: profile.email,
-        name: profile.name ?? 'utente',
+        name: profile.name ?? (lang === 'es' ? 'usuario' : 'utente'),
         lang,
         amount: (refundedAmount / 100).toFixed(2),
       });

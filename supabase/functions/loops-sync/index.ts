@@ -3,7 +3,13 @@ import { getCorsHeaders } from '../_shared/cors.ts';
 const LOOPS_API_KEY = Deno.env.get('LOOPS_API_KEY')!;
 const LOOPS_BASE = 'https://app.loops.so/api/v1';
 
-type Action = 'signup' | 'update_pro' | 'upgrade_pro' | 'cancellation' | 'update_fatture' | 'update_active';
+// ID delle email transazionali Loops (create via API, non contengono segreti).
+const TRANSACTIONAL_IDS = {
+  refund: { it: 'cmtibe2zf0gin0jynoqlgwl6x', es: 'cmtibg7dl0g6q0j1s0sxcq4y2' },
+  cancellation: { it: 'cmtibgppm0d970j01a5zy9f7m', es: 'cmtibh9fr08l10jww9jdgjmcf' },
+} as const;
+
+type Action = 'signup' | 'update_pro' | 'upgrade_pro' | 'cancellation' | 'update_fatture' | 'update_active' | 'refund';
 
 interface SyncPayload {
   action: Action;
@@ -12,6 +18,7 @@ interface SyncPayload {
   paese?: string;     // 'Italy' | 'Spain'
   isPro?: boolean;
   fattureCount?: number;
+  amount?: string;
 }
 
 async function loopsRequest(path: string, method: string, body: unknown): Promise<{ ok: boolean; status: number; body: string }> {
@@ -33,13 +40,27 @@ async function loopsRequest(path: string, method: string, body: unknown): Promis
   return { ok: res.ok, status: res.status, body: text };
 }
 
+async function sendTransactional(
+  email: string,
+  kind: keyof typeof TRANSACTIONAL_IDS,
+  paese: string | undefined,
+  dataVariables: Record<string, string>
+): Promise<void> {
+  const lang = paese === 'Spain' ? 'es' : 'it';
+  await loopsRequest('/transactional', 'POST', {
+    email,
+    transactionalId: TRANSACTIONAL_IDS[kind][lang],
+    dataVariables,
+  });
+}
+
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
     const payload: SyncPayload = await req.json();
-    const { action, email, name, paese, isPro, fattureCount } = payload;
+    const { action, email, name, paese, isPro, fattureCount, amount } = payload;
 
     if (!email) {
       return new Response(JSON.stringify({ ok: false, error: 'email required' }), {
@@ -92,6 +113,15 @@ Deno.serve(async (req) => {
       await loopsRequest('/events/send', 'POST', {
         email,
         eventName: paese === 'Spain' ? 'cancellation_es' : 'cancellation_it',
+      });
+      await sendTransactional(email, 'cancellation', paese, {
+        name: name || (paese === 'Spain' ? 'usuario' : 'utente'),
+      });
+    } else if (action === 'refund') {
+      // Non tocca isPro/fattureCount: la cancellazione vera arriva dal webhook Stripe.
+      await sendTransactional(email, 'refund', paese, {
+        name: name || (paese === 'Spain' ? 'usuario' : 'utente'),
+        amount: amount ?? '0.00',
       });
     } else if (action === 'update_fatture') {
       await loopsRequest('/contacts/update', 'PUT', {

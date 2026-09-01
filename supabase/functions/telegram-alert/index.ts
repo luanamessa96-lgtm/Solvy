@@ -3,7 +3,7 @@ import { getCorsHeaders } from '../_shared/cors.ts';
 const TELEGRAM_TOKEN = Deno.env.get('TELEGRAM_BOT_TOKEN')!;
 const TELEGRAM_CHAT_ID = Deno.env.get('TELEGRAM_CHAT_ID')!;
 
-type AlertType = 'new_user' | 'new_pro';
+type AlertType = 'new_user' | 'new_pro' | 'refund';
 
 interface AlertPayload {
   type: AlertType;
@@ -11,6 +11,7 @@ interface AlertPayload {
   name?: string;
   country?: string;
   plan?: string; // 'monthly' | 'yearly'
+  amount?: string;
 }
 
 function buildMessage(payload: AlertPayload): string {
@@ -21,6 +22,9 @@ function buildMessage(payload: AlertPayload): string {
   if (payload.type === 'new_pro') {
     const planLabel = payload.plan === 'yearly' ? 'Annuale €149,90' : 'Mensile €14,99';
     return `💳 *Nuovo Pro Solvy*\n👤 ${payload.name || 'Senza nome'}\n📧 ${payload.email}\n${flag} ${payload.country || 'Italia'}\n📦 ${planLabel}`;
+  }
+  if (payload.type === 'refund') {
+    return `💸 *Rimborso Solvy*\n👤 ${payload.name || 'Senza nome'}\n📧 ${payload.email}\n${flag} ${payload.country || 'Italia'}\n💶 €${payload.amount ?? '?'}`;
   }
   return `📢 Alert Solvy: ${JSON.stringify(payload)}`;
 }
