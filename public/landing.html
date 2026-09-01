@@ -1058,7 +1058,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
 .go-1{width:132px;top:-14%;right:-16%;animation:float 9s ease-in-out infinite;}
 .go-2{width:98px;bottom:8%;right:-22%;animation:float 11s ease-in-out infinite 1.2s;}
 /* il terzo starebbe stretto accanto alle card: lo teniamo per la sezione VeriFactu */
-.go-3{display:none;}
+.go-3{width:86px;bottom:-6%;left:-20%;animation:float 13s ease-in-out infinite .5s;}
+.go-4{width:74px;top:22%;left:-26%;animation:float 10s ease-in-out infinite 1.8s;}
 
 /* trust bar chiara */
 .trust-bar{
@@ -1082,7 +1083,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#050507;color:#fff;over
 .trust-item svg{stroke:var(--violet);filter:none;}
 
 @media(max-width:600px){
-  .go-1,.go-2,.go-3{display:none;}
+
   .hero-h1{line-height:1.3;}
 }
 
@@ -1337,6 +1338,21 @@ body{background:#F3EFFD;color:var(--ink);}
 .faq-icon{
   width:86px;height:auto;display:block;margin:0 auto 14px;
   filter:drop-shadow(0 14px 30px rgba(90,60,160,.26));
+  animation:faqPonder 8s ease-in-out infinite;
+  transform-origin:50% 65%;   /* ruota attorno al punto, non al centro */
+  will-change:transform;
+}
+/* Ondeggia e si inclina, come se stesse rimuginando. Il render ha gia' la
+   prospettiva incisa, quindi pochi gradi di rotateY bastano a farlo girare. */
+@keyframes faqPonder{
+  0%,100%{transform:perspective(600px) translateY(0)     rotate(0deg)    rotateY(0deg);}
+  20%    {transform:perspective(600px) translateY(-9px)  rotate(-6deg)   rotateY(-16deg);}
+  45%    {transform:perspective(600px) translateY(-3px)  rotate(-1deg)   rotateY(-4deg);}
+  70%    {transform:perspective(600px) translateY(-12px) rotate(6deg)    rotateY(16deg);}
+  88%    {transform:perspective(600px) translateY(-4px)  rotate(2deg)    rotateY(5deg);}
+}
+@media(prefers-reduced-motion:reduce){
+  .faq-icon{animation:none;}
 }
 
 /* ── MODAL VIDEO ── */
@@ -1514,7 +1530,7 @@ body{
 
 @media(max-width:900px){
   .app-screen-1,.app-screen-2{width:min(42vw,180px);}
-  .ao-1,.ao-2{display:none;}
+
   .fc-visual img{height:240px;}
 }
 
@@ -1530,6 +1546,8 @@ body{
 .app-screen-2{width:48%;margin-left:-16%;margin-top:10%;z-index:2;}
 .ao-1{width:118px;top:-3%;right:0;z-index:1;}          /* dietro ai telefoni */
 .ao-2{width:96px;bottom:6%;left:-4%;z-index:4;}        /* davanti */
+.ao-3{width:84px;top:34%;left:-14%;z-index:1;animation:float 13s ease-in-out infinite 1.1s;}
+.ao-4{width:76px;bottom:26%;right:-4%;z-index:4;animation:float 11s ease-in-out infinite 2.2s;}
 
 /* ═══ MENO VUOTO IN TUTTA LA PAGINA ═══
    Ogni sezione aveva 120px di padding sopra e sotto: 240px per sezione,
@@ -1544,6 +1562,33 @@ body{
 .fc-visual{flex:none;height:330px;min-height:0;padding:28px 26px 0;align-items:flex-start;}
 .fc-visual .phone-turn{width:min(74%,250px);height:auto;}
 .fc-visual .phone-turn img{width:100%;height:auto;}
+
+/* ═══ NAVBAR E OGGETTI IN VETRO SU TELEFONO ═══ */
+@media(max-width:600px){
+  /* la pill toccava il logo e andava a capo su due righe */
+  .nav{padding:18px 20px;gap:10px;}
+  .nav-logo img{width:34px;height:34px;}
+  .nav-logo span{font-size:14px;letter-spacing:.13em;}
+  .nav-pill{font-size:10px;padding:5px 11px;letter-spacing:.04em;white-space:nowrap;}
+
+  /* Gli oggetti sparivano del tutto sotto i 600px. Ora restano, piu' piccoli
+     e spostati verso l'esterno, cosi' accompagnano il telefono senza
+     sovrapporsi al testo. */
+  .glass-obj{display:block;}
+  .go-1{width:64px;top:-9%;right:-13%;}
+  .go-2{width:52px;bottom:14%;right:-17%;}
+  .go-3{width:50px;bottom:-2%;left:-14%;}
+  .go-4{width:46px;top:16%;left:-17%;}
+
+  /* i telefoni riempiono quasi tutta la larghezza, quindi qui gli oggetti
+     si sovrappongono a loro invece di stargli accanto: fuori verrebbero
+     tagliati dal bordo della sezione */
+  .app-obj{display:block;}
+  .ao-1{width:62px;top:-3%;right:3%;}
+  .ao-2{width:54px;bottom:5%;left:1%;}
+  .ao-3{width:48px;top:42%;left:0;}
+  .ao-4{width:46px;bottom:32%;right:1%;}
+}
 
 /* ═══ REGOLE MOBILE ═══
    Tenute in fondo di proposito: hanno la stessa specificita' delle media
@@ -1577,24 +1622,13 @@ body{
    giusto. Ma impilando, l'immagine finiva PRIMA del titolo: si scorreva
    dentro un mockup alto 664px senza sapere cosa si stesse guardando, e
    "Tu dashboard fiscal" arrivava dopo. Il titolo deve introdurre. */
+/* Il titolo deve introdurre l'immagine, non seguirla. Su desktop i telefoni
+   stavano a sinistra, quindi si leggevano per primi; ora il testo apre la
+   sezione e l'immagine chiude, come nell'hero. */
+.app-text{order:1;}
+.app-screens{order:2;}
 @media(max-width:900px){
   .app-inner{gap:28px;}
-  .app-text{order:1;}
-  .app-screens{order:2;}
-}
-
-/* il carosello serve solo su telefono */
-.phone-cycle{display:none;}
-@keyframes screenCycle{
-  0%   {opacity:0;}
-  2.5% {opacity:1;}
-  22%  {opacity:1;}
-  25%  {opacity:0;}
-  100% {opacity:0;}
-}
-@media(prefers-reduced-motion:reduce){
-  .phone-cycle img{animation:none;opacity:0;}
-  .phone-cycle img:nth-child(1){opacity:1;}
 }
 
 @media(max-width:600px){
@@ -1603,22 +1637,9 @@ body{
      tutti i render condividono la stessa scocca, quindi incrociandoli la
      cornice resta ferma al pixel e sembra l'app che passa da una vista
      all'altra. */
-  .app-screen-1,.app-screen-2{display:none;}
-  .app-screens{gap:0;justify-content:center;}
-  .phone-cycle{
-    display:block;position:relative;
-    width:min(58vw,240px);margin:0 auto;
-    filter:drop-shadow(0 26px 50px rgba(50,30,110,.32));
-  }
-  .phone-cycle img{
-    display:block;width:100%;height:auto;opacity:0;
-    animation:screenCycle 18s linear infinite;
-  }
-  .phone-cycle img + img{position:absolute;left:0;top:0;}
-  .phone-cycle img:nth-child(1){animation-delay:0s;}
-  .phone-cycle img:nth-child(2){animation-delay:4.5s;}
-  .phone-cycle img:nth-child(3){animation-delay:9s;}
-  .phone-cycle img:nth-child(4){animation-delay:13.5s;}
+  .app-screens{gap:0;justify-content:flex-start;align-items:flex-start;}
+  .app-screen-1{width:min(56vw,235px);z-index:2;}
+  .app-screen-2{width:min(42vw,175px);margin-left:-50px;margin-top:13%;z-index:1;}
 
   .fc-visual{height:255px;}
   .fc-visual .phone-turn{width:min(60%,195px);}
@@ -1680,6 +1701,9 @@ body{
         <!-- Oggetti 3D in vetro: metti i PNG con alpha in public/landing/3d/.
              Se un file manca, lo slot si rimuove da solo. -->
         <img class="glass-obj go-1" src="/landing/3d/calendar.png" alt="" aria-hidden="true">
+        <img class="glass-obj go-2" src="/landing/3d/coin.png" alt="" aria-hidden="true">
+        <img class="glass-obj go-3" src="/landing/3d/chart.png" alt="" aria-hidden="true">
+        <img class="glass-obj go-4" src="/landing/3d/bell.png" alt="" aria-hidden="true">
         <div class="phone-render phone-turn" tabindex="0" role="img" aria-label="Panel de Solvy en el móvil">
           <img class="pt-a" src="/landing/3d/phone-1.png" alt="">
           <img class="pt-b" src="/landing/3d/phone-1b.png" alt="" aria-hidden="true">
@@ -1760,14 +1784,10 @@ body{
       <div class="app-screen app-screen-2">
         <div class="phone-turn" tabindex="0" role="img" aria-label="Gráfico de Solvy"><img class="pt-a" src="/landing/3d/phone-4b.png" alt=""><img class="pt-b" src="/landing/3d/phone-4.png" alt="" aria-hidden="true"></div>
       </div>
-      <div class="phone-cycle" role="img" aria-label="Las pantallas de Solvy: panel, impuestos y documentos">
-        <img src="/landing/3d/phone-1.png" alt="">
-        <img src="/landing/3d/phone-4.png" alt="">
-        <img src="/landing/3d/phone-2.png" alt="">
-        <img src="/landing/3d/phone-3.png" alt="">
-      </div>
       <img class="app-obj ao-1" src="/landing/3d/modelos.png" alt="" aria-hidden="true">
       <img class="app-obj ao-2" src="/landing/3d/bell.png" alt="" aria-hidden="true">
+      <img class="app-obj ao-3" src="/landing/3d/shield.png" alt="" aria-hidden="true">
+      <img class="app-obj ao-4" src="/landing/3d/receipt.png" alt="" aria-hidden="true">
     </div>
     <div class="app-text sar">
       <div class="eyebrow">Así funciona Solvy</div>
