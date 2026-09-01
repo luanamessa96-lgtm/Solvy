@@ -1518,6 +1518,33 @@ body{
   .fc-visual img{height:240px;}
 }
 
+/* ═══ DASHBOARD: grafiche piu' grandi, meno vuoto ═══
+   I telefoni stavano a 229px dentro una colonna da 520: meta' dello spazio
+   non veniva usata. Ora sono sovrapposti e riempiono la colonna, e gli
+   oggetti in vetro si incastrano con loro invece di galleggiare nel vuoto —
+   uno davanti e uno dietro, cosi' l'occlusione da' profondita'. */
+.section-app{padding:96px 32px;}
+.app-inner{gap:56px;}
+.app-screens{gap:0;align-items:flex-start;}
+.app-screen-1{width:60%;z-index:3;}
+.app-screen-2{width:48%;margin-left:-16%;margin-top:10%;z-index:2;}
+.ao-1{width:118px;top:-3%;right:0;z-index:1;}          /* dietro ai telefoni */
+.ao-2{width:96px;bottom:6%;left:-4%;z-index:4;}        /* davanti */
+
+/* ═══ MENO VUOTO IN TUTTA LA PAGINA ═══
+   Ogni sezione aveva 120px di padding sopra e sotto: 240px per sezione,
+   su sei sezioni fa piu' di 1400px di spazio morto. */
+.section-problem,.section-features,.section-pricing{padding:88px 32px;}
+.section-verifactu,.section-founder{padding:80px 32px;}
+
+/* Nelle card il telefono era largo 287px ma il riquadro lo tagliava a 342
+   di altezza, quindi se ne vedeva mezzo con del vuoto attorno. Ora e' il
+   contenitore a comandare la misura e il telefono esce dal bordo inferiore,
+   che riempie il riquadro invece di lasciarlo mezzo vuoto. */
+.fc-visual{flex:none;height:330px;min-height:0;padding:28px 26px 0;align-items:flex-start;}
+.fc-visual .phone-turn{width:min(74%,250px);height:auto;}
+.fc-visual .phone-turn img{width:100%;height:auto;}
+
 /* ═══ REGOLE MOBILE ═══
    Tenute in fondo di proposito: hanno la stessa specificita' delle media
    query dichiarate sopra, quindi devono venire dopo per prevalere. */
