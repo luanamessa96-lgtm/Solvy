@@ -2164,7 +2164,10 @@ initShader('shader-footer',   30);
   var hero   = document.querySelector('.hero');
   if (!canvas || !hero) return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if (window.innerWidth < 900 || window.matchMedia('(hover: none)').matches) return;
+
+  // Su telefono gira lo stesso, ma con meno lavoro per la GPU: griglia più
+  // piccola, meno iterazioni di pressione e nessun oversampling.
+  var LIGHT = window.innerWidth < 900 || window.matchMedia('(pointer: coarse)').matches;
 
   var gl = canvas.getContext('webgl2', {
     alpha: true, antialias: false, depth: false, stencil: false,
@@ -2174,13 +2177,13 @@ initShader('shader-footer',   30);
   if (!gl.getExtension('EXT_color_buffer_float') && !gl.getExtension('EXT_color_buffer_half_float')) return;
   gl.getExtension('OES_texture_float_linear');
 
-  var SIM_RES   = 128;
-  var DYE_RES   = 512;
+  var SIM_RES   = LIGHT ? 72  : 128;
+  var DYE_RES   = LIGHT ? 256 : 512;
   var DT        = 0.016;
   var DENS_DISS = 0.26;   // quanto in fretta svanisce l'inchiostro
   var VEL_DISS  = 0.20;
   var PRESSURE  = 0.8;
-  var P_ITER    = 18;
+  var P_ITER    = LIGHT ? 10 : 18;
   var CURL      = 24;
   var RADIUS    = 0.16;
 
@@ -2438,7 +2441,7 @@ initShader('shader-footer',   30);
   }
 
   function resize(){
-    var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    var dpr = Math.min(window.devicePixelRatio || 1, LIGHT ? 1 : 1.5);
     var w = Math.round(hero.offsetWidth * dpr), h = Math.round(hero.offsetHeight * dpr);
     if (canvas.width !== w || canvas.height !== h){ canvas.width = w; canvas.height = h; }
   }
@@ -2449,14 +2452,27 @@ initShader('shader-footer',   30);
   var pointer = { x: 0.5, y: 0.5, px: 0.5, py: 0.5, moved: false };
   var lastHuman = -1e9, inkIdx = 0, t0 = 0;
 
-  hero.addEventListener('mousemove', function(e){
+  function track(clientX, clientY){
     var r = hero.getBoundingClientRect();
     pointer.px = pointer.x; pointer.py = pointer.y;
-    pointer.x = (e.clientX - r.left) / r.width;
-    pointer.y = 1.0 - (e.clientY - r.top) / r.height;
+    pointer.x = (clientX - r.left) / r.width;
+    pointer.y = 1.0 - (clientY - r.top) / r.height;
     pointer.moved = true;
     lastHuman = performance.now();
-  });
+  }
+
+  hero.addEventListener('mousemove', function(e){ track(e.clientX, e.clientY); });
+
+  // il dito mescola come il mouse; passive, così non blocca lo scroll
+  hero.addEventListener('touchmove', function(e){
+    var t = e.touches && e.touches[0];
+    if (t) track(t.clientX, t.clientY);
+  }, { passive: true });
+  hero.addEventListener('touchstart', function(e){
+    var t = e.touches && e.touches[0];
+    if (t){ pointer.x = (t.clientX - hero.getBoundingClientRect().left) / hero.offsetWidth;
+            pointer.px = pointer.x; }
+  }, { passive: true });
 
   var visible = true;
   if ('IntersectionObserver' in window){
