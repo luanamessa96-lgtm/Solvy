@@ -83,10 +83,15 @@ Deno.serve(async (req) => {
       });
       let updateRes = null;
       if (!contactRes.ok) {
+        // Il create fallisce con 409 se il contatto esiste già (es. creato da un altro flusso
+        // prima di avere isPro/fattureCount) — il fallback deve comunque impostarli, altrimenti
+        // il contatto resta per sempre invisibile ai segmenti che filtrano su isPro.
         updateRes = await loopsRequest('/contacts/update', 'PUT', {
           email,
           userGroup: paeseVal,
           paese: paeseVal,
+          isPro: false,
+          fattureCount: 0,
         });
       }
       // Spara evento signup — trigger affidabile indipendentemente dall'esistenza del contatto
