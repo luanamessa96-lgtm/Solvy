@@ -1572,15 +1572,47 @@ body{
 /* Affiancati su uno schermo da telefono restavano larghi ~157px l'uno.
    Sovrapposti: quello davanti guadagna metà larghezza, e l'incastro dà
    anche un po' di profondità. */
-@media(max-width:600px){
-  .app-screens{gap:0;justify-content:flex-start;align-items:flex-start;}
-  .app-screen-1{width:min(62vw,270px);z-index:2;}
-  .app-screen-2{width:min(46vw,200px);margin-left:-24%;margin-top:14%;z-index:1;}
-  /* nelle card il telefono può essere molto più alto: la card è a tutta larghezza */
-  .fc-visual{min-height:340px;}
-  .fc-visual .phone-turn{height:330px;}
-  .fc-visual img{height:330px;}
+/* il carosello serve solo su telefono */
+.phone-cycle{display:none;}
+@keyframes screenCycle{
+  0%   {opacity:0;}
+  2.5% {opacity:1;}
+  22%  {opacity:1;}
+  25%  {opacity:0;}
+  100% {opacity:0;}
 }
+@media(prefers-reduced-motion:reduce){
+  .phone-cycle img{animation:none;opacity:0;}
+  .phone-cycle img:nth-child(1){opacity:1;}
+}
+
+@media(max-width:600px){
+  /* Due mockup affiancati su un telefono si contendono la larghezza e restano
+     illeggibili entrambi. Meglio uno solo, grande, in cui cambia la schermata:
+     tutti i render condividono la stessa scocca, quindi incrociandoli la
+     cornice resta ferma al pixel e sembra l'app che passa da una vista
+     all'altra. */
+  .app-screen-1,.app-screen-2{display:none;}
+  .app-screens{gap:0;justify-content:center;}
+  .phone-cycle{
+    display:block;position:relative;
+    width:min(74vw,310px);margin:0 auto;
+    filter:drop-shadow(0 26px 50px rgba(50,30,110,.32));
+  }
+  .phone-cycle img{
+    display:block;width:100%;height:auto;opacity:0;
+    animation:screenCycle 18s linear infinite;
+  }
+  .phone-cycle img + img{position:absolute;left:0;top:0;}
+  .phone-cycle img:nth-child(1){animation-delay:0s;}
+  .phone-cycle img:nth-child(2){animation-delay:4.5s;}
+  .phone-cycle img:nth-child(3){animation-delay:9s;}
+  .phone-cycle img:nth-child(4){animation-delay:13.5s;}
+
+  .fc-visual{height:360px;}
+  .fc-visual .phone-turn{width:min(70%,240px);}
+}
+
 
 </style>
 </head>
@@ -1714,6 +1746,12 @@ body{
       </div>
       <div class="app-screen app-screen-2">
         <div class="phone-turn" tabindex="0" role="img" aria-label="Gráfico de Solvy"><img class="pt-a" src="/landing/3d/phone-4b.png" alt=""><img class="pt-b" src="/landing/3d/phone-4.png" alt="" aria-hidden="true"></div>
+      </div>
+      <div class="phone-cycle" role="img" aria-label="Las pantallas de Solvy: panel, impuestos y documentos">
+        <img src="/landing/3d/phone-1.png" alt="">
+        <img src="/landing/3d/phone-4.png" alt="">
+        <img src="/landing/3d/phone-2.png" alt="">
+        <img src="/landing/3d/phone-3.png" alt="">
       </div>
       <img class="app-obj ao-1" src="/landing/3d/modelos.png" alt="" aria-hidden="true">
       <img class="app-obj ao-2" src="/landing/3d/bell.png" alt="" aria-hidden="true">
