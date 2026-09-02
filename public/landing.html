@@ -1735,6 +1735,33 @@ body{
   </div>
 </div>
 
+<style>
+/* ── Adattamento desktop: su monitor grandi la colonna 1120px sembrava
+   una pagina mobile ingrandita. Qui si allarga e si riscala la gerarchia. ── */
+@media(min-width:1440px){
+  .container,.nav,.hero-body,.trust-inner,.app-inner,.footer-bottom,.foot-legal-inner{max-width:1320px;}
+  .section-h{font-size:clamp(44px,4.2vw,80px);}
+  .hero-body{padding:56px 32px 96px;}
+  .prob-body{max-width:680px;font-size:17px;}
+  .prob-row{grid-template-columns:110px 1fr auto;padding:48px 0;}
+  .feat-3{gap:24px;}
+  .pricing-grid{max-width:1240px;gap:24px;}
+  .p-card{padding:48px 40px;}
+  .vf-card{max-width:1160px;padding:60px 56px;gap:72px;}
+  .vf-h{font-size:clamp(34px,3vw,50px);}
+  .vf-p{font-size:17px;}
+  .fnd{max-width:1040px;gap:60px;}
+  .fnd-photo{width:220px;height:220px;}
+  .fnd-q{font-size:clamp(20px,1.6vw,28px);}
+  .trust-item{font-size:15px;}
+}
+/* Chi ha "riduci movimento" attivo non deve vedere la pagina vuota:
+   le sezioni con reveal-on-scroll restano visibili senza animazione. */
+@media(prefers-reduced-motion:reduce){
+  .sa,.sa2,.sa3,.sal,.sar{opacity:1 !important;transform:none !important;filter:none !important;}
+}
+</style>
+
 <!-- ══ PROBLEMA ══ -->
 <section class="section-problem">
   
@@ -2076,7 +2103,7 @@ body{
       <div class="section-tag">FAQ</div>
       <h2>Preguntas frecuentes</h2>
     </div>
-    <div style="max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+    <div style="max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
       <details class="faq-item">
         <summary class="faq-q">¿Qué es Solvy y para qué sirve?</summary>
         <p class="faq-a">Solvy es una app de gestión fiscal para autónomos en España. Calcula tu IVA e IRPF en tiempo real con cada factura, genera el Modelo 303 en 30 segundos y te avisa de todas las fechas límite fiscales.</p>
