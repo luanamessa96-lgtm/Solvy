@@ -1760,6 +1760,13 @@ body{
 @media(prefers-reduced-motion:reduce){
   .sa,.sa2,.sa3,.sal,.sar{opacity:1 !important;transform:none !important;filter:none !important;}
 }
+/* Su touch il parallasse col mouse non si spegne mai (mouseleave non arriva)
+   e il flip 3D dei telefoni li mostra sottili a metà rotazione: telefoni fermi. */
+@media (hover: none), (pointer: coarse){
+  .app-screen-1,.app-screen-2{animation:none !important;transform:none !important;transition:none !important;}
+  .app-screen-1 .phone-turn,.app-screen-2 .phone-turn{animation:none !important;transform:none !important;}
+  .phone-turn .pt-b{display:none !important;}
+}
 </style>
 
 <!-- ══ PROBLEMA ══ -->
@@ -2212,6 +2219,8 @@ body{
   const s1 = document.querySelector('.app-screen-1');
   const s2 = document.querySelector('.app-screen-2');
   if (!section || !s1 || !s2) return;
+  // Niente parallasse sui touch: mouseenter scatta col dito e mouseleave non arriva mai
+  if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
 
   let active = false;
 
