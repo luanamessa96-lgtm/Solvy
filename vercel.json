@@ -82,6 +82,10 @@
       "destination": "/asesorias.html"
     },
     {
+      "source": "/guia-factura",
+      "destination": "/guia-factura.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/app.html"
     }

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qué datos lleva una factura en España — Guía para autónomos | Solvy</title>
+<meta name="description" content="Los 11 datos obligatorios de una factura según el reglamento español, cuándo un ticket no te sirve para deducir el IVA, la retención de IRPF al 15 % y al 7 %, y las fechas reales de VeriFactu." />
+<meta name="robots" content="index, follow" />
+<link rel="canonical" href="https://solvyapp.com/guia-factura" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Qué datos lleva una factura en España" />
+<meta property="og:description" content="Los 11 datos obligatorios, cuándo un ticket no sirve para deducir el IVA, y las fechas reales de VeriFactu." />
+<meta property="og:url" content="https://solvyapp.com/guia-factura" />
+<meta property="og:image" content="https://solvyapp.com/og-image-v3.jpg" />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content="1600" />
+<meta property="og:image:height" content="840" />
+<meta property="og:locale" content="es_ES" />
+<meta property="og:site_name" content="Solvy" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Qué datos lleva una factura en España" />
+<meta name="twitter:description" content="Los 11 datos obligatorios de una factura, y cuándo un ticket no te sirve para deducir el IVA." />
+<meta name="twitter:image" content="https://solvyapp.com/og-image-v3.jpg" />
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-v2-32.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-v2-192.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-v2.png" />
+<meta name="theme-color" content="#5B21E8" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+</head>
+<body>
+<style>
+:root{
+  --paper:#F7F6FB;
+  --sheet:#FFFFFF;
+  --ink:#1A1526;
+  --ink-soft:#544C68;
+  --ink-faint:#8B84A0;
+  --rule:#E2DEEE;
+  --rule-strong:#CFC8E4;
+  --violet:#5B21E8;
+  --violet-soft:#EFEAFE;
+  --teal:#12A09C;
+  --teal-soft:#E0F6F5;
+  --amber:#B4460C;
+  --amber-soft:#FCEEE4;
+  --shadow:0 1px 2px rgba(26,21,38,.05), 0 12px 32px -12px rgba(91,33,232,.18);
+  --maxw:41rem;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131020;
+    --sheet:#1C1830;
+    --ink:#F2EFFA;
+    --ink-soft:#B4ABCE;
+    --ink-faint:#7D7499;
+    --rule:#2C2545;
+    --rule-strong:#3D3460;
+    --violet:#A88BFF;
+    --violet-soft:#251C46;
+    --teal:#4FD8D3;
+    --teal-soft:#0E2E30;
+    --amber:#F0A16A;
+    --amber-soft:#33200F;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131020;
+  --sheet:#1C1830;
+  --ink:#F2EFFA;
+  --ink-soft:#B4ABCE;
+  --ink-faint:#7D7499;
+  --rule:#2C2545;
+  --rule-strong:#3D3460;
+  --violet:#A88BFF;
+  --violet-soft:#251C46;
+  --teal:#4FD8D3;
+  --teal-soft:#0E2E30;
+  --amber:#F0A16A;
+  --amber-soft:#33200F;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16.5px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:3.5rem 1.4rem 5rem;display:flex;flex-direction:column;gap:3.25rem}
+
+/* ---------- header ---------- */
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--violet);margin:0;
+}
+h1{
+  font-family:"Bricolage Grotesque","IBM Plex Sans",sans-serif;
+  font-weight:800;font-size:clamp(2.1rem,7vw,3.1rem);line-height:1.02;
+  letter-spacing:-.028em;margin:.7rem 0 0;text-wrap:balance;
+}
+.lead{font-size:1.08rem;color:var(--ink-soft);margin:1rem 0 0;max-width:34rem}
+.head-rule{height:3px;width:100%;margin-top:1.6rem;border-radius:2px;
+  background:linear-gradient(90deg,var(--violet) 0%,var(--teal) 68%,transparent 68%);}
+
+h2{
+  font-family:"Bricolage Grotesque","IBM Plex Sans",sans-serif;
+  font-weight:700;font-size:1.5rem;line-height:1.15;letter-spacing:-.018em;
+  margin:0 0 .35rem;text-wrap:balance;
+}
+h3{font-size:.95rem;font-weight:600;margin:0 0 .3rem;letter-spacing:-.005em}
+p{margin:0 0 .9rem}
+p:last-child{margin-bottom:0}
+section{display:flex;flex-direction:column;gap:1.1rem}
+.section-intro{color:var(--ink-soft);margin:0}
+strong{font-weight:600}
+
+/* ---------- factura specimen ---------- */
+.specimen{
+  background:var(--sheet);border:1px solid var(--rule);border-radius:4px;
+  box-shadow:var(--shadow);overflow:hidden;
+}
+.spec-scroll{overflow-x:auto}
+.spec-inner{min-width:19rem;padding:1.5rem 1.35rem 1.6rem;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.78rem;line-height:1.55}
+.spec-title{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
+  padding-bottom:.7rem;border-bottom:2px solid var(--ink)}
+.spec-title b{font-family:"Bricolage Grotesque",sans-serif;font-size:1.15rem;letter-spacing:.1em;font-weight:700}
+.spec-title span{color:var(--ink-faint);font-size:.7rem;letter-spacing:.08em}
+
+.row{display:flex;gap:.6rem;align-items:flex-start;padding:.28rem 0}
+.n{
+  flex:none;min-width:1.15rem;height:1.15rem;padding:0 .28rem;margin-top:.12rem;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--teal-soft);color:var(--teal);border-radius:999px;
+  font-size:.64rem;font-weight:600;letter-spacing:.02em;
+}
+.k{color:var(--ink-faint);flex:none;min-width:9.2rem}
+.v{color:var(--ink);font-weight:500}
+
+.parties{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin:1rem 0;
+  padding:.9rem 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+@media (max-width:30rem){.parties{grid-template-columns:1fr}}
+.party-h{display:flex;align-items:center;gap:.4rem;color:var(--ink-faint);
+  font-size:.66rem;letter-spacing:.12em;margin-bottom:.4rem}
+.party p{margin:0;font-size:.76rem;line-height:1.5}
+.party .nm{font-weight:600;color:var(--ink)}
+
+.totals{margin-top:1rem;padding-top:.7rem;border-top:1px solid var(--rule);
+  display:flex;flex-direction:column;gap:.1rem}
+.t-row{display:flex;align-items:center;gap:.6rem}
+.t-row .k{flex:1 1 auto;min-width:0;color:var(--ink-soft)}
+.t-row .amt{font-variant-numeric:tabular-nums;font-weight:500;text-align:right;min-width:6rem}
+.t-total{margin-top:.5rem;padding-top:.5rem;border-top:2px solid var(--ink)}
+.t-total .k{color:var(--ink);font-weight:600}
+.t-total .amt{font-weight:600;font-size:.92rem}
+.spec-caption{font-family:"IBM Plex Sans",sans-serif;font-size:.8rem;color:var(--ink-faint);
+  padding:.75rem 1.35rem;border-top:1px solid var(--rule);background:var(--violet-soft)}
+
+/* ---------- checklist ---------- */
+.list{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--rule)}
+.item{display:flex;gap:.85rem;padding:.95rem .2rem;border-bottom:1px solid var(--rule)}
+.item .n{margin-top:.28rem;background:var(--violet-soft);color:var(--violet)}
+.item-body{min-width:0}
+.item-body p{font-size:.92rem;color:var(--ink-soft);margin:0}
+
+/* ---------- compare ---------- */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+@media (max-width:34rem){.compare{grid-template-columns:1fr}}
+.card{border:1px solid var(--rule);border-radius:10px;padding:1.1rem 1.15rem;background:var(--sheet);
+  display:flex;flex-direction:column;gap:.5rem}
+.card.good{border-color:var(--teal)}
+.card.bad{border-color:var(--rule-strong)}
+.tag{align-self:flex-start;font-family:"IBM Plex Mono",monospace;font-size:.66rem;font-weight:600;
+  letter-spacing:.13em;text-transform:uppercase;padding:.2rem .5rem;border-radius:4px}
+.good .tag{background:var(--teal-soft);color:var(--teal)}
+.bad .tag{background:var(--amber-soft);color:var(--amber)}
+.card p{font-size:.9rem;color:var(--ink-soft);margin:0}
+
+/* ---------- callouts ---------- */
+.note{border-left:3px solid var(--violet);background:var(--violet-soft);
+  padding:1rem 1.15rem;border-radius:0 8px 8px 0;display:flex;flex-direction:column;gap:.45rem}
+.note.myth{border-left-color:var(--amber);background:var(--amber-soft)}
+.note h3{color:var(--ink)}
+.note p{font-size:.92rem;color:var(--ink-soft);margin:0}
+
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+@media (max-width:34rem){.facts{grid-template-columns:1fr}}
+.fact{border-top:2px solid var(--rule-strong);padding-top:.7rem;display:flex;flex-direction:column;gap:.2rem}
+.fact .lbl{font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-faint)}
+.fact .val{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.35rem;
+  letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.fact p{font-size:.85rem;color:var(--ink-soft);margin:.15rem 0 0}
+
+/* ---------- rates ---------- */
+.rates{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--rule)}
+.rate{display:flex;align-items:baseline;gap:.9rem;padding:.7rem .2rem;border-bottom:1px solid var(--rule)}
+.rate .pct{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:.95rem;
+  color:var(--violet);min-width:3.2rem;font-variant-numeric:tabular-nums}
+.rate span:last-child{font-size:.92rem;color:var(--ink-soft)}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--rule);padding-top:1.6rem;display:flex;flex-direction:column;gap:1rem}
+.sig{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.05rem;letter-spacing:-.01em}
+footer p{font-size:.87rem;color:var(--ink-soft)}
+.disclaimer{font-size:.78rem;color:var(--ink-faint);line-height:1.5}
+a{color:var(--violet);text-decoration-thickness:1px;text-underline-offset:2px}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--violet);outline-offset:3px;border-radius:3px}
+
+.topbar{border-bottom:1px solid var(--rule);background:var(--sheet)}
+.topbar-in{max-width:var(--maxw);margin:0 auto;padding:.85rem 1.4rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.brand{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:.95rem;
+  letter-spacing:.22em;color:var(--violet);text-decoration:none}
+.topbar a.back{font-size:.82rem;color:var(--ink-soft);text-decoration:none}
+.topbar a.back:hover{color:var(--violet)}
+</style>
+
+<div class="topbar"><div class="topbar-in">
+  <a class="brand" href="https://solvyapp.com">SOLVY</a>
+  <a class="back" href="https://solvyapp.com">Ir a la app &rarr;</a>
+</div></div>
+
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Solvy · Guía para autónomos</p>
+    <h1>Tu factura, campo por campo</h1>
+    <p class="lead">Lo que la ley española exige que aparezca en una factura para que sea válida — y para que quien la recibe pueda deducirse el IVA. Empezamos por una factura de verdad.</p>
+    <div class="head-rule"></div>
+  </header>
+
+  <section>
+    <div class="specimen">
+      <div class="spec-scroll"><div class="spec-inner">
+
+        <div class="spec-title"><b>FACTURA</b><span>EJEMPLO</span></div>
+
+        <div class="row"><span class="n">1</span><span class="k">Nº de factura</span><span class="v">2026/014</span></div>
+        <div class="row"><span class="n">2</span><span class="k">Fecha de expedición</span><span class="v">03/09/2026</span></div>
+        <div class="row"><span class="n">3</span><span class="k">Fecha de la operación</span><span class="v">28/08/2026</span></div>
+
+        <div class="parties">
+          <div class="party">
+            <div class="party-h"><span class="n">4</span><span class="n">5</span><span class="n">6</span>EMISOR</div>
+            <p class="nm">Ana Ruiz Molina</p>
+            <p>NIF 00000000X</p>
+            <p>C/ Ejemplo 12, 3ºB</p>
+            <p>08001 Barcelona</p>
+          </div>
+          <div class="party">
+            <div class="party-h"><span class="n">4</span><span class="n">5</span><span class="n">6</span>DESTINATARIO</div>
+            <p class="nm">Estudio Gráfico S.L.</p>
+            <p>NIF B00000000</p>
+            <p>Avda. Ejemplo 45</p>
+            <p>28004 Madrid</p>
+          </div>
+        </div>
+
+        <div class="row"><span class="n">7</span><span class="k">Concepto</span><span class="v">Diseño de identidad visual<br>1 ud × 1.200,00 €</span></div>
+
+        <div class="totals">
+          <div class="t-row"><span class="n">8</span><span class="k">Base imponible</span><span class="amt">1.200,00 €</span></div>
+          <div class="t-row"><span class="n">9</span><span class="n">10</span><span class="k">IVA 21 %</span><span class="amt">252,00 €</span></div>
+          <div class="t-row"><span class="n">11</span><span class="k">Retención IRPF −15 %</span><span class="amt">−180,00 €</span></div>
+          <div class="t-row t-total"><span class="k">Total a cobrar</span><span class="amt">1.272,00 €</span></div>
+        </div>
+
+      </div></div>
+      <p class="spec-caption">Los números marcan cada dato obligatorio. Abajo, uno a uno.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Los 11 datos obligatorios</h2>
+    <p class="section-intro">Si falta uno, la factura no es completa — y tu cliente puede tener problemas para deducirse el IVA.</p>
+
+    <div class="list">
+      <div class="item"><span class="n">1</span><div class="item-body">
+        <h3>Número y, si la usas, serie</h3>
+        <p>Correlativo dentro de cada serie. No puedes saltarte números ni repetirlos. Si anulas una factura, se corrige con una rectificativa: no se borra.</p>
+      </div></div>
+
+      <div class="item"><span class="n">2</span><div class="item-body">
+        <h3>Fecha de expedición</h3>
+        <p>El día en que emites la factura.</p>
+      </div></div>
+
+      <div class="item"><span class="n">3</span><div class="item-body">
+        <h3>Fecha de la operación</h3>
+        <p>Solo si es distinta de la de expedición. Entregaste el trabajo en agosto y facturas en septiembre: van las dos.</p>
+      </div></div>
+
+      <div class="item"><span class="n">4</span><div class="item-body">
+        <h3>Nombre completo tuyo y de tu cliente</h3>
+        <p>Nombre y apellidos, o razón social completa. Nada de nombres comerciales a secas.</p>
+      </div></div>
+
+      <div class="item"><span class="n">5</span><div class="item-body">
+        <h3>NIF</h3>
+        <p>El tuyo siempre. El de tu cliente cuando es empresario o profesional — que es justo cuando le hace falta para deducirse el IVA.</p>
+      </div></div>
+
+      <div class="item"><span class="n">6</span><div class="item-body">
+        <h3>Domicilio de los dos</h3>
+        <p>Dirección fiscal completa del emisor y del destinatario.</p>
+      </div></div>
+
+      <div class="item"><span class="n">7</span><div class="item-body">
+        <h3>Descripción de lo que has hecho</h3>
+        <p>Con el detalle suficiente para saber de dónde sale el importe: precio unitario sin impuesto, cantidad y los descuentos que hayas aplicado. «Servicios profesionales» a secas se queda corto.</p>
+      </div></div>
+
+      <div class="item"><span class="n">8</span><div class="item-body">
+        <h3>Base imponible</h3>
+        <p>El importe antes de impuestos. Es sobre esto que se calcula todo lo demás.</p>
+      </div></div>
+
+      <div class="item"><span class="n">9</span><div class="item-body">
+        <h3>Tipo de IVA aplicado</h3>
+        <p>21 %, 10 % o 4 % según la operación. Si van varios tipos en la misma factura, se desglosa cada uno por separado.</p>
+      </div></div>
+
+      <div class="item"><span class="n">10</span><div class="item-body">
+        <h3>Cuota de IVA, en su propia línea</h3>
+        <p>El euro exacto de IVA, separado del resto. No vale poner solo el total con el IVA dentro.</p>
+      </div></div>
+
+      <div class="item"><span class="n">11</span><div class="item-body">
+        <h3>Menciones especiales, cuando toquen</h3>
+        <p>Si la operación está exenta, si va con inversión del sujeto pasivo, si estás en un régimen especial o en criterio de caja, tiene que decirlo la factura. Y la retención de IRPF, si te aplica.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>¿Y si solo tienes un ticket?</h2>
+    <p class="section-intro">Un ticket es una <strong>factura simplificada</strong>. Es legal, pero lleva menos datos — y por eso normalmente no sirve para deducir el IVA.</p>
+
+    <div class="compare">
+      <div class="card good">
+        <span class="tag">Deduces</span>
+        <h3>Factura completa</h3>
+        <p>Lleva tu NIF, tu domicilio y la cuota de IVA desglosada. Con esto te deduces el IVA sin discusión.</p>
+      </div>
+      <div class="card bad">
+        <span class="tag">No deduces</span>
+        <h3>Ticket normal</h3>
+        <p>No lleva los datos de quien compra. Hacienda no puede saber que ese gasto es tuyo, así que ese IVA no te lo puedes restar.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <h3>La salida rápida en el bar o en la gasolinera</h3>
+      <p>Pide que te pongan en el ticket <strong>tu NIF, tu domicilio y la cuota de IVA desglosada aparte</strong>. Son los tres datos exactos que exige la norma: con ellos pasa a ser factura simplificada cualificada y ya te vale para deducir. Se pide en el momento — después casi nunca.</p>
+    </div>
+
+    <p class="section-intro">El ticket solo está permitido hasta <strong>400 € IVA incluido</strong> con carácter general, y hasta 3.000 € en algunos sectores concretos como hostelería, taxis o peluquería. Por encima de eso, factura completa siempre.</p>
+  </section>
+
+  <section>
+    <h2>La retención de IRPF</h2>
+    <p class="section-intro">Si eres profesional y facturas a una empresa o a otro profesional, la retención va en la factura y la ingresa tu cliente por ti. A un particular no se le retiene.</p>
+    <div class="rates">
+      <div class="rate"><span class="pct">15 %</span><span>El tipo general para actividades profesionales.</span></div>
+      <div class="rate"><span class="pct">7 %</span><span>El año en que te das de alta y los dos siguientes, si no ejerciste actividad profesional el año anterior.</span></div>
+    </div>
+    <div class="note">
+      <h3>El 7 % no se aplica solo: hay que pedirlo</h3>
+      <p>Para usar el tipo reducido tienes que <strong>comunicárselo por escrito a cada cliente antes de emitir la factura</strong>. Si no lo haces, te corresponde el 15 %. Es el paso que casi nadie da y luego se lleva la sorpresa.</p>
+    </div>
+    <p class="section-intro">Esa retención no es un gasto: es tu IRPF pagado por adelantado. Se te descuenta en la declaración de la renta, y si has adelantado de más, vuelve.</p>
+  </section>
+
+  <section>
+    <h2>El mito del QR</h2>
+    <div class="note myth">
+      <h3>VeriFactu todavía no es obligatorio para ti</h3>
+      <p>Circula mucho contenido diciendo que ya tienes que emitir facturas con código QR y software certificado. No es cierto: para autónomos y pequeñas empresas la fecha es el <strong>1 de julio de 2027</strong>. Las sociedades que tributan por el Impuesto sobre Sociedades entran antes, el <strong>1 de enero de 2027</strong>.</p>
+      <p>El aplazamiento lo fijó el <strong>Real Decreto-ley 15/2025</strong>, publicado en el BOE el 2 de diciembre de 2025, que retrasó un año las fechas del Real Decreto 1007/2023. Hasta entonces tu factura es válida sin QR — lo que no conviene es dejarlo para junio de 2027.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Dos plazos que se olvidan</h2>
+    <div class="facts">
+      <div class="fact">
+        <span class="lbl">Cuándo emitirla</span>
+        <span class="val">Día 16</span>
+        <p>Si tu cliente es empresario o profesional, tienes hasta el día 16 del mes siguiente al de la operación.</p>
+      </div>
+      <div class="fact">
+        <span class="lbl">Cuánto guardarla</span>
+        <span class="val">6 años</span>
+        <p>Son dos plazos distintos: <strong>4 años</strong> es lo que Hacienda puede revisarte (Ley General Tributaria), pero el Código de Comercio te obliga a conservar la documentación <strong>6 años</strong>. En la práctica manda el segundo.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="sig">¿Te ha faltado algo?</p>
+    <p>Escríbeme y lo añado. Estas guías las hago con las dudas que me llegáis vosotros — no soy gestora, soy autónoma, y construí <a href="https://solvyapp.com">Solvy</a> porque la parte fiscal me superó a mí primero.</p>
+    <p class="disclaimer">Información general con fines divulgativos, actualizada a septiembre de 2026. No sustituye al asesoramiento de un profesional: para tu caso concreto, consulta con tu gestor o asesor fiscal. Referencias: Real Decreto 1619/2012 (reglamento de facturación), art. 95 del Reglamento del IRPF, Real Decreto 1007/2023 y Real Decreto-ley 15/2025, Ley General Tributaria (art. 66) y Código de Comercio (art. 30).</p>
+  </footer>
+
+</div>
+
+</body>
+</html>
