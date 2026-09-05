@@ -29,12 +29,18 @@ Questa logica è testata e validata. Cambiamenti non autorizzati possono causare
 
 ## Scadenze fiscali IT
 
-Le scadenze sono hardcodate nel calendario. Non modificare le date senza verifica normativa:
-- 16 marzo: IVA annuale
-- 30 aprile: dichiarazione redditi (forfettario semplificato)
-- 30 giugno: IRPEF saldo + 1° acconto
-- 30 novembre: IRPEF 2° acconto
-- Trimestrali IVA: 16 maggio, 20 agosto, 16 novembre
+Le scadenze sono hardcodate in `src/views/CalendarView.tsx::getScadenzeFiscali()` (non in `it.ts::getItalianDeadlines()`, che è dead code non collegato a nessuna UI — verificarlo prima di fidarsi di quella funzione). Fonte di verità duplicata identica in `CLAUDE.md` §"Regole fiscali". Non modificare le date senza verifica normativa:
+
+**Forfettario e ordinario (comuni):**
+- 30 giugno: saldo imposta sostitutiva/IRPEF + 1° acconto (40%)
+- 31 ottobre: dichiarazione dei redditi (Modello Redditi PF)
+- 30 novembre: 2° acconto imposta sostitutiva/IRPEF (60%)
+- INPS gestione separata (professionisti/intermediari): 16 giugno 1° acconto, 16 novembre 2° acconto
+- INPS artigiani/costruzioni/commercianti/ristorazione (in base a `inpsType`, quote trimestrali): 16 maggio, 20 agosto, 16 novembre, 16 febbraio (anno successivo, saldo) — **non sono scadenze IVA**, sono rate INPS a quota fissa
+
+**Solo ordinario** (forfettario esente ex art.1 c.58 L.190/2014):
+- Liquidazione IVA trimestrale: 16 aprile (T1), 16 luglio (T2), 16 ottobre (T3), 16 gennaio anno successivo (T4)
+- 16 dicembre: acconto IVA
 
 ## Guida Fiscale IT
 
