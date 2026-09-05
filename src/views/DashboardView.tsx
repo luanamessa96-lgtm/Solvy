@@ -9,6 +9,7 @@ import InfoTooltip from '../components/ui/InfoTooltip';
 
 const DashboardChart = lazy(() => import('../components/DashboardChart'));
 import { calculateSpanishTaxes, getMesesDeAlta } from '../lib/countries/es';
+import { italyModule } from '../lib/countries/it';
 import { calcularTrimestre } from '../services/modelosES';
 import { profileStorage } from '../lib/supabase';
 import { parseLocalDate, getLocalYear } from '../utils/date';
@@ -62,11 +63,6 @@ interface TasseOrdinario {
 }
 
 type Tasse = TasseForfettario | TasseOrdinario;
-
-const INPS_GESTIONE_SEPARATA = 0.2607;
-const INPS_ARTIGIANI = 0.24;
-const INPS_COMMERCIANTI = 0.2448;
-const INPS_MINIMALE = 4000; // minimale annuo artigiani/commercianti
 
 type InpsType = 'professionisti' | 'artigiani' | 'costruzioni' | 'intermediari' | 'commercianti' | 'ristorazione';
 
@@ -151,19 +147,13 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
     const base = income; // fatturato incassato
     const it = getInpsType(profile.country, profile.coefficiente);
 
-    const calcInpsAmount = (reddito: number, fallbackRate: number) => {
-      if (it === 'artigiani' || it === 'costruzioni') return Math.max(INPS_MINIMALE, reddito * INPS_ARTIGIANI);
-      if (it === 'commercianti' || it === 'ristorazione') return Math.max(INPS_MINIMALE, reddito * INPS_COMMERCIANTI);
-      return reddito * fallbackRate; // professionisti, intermediari → gestione separata
-    };
-
     if (regime === 'forfettario') {
       const coeffRaw = profile.coefficiente;
       const coeff = (coeffRaw != null && coeffRaw > 0) ? coeffRaw / 100 : 0.78;
       const redditoLordo = Math.max(0, base * coeff);
 
       // INPS è deducibile al 100% dalla base imponibile IRPEF (IT-20)
-      const inps = calcInpsAmount(redditoLordo, INPS_GESTIONE_SEPARATA);
+      const inps = italyModule.calculateContributions({ grossIncome: base, regime: 'forfettario', categoryCoeff: coeff, inpsType: it }).annual;
       const redditoImponibile = Math.max(0, redditoLordo - inps);
 
       const annoInizio = profile.annoInizioAttivita ?? null;
@@ -178,7 +168,7 @@ const DashboardView = ({ profile, income, expenses, paidPercentage, documents, d
     } else {
       // Regime ordinario — INPS deducibile dalla base imponibile IRPEF (IT-20)
       const redditoLordo = Math.max(0, base - expenses);
-      const inpsLordo = calcInpsAmount(redditoLordo, INPS_GESTIONE_SEPARATA);
+      const inpsLordo = italyModule.calculateContributions({ grossIncome: base, regime: 'ordinario', deductibleExpenses: expenses, inpsType: it }).annual;
 
       // Rivalsa INPS 4% ricevuta dai clienti riduce il costo INPS effettivo (solo IT ordinario).
       // Cappata a inpsLordo: in nessun caso la rivalsa può azzerare più di quanto dovuto.

@@ -7,6 +7,7 @@ export interface TaxInput {
   isFirstThreeYears?: boolean; // Spanish retenciones
   applyRetenciones?: boolean;
   monthlyNetIncome?: number;
+  inpsType?: 'professionisti' | 'artigiani' | 'costruzioni' | 'intermediari' | 'commercianti' | 'ristorazione'; // IT: determina l'aliquota INPS in calculateContributions
 }
 
 export interface TaxResult {

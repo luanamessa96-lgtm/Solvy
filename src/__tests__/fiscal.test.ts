@@ -222,6 +222,81 @@ describe('Italy — INPS Gestione Separata', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// ITALY — calculateContributions per tipo INPS (spostato da DashboardView.tsx il 2026-09-05)
+// Equivalenza verificata contro la formula storica di DashboardView.tsx::calcInpsAmount:
+//   artigiani/costruzioni    → max(4000, reddito × 0,24)
+//   commercianti/ristorazione → max(4000, reddito × 0,2448)
+//   professionisti/intermediari (default) → reddito × 0,2607, nessun minimale
+// dove reddito = grossIncome×categoryCoeff (forfettario) o grossIncome−deductibleExpenses (ordinario)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe('Italy — calculateContributions per tipo INPS', () => {
+  it('artigiani, forfettario, sopra il minimale: reddito × 24% (no cambio rispetto a professionisti)', () => {
+    const res = italyModule.calculateContributions({ grossIncome: 40000, regime: 'forfettario', categoryCoeff: 0.78, inpsType: 'artigiani' });
+    const reddito = 40000 * 0.78; // 31200
+    expect(res.annual).toBeCloseTo(Math.max(4000, reddito * 0.24), 6);
+    expect(res.label).toBe('INPS Artigiani');
+  });
+
+  it('artigiani, forfettario, sotto il minimale: si applica il minimale €4.000', () => {
+    const res = italyModule.calculateContributions({ grossIncome: 5000, regime: 'forfettario', categoryCoeff: 0.78, inpsType: 'artigiani' });
+    const reddito = 5000 * 0.78; // 3900 → sotto il minimale
+    expect(reddito * 0.24).toBeLessThan(4000);
+    expect(res.annual).toBe(4000);
+  });
+
+  it('costruzioni: stessa aliquota 24% e minimale di artigiani, label distinta', () => {
+    const res = italyModule.calculateContributions({ grossIncome: 40000, regime: 'forfettario', categoryCoeff: 0.78, inpsType: 'costruzioni' });
+    const reddito = 40000 * 0.78;
+    expect(res.annual).toBeCloseTo(Math.max(4000, reddito * 0.24), 6);
+    expect(res.label).toBe('INPS Costruzioni');
+  });
+
+  it('commercianti, ordinario, sopra il minimale: reddito × 24,48%', () => {
+    const res = italyModule.calculateContributions({ grossIncome: 50000, regime: 'ordinario', deductibleExpenses: 10000, inpsType: 'commercianti' });
+    const reddito = 50000 - 10000; // 40000
+    expect(res.annual).toBeCloseTo(Math.max(4000, reddito * 0.2448), 6);
+    expect(res.label).toBe('INPS Commercianti');
+  });
+
+  it('commercianti, ordinario, sotto il minimale: si applica il minimale €4.000', () => {
+    const res = italyModule.calculateContributions({ grossIncome: 8000, regime: 'ordinario', deductibleExpenses: 6000, inpsType: 'commercianti' });
+    const reddito = 8000 - 6000; // 2000 → sotto il minimale
+    expect(reddito * 0.2448).toBeLessThan(4000);
+    expect(res.annual).toBe(4000);
+  });
+
+  it('ristorazione: stessa aliquota 24,48% e minimale di commercianti, label distinta', () => {
+    const res = italyModule.calculateContributions({ grossIncome: 50000, regime: 'ordinario', deductibleExpenses: 10000, inpsType: 'ristorazione' });
+    const reddito = 50000 - 10000;
+    expect(res.annual).toBeCloseTo(Math.max(4000, reddito * 0.2448), 6);
+    expect(res.label).toBe('INPS Ristorazione');
+  });
+
+  it('professionisti (default esplicito): gestione separata 26,07%, nessun minimale anche sotto €4.000', () => {
+    const res = italyModule.calculateContributions({ grossIncome: 3000, regime: 'forfettario', categoryCoeff: 0.78, inpsType: 'professionisti' });
+    const reddito = 3000 * 0.78;
+    expect(res.annual).toBeCloseTo(reddito * 0.2607, 6);
+    expect(res.annual).toBeLessThan(4000); // conferma che qui NON scatta il minimale artigiani/commercianti
+    expect(res.label).toBe('INPS Gestione Separata');
+  });
+
+  it('intermediari: gestione separata 26,07% come professionisti, nessun minimale', () => {
+    const res = italyModule.calculateContributions({ grossIncome: 40000, regime: 'forfettario', categoryCoeff: 0.62, inpsType: 'intermediari' });
+    const reddito = 40000 * 0.62;
+    expect(res.annual).toBeCloseTo(reddito * 0.2607, 6);
+    expect(res.label).toBe('INPS Gestione Separata');
+  });
+
+  it('inpsType omesso → default professionisti (retrocompatibilità con i chiamanti esistenti)', () => {
+    const withDefault = italyModule.calculateContributions({ grossIncome: 40000, regime: 'forfettario', categoryCoeff: 0.78 });
+    const explicit = italyModule.calculateContributions({ grossIncome: 40000, regime: 'forfettario', categoryCoeff: 0.78, inpsType: 'professionisti' });
+    expect(withDefault.annual).toBe(explicit.annual);
+    expect(withDefault.label).toBe(explicit.label);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // SPAIN — IRPF (scaglioni 2024)
 // ═══════════════════════════════════════════════════════════════════════════════
 

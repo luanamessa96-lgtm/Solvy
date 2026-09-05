@@ -8,6 +8,12 @@ function validateIBAN_IT(iban: string): boolean {
   return cleaned.startsWith('IT') && cleaned.length === 27;
 }
 
+// Aliquote INPS per tipo (spostate da DashboardView.tsx il 2026-09-05, comportamento invariato)
+const INPS_GESTIONE_SEPARATA = 0.2607;
+const INPS_ARTIGIANI = 0.24;
+const INPS_COMMERCIANTI = 0.2448;
+const INPS_MINIMALE = 4000; // minimale annuo artigiani/commercianti
+
 export const italyModule: CountryModule = {
   code: 'IT',
   name: 'Italia',
@@ -100,13 +106,23 @@ export const italyModule: CountryModule = {
     }
   },
   calculateContributions: (input: TaxInput): ContributionsResult => {
-    const { grossIncome = 0, regime = 'forfettario', categoryCoeff = 0.78 } = input;
+    const { grossIncome = 0, regime = 'forfettario', categoryCoeff = 0.78, inpsType = 'professionisti' } = input;
     const expenses = Math.max(0, input.deductibleExpenses ?? 0);
     // Forfettario: base = ricavi × coeff ATECO; Ordinario: base = lordo − spese analitiche
     const taxableIncome = regime === 'forfettario'
       ? grossIncome * categoryCoeff
       : Math.max(0, grossIncome - expenses);
-    const annual = taxableIncome * 0.2607; // GS 26.07% sia per forfettario che ordinario
+    // Artigiani/costruzioni e commercianti/ristorazione: aliquota fissa con minimale annuo.
+    // Professionisti/intermediari: gestione separata 26,07% sul reddito imponibile, nessun minimale.
+    if (inpsType === 'artigiani' || inpsType === 'costruzioni') {
+      const annual = Math.max(INPS_MINIMALE, taxableIncome * INPS_ARTIGIANI);
+      return { monthly: annual / 12, annual, label: inpsType === 'artigiani' ? 'INPS Artigiani' : 'INPS Costruzioni' };
+    }
+    if (inpsType === 'commercianti' || inpsType === 'ristorazione') {
+      const annual = Math.max(INPS_MINIMALE, taxableIncome * INPS_COMMERCIANTI);
+      return { monthly: annual / 12, annual, label: inpsType === 'commercianti' ? 'INPS Commercianti' : 'INPS Ristorazione' };
+    }
+    const annual = taxableIncome * INPS_GESTIONE_SEPARATA;
     return {
       monthly: annual / 12,
       annual,
