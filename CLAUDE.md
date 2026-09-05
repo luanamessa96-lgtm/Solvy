@@ -93,7 +93,7 @@ Tutte le scadenze del forfettario **più** IVA trimestrale:
 - **IVA trimestrale — Modelo 303**
 - **IVA standard**: 21% (ridotta 10% o 4% per alcune categorie)
 - **Retención IRPF sulle fatture**: 7% nei primi 3 anni di attività, 15% dal 4° anno
-- **RETA**: sistema cotización por rendimientos netos (RD-ley 13/2022, vigente dal 2023). La tarifa plana €80/mese è **ABOLITA** dal 1° gennaio 2023. Quote basate su tabella triennale 2023-2025 in base al rendimiento neto (min ~€225, max €530+). SMI 2026 = €1.184/mese = €14.208/anno (RD 126/2026).
+- **RETA**: sistema cotización por rendimientos netos (RD-ley 13/2022, vigente dal 2023). La tarifa plana €80/mese è **ABOLITA** dal 1° gennaio 2023. Quote 2026 (Orden PJC/297/2026, BOE-A-2026-7296): 14 tramos in base al rendimiento neto, min €206/mese, max €607/mese (tipo totale 31,50%, era 31,40% nel 2025) — vedi `RETA_BRACKETS` in `src/lib/countries/es.ts` per la tabella completa. SMI 2026 = €1.184/mese = €14.208/anno (RD 126/2026).
 
 **Scadenze annuali:**
 | Data | Scadenza |
