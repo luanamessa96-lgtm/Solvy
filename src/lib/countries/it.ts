@@ -1,4 +1,4 @@
-import type { CountryModule, TaxInput, TaxResult, ContributionsResult, FiscalDeadline } from './types';
+import type { CountryModule, TaxInput, TaxResult, ContributionsResult } from './types';
 
 // Italian fiscal logic — wraps and mirrors the existing calculations in DashboardView
 // NEVER modify these rates without matching the Italian tax authority rules
@@ -6,17 +6,6 @@ import type { CountryModule, TaxInput, TaxResult, ContributionsResult, FiscalDea
 function validateIBAN_IT(iban: string): boolean {
   const cleaned = iban.replace(/\s/g, '').toUpperCase();
   return cleaned.startsWith('IT') && cleaned.length === 27;
-}
-
-function getItalianDeadlines(year: number): FiscalDeadline[] {
-  return [
-    { title: 'Acconto IRPEF (prima rata)', date: `${year}-06-30`, type: 'annuale' },
-    { title: 'Acconto IRPEF (seconda rata)', date: `${year}-11-30`, type: 'annuale' },
-    { title: 'Saldo IRPEF', date: `${year}-06-30`, type: 'annuale' },
-    { title: 'INPS Gestione Separata — acconto', date: `${year}-06-30`, type: 'annuale' },
-    { title: 'INPS Gestione Separata — saldo', date: `${year}-11-30`, type: 'annuale' },
-    { title: 'Dichiarazione dei redditi (730/Redditi)', date: `${year}-11-30`, type: 'annuale' },
-  ];
 }
 
 export const italyModule: CountryModule = {
@@ -30,7 +19,6 @@ export const italyModule: CountryModule = {
     { value: 'forfettario', label: 'Regime Forfettario' },
     { value: 'ordinario', label: 'Regime Ordinario' },
   ],
-  getDeadlines: getItalianDeadlines,
   validation: {
     taxId: {
       label: 'Partita IVA / Codice Fiscale',

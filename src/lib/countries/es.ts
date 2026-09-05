@@ -1,5 +1,5 @@
 // Spanish fiscal calculations — Estimación directa simplificada
-import type { CountryModule, TaxInput, TaxResult, ContributionsResult, FiscalDeadline } from './types';
+import type { CountryModule, TaxInput, TaxResult, ContributionsResult } from './types';
 
 // ── Legacy interface kept for backward-compat with existing consumers ──────
 export interface SpanishTaxResult {
@@ -216,17 +216,6 @@ function validateIBAN_ES(iban: string): boolean {
   return c.startsWith('ES') && c.length === 24;
 }
 
-function getSpanishDeadlines(year: number): FiscalDeadline[] {
-  return [
-    { title: 'Modelo 303+130 — T1', date: `${year}-04-20`, type: 'trimestrale' },
-    { title: 'Modelo 303+130 — T2', date: `${year}-07-20`, type: 'trimestrale' },
-    { title: 'Modelo 303+130 — T3', date: `${year}-10-20`, type: 'trimestrale' },
-    { title: 'Modelo 303+130 — T4', date: `${year + 1}-01-30`, type: 'trimestrale' },
-    { title: 'Modelo 390 — Resumen anual IVA', date: `${year + 1}-01-30`, type: 'annuale' },
-    { title: 'Modelo 100 — Renta anual', date: `${year}-06-30`, type: 'annuale' },
-  ];
-}
-
 // ── Canarias — aliquote dinamiche per territorio ───────────────────────────
 export function getSpainVatRates(territory: 'peninsula' | 'canarias' | undefined): number[] {
   if (territory === 'canarias') return [0, 3, 7];
@@ -249,7 +238,6 @@ export const spainModule: CountryModule = {
   taxRegimes: [
     { value: 'autonomo', label: 'Estimación directa simplificada' },
   ],
-  getDeadlines: getSpanishDeadlines,
   validation: {
     taxId: {
       label: 'NIF',

@@ -76,7 +76,6 @@ export interface CountryModule {
   vatRates: number[];
   defaultVatRate: number;
   taxRegimes: { value: string; label: string }[];
-  getDeadlines: (year: number) => FiscalDeadline[];
   validation: ValidationRules;
   invoiceTerms: InvoiceTerms;
   calculateTax: (input: TaxInput) => TaxResult;

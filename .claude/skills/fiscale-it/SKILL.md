@@ -29,7 +29,7 @@ Questa logica è testata e validata. Cambiamenti non autorizzati possono causare
 
 ## Scadenze fiscali IT
 
-Le scadenze sono hardcodate in `src/views/CalendarView.tsx::getScadenzeFiscali()` (non in `it.ts::getItalianDeadlines()`, che è dead code non collegato a nessuna UI — verificarlo prima di fidarsi di quella funzione). Fonte di verità duplicata identica in `CLAUDE.md` §"Regole fiscali". Non modificare le date senza verifica normativa:
+Le scadenze sono hardcodate in `src/views/CalendarView.tsx::getScadenzeFiscali()`. (Nota storica: fino al 2026-09-05 esisteva anche `it.ts::getItalianDeadlines()`, dead code mai collegato a nessuna UI con valori divergenti dal reale — rimossa insieme all'equivalente ES `getSpanishDeadlines()` e alla proprietà `getDeadlines` dell'interfaccia `CountryModule`, perché nessun punto del codice la richiamava, nemmeno tramite `getCountryModule()`.) Fonte di verità duplicata identica in `CLAUDE.md` §"Regole fiscali" — **nessuna fonte primaria esterna ha mai confermato queste date, sono state solo allineate al codice reale**: da verificare una per una con un professionista. Non modificare le date senza verifica normativa:
 
 **Forfettario e ordinario (comuni):**
 - 30 giugno: saldo imposta sostitutiva/IRPEF + 1° acconto (40%)
