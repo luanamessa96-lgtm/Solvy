@@ -21,26 +21,32 @@ const IRPF_BRACKETS = [
   { limit: Infinity, rate: 0.47 },
 ];
 
-// RETA 2026 — cuota mínima mensile per tramo (Orden PJC/297/2026, BOE-A-2026-7296)
+// RETA 2026 — cuota mínima mensile per tramo (Orden PJC/297/2026, BOE-A-2026-7296, art.18.1)
 // Sistema cotización por rendimientos netos (RD-ley 13/2022), vigente dal 2023.
-// Tipo total 2026: 31,50% (era 31,40% nel 2025, +0,10 pp. MEI).
-// Cuota = base_mínima_tramo × 31,50% — Solvy usa la base minima con disclaimer "stimato".
-// ✅ Confermato da SKILL.md (tramos 1–4, 7, 11, 14); ⚠️ interpolato da basi 2025 × 31,50% (resto).
+// Tipo total 2026: 31,50% = contingencias comunes 28,30% (art.18.2.a) + contingencias
+// profesionales 1,30% (art.18.2.b) + MEI 0,90% (art.18.2.c) + cese de actividad 0,90%
+// (art.35.5.a) + formación profesional 0,10% (art.35.6). Era 31,40% nel 2025 (+0,10pp MEI).
+// Cuota = base_mínima_tramo × 31,50%, arrotondata all'euro — Solvy usa la base minima
+// con disclaimer "stimato". 15 tramos ufficiali (3 tabla reducida + 12 tabla general).
+// ✅ = verificato 2026-09-05 sul testo integrale BOE-A-2026-7296 (PDF in resources/Spagna/,
+// pagine 47467-47507). Tramos 1-3 "congelati" ex disp. transitoria RD-ley 13/2022 — cuota
+// storica, non ricalcolata da base×31,50% (per questo il valore non torna con la formula).
 export const RETA_BRACKETS = [
-  { maxIncome: 670,      monthlyQuote: 206 }, // ✅ base min €653,59 × 31,50% = €205,88
-  { maxIncome: 900,      monthlyQuote: 227 }, // ✅ base min €718,95 × 31,50% = €226,47 (congelata)
-  { maxIncome: 1166.70,  monthlyQuote: 268 }, // ✅ base min €849,67 × 31,50% = €267,65 (congelata)
-  { maxIncome: 1300,     monthlyQuote: 300 }, // ✅ base min €950,98 × 31,50% = €299,56
-  { maxIncome: 1500,     monthlyQuote: 303 }, // ⚠️ base min ~€960,78 × 31,50% = €302,65
-  { maxIncome: 1700,     monthlyQuote: 330 }, // ⚠️ base min ~€1.045,75 × 31,50% = €329,41
-  { maxIncome: 1850,     monthlyQuote: 360 }, // ✅ base min €1.143,79 × 31,50% = €360,29
-  { maxIncome: 2030,     monthlyQuote: 381 }, // ⚠️ base min ~€1.209,15 × 31,50% = €380,88
-  { maxIncome: 2330,     monthlyQuote: 402 }, // ⚠️ base min ~€1.274,86 × 31,50% = €401,58
-  { maxIncome: 2760,     monthlyQuote: 440 }, // ⚠️ base min ~€1.395,45 × 31,50% = €439,57
-  { maxIncome: 3190,     monthlyQuote: 453 }, // ✅ base min €1.437,91 × 31,50% = €452,94
-  { maxIncome: 4139,     monthlyQuote: 453 }, // ⚠️ base min €1.437,91 (stesso tramo 11)
-  { maxIncome: 6000,     monthlyQuote: 478 }, // ⚠️ base min ~€1.516,93 × 31,50% = €477,83
-  { maxIncome: Infinity, monthlyQuote: 607 }, // ✅ base min €1.928,10 × 31,50% = €607,35 (>€6.000)
+  { maxIncome: 670,      monthlyQuote: 206 }, // ✅ tabla reducida t.1 — base min €653,59 (congelata)
+  { maxIncome: 900,      monthlyQuote: 227 }, // ✅ tabla reducida t.2 — base min €718,95 (congelata)
+  { maxIncome: 1166.70,  monthlyQuote: 268 }, // ✅ tabla reducida t.3 — base min €849,67 (congelata)
+  { maxIncome: 1300,     monthlyQuote: 300 }, // ✅ tabla general t.1 — base min €950,98 × 31,50% = €299,56
+  { maxIncome: 1500,     monthlyQuote: 303 }, // ✅ tabla general t.2 — base min €960,78 × 31,50% = €302,65
+  { maxIncome: 1700,     monthlyQuote: 303 }, // ✅ tabla general t.3 — base min €960,78 (stessa base di t.2) × 31,50% = €302,65
+  { maxIncome: 1850,     monthlyQuote: 360 }, // ✅ tabla general t.4 — base min €1.143,79 × 31,50% = €360,29
+  { maxIncome: 2030,     monthlyQuote: 381 }, // ✅ tabla general t.5 — base min €1.209,15 × 31,50% = €380,88
+  { maxIncome: 2330,     monthlyQuote: 401 }, // ✅ tabla general t.6 — base min €1.274,51 × 31,50% = €401,47
+  { maxIncome: 2760,     monthlyQuote: 427 }, // ✅ tabla general t.7 — base min €1.356,21 × 31,50% = €427,21
+  { maxIncome: 3190,     monthlyQuote: 453 }, // ✅ tabla general t.8 — base min €1.437,91 × 31,50% = €452,94
+  { maxIncome: 3620,     monthlyQuote: 479 }, // ✅ tabla general t.9 — base min €1.519,61 × 31,50% = €478,68
+  { maxIncome: 4050,     monthlyQuote: 504 }, // ✅ tabla general t.10 — base min €1.601,31 × 31,50% = €504,41
+  { maxIncome: 6000,     monthlyQuote: 546 }, // ✅ tabla general t.11 — base min €1.732,03 × 31,50% = €545,59
+  { maxIncome: Infinity, monthlyQuote: 607 }, // ✅ tabla general t.12 (>€6.000) — base min €1.928,10 × 31,50% = €607,35
 ];
 
 // Tarifa plana — ABOLITA dal 1° gennaio 2023 (RD-ley 13/2022).

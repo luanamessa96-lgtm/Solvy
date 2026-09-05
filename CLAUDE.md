@@ -3,18 +3,12 @@
 ## Commands
 
 ```bash
-npm run dev          # Dev server on :3000
-npm run build        # Production build
-npm run lint         # TypeScript type-check (tsc --noEmit)
-npm test             # Vitest unit tests (fiscal logic — ~110 tests)
 npx playwright test  # E2E against solvyapp.com, iPhone 14 Pro viewport, ~10-15 min
 ```
 
-Run a single Vitest test file: `npm test -- src/__tests__/fiscal.test.ts`
-
 ## Architecture
 
-Solvy is a mobile-first PWA (React 18 + TypeScript + Vite). There is no React Router: `App.tsx` conditionally renders one of the 14 `views/` components based on app state.
+There is no React Router: `App.tsx` conditionally renders one of the `views/` components based on app state.
 
 **Country module system** (`src/lib/countries/`): All fiscal calculations go through `getCountryModule(country)`, which returns the `it` or `es` module. Each module implements `CountryModule` (`types.ts`). Adding a new country = one new file in `countries/`, zero changes elsewhere.
 
@@ -93,7 +87,7 @@ Tutte le scadenze del forfettario **più** IVA trimestrale:
 - **IVA trimestrale — Modelo 303**
 - **IVA standard**: 21% (ridotta 10% o 4% per alcune categorie)
 - **Retención IRPF sulle fatture**: 7% nei primi 3 anni di attività, 15% dal 4° anno
-- **RETA**: sistema cotización por rendimientos netos (RD-ley 13/2022, vigente dal 2023). La tarifa plana €80/mese è **ABOLITA** dal 1° gennaio 2023. Quote 2026 (Orden PJC/297/2026, BOE-A-2026-7296): 14 tramos in base al rendimiento neto, min €206/mese, max €607/mese (tipo totale 31,50%, era 31,40% nel 2025) — vedi `RETA_BRACKETS` in `src/lib/countries/es.ts` per la tabella completa. SMI 2026 = €1.184/mese = €14.208/anno (RD 126/2026).
+- **RETA**: sistema cotización por rendimientos netos (RD-ley 13/2022, vigente dal 2023). La tarifa plana €80/mese è **ABOLITA** dal 1° gennaio 2023. Quote 2026 (Orden PJC/297/2026, BOE-A-2026-7296, art.18.1): 15 tramos ufficiali (3 tabla reducida + 12 tabla general) in base al rendimiento neto, min €206/mese, max €607/mese (tipo totale 31,50%, era 31,40% nel 2025) — vedi `RETA_BRACKETS` in `src/lib/countries/es.ts` per la tabella completa, verificata sul testo integrale BOE il 2026-09-05. SMI 2026 = €1.184/mese = €14.208/anno (RD 126/2026).
 
 **Scadenze annuali:**
 | Data | Scadenza |

@@ -299,3 +299,5 @@ Cuota_mensile = Base_elegida × 31.50%   (2026)
 | `RETA_Cuotas_Tabla_2021_2025.pdf` | Seguridad Social | 2025 | Spagna/ |
 | `Orden_PJC_297_2026_RETA_BOE-A-2026-7296.pdf` | BOE-A-2026-7296 | **2026** | Spagna/ |
 | `Cuadro_Tipos_Retencion_IRPF_2026.pdf` | AEAT | **2026** | Spagna/ |
+
+**Nota 2026-09-05**: `Orden_PJC_297_2026_RETA_BOE-A-2026-7296.pdf` è il primo file di questa tabella effettivamente presente nel repo (`resources/Spagna/`, scaricato dal permalink ufficiale BOE, 41 pagine) — gli altri file elencati sopra sono riferimenti alla fonte usata, non ancora salvati localmente. La versione precedente di `RETA_BRACKETS` in `es.ts` era basata su una lettura parziale di questa stessa Orden (solo 7/14 tramos confermati): il testo integrale (art.18.1) definisce in realtà **15 tramos** (3 tabla reducida + 12 tabla general), non 14 — mancavano i tramos per rendimenti €3.190-3.620 e €3.620-4.050. Tutti e 15 ora verificati e corretti in `es.ts`.

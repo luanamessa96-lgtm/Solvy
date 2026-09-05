@@ -317,63 +317,68 @@ describe('Spain — calculateGastosDificilJustificacion (art.30 RIRPF)', () => {
 // SPAIN — RETA (fasce 2023)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// RETA 2026 — Orden PJC/297/2026, tipo total 31,50%, cuota = base_mínima × 31,50%
-// ✅ = confermato SKILL.md; ⚠️ = interpolato da basi 2025 × 31,50%
+// RETA 2026 — Orden PJC/297/2026 (BOE-A-2026-7296, art.18.1), tipo total 31,50%
+// 15 tramos ufficiali (3 tabla reducida + 12 tabla general), tutti ✅ verificati sul testo
+// integrale BOE il 2026-09-05 (PDF in .claude/skills/fiscale-avanzata/resources/Spagna/).
 describe('Spain — calculateRETA (2026)', () => {
-  it('≤ €670/mese → €206/mese ✅ (base min €653,59)', () => {
+  it('≤ €670/mese → €206/mese ✅ (tabla reducida t.1, base min €653,59, congelata)', () => {
     expect(calculateRETA(500)).toBe(206);
     expect(calculateRETA(670)).toBe(206);
   });
 
-  it('€670–€900/mese → €227/mese ✅ (base min €718,95, congelata)', () => {
+  it('€670–€900/mese → €227/mese ✅ (tabla reducida t.2, base min €718,95, congelata)', () => {
     expect(calculateRETA(800)).toBe(227);
   });
 
-  it('€900–€1.166,70/mese → €268/mese ✅ (base min €849,67, congelata)', () => {
+  it('€900–€1.166,70/mese → €268/mese ✅ (tabla reducida t.3, base min €849,67, congelata)', () => {
     expect(calculateRETA(1000)).toBe(268);
   });
 
-  it('€1.166,70–€1.300/mese → €300/mese ✅ (base min €950,98)', () => {
+  it('€1.166,70–€1.300/mese → €300/mese ✅ (tabla general t.1, base min €950,98)', () => {
     expect(calculateRETA(1250)).toBe(300);
   });
 
-  it('€1.300–€1.500/mese → €303/mese ⚠️ (base ~€960,78)', () => {
+  it('€1.300–€1.500/mese → €303/mese ✅ (tabla general t.2, base min €960,78)', () => {
     expect(calculateRETA(1400)).toBe(303);
   });
 
-  it('€1.500–€1.700/mese → €330/mese ⚠️ (base ~€1.045,75)', () => {
-    expect(calculateRETA(1600)).toBe(330);
+  it('€1.500–€1.700/mese → €303/mese ✅ (tabla general t.3, stessa base min €960,78 di t.2)', () => {
+    expect(calculateRETA(1600)).toBe(303);
   });
 
-  it('€1.700–€1.850/mese → €360/mese ✅ (base min €1.143,79)', () => {
+  it('€1.700–€1.850/mese → €360/mese ✅ (tabla general t.4, base min €1.143,79)', () => {
     expect(calculateRETA(1800)).toBe(360);
   });
 
-  it('€1.850–€2.030/mese → €381/mese ⚠️ (base ~€1.209,15)', () => {
+  it('€1.850–€2.030/mese → €381/mese ✅ (tabla general t.5, base min €1.209,15)', () => {
     expect(calculateRETA(2000)).toBe(381);
   });
 
-  it('€2.030–€2.330/mese → €402/mese ⚠️', () => {
-    expect(calculateRETA(2200)).toBe(402);
+  it('€2.030–€2.330/mese → €401/mese ✅ (tabla general t.6, base min €1.274,51)', () => {
+    expect(calculateRETA(2200)).toBe(401);
   });
 
-  it('€2.330–€2.760/mese → €440/mese ⚠️', () => {
-    expect(calculateRETA(2500)).toBe(440);
+  it('€2.330–€2.760/mese → €427/mese ✅ (tabla general t.7, base min €1.356,21)', () => {
+    expect(calculateRETA(2500)).toBe(427);
   });
 
-  it('€2.760–€3.190/mese → €453/mese ✅ (base min €1.437,91)', () => {
+  it('€2.760–€3.190/mese → €453/mese ✅ (tabla general t.8, base min €1.437,91)', () => {
     expect(calculateRETA(3000)).toBe(453);
   });
 
-  it('€3.190–€4.139/mese → €453/mese ⚠️ (stessa base tramo 11)', () => {
-    expect(calculateRETA(3500)).toBe(453);
+  it('€3.190–€3.620/mese → €479/mese ✅ (tabla general t.9, base min €1.519,61)', () => {
+    expect(calculateRETA(3500)).toBe(479);
   });
 
-  it('€4.139–€6.000/mese → €478/mese ⚠️ (base ~€1.516,93)', () => {
-    expect(calculateRETA(5000)).toBe(478);
+  it('€3.620–€4.050/mese → €504/mese ✅ (tabla general t.10, base min €1.601,31)', () => {
+    expect(calculateRETA(3800)).toBe(504);
   });
 
-  it('> €6.000/mese → €607/mese ✅ (base min €1.928,10)', () => {
+  it('€4.050–€6.000/mese → €546/mese ✅ (tabla general t.11, base min €1.732,03)', () => {
+    expect(calculateRETA(5000)).toBe(546);
+  });
+
+  it('> €6.000/mese → €607/mese ✅ (tabla general t.12, base min €1.928,10)', () => {
     expect(calculateRETA(7000)).toBe(607);
     expect(calculateRETA(10000)).toBe(607);
   });
